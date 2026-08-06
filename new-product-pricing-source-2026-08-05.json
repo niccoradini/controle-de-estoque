@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-08-05",
+  "tableDateShownBySimulator": "2026-08-04",
+  "source": "Gramcell · Simulador Produtos",
+  "sourceUrl": "https://intranet.gramcell.com.br/simuladores/simulador-produtos/",
+  "items": [
+    {
+      "materialCode": "22025161",
+      "inventoryName": "SAMSUNG WATCH 9 40MM 32GB BLUETOOTH GRAFITE",
+      "simulatorName": "Galaxy Watch9 Bt 40 mm",
+      "priceCents": 299900,
+      "status": "exact"
+    },
+    {
+      "materialCode": "TGSA62254000",
+      "inventoryName": "SAMSUNG WATCH 9 40MM 32GB LTE GRAFITE",
+      "simulatorName": "Galaxy Watch9 LTE 40 mm",
+      "priceCents": 329900,
+      "status": "exact"
+    },
+    {
+      "materialCode": "TGMO611B2000",
+      "inventoryName": "MOTOROLA MOTO G47 128GB AZUL-MARINHO",
+      "simulatorName": "Moto G47 5G 128GB",
+      "listedFromCents": 94900,
+      "familia3Cents": 104900,
+      "status": "covered_by_existing_profile"
+    },
+    {
+      "materialCode": "TGSA61762000",
+      "inventoryName": "SAMSUNG GALAXY Z FLIP8 512GB PRETO",
+      "query": "Galaxy Z Flip8",
+      "priceCents": null,
+      "status": "not_listed"
+    },
+    {
+      "materialCode": "TGSA61962000",
+      "inventoryName": "SAMSUNG GALAXY Z FOLD8 512GB PRETO",
+      "query": "Galaxy Z Fold8",
+      "priceCents": null,
+      "status": "not_listed"
+    },
+    {
+      "materialCode": "YBSC001A4000",
+      "inventoryName": "SIM CARD 5G 2/3/4FF AVULSO P69S MG",
+      "priceCents": 0,
+      "status": "no_charge_rule"
+    }
+  ]
+}

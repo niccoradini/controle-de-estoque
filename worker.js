@@ -1,0 +1,1515 @@
+import {
+  clearSessionCookie,
+  hashPassword,
+  newSessionToken,
+  parseCookies,
+  sessionCookie,
+  sessionExpiry,
+  sha256Hex,
+  verifyPassword,
+} from './security.js';
+
+const DUMMY_PASSWORD_HASH = 'pbkdf2-sha256$75000$9GblqRnFBioalVR4R6wWGg$3kcpF84pBCcKWTKnCz4vXLqZbA1Rq9R6hhTdeg0UImU';
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const REQUEST_STATUSES = new Set(['pending', 'approved', 'rejected', 'cancelled']);
+const AUTOMATIC_SERIAL_CLUSTERS = new Set(['cases', 'screen_protectors']);
+const PRICE_CATEGORIES = [
+  'PRÉ',
+  'CONTROLE BTL',
+  'CONTROLE ENTRADA',
+  'CONTROLE ALTO VALOR',
+  'PÓS INDIVIDUAL',
+  'FAMILIA 2',
+  'FAMILIA 3',
+  'FAMILIA 4/5',
+  'VIVO V',
+];
+const PRICE_CATEGORY_SET = new Set(PRICE_CATEGORIES);
+const DASHBOARD_CLUSTER_ORDER = [
+  'devices',
+  'cases',
+  'screen_protectors',
+  'speakers',
+  'notebooks',
+  'tvs',
+  'chargers',
+  'cables',
+  'misc',
+];
+
+function normalizeRenovaModelKey(value = '') {
+  return String(value)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/\b5G\b/g, '')
+    .replaceAll('+', ' PLUS ')
+    .replace(/[^A-Z0-9]+/g, '');
+}
+
+function manufacturerRenovaBonusCents(productName = '', boostRows = []) {
+  const productKey = normalizeRenovaModelKey(productName);
+  const matchingBoost = [...boostRows]
+    .filter((row) => productKey.includes(String(row.match_key || row.matchKey || '')))
+    .sort((left, right) => String(right.match_key || right.matchKey || '').length - String(left.match_key || left.matchKey || '').length)[0];
+  return matchingBoost ? Number(matchingBoost.bonus_cents ?? matchingBoost.bonusCents ?? 0) : 0;
+}
+
+class HttpError extends Error {
+  constructor(status, message, fields = undefined) {
+    super(message);
+    this.status = status;
+    this.fields = fields;
+  }
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function securityHeaders(headers = {}) {
+  return {
+    'Content-Security-Policy': "default-src 'self'; base-uri 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'Cross-Origin-Resource-Policy': 'same-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Referrer-Policy': 'no-referrer',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    ...headers,
+  };
+}
+
+function json(payload, status = 200, headers = {}) {
+  return new Response(payload === null ? null : JSON.stringify(payload), {
+    status,
+    headers: securityHeaders({
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store',
+      ...headers,
+    }),
+  });
+}
+
+function noContent(headers = {}) {
+  return new Response(null, { status: 204, headers: securityHeaders({ 'Cache-Control': 'no-store', ...headers }) });
+}
+
+function secureAssetResponse(response) {
+  const headers = new Headers(response.headers);
+  for (const [name, value] of Object.entries(securityHeaders())) headers.set(name, value);
+  const contentType = headers.get('Content-Type') || '';
+  if (contentType.includes('text/html')) headers.set('Cache-Control', 'no-store');
+  else if (contentType.includes('text/css') || contentType.includes('javascript')) headers.set('Cache-Control', 'no-cache');
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+async function readJson(request) {
+  const contentLength = Number(request.headers.get('Content-Length') || 0);
+  if (contentLength > 200_000) throw new HttpError(413, 'Os dados enviados são muito grandes.');
+  try {
+    return await request.json();
+  } catch {
+    throw new HttpError(400, 'Envie os dados no formato correto.');
+  }
+}
+
+function validateFields(input, rules) {
+  const data = {};
+  const fields = {};
+  for (const [name, rule] of Object.entries(rules)) {
+    const result = rule(input?.[name]);
+    if (result.error) fields[name] = result.error;
+    else data[name] = result.value;
+  }
+  if (Object.keys(fields).length) throw new HttpError(400, 'Verifique os dados informados.', fields);
+  return data;
+}
+
+function textRule(label, { min = 1, max = 200, optional = false } = {}) {
+  return (value) => {
+    const text = typeof value === 'string' ? value.trim() : '';
+    if (!text && optional) return { value: '' };
+    if (text.length < min) return { error: `Informe ${label}.` };
+    if (text.length > max) return { error: `${label} deve ter no máximo ${max} caracteres.` };
+    return { value: text };
+  };
+}
+
+function emailRule(value) {
+  const email = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 160) return { error: 'Informe um e-mail válido.' };
+  return { value: email };
+}
+
+function passwordRule(value) {
+  if (typeof value !== 'string' || value.length < 8 || value.length > 128) return { error: 'A senha deve ter pelo menos 8 caracteres.' };
+  return { value };
+}
+
+function optionalPasswordRule(value) {
+  if (value === undefined || value === null || value === '') return { value: '' };
+  return passwordRule(value);
+}
+
+function roleRule(value) {
+  if (!['seller', 'manager', 'stocker'].includes(value)) return { error: 'Selecione um perfil válido.' };
+  return { value };
+}
+
+function booleanRule(value) {
+  if (typeof value !== 'boolean') return { error: 'Informe um status válido.' };
+  return { value };
+}
+
+function positiveIdRule(label) {
+  return (value) => {
+    const id = Number(value);
+    if (!Number.isInteger(id) || id <= 0) return { error: `Selecione ${label}.` };
+    return { value: id };
+  };
+}
+
+function quantityDeltaRule(value) {
+  const quantity = Number(value);
+  if (!Number.isInteger(quantity) || quantity === 0 || Math.abs(quantity) > 100000) {
+    return { error: 'Informe uma quantidade válida, diferente de zero.' };
+  }
+  return { value: quantity };
+}
+
+function requestLinesRule(value) {
+  if (!Array.isArray(value) || !value.length || value.length > 30) {
+    return { error: 'Adicione de 1 a 30 variações ao pedido.' };
+  }
+  const combined = new Map();
+  for (const line of value) {
+    const variantId = Number(line?.variantId);
+    const quantity = Number(line?.quantity);
+    if (!Number.isInteger(variantId) || variantId <= 0 || !Number.isInteger(quantity) || quantity <= 0 || quantity > 50) {
+      return { error: 'Revise as variações e quantidades do pedido.' };
+    }
+    combined.set(variantId, (combined.get(variantId) || 0) + quantity);
+  }
+  const lines = [...combined].map(([variantId, quantity]) => ({ variantId, quantity }));
+  if (lines.some((line) => line.quantity > 50) || lines.reduce((total, line) => total + line.quantity, 0) > 100) {
+    return { error: 'Cada pedido pode ter no máximo 100 itens.' };
+  }
+  return { value: lines };
+}
+
+function effectiveRole(user) {
+  return user?.access_profile === 'stocker' ? 'stocker' : user?.role;
+}
+
+function storedRole(role) {
+  return role === 'stocker'
+    ? { role: 'seller', accessProfile: 'stocker' }
+    : { role, accessProfile: 'default' };
+}
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: effectiveRole(user),
+    active: Boolean(user.active),
+    mustChangePassword: Boolean(user.must_change_password),
+    createdAt: user.created_at,
+  };
+}
+
+function parsePresets(value) {
+  try {
+    const parsed = JSON.parse(value || '{}');
+    return {
+      option1: Array.isArray(parsed.option1) ? parsed.option1 : [],
+      option2: Array.isArray(parsed.option2) ? parsed.option2 : [],
+      option3: Array.isArray(parsed.option3) ? parsed.option3 : [],
+    };
+  } catch {
+    return { option1: [], option2: [], option3: [] };
+  }
+}
+
+function auditStatement(env, actorId, action, entityType, entityId, details = {}) {
+  return env.DB.prepare(`
+    INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, details_json)
+    VALUES (?, ?, ?, ?, ?)
+  `).bind(actorId ?? null, action, entityType, entityId == null ? null : String(entityId), JSON.stringify(details));
+}
+
+async function createSession(env, userId) {
+  const token = newSessionToken();
+  const tokenHash = await sha256Hex(token);
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM sessions WHERE expires_at <= ?').bind(nowIso()),
+    env.DB.prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
+      .bind(tokenHash, userId, sessionExpiry()),
+  ]);
+  return token;
+}
+
+async function deleteSession(env, request) {
+  const token = parseCookies(request).estoque_session;
+  if (!token) return;
+  await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(await sha256Hex(token)).run();
+}
+
+async function authenticatedUser(env, request) {
+  const token = parseCookies(request).estoque_session;
+  if (!token) throw new HttpError(401, 'Faça login para continuar.');
+  const user = await env.DB.prepare(`
+    SELECT u.*
+    FROM sessions s
+    JOIN users u ON u.id = s.user_id
+    WHERE s.token_hash = ? AND s.expires_at > ? AND u.active = 1 AND u.deleted_at IS NULL
+  `).bind(await sha256Hex(token), nowIso()).first();
+  if (!user) throw new HttpError(401, 'Sua sessão expirou. Entre novamente.');
+  return { ...user, role: effectiveRole(user) };
+}
+
+function requireRole(user, role) {
+  const allowed = Array.isArray(role) ? role : [role];
+  if (!allowed.includes(user.role)) throw new HttpError(403, 'Você não tem permissão para realizar esta ação.');
+}
+
+function validateRequestSource(request) {
+  if (!MUTATING_METHODS.has(request.method)) return;
+  if (request.headers.get('X-Requested-With') !== 'estoque-web') throw new HttpError(403, 'Requisição não autorizada.');
+  const origin = request.headers.get('Origin');
+  if (origin && origin !== new URL(request.url).origin) throw new HttpError(403, 'Origem não autorizada.');
+}
+
+function clientKey(request) {
+  return (request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'local').split(',')[0].trim().slice(0, 80);
+}
+
+async function enforceLoginLimit(env, key) {
+  const attempt = await env.DB.prepare('SELECT * FROM login_attempts WHERE client_key = ?').bind(key).first();
+  if (attempt?.blocked_until && attempt.blocked_until > nowIso()) {
+    throw new HttpError(429, 'Muitas tentativas. Aguarde alguns minutos e tente novamente.');
+  }
+}
+
+async function recordLoginFailure(env, key) {
+  const current = await env.DB.prepare('SELECT * FROM login_attempts WHERE client_key = ?').bind(key).first();
+  const now = new Date();
+  const windowStart = current ? new Date(current.window_started_at) : null;
+  const expiredWindow = !windowStart || now.getTime() - windowStart.getTime() > 15 * 60 * 1000;
+  const failedCount = expiredWindow ? 1 : Number(current.failed_count) + 1;
+  const blockedUntil = failedCount >= 10 ? new Date(now.getTime() + 15 * 60 * 1000).toISOString() : null;
+  await env.DB.prepare(`
+    INSERT INTO login_attempts (client_key, failed_count, window_started_at, blocked_until)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(client_key) DO UPDATE SET
+      failed_count = excluded.failed_count,
+      window_started_at = excluded.window_started_at,
+      blocked_until = excluded.blocked_until
+  `).bind(key, failedCount, expiredWindow ? now.toISOString() : current.window_started_at, blockedUntil).run();
+}
+
+async function clearLoginFailures(env, key) {
+  await env.DB.prepare('DELETE FROM login_attempts WHERE client_key = ?').bind(key).run();
+}
+
+async function listRequests(env, user, status = '', limit = 100) {
+  const conditions = [];
+  const params = [];
+  if (user.role === 'seller') {
+    conditions.push('r.seller_id = ?');
+    params.push(user.id);
+  }
+  if (REQUEST_STATUSES.has(status)) {
+    conditions.push('r.status = ?');
+    params.push(status);
+  }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const safeLimit = Math.min(Math.max(Number(limit) || 100, 1), 200);
+  const query = env.DB.prepare(`
+    SELECT r.*, seller.name AS seller_name, seller.email AS seller_email,
+           decider.name AS decided_by_name
+    FROM withdrawal_requests r
+    JOIN users seller ON seller.id = r.seller_id
+    LEFT JOIN users decider ON decider.id = r.decided_by
+    ${where}
+    ORDER BY r.created_at DESC
+    LIMIT ?
+  `).bind(...params, safeLimit);
+  const requests = (await query.all()).results || [];
+  if (!requests.length) return [];
+
+  const placeholders = requests.map(() => '?').join(',');
+  const requestIds = requests.map((item) => item.id);
+  const [quantityResult, serialResult] = await env.DB.batch([
+    env.DB.prepare(`
+      SELECT i.*, COALESCE(p.cluster, 'misc') AS product_cluster
+      FROM withdrawal_quantity_items i
+      LEFT JOIN product_variants v ON v.id = i.variant_id
+      LEFT JOIN products p ON p.id = v.product_id
+      WHERE i.request_id IN (${placeholders})
+      ORDER BY i.request_id, i.product_name_snapshot COLLATE NOCASE
+    `).bind(...requestIds),
+    env.DB.prepare(`
+      SELECT request_id, variant_id, serial_number_snapshot
+      FROM request_serial_assignments
+      WHERE request_id IN (${placeholders})
+      UNION ALL
+      SELECT request_id, variant_id, serial_number_snapshot
+      FROM cancelled_request_serials
+      WHERE request_id IN (${placeholders})
+      ORDER BY request_id, variant_id, serial_number_snapshot COLLATE NOCASE
+    `).bind(...requestIds, ...requestIds),
+  ]);
+  const quantityRows = quantityResult.results || [];
+  const serialsByItem = new Map();
+  for (const serial of serialResult.results || []) {
+    const key = `${serial.request_id}:${serial.variant_id}`;
+    if (!serialsByItem.has(key)) serialsByItem.set(key, []);
+    serialsByItem.get(key).push(serial.serial_number_snapshot);
+  }
+  const itemsByRequest = new Map();
+  for (const item of quantityRows) {
+    if (!itemsByRequest.has(item.request_id)) itemsByRequest.set(item.request_id, []);
+    itemsByRequest.get(item.request_id).push({
+      kind: 'quantity',
+      variantId: item.variant_id,
+      productName: item.product_name_snapshot,
+      model: item.product_name_snapshot,
+      materialCode: item.material_code_snapshot || '',
+      cluster: item.product_cluster || 'misc',
+      automaticSerial: AUTOMATIC_SERIAL_CLUSTERS.has(item.product_cluster),
+      quantity: Number(item.quantity),
+      unitPriceCents: item.unit_price_cents == null ? null : Number(item.unit_price_cents),
+      lineTotalCents: item.unit_price_cents == null ? null : Number(item.unit_price_cents) * Number(item.quantity),
+      priceCategory: item.price_category_snapshot || '',
+      priceType: item.price_type_snapshot || '',
+      priceTableDate: item.price_table_date_snapshot || '',
+      options: [],
+      serialNumbers: serialsByItem.get(`${item.request_id}:${item.variant_id}`) || [],
+    });
+  }
+  return requests.map((requestRow) => {
+    const revealSerials = user.role === 'manager' || requestRow.status === 'approved';
+    const items = (itemsByRequest.get(requestRow.id) || [])
+      .map((item) => ({
+        ...item,
+        serialNumbers: revealSerials && !item.automaticSerial ? item.serialNumbers : [],
+      }))
+      .sort((a, b) => a.productName.localeCompare(b.productName, 'pt-BR'));
+    return {
+      id: requestRow.id,
+      status: requestRow.status,
+      notes: requestRow.notes || '',
+      decisionNote: requestRow.decision_note || '',
+      createdAt: requestRow.created_at,
+      decidedAt: requestRow.decided_at,
+      seller: { id: requestRow.seller_id, name: requestRow.seller_name, email: requestRow.seller_email },
+      decidedByName: requestRow.decided_by_name,
+      pricing: requestRow.order_total_cents == null && requestRow.device_total_cents == null ? null : {
+        category: requestRow.price_category || '',
+        deviceTotalCents: requestRow.device_total_cents == null ? 0 : Number(requestRow.device_total_cents),
+        orderTotalCents: Number(requestRow.order_total_cents ?? requestRow.device_total_cents),
+        tableDate: requestRow.price_table_date || '',
+        ...(requestRow.renova_enabled ? { renova: {
+          usedDevice: requestRow.renova_used_device || '',
+          condition: requestRow.renova_condition || 'bom',
+          voucherCents: Number(requestRow.renova_voucher_cents || 0),
+          manufacturerBonusCents: Number(requestRow.renova_manufacturer_bonus_cents || 0),
+          discountCents: Number(requestRow.renova_discount_cents || 0),
+        } } : {}),
+      },
+      items,
+    };
+  });
+}
+
+async function setupStatus(env) {
+  const initialized = await env.DB.prepare(`SELECT value FROM system_state WHERE key = 'initialized'`).first();
+  return json({ needsSetup: !initialized });
+}
+
+async function initialSetup(request, env) {
+  const initialized = await env.DB.prepare(`SELECT value FROM system_state WHERE key = 'initialized'`).first();
+  if (initialized) throw new HttpError(409, 'A configuração inicial já foi realizada.');
+  const input = await readJson(request);
+  const data = validateFields(input, {
+    name: textRule('o nome completo', { min: 2, max: 100 }),
+    email: emailRule,
+    password: passwordRule,
+  });
+  const passwordHash = await hashPassword(data.password);
+  try {
+    const results = await env.DB.batch([
+      env.DB.prepare(`INSERT INTO system_state (key, value) VALUES ('initialized', '1')`),
+      env.DB.prepare(`INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, 'manager')`)
+        .bind(data.name, data.email, passwordHash),
+    ]);
+    const userId = Number(results[1].meta.last_row_id);
+    await env.DB.batch([
+      auditStatement(env, userId, 'manager.initial_created', 'user', userId, { email: data.email }),
+    ]);
+    const user = await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
+    const token = await createSession(env, userId);
+    return json({ user: publicUser(user) }, 201, { 'Set-Cookie': sessionCookie(token) });
+  } catch (error) {
+    if (String(error.message).includes('system_state.key')) throw new HttpError(409, 'A configuração inicial já foi realizada.');
+    if (String(error.message).includes('users.email')) throw new HttpError(409, 'Este e-mail já está em uso.');
+    throw error;
+  }
+}
+
+async function login(request, env) {
+  const key = clientKey(request);
+  await enforceLoginLimit(env, key);
+  const input = await readJson(request);
+  const data = validateFields(input, { email: emailRule, password: (value) => ({ value: typeof value === 'string' ? value.slice(0, 128) : '' }) });
+  const user = await env.DB.prepare('SELECT * FROM users WHERE email = ? COLLATE NOCASE AND deleted_at IS NULL').bind(data.email).first();
+  const valid = await verifyPassword(data.password, user?.password_hash || DUMMY_PASSWORD_HASH);
+  if (!user?.active || !valid) {
+    await recordLoginFailure(env, key);
+    throw new HttpError(401, 'E-mail ou senha incorretos.');
+  }
+  await clearLoginFailures(env, key);
+  const token = await createSession(env, user.id);
+  await env.DB.batch([auditStatement(env, user.id, 'auth.login', 'user', user.id, {})]);
+  return json({ user: publicUser(user) }, 200, { 'Set-Cookie': sessionCookie(token) });
+}
+
+async function changePassword(request, env, user) {
+  const input = await readJson(request);
+  const rules = { newPassword: passwordRule };
+  if (user.role !== 'manager') {
+    rules.currentPassword = (value) => ({ value: typeof value === 'string' ? value.slice(0, 128) : '' });
+  }
+  const data = validateFields(input, rules);
+  if (user.role !== 'manager' && !await verifyPassword(data.currentPassword, user.password_hash)) {
+    throw new HttpError(400, 'A senha atual está incorreta.');
+  }
+  const passwordHash = await hashPassword(data.newPassword);
+  const token = newSessionToken();
+  const tokenHash = await sha256Hex(token);
+  await env.DB.batch([
+    env.DB.prepare(`UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = ? WHERE id = ?`)
+      .bind(passwordHash, nowIso(), user.id),
+    env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(user.id),
+    env.DB.prepare('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
+      .bind(tokenHash, user.id, sessionExpiry()),
+    auditStatement(env, user.id, 'user.password_changed', 'user', user.id, {}),
+  ]);
+  return json({ message: 'Senha alterada com sucesso.' }, 200, { 'Set-Cookie': sessionCookie(token) });
+}
+
+async function catalogData(env, user) {
+  const [productsResult, variantsResult, pricesResult] = await env.DB.batch([
+    env.DB.prepare(`
+      SELECT p.*,
+        (
+          SELECT rule.price_key
+          FROM device_price_match_rules rule
+          WHERE UPPER(COALESCE(p.display_name, p.name)) LIKE rule.match_pattern COLLATE NOCASE
+          ORDER BY rule.priority, length(rule.match_pattern) DESC
+          LIMIT 1
+        ) AS price_key
+      FROM products p
+      WHERE p.active = 1
+      ORDER BY p.sort_order, p.brand COLLATE NOCASE, p.name COLLATE NOCASE
+    `),
+    env.DB.prepare(`
+      SELECT v.*,
+        retail.price_cents AS retail_price_cents,
+        retail.price_kind AS retail_price_kind,
+        retail.table_date AS retail_price_table_date,
+        retail.source_label AS retail_price_source,
+        retail.reference_name AS retail_price_reference,
+        COALESCE((SELECT SUM(r.quantity) FROM active_quantity_reservations r WHERE r.variant_id = v.id), 0) AS quantity_reserved,
+        COALESCE((SELECT incoming.quantity FROM incoming_inventory incoming WHERE incoming.variant_id = v.id), 0) AS quantity_incoming,
+        COALESCE((
+          SELECT SUM(i.quantity)
+          FROM withdrawal_quantity_items i
+          JOIN withdrawal_requests r ON r.id = i.request_id AND r.status = 'approved'
+          WHERE i.variant_id = v.id
+        ), 0) AS quantity_withdrawn
+      FROM product_variants v
+      LEFT JOIN product_retail_prices retail ON retail.material_code = v.sku COLLATE NOCASE
+      WHERE v.active = 1
+      ORDER BY v.product_id, v.option1_value COLLATE NOCASE,
+               v.option2_value COLLATE NOCASE, v.option3_value COLLATE NOCASE
+    `),
+    env.DB.prepare(`
+      SELECT profile.price_key, profile.display_name, profile.table_date, profile.source_label,
+             value.category, value.price_cents
+      FROM device_price_profiles profile
+      JOIN device_price_values value ON value.price_key = profile.price_key
+      ORDER BY profile.display_name COLLATE NOCASE, value.price_cents DESC
+    `),
+  ]);
+  const pricingByKey = new Map();
+  for (const row of pricesResult.results || []) {
+    if (!pricingByKey.has(row.price_key)) {
+      pricingByKey.set(row.price_key, {
+        key: row.price_key,
+        model: row.display_name,
+        tableDate: row.table_date,
+        source: row.source_label,
+        prices: {},
+      });
+    }
+    pricingByKey.get(row.price_key).prices[row.category] = Number(row.price_cents);
+  }
+  const variantsByProduct = new Map();
+  for (const row of variantsResult.results || []) {
+    const available = Math.max(0, Number(row.quantity_on_hand) - Number(row.quantity_reserved));
+    if (user.role === 'seller' && available <= 0) continue;
+    const variant = {
+      id: row.id,
+      productId: row.product_id,
+      stockMode: 'quantity',
+      sku: row.sku || '',
+      materialCode: row.sku || '',
+      serialTracked: Boolean(row.serial_tracking),
+      option1Value: row.option1_value,
+      option2Value: row.option2_value,
+      option3Value: row.option3_value,
+      available,
+      reserved: Number(row.quantity_reserved),
+      withdrawn: Number(row.quantity_withdrawn),
+      onHand: Number(row.quantity_on_hand),
+      incoming: Number(row.quantity_incoming),
+      retailPrice: row.retail_price_cents == null ? null : {
+        priceCents: Number(row.retail_price_cents),
+        kind: row.retail_price_kind,
+        tableDate: row.retail_price_table_date,
+        source: row.retail_price_source,
+        referenceName: row.retail_price_reference,
+      },
+    };
+    if (!variantsByProduct.has(row.product_id)) variantsByProduct.set(row.product_id, []);
+    variantsByProduct.get(row.product_id).push(variant);
+  }
+  const products = [];
+  for (const row of productsResult.results || []) {
+    const variants = variantsByProduct.get(row.id) || [];
+    if (user.role === 'seller' && !variants.length) continue;
+    const retailPrices = variants.map((variant) => variant.retailPrice).filter(Boolean);
+    const uniformRetailPrice = retailPrices.length && retailPrices.every((price) => (
+      price.priceCents === retailPrices[0].priceCents && price.kind === retailPrices[0].kind
+    )) ? retailPrices[0] : null;
+    products.push({
+      id: row.id,
+      name: row.display_name || row.name,
+      technicalName: row.technical_name || '',
+      brand: row.brand,
+      category: row.category,
+      cluster: row.cluster || 'misc',
+      optionLabels: [row.option1_label, row.option2_label, row.option3_label],
+      presets: parsePresets(row.presets_json),
+      sortOrder: row.sort_order,
+      pricing: pricingByKey.get(row.price_key) || null,
+      retailPrice: uniformRetailPrice,
+      variants,
+      available: variants.reduce((sum, variant) => sum + variant.available, 0),
+      reserved: variants.reduce((sum, variant) => sum + variant.reserved, 0),
+      withdrawn: variants.reduce((sum, variant) => sum + variant.withdrawn, 0),
+      onHand: variants.reduce((sum, variant) => sum + variant.onHand, 0),
+      incoming: variants.reduce((sum, variant) => sum + variant.incoming, 0),
+    });
+  }
+  return products;
+}
+
+async function listCatalog(env, user) {
+  const [products, stateRows, renovaRows, renovaBoostRows] = await Promise.all([
+    catalogData(env, user),
+    env.DB.prepare(`
+      SELECT key, value FROM system_state
+      WHERE key IN ('pricing_table_date', 'pricing_table_source', 'retail_pricing_table_date', 'retail_pricing_table_source')
+    `).all(),
+    env.DB.prepare(`
+      SELECT id, device_name, manufacturer, product_type, good_cents, defective_cents, table_date
+      FROM renova_trade_in_values
+      WHERE active = 1
+      ORDER BY manufacturer COLLATE NOCASE, device_name COLLATE NOCASE
+    `).all(),
+    env.DB.prepare(`
+      SELECT id, manufacturer, device_name, match_key, bonus_cents, starts_on, ends_on, source
+      FROM renova_manufacturer_boosts
+      WHERE active = 1
+        AND starts_on <= date('now', '-3 hours')
+        AND ends_on >= date('now', '-3 hours')
+      ORDER BY LENGTH(match_key) DESC, device_name COLLATE NOCASE
+    `).all(),
+  ]);
+  const pricingState = Object.fromEntries((stateRows.results || []).map((row) => [row.key, row.value]));
+  const renovaDevices = (renovaRows.results || []).map((row) => ({
+    id: Number(row.id),
+    name: row.device_name,
+    manufacturer: row.manufacturer,
+    productType: row.product_type,
+    goodCents: Number(row.good_cents),
+    defectiveCents: Number(row.defective_cents),
+  }));
+  const renovaBoosts = (renovaBoostRows.results || []).map((row) => ({
+    id: Number(row.id),
+    manufacturer: row.manufacturer,
+    name: row.device_name,
+    matchKey: row.match_key,
+    bonusCents: Number(row.bonus_cents),
+    startsOn: row.starts_on,
+    endsOn: row.ends_on,
+    source: row.source,
+  }));
+  return json({
+    products,
+    pricing: {
+      categories: PRICE_CATEGORIES,
+      tableDate: pricingState.pricing_table_date || '',
+      source: pricingState.pricing_table_source || '',
+      retailTableDate: pricingState.retail_pricing_table_date || '',
+      retailSource: pricingState.retail_pricing_table_source || '',
+    },
+    renova: {
+      tableDate: renovaRows.results?.[0]?.table_date || '',
+      devices: renovaDevices,
+      boosts: renovaBoosts,
+    },
+  });
+}
+
+function managerInventoryGroups(products) {
+  const grouped = new Map(DASHBOARD_CLUSTER_ORDER.map((cluster) => [cluster, []]));
+  for (const product of products) {
+    const cluster = grouped.has(product.cluster) ? product.cluster : 'misc';
+    grouped.get(cluster).push(product);
+  }
+
+  return DASHBOARD_CLUSTER_ORDER.map((cluster) => {
+    const groupProducts = grouped.get(cluster);
+    const totals = groupProducts.reduce((summary, product) => ({
+      onHand: summary.onHand + product.onHand,
+      available: summary.available + product.available,
+      reserved: summary.reserved + product.reserved,
+      incoming: summary.incoming + product.incoming,
+    }), { onHand: 0, available: 0, reserved: 0, incoming: 0 });
+    const topProducts = [...groupProducts]
+      .sort((left, right) => right.available - left.available
+        || left.name.localeCompare(right.name, 'pt-BR'))
+      .slice(0, 3)
+      .map((product) => ({
+        id: product.id,
+        name: product.name,
+        brand: product.brand || '',
+        materialCode: product.variants[0]?.materialCode || '',
+        onHand: product.onHand,
+        available: product.available,
+        reserved: product.reserved,
+      }));
+
+    return {
+      cluster,
+      materialCount: groupProducts.length,
+      availableMaterials: groupProducts.filter((product) => product.available > 0).length,
+      lowStockCount: groupProducts.filter((product) => product.available > 0 && product.available <= 2).length,
+      outOfStockCount: groupProducts.filter((product) => product.available === 0 && product.incoming === 0).length,
+      incomingMaterialCount: groupProducts.filter((product) => product.incoming > 0).length,
+      ...totals,
+      topProducts,
+    };
+  }).filter((group) => group.materialCount > 0);
+}
+
+function sellerInventoryGroups(products) {
+  const grouped = new Map(DASHBOARD_CLUSTER_ORDER.map((cluster) => [cluster, []]));
+  for (const product of products) {
+    if (product.available <= 0) continue;
+    const cluster = grouped.has(product.cluster) ? product.cluster : 'misc';
+    grouped.get(cluster).push(product);
+  }
+
+  return DASHBOARD_CLUSTER_ORDER.map((cluster) => {
+    const groupProducts = grouped.get(cluster);
+    return {
+      cluster,
+      materialCount: groupProducts.length,
+      available: groupProducts.reduce((sum, product) => sum + product.available, 0),
+      topProducts: [...groupProducts]
+        .sort((left, right) => right.available - left.available
+          || left.name.localeCompare(right.name, 'pt-BR'))
+        .slice(0, 3)
+        .map((product) => ({
+          id: product.id,
+          name: product.name,
+          brand: product.brand || '',
+          materialCode: product.variants[0]?.materialCode || '',
+          available: product.available,
+        })),
+    };
+  }).filter((group) => group.materialCount > 0);
+}
+
+async function dashboard(env, user) {
+  const products = await catalogData(env, user.role === 'manager' ? user : { ...user, role: 'manager' });
+  const stock = products.reduce((totals, product) => ({
+    available: totals.available + product.available,
+    reserved: totals.reserved + product.reserved,
+    withdrawn: totals.withdrawn + product.withdrawn,
+    incoming: totals.incoming + product.incoming,
+  }), { available: 0, reserved: 0, withdrawn: 0, incoming: 0 });
+  const modelsAvailable = products.filter((product) => product.available > 0).length;
+
+  if (user.role === 'manager') {
+    const [orderStatsResult, staffResult, accessesResult, snapshotResult] = await env.DB.batch([
+      env.DB.prepare(`
+        SELECT status, COUNT(*) AS count
+        FROM withdrawal_requests
+        GROUP BY status
+      `),
+      env.DB.prepare(`
+        SELECT
+          SUM(CASE WHEN role = 'seller' AND access_profile = 'default' THEN 1 ELSE 0 END) AS sellers,
+          SUM(CASE WHEN access_profile = 'stocker' THEN 1 ELSE 0 END) AS stockers
+        FROM users
+        WHERE active = 1 AND deleted_at IS NULL
+      `),
+      env.DB.prepare(`
+        SELECT a.created_at, u.name, u.email,
+               CASE WHEN u.access_profile = 'stocker' THEN 'stocker' ELSE u.role END AS effective_role
+        FROM audit_logs a
+        LEFT JOIN users u ON u.id = a.actor_user_id
+        WHERE a.action = 'auth.login'
+        ORDER BY a.created_at DESC
+        LIMIT 8
+      `),
+      env.DB.prepare(`
+        SELECT key, value
+        FROM system_state
+        WHERE key IN (
+          'inventory_snapshot_date',
+          'inventory_snapshot_source',
+          'inventory_snapshot_incoming_depots'
+        )
+      `),
+    ]);
+    const orderStats = { pending: 0, approved: 0, rejected: 0, cancelled: 0 };
+    for (const row of orderStatsResult.results || []) orderStats[row.status] = Number(row.count);
+    const staff = staffResult.results?.[0] || {};
+    const snapshot = Object.fromEntries((snapshotResult.results || []).map((row) => [row.key, row.value]));
+    const shortageProducts = products
+      .filter((product) => product.available === 0 && product.incoming === 0)
+      .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'))
+      .slice(0, 12)
+      .map((product) => ({
+        id: product.id,
+        name: product.name,
+        materialCode: product.variants[0]?.materialCode || '',
+        cluster: product.cluster,
+      }));
+    const incomingProducts = products
+      .filter((product) => product.incoming > 0)
+      .sort((left, right) => right.incoming - left.incoming
+        || left.name.localeCompare(right.name, 'pt-BR'))
+      .slice(0, 12)
+      .map((product) => ({
+        id: product.id,
+        name: product.name,
+        materialCode: product.variants[0]?.materialCode || '',
+        cluster: product.cluster,
+        incoming: product.incoming,
+      }));
+    return json({
+      role: 'manager', stock, modelsAvailable,
+      pendingRequests: orderStats.pending,
+      activeSellers: Number(staff.sellers || 0),
+      activeStockers: Number(staff.stockers || 0),
+      inventoryGroups: managerInventoryGroups(products),
+      recentRequests: await listRequests(env, user, '', 8),
+      management: {
+        orderStats,
+        outOfStockMaterials: products.filter((product) => product.available === 0 && product.incoming === 0).length,
+        lowStockMaterials: products.filter((product) => product.available > 0 && product.available <= 2).length,
+        incomingMaterials: products.filter((product) => product.incoming > 0).length,
+        incomingUnits: stock.incoming,
+        shortageProducts,
+        incomingProducts,
+        recentAccesses: (accessesResult.results || []).map((row) => ({
+          name: row.name || 'Usuário excluído',
+          email: row.email || '',
+          role: row.effective_role || '',
+          createdAt: row.created_at,
+        })),
+        snapshot: {
+          date: snapshot.inventory_snapshot_date || '',
+          source: snapshot.inventory_snapshot_source || '',
+          incomingDeposits: snapshot.inventory_snapshot_incoming_depots || 'DEPS,NREM',
+        },
+      },
+    });
+  }
+
+  const ownRows = (await env.DB.prepare(`
+    SELECT status, COUNT(*) AS count FROM withdrawal_requests WHERE seller_id = ? GROUP BY status
+  `).bind(user.id).all()).results || [];
+  const requests = { pending: 0, approved: 0, rejected: 0, cancelled: 0 };
+  for (const row of ownRows) requests[row.status] = Number(row.count);
+  return json({
+    role: 'seller', stock: { available: stock.available }, modelsAvailable, requests,
+    inventoryGroups: sellerInventoryGroups(products),
+    recentRequests: await listRequests(env, user, '', 5),
+  });
+}
+
+async function stockSummary(env, user) {
+  const products = await catalogData(env, user);
+  return json({ summary: products.map((product) => ({
+    model: product.name,
+    materialCode: product.variants[0]?.materialCode || '',
+    available: product.available,
+    reserved: user.role === 'manager' ? product.reserved : undefined,
+    withdrawn: user.role === 'manager' ? product.withdrawn : undefined,
+    incoming: user.role === 'manager' ? product.incoming : undefined,
+    total: user.role === 'manager' ? product.onHand : product.available,
+  })) });
+}
+
+async function adjustQuantityStock(request, env, user) {
+  const input = await readJson(request);
+  const data = validateFields(input, {
+    variantId: positiveIdRule('um produto'),
+    quantityDelta: quantityDeltaRule,
+  });
+  const variant = await env.DB.prepare(`
+    SELECT v.*, p.id AS product_id, COALESCE(p.display_name, p.name) AS product_name
+    FROM product_variants v
+    JOIN products p ON p.id = v.product_id
+    WHERE v.id = ? AND v.active = 1 AND p.active = 1 AND v.stock_mode = 'quantity'
+  `).bind(data.variantId).first();
+  if (!variant) throw new HttpError(404, 'Produto não encontrado no estoque.');
+  if (variant.serial_tracking) {
+    throw new HttpError(409, 'Este material é controlado por número de série. Atualize-o pela próxima planilha de estoque.');
+  }
+  try {
+    const result = await env.DB.prepare(`
+      UPDATE product_variants
+      SET quantity_on_hand = quantity_on_hand + ?, updated_at = ?
+      WHERE id = ? AND quantity_on_hand + ? >= 0
+    `).bind(data.quantityDelta, nowIso(), variant.id, data.quantityDelta).run();
+    if (!result.meta.changes) throw new HttpError(409, 'A saída informada é maior que o saldo disponível.');
+    await env.DB.batch([auditStatement(env, user.id, 'inventory.quantity_adjusted', 'variant', variant.id, {
+      productId: variant.product_id, productName: variant.product_name,
+      materialCode: variant.sku || '', quantityDelta: data.quantityDelta,
+    })]);
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    if (String(error.message).includes('QUANTITY_BELOW_RESERVED')) {
+      throw new HttpError(409, 'Parte desse estoque está reservada em pedidos pendentes.');
+    }
+    throw error;
+  }
+  const updated = await env.DB.prepare('SELECT quantity_on_hand FROM product_variants WHERE id = ?').bind(variant.id).first();
+  return json({ variantId: variant.id, quantityOnHand: Number(updated.quantity_on_hand) }, 201);
+}
+
+async function createWithdrawal(request, env, user) {
+  const input = await readJson(request);
+  const notesResult = textRule('a observação', { max: 500, optional: true })(input?.notes);
+  if (notesResult.error) throw new HttpError(400, 'Verifique os dados informados.', { notes: notesResult.error });
+  const linesResult = requestLinesRule(input?.lines);
+  if (linesResult.error) throw new HttpError(400, linesResult.error, { lines: linesResult.error });
+  const priceCategory = typeof input?.priceCategory === 'string' ? input.priceCategory.trim().toUpperCase() : '';
+  if (priceCategory && !PRICE_CATEGORY_SET.has(priceCategory)) {
+    throw new HttpError(400, 'Selecione uma categoria de plano válida.', { priceCategory: 'Categoria de plano inválida.' });
+  }
+  const renovaInput = input?.renova && typeof input.renova === 'object' ? input.renova : null;
+  let renova = { enabled: false, usedDevice: '', condition: 'bom', voucherCents: 0, manufacturerBonusCents: 0 };
+  if (renovaInput) {
+    if (!['bom', 'defeituoso'].includes(renovaInput.condition)) {
+      throw new HttpError(400, 'Selecione o estado correto do aparelho usado.');
+    }
+    const deviceId = Number(renovaInput.deviceId);
+    const usedDevice = String(renovaInput.usedDevice || '').trim().slice(0, 120);
+    const tradeIn = Number.isInteger(deviceId) && deviceId > 0
+      ? await env.DB.prepare(`
+          SELECT id, device_name, good_cents, defective_cents
+          FROM renova_trade_in_values
+          WHERE id = ? AND active = 1
+        `).bind(deviceId).first()
+      : usedDevice
+        ? await env.DB.prepare(`
+            SELECT id, device_name, good_cents, defective_cents
+            FROM renova_trade_in_values
+            WHERE device_name = ? COLLATE NOCASE AND active = 1
+          `).bind(usedDevice).first()
+        : null;
+    if (!tradeIn) {
+      throw new HttpError(400, 'Selecione um aparelho usado disponível na tabela ASSURANT.');
+    }
+    renova = {
+      enabled: true,
+      usedDevice: tradeIn.device_name,
+      condition: renovaInput.condition,
+      voucherCents: Number(renovaInput.condition === 'defeituoso' ? tradeIn.defective_cents : tradeIn.good_cents),
+      manufacturerBonusCents: 0,
+    };
+  }
+
+  const resolvedLines = [];
+  for (const line of linesResult.value) {
+    const variant = await env.DB.prepare(`
+      SELECT v.id, v.sku, v.serial_tracking, v.quantity_on_hand,
+             COALESCE(p.display_name, p.name) AS product_name,
+             COALESCE(p.cluster, 'misc') AS product_cluster,
+             COALESCE((
+               SELECT SUM(r.quantity)
+               FROM active_quantity_reservations r
+               WHERE r.variant_id = v.id
+             ), 0) AS quantity_reserved
+      FROM product_variants v
+      JOIN products p ON p.id = v.product_id
+      WHERE v.id = ? AND v.active = 1 AND p.active = 1 AND v.stock_mode = 'quantity'
+    `).bind(line.variantId).first();
+    if (!variant) throw new HttpError(404, 'Um dos produtos não foi encontrado. Atualize a loja e tente novamente.');
+    const available = Number(variant.quantity_on_hand) - Number(variant.quantity_reserved);
+    if (available < line.quantity) {
+      throw new HttpError(409, `${variant.product_name} não possui mais a quantidade solicitada.`);
+    }
+    let pricing = null;
+    if (variant.product_cluster === 'devices') {
+      pricing = await env.DB.prepare(`
+        SELECT profile.price_key, profile.table_date,
+               (
+                 SELECT value.price_cents
+                 FROM device_price_values value
+                 WHERE value.price_key = profile.price_key AND value.category = ?
+               ) AS unit_price_cents
+        FROM device_price_match_rules rule
+        JOIN device_price_profiles profile ON profile.price_key = rule.price_key
+        WHERE UPPER(?) LIKE rule.match_pattern COLLATE NOCASE
+        ORDER BY rule.priority, length(rule.match_pattern) DESC
+        LIMIT 1
+      `).bind(priceCategory, variant.product_name).first();
+      if (pricing && !priceCategory) {
+        throw new HttpError(400, 'Escolha a categoria do plano para calcular o preço do aparelho.', {
+          priceCategory: 'Selecione a categoria do plano.',
+        });
+      }
+      if (pricing && pricing.unit_price_cents == null) {
+        throw new HttpError(409, `Não há preço disponível para ${variant.product_name} nessa categoria.`);
+      }
+    }
+    const retailPricing = pricing ? null : await env.DB.prepare(`
+      SELECT material_code, price_cents AS unit_price_cents, price_kind, table_date
+      FROM product_retail_prices
+      WHERE material_code = ? COLLATE NOCASE
+    `).bind(variant.sku || '').first();
+    const appliedPricing = pricing || retailPricing;
+    if (!appliedPricing) {
+      throw new HttpError(409, `Preço não disponível para ${variant.product_name} na tabela atual.`);
+    }
+    const priceType = pricing ? 'plan' : (retailPricing?.price_kind || '');
+    const serialRows = (await env.DB.prepare(`
+      SELECT id, serial_number
+      FROM inventory_serials
+      WHERE variant_id = ? AND status = 'available'
+        AND NOT EXISTS (
+          SELECT 1 FROM request_serial_assignments a WHERE a.serial_id = inventory_serials.id
+        )
+      ORDER BY serial_number COLLATE NOCASE
+      LIMIT ?
+    `).bind(line.variantId, line.quantity).all()).results || [];
+    if (Boolean(variant.serial_tracking) && serialRows.length !== line.quantity) {
+      throw new HttpError(409, `${variant.product_name} não possui números de série suficientes no momento.`);
+    }
+    resolvedLines.push({
+      ...line,
+      productName: variant.product_name,
+      materialCode: variant.sku || '',
+      cluster: variant.product_cluster || 'misc',
+      priceKey: pricing?.price_key || '',
+      priceType,
+      unitPriceCents: appliedPricing?.unit_price_cents == null ? null : Number(appliedPricing.unit_price_cents),
+      priceTableDate: appliedPricing?.table_date || '',
+      serials: serialRows.map((serial) => ({
+        id: Number(serial.id),
+        serialNumber: serial.serial_number,
+      })),
+    });
+  }
+
+  const requestId = crypto.randomUUID();
+  const timestamp = nowIso();
+  const pricedLines = resolvedLines.filter((line) => line.unitPriceCents != null);
+  const planPricedLines = pricedLines.filter((line) => line.priceType === 'plan');
+  const deviceTotalCents = planPricedLines.length
+    ? planPricedLines.reduce((sum, line) => sum + line.unitPriceCents * line.quantity, 0)
+    : null;
+  const normalOrderTotalCents = pricedLines.length
+    ? pricedLines.reduce((sum, line) => sum + line.unitPriceCents * line.quantity, 0)
+    : null;
+  const deviceUnits = planPricedLines.reduce((sum, line) => sum + line.quantity, 0);
+  if (renova.enabled && deviceUnits !== 1) {
+    throw new HttpError(400, 'O Vivo Renova deve ser usado com exatamente um aparelho novo por pedido.');
+  }
+  const activeBoostRows = renova.enabled
+    ? (await env.DB.prepare(`
+        SELECT match_key, bonus_cents
+        FROM renova_manufacturer_boosts
+        WHERE active = 1
+          AND starts_on <= date('now', '-3 hours')
+          AND ends_on >= date('now', '-3 hours')
+      `).all()).results || []
+    : [];
+  renova.manufacturerBonusCents = renova.enabled
+    ? manufacturerRenovaBonusCents(planPricedLines[0]?.productName || '', activeBoostRows)
+    : 0;
+  const renovaDiscountCents = renova.enabled && deviceTotalCents != null
+    ? Math.min(deviceTotalCents, renova.voucherCents + renova.manufacturerBonusCents)
+    : 0;
+  const orderTotalCents = normalOrderTotalCents == null ? null : Math.max(0, normalOrderTotalCents - renovaDiscountCents);
+  const priceTableDate = pricedLines[0]?.priceTableDate || null;
+  const statements = [
+    env.DB.prepare(`
+      INSERT INTO withdrawal_requests
+        (id, seller_id, notes, price_category, device_total_cents, order_total_cents, price_table_date,
+         renova_enabled, renova_used_device, renova_condition, renova_voucher_cents,
+         renova_manufacturer_bonus_cents, renova_discount_cents)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(requestId, user.id, notesResult.value || null, priceCategory || null, deviceTotalCents, orderTotalCents, priceTableDate,
+      renova.enabled ? 1 : 0, renova.usedDevice || null, renova.condition,
+      renova.voucherCents, renova.manufacturerBonusCents, renovaDiscountCents),
+  ];
+  for (const line of resolvedLines) {
+    statements.push(env.DB.prepare(`
+      INSERT INTO active_quantity_reservations (variant_id, request_id, quantity) VALUES (?, ?, ?)
+    `).bind(line.variantId, requestId, line.quantity));
+  }
+  for (const line of pricedLines) {
+    statements.push(env.DB.prepare(`
+      UPDATE withdrawal_quantity_items
+      SET unit_price_cents = ?, price_category_snapshot = ?, price_type_snapshot = ?, price_table_date_snapshot = ?
+      WHERE request_id = ? AND variant_id = ?
+    `).bind(
+      line.unitPriceCents,
+      line.priceType === 'plan' ? priceCategory : line.priceType === 'no_charge' ? 'SEM COBRANÇA' : 'PREÇO FIXO',
+      line.priceType,
+      line.priceTableDate,
+      requestId,
+      line.variantId,
+    ));
+  }
+  for (const line of resolvedLines) {
+    for (const serial of line.serials) {
+      statements.push(env.DB.prepare(`
+        INSERT INTO request_serial_assignments
+          (request_id, variant_id, serial_id, serial_number_snapshot)
+        SELECT ?, ?, s.id, s.serial_number
+        FROM inventory_serials s
+        WHERE s.id = ? AND s.variant_id = ? AND s.status = 'available'
+      `).bind(requestId, line.variantId, serial.id, line.variantId));
+    }
+  }
+  statements.push(
+    env.DB.prepare(`
+      UPDATE withdrawal_requests
+      SET status = 'approved',
+          decision_note = 'Liberado automaticamente pelo sistema',
+          decided_at = ?,
+          decided_by = NULL
+      WHERE id = ? AND status = 'pending'
+    `).bind(timestamp, requestId),
+    auditStatement(env, user.id, 'request.created', 'request', requestId, {
+      automatic: true,
+      products: resolvedLines.map((line) => ({
+        variantId: line.variantId,
+        productName: line.productName,
+        materialCode: line.materialCode,
+        cluster: line.cluster,
+        quantity: line.quantity,
+        unitPriceCents: line.unitPriceCents,
+      })),
+      priceCategory: priceCategory || null,
+      deviceTotalCents,
+      orderTotalCents,
+      priceTableDate,
+      renova: renova.enabled ? { ...renova, discountCents: renovaDiscountCents } : null,
+    }),
+    auditStatement(env, null, 'request.auto_approved', 'request', requestId, {
+      automatic: true,
+      sellerId: user.id,
+      selectedSerialCount: resolvedLines.reduce((sum, line) => sum + line.serials.length, 0),
+      serials: resolvedLines.map((line) => ({
+        materialCode: line.materialCode,
+        serialNumbers: line.serials.map((serial) => serial.serialNumber),
+      })),
+    }),
+  );
+  try {
+    await env.DB.batch(statements);
+  } catch (error) {
+    const message = String(error.message);
+    if (message.includes('QUANTITY_NOT_AVAILABLE')
+        || message.includes('SERIAL_NOT_AVAILABLE')
+        || message.includes('SERIAL_SELECTION_MISMATCH')
+        || message.includes('request_serial_assignments.serial_id')
+        || message.includes('active_quantity_reservations')) {
+      throw new HttpError(409, 'Parte do estoque acabou de mudar. Atualize a loja e envie o pedido novamente.');
+    }
+    if (message.includes('FOREIGN KEY constraint failed')) throw new HttpError(404, 'Um dos itens selecionados não foi encontrado.');
+    throw error;
+  }
+  const created = (await listRequests(env, user, '', 200)).find((item) => item.id === requestId);
+  return json({ request: created }, 201);
+}
+
+async function cancelWithdrawal(env, user, requestId) {
+  const existing = await env.DB.prepare('SELECT * FROM withdrawal_requests WHERE id = ?').bind(requestId).first();
+  if (!existing) throw new HttpError(404, 'Pedido não encontrado.');
+
+  const managerCancellation = user.role === 'manager';
+  if (!managerCancellation && (user.role !== 'seller' || existing.seller_id !== user.id)) {
+    throw new HttpError(403, 'Você não pode cancelar este pedido.');
+  }
+  if (managerCancellation) {
+    if (!['pending', 'approved'].includes(existing.status)) {
+      throw new HttpError(409, 'Este pedido já foi encerrado e não pode mais ser cancelado.');
+    }
+  } else if (existing.status !== 'pending') {
+    throw new HttpError(409, 'Este pedido já foi liberado e somente o gerente pode cancelá-lo.');
+  }
+
+  const [quantityResult, serialResult] = await env.DB.batch([
+    env.DB.prepare(`
+      SELECT i.variant_id, i.product_name_snapshot, i.material_code_snapshot,
+             i.quantity, COALESCE(p.cluster, 'misc') AS product_cluster
+      FROM withdrawal_quantity_items i
+      LEFT JOIN product_variants v ON v.id = i.variant_id
+      LEFT JOIN products p ON p.id = v.product_id
+      WHERE i.request_id = ?
+      ORDER BY i.product_name_snapshot COLLATE NOCASE
+    `).bind(requestId),
+    env.DB.prepare(`
+      SELECT variant_id, serial_number_snapshot
+      FROM request_serial_assignments
+      WHERE request_id = ?
+      ORDER BY variant_id, serial_number_snapshot COLLATE NOCASE
+    `).bind(requestId),
+  ]);
+  const serialsByVariant = new Map();
+  for (const serial of serialResult.results || []) {
+    if (!serialsByVariant.has(serial.variant_id)) serialsByVariant.set(serial.variant_id, []);
+    serialsByVariant.get(serial.variant_id).push(serial.serial_number_snapshot);
+  }
+  const products = (quantityResult.results || []).map((item) => ({
+    variantId: item.variant_id,
+    productName: item.product_name_snapshot,
+    materialCode: item.material_code_snapshot || '',
+    cluster: item.product_cluster || 'misc',
+    quantity: Number(item.quantity),
+  }));
+  const serials = products
+    .map((item) => ({
+      materialCode: item.materialCode,
+      serialNumbers: serialsByVariant.get(item.variantId) || [],
+    }))
+    .filter((item) => item.serialNumbers.length);
+  const timestamp = nowIso();
+  try {
+    await env.DB.batch([
+      env.DB.prepare(`
+        UPDATE withdrawal_requests
+        SET status = ?, decision_note = ?, decided_at = ?, decided_by = ?
+        WHERE id = ? AND status = ?
+      `).bind(
+        'cancelled',
+        managerCancellation ? 'Cancelado pelo gerente; itens devolvidos ao estoque' : 'Cancelado pelo vendedor',
+        timestamp,
+        user.id,
+        requestId,
+        existing.status,
+      ),
+      auditStatement(env, user.id, 'request.cancelled', 'request', requestId, {
+        sellerId: existing.seller_id,
+        cancelledByRole: user.role,
+        previousStatus: existing.status,
+        restoredStock: existing.status === 'approved',
+        restoredUnits: existing.status === 'approved'
+          ? products.reduce((sum, item) => sum + item.quantity, 0)
+          : 0,
+        products,
+        serials,
+      }),
+    ]);
+  } catch (error) {
+    const message = String(error.message);
+    if (message.includes('INVALID_REQUEST_TRANSITION')) {
+      throw new HttpError(409, 'Este pedido já foi processado e não pode mais ser cancelado.');
+    }
+    throw error;
+  }
+  const updated = (await listRequests(env, user, '', 200)).find((item) => item.id === requestId);
+  return json({ request: updated });
+}
+
+async function listUsers(env) {
+  const rows = (await env.DB.prepare(`
+    SELECT id, name, email, role, access_profile, active, must_change_password, created_at
+    FROM users
+    WHERE deleted_at IS NULL
+    ORDER BY active DESC, access_profile, role, name COLLATE NOCASE
+  `).all()).results || [];
+  return json({ users: rows.map(publicUser) });
+}
+
+async function createUser(request, env, manager) {
+  const data = validateFields(await readJson(request), {
+    name: textRule('o nome completo', { min: 2, max: 100 }),
+    email: emailRule,
+    password: passwordRule,
+    role: roleRule,
+  });
+  const passwordHash = await hashPassword(data.password);
+  const storage = storedRole(data.role);
+  try {
+    const result = await env.DB.prepare(`
+      INSERT INTO users
+        (name, email, password_hash, role, access_profile, must_change_password)
+      VALUES (?, ?, ?, ?, ?, 1)
+    `).bind(data.name, data.email, passwordHash, storage.role, storage.accessProfile).run();
+    const id = Number(result.meta.last_row_id);
+    await env.DB.batch([auditStatement(env, manager.id, 'user.created', 'user', id, { email: data.email, role: data.role })]);
+    return json({ user: publicUser(await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first()) }, 201);
+  } catch (error) {
+    if (String(error.message).includes('users.email')) throw new HttpError(409, 'Este e-mail já está em uso.');
+    throw error;
+  }
+}
+
+async function updateUser(request, env, manager, id) {
+  const existing = await env.DB.prepare('SELECT * FROM users WHERE id = ? AND deleted_at IS NULL').bind(id).first();
+  if (!existing) throw new HttpError(404, 'Usuário não encontrado.');
+  const data = validateFields(await readJson(request), {
+    name: textRule('o nome completo', { min: 2, max: 100 }),
+    email: emailRule,
+    role: roleRule,
+    active: booleanRule,
+    password: optionalPasswordRule,
+  });
+  const existingEffectiveRole = effectiveRole(existing);
+  const storage = storedRole(data.role);
+  if (id === manager.id && (!data.active || data.role !== 'manager')) throw new HttpError(400, 'Você não pode remover o próprio acesso gerencial.');
+  if (existingEffectiveRole === 'manager' && existing.active && (!data.active || data.role !== 'manager')) {
+    const count = Number((await env.DB.prepare(`
+      SELECT COUNT(*) AS count
+      FROM users
+      WHERE role = 'manager' AND active = 1 AND deleted_at IS NULL
+    `).first()).count);
+    if (count <= 1) throw new HttpError(400, 'O sistema precisa manter pelo menos um gerente ativo.');
+  }
+  const passwordHash = data.password ? await hashPassword(data.password) : '';
+  const timestamp = nowIso();
+  const statements = [
+    data.password
+      ? env.DB.prepare(`
+          UPDATE users
+          SET name = ?, email = ?, role = ?, access_profile = ?, active = ?, password_hash = ?,
+              must_change_password = 0, updated_at = ?
+          WHERE id = ? AND deleted_at IS NULL
+        `).bind(data.name, data.email, storage.role, storage.accessProfile, data.active ? 1 : 0, passwordHash, timestamp, id)
+      : env.DB.prepare(`
+          UPDATE users
+          SET name = ?, email = ?, role = ?, access_profile = ?, active = ?, updated_at = ?
+          WHERE id = ? AND deleted_at IS NULL
+        `).bind(data.name, data.email, storage.role, storage.accessProfile, data.active ? 1 : 0, timestamp, id),
+    auditStatement(env, manager.id, 'user.updated', 'user', id, {
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      active: data.active,
+      passwordChanged: Boolean(data.password),
+    }),
+  ];
+  if (!data.active || data.password || existingEffectiveRole !== data.role) {
+    statements.push(env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(id));
+  }
+  try {
+    await env.DB.batch(statements);
+  } catch (error) {
+    const message = String(error.message);
+    if (message.includes('users.email')) throw new HttpError(409, 'Este e-mail já está em uso.');
+    if (message.includes('LAST_ACTIVE_MANAGER')) throw new HttpError(400, 'O sistema precisa manter pelo menos um gerente ativo.');
+    throw error;
+  }
+  return json({ user: publicUser(await env.DB.prepare('SELECT * FROM users WHERE id = ? AND deleted_at IS NULL').bind(id).first()) });
+}
+
+async function resetUserPassword(request, env, manager, id) {
+  const existing = await env.DB.prepare('SELECT id FROM users WHERE id = ? AND deleted_at IS NULL').bind(id).first();
+  if (!existing) throw new HttpError(404, 'Usuário não encontrado.');
+  const data = validateFields(await readJson(request), { password: passwordRule });
+  const passwordHash = await hashPassword(data.password);
+  await env.DB.batch([
+    env.DB.prepare(`UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = ? WHERE id = ?`)
+      .bind(passwordHash, nowIso(), id),
+    env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(id),
+    auditStatement(env, manager.id, 'user.password_reset', 'user', id, {}),
+  ]);
+  return json({ message: 'Senha alterada com sucesso.' });
+}
+
+async function deleteUser(env, manager, id) {
+  const existing = await env.DB.prepare('SELECT * FROM users WHERE id = ? AND deleted_at IS NULL').bind(id).first();
+  if (!existing) throw new HttpError(404, 'Usuário não encontrado.');
+  if (id === manager.id) throw new HttpError(400, 'Você não pode excluir o próprio cadastro.');
+  if (existing.role === 'manager' && existing.active) {
+    const count = Number((await env.DB.prepare(`
+      SELECT COUNT(*) AS count
+      FROM users
+      WHERE role = 'manager' AND active = 1 AND deleted_at IS NULL
+    `).first()).count);
+    if (count <= 1) throw new HttpError(400, 'O sistema precisa manter pelo menos um gerente ativo.');
+  }
+
+  const timestamp = nowIso();
+  const anonymizedEmail = `excluido+${id}-${Date.now()}@local.invalid`;
+  const disabledPasswordHash = await hashPassword(newSessionToken());
+  try {
+    await env.DB.batch([
+      env.DB.prepare(`
+        UPDATE users
+        SET name = 'Usuário excluído', email = ?, password_hash = ?, active = 0,
+            must_change_password = 0, deleted_at = ?, updated_at = ?
+        WHERE id = ? AND deleted_at IS NULL
+      `).bind(anonymizedEmail, disabledPasswordHash, timestamp, timestamp, id),
+      env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(id),
+      env.DB.prepare(`
+        UPDATE audit_logs
+        SET details_json = '{"anonymized":true}'
+        WHERE entity_type = 'user' AND entity_id = ?
+      `).bind(String(id)),
+      auditStatement(env, manager.id, 'user.deleted', 'user', id, {
+        role: effectiveRole(existing),
+        historicalDataPreserved: true,
+      }),
+    ]);
+  } catch (error) {
+    if (String(error.message).includes('LAST_ACTIVE_MANAGER')) {
+      throw new HttpError(400, 'O sistema precisa manter pelo menos um gerente ativo.');
+    }
+    throw error;
+  }
+  return noContent();
+}
+
+async function auditLog(env) {
+  const rows = (await env.DB.prepare(`
+    SELECT a.*, u.name AS actor_name FROM audit_logs a
+    LEFT JOIN users u ON u.id = a.actor_user_id
+    ORDER BY a.created_at DESC LIMIT 300
+  `).all()).results || [];
+  return json({
+    logs: rows.map((row) => {
+      let details = {};
+      try { details = row.details_json ? JSON.parse(row.details_json) : {}; } catch { details = {}; }
+      return {
+        id: row.id,
+        actorName: row.actor_name || 'Sistema',
+        action: row.action,
+        entityType: row.entity_type,
+        entityId: row.entity_id,
+        details,
+        createdAt: row.created_at,
+      };
+    }),
+  });
+}
+
+async function routeApi(request, env) {
+  validateRequestSource(request);
+  const url = new URL(request.url);
+  const path = url.pathname;
+  const method = request.method;
+
+  if (method === 'GET' && path === '/api/health') return json({ ok: true, platform: 'cloudflare', time: nowIso() });
+  if (method === 'GET' && path === '/api/setup') return setupStatus(env);
+  if (method === 'POST' && path === '/api/setup') return initialSetup(request, env);
+  if (method === 'POST' && path === '/api/auth/login') return login(request, env);
+  if (method === 'POST' && path === '/api/auth/logout') {
+    await deleteSession(env, request);
+    return noContent({ 'Set-Cookie': clearSessionCookie() });
+  }
+
+  const user = await authenticatedUser(env, request);
+  if (method === 'GET' && path === '/api/auth/me') return json({ user: publicUser(user) });
+  if (method === 'PATCH' && path === '/api/auth/password') return changePassword(request, env, user);
+  if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
+  if (user.role === 'stocker' && !(method === 'GET' && path === '/api/requests')) {
+    throw new HttpError(403, 'O perfil de estoquista possui acesso somente aos pedidos.');
+  }
+  if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
+  if (method === 'GET' && path === '/api/catalog') return listCatalog(env, user);
+  if (method === 'GET' && path === '/api/stock/summary') return stockSummary(env, user);
+  if (method === 'POST' && path === '/api/inventory/quantity') {
+    requireRole(user, 'manager');
+    return adjustQuantityStock(request, env, user);
+  }
+  if (method === 'GET' && path === '/api/requests') return json({
+    requests: await listRequests(env, user, url.searchParams.get('status') || '', url.searchParams.get('limit')),
+  });
+  if (method === 'POST' && path === '/api/requests') {
+    requireRole(user, 'seller');
+    return createWithdrawal(request, env, user);
+  }
+  const requestActionMatch = path.match(/^\/api\/requests\/([^/]+)\/cancel$/);
+  if (method === 'POST' && requestActionMatch) {
+    return cancelWithdrawal(env, user, decodeURIComponent(requestActionMatch[1]));
+  }
+  if (method === 'GET' && path === '/api/users') {
+    requireRole(user, 'manager');
+    return listUsers(env);
+  }
+  if (method === 'POST' && path === '/api/users') {
+    requireRole(user, 'manager');
+    return createUser(request, env, user);
+  }
+  const userMatch = path.match(/^\/api\/users\/(\d+)$/);
+  if (method === 'PUT' && userMatch) {
+    requireRole(user, 'manager');
+    return updateUser(request, env, user, Number(userMatch[1]));
+  }
+  if (method === 'DELETE' && userMatch) {
+    requireRole(user, 'manager');
+    return deleteUser(env, user, Number(userMatch[1]));
+  }
+  const resetMatch = path.match(/^\/api\/users\/(\d+)\/reset-password$/);
+  if (method === 'POST' && resetMatch) {
+    requireRole(user, 'manager');
+    return resetUserPassword(request, env, user, Number(resetMatch[1]));
+  }
+  if (method === 'GET' && path === '/api/audit') {
+    requireRole(user, 'manager');
+    return auditLog(env);
+  }
+  throw new HttpError(404, 'Rota não encontrada.');
+}
+
+function mapUnexpectedError(error) {
+  if (error instanceof HttpError) return json({ error: error.message, ...(error.fields ? { fields: error.fields } : {}) }, error.status);
+  console.error('Worker error', error);
+  return json({ error: 'Ocorreu um erro inesperado. Tente novamente.' }, 500);
+}
+
+export default {
+  async fetch(request, env) {
+    const path = new URL(request.url).pathname;
+    if (!path.startsWith('/api/')) return secureAssetResponse(await env.ASSETS.fetch(request));
+    try {
+      return await routeApi(request, env);
+    } catch (error) {
+      return mapUnexpectedError(error);
+    }
+  },
+};

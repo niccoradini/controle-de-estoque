@@ -1,0 +1,23 @@
+{
+  "name": "controle-estoque-aparelhos",
+  "version": "6.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Loja interna e controle online de produtos por código material em Cloudflare Workers e D1.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "db:local": "wrangler d1 migrations apply DB --local",
+    "db:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "wrangler deploy",
+    "test": "node tests/cloudflare.test.mjs",
+    "check": "node --check src/worker.js && node --check src/security.js && node --check public/app.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "miniflare": "^4.20260710.0",
+    "wrangler": "^4.42.0"
+  }
+}

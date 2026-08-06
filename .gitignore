@@ -1,0 +1,9 @@
+node_modules/
+.npm-cache/
+.wrangler/
+.dev.vars
+.DS_Store
+coverage/
+data/
+*.zip
+*.log

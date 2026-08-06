@@ -1,0 +1,5916 @@
+{
+  "importedAt": "2026-07-21",
+  "source": "Planilha em Basis (1).xlsx",
+  "rows": [
+    {
+      "material": "22018137",
+      "technicalName": "CABO GEONAV PREMIUM 3X1 1,5M NYLON CINZA",
+      "serialNumber": "220181370044450"
+    },
+    {
+      "material": "22018668",
+      "technicalName": "CARREGADOR MAGNETICO APPLE WATCH 2M",
+      "serialNumber": "22018668100313"
+    },
+    {
+      "material": "22018944",
+      "technicalName": "POSITIVO SMART PLUG WIFI",
+      "serialNumber": "220189440004247"
+    },
+    {
+      "material": "22019295",
+      "technicalName": "POSITIVO SMART LAMPADA WI-FI N BR",
+      "serialNumber": "220192950006536"
+    },
+    {
+      "material": "22019463",
+      "technicalName": "GEONAV CARREGADOR PORTATIL 5000mAh PT",
+      "serialNumber": "220194630017150"
+    },
+    {
+      "material": "22019525",
+      "technicalName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "serialNumber": "220195250006510"
+    },
+    {
+      "material": "22019525",
+      "technicalName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "serialNumber": "220195250001817"
+    },
+    {
+      "material": "22019525",
+      "technicalName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "serialNumber": "220195250002132"
+    },
+    {
+      "material": "22019525",
+      "technicalName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "serialNumber": "220195250002196"
+    },
+    {
+      "material": "22019525",
+      "technicalName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "serialNumber": "220195250002948"
+    },
+    {
+      "material": "22019525",
+      "technicalName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "serialNumber": "220195250003057"
+    },
+    {
+      "material": "22019525",
+      "technicalName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "serialNumber": "220195250003095"
+    },
+    {
+      "material": "22019904",
+      "technicalName": "TELLESCOM REPETIDOR SMT WIFI RG3110W PT",
+      "serialNumber": "220199040030158"
+    },
+    {
+      "material": "22019904",
+      "technicalName": "TELLESCOM REPETIDOR SMT WIFI RG3110W PT",
+      "serialNumber": "22019904106796"
+    },
+    {
+      "material": "22019904",
+      "technicalName": "TELLESCOM REPETIDOR SMT WIFI RG3110W PT",
+      "serialNumber": "22019904107064"
+    },
+    {
+      "material": "22019904",
+      "technicalName": "TELLESCOM REPETIDOR SMT WIFI RG3110W PT",
+      "serialNumber": "220199040027537"
+    },
+    {
+      "material": "22019904",
+      "technicalName": "TELLESCOM REPETIDOR SMT WIFI RG3110W PT",
+      "serialNumber": "220199040030200"
+    },
+    {
+      "material": "22020879",
+      "technicalName": "POSITIVO ROBO ASPIRADOR SMART WIFI BR",
+      "serialNumber": "220208790023639"
+    },
+    {
+      "material": "22020879",
+      "technicalName": "POSITIVO ROBO ASPIRADOR SMART WIFI BR",
+      "serialNumber": "220208790017020"
+    },
+    {
+      "material": "22020879",
+      "technicalName": "POSITIVO ROBO ASPIRADOR SMART WIFI BR",
+      "serialNumber": "220208790017231"
+    },
+    {
+      "material": "22020879",
+      "technicalName": "POSITIVO ROBO ASPIRADOR SMART WIFI BR",
+      "serialNumber": "220208790015397"
+    },
+    {
+      "material": "22021297",
+      "technicalName": "OVVI AF CABO USB-C USB-C KEVLAR 2M PT",
+      "serialNumber": "220212970049072"
+    },
+    {
+      "material": "22021307",
+      "technicalName": "OVVI AF CABO 2X1 KEVLAR 2M BR",
+      "serialNumber": "220213070029786"
+    },
+    {
+      "material": "22021307",
+      "technicalName": "OVVI AF CABO 2X1 KEVLAR 2M BR",
+      "serialNumber": "220213070000533"
+    },
+    {
+      "material": "22021307",
+      "technicalName": "OVVI AF CABO 2X1 KEVLAR 2M BR",
+      "serialNumber": "220213070028069"
+    },
+    {
+      "material": "22021307",
+      "technicalName": "OVVI AF CABO 2X1 KEVLAR 2M BR",
+      "serialNumber": "220213070028547"
+    },
+    {
+      "material": "22021308",
+      "technicalName": "OVVI AF CABO USBC LIGHTNING 2M KEVLAR PT",
+      "serialNumber": "220213080040157"
+    },
+    {
+      "material": "22021308",
+      "technicalName": "OVVI AF CABO USBC LIGHTNING 2M KEVLAR PT",
+      "serialNumber": "220213080042015"
+    },
+    {
+      "material": "22021308",
+      "technicalName": "OVVI AF CABO USBC LIGHTNING 2M KEVLAR PT",
+      "serialNumber": "220213080042017"
+    },
+    {
+      "material": "22021308",
+      "technicalName": "OVVI AF CABO USBC LIGHTNING 2M KEVLAR PT",
+      "serialNumber": "220213080041293"
+    },
+    {
+      "material": "22021308",
+      "technicalName": "OVVI AF CABO USBC LIGHTNING 2M KEVLAR PT",
+      "serialNumber": "220213080034112"
+    },
+    {
+      "material": "22021313",
+      "technicalName": "OVVI AF CABO 3X1 KEVLAR 2M CZ",
+      "serialNumber": "220213130023225"
+    },
+    {
+      "material": "22021313",
+      "technicalName": "OVVI AF CABO 3X1 KEVLAR 2M CZ",
+      "serialNumber": "220213130023226"
+    },
+    {
+      "material": "22021313",
+      "technicalName": "OVVI AF CABO 3X1 KEVLAR 2M CZ",
+      "serialNumber": "220213130023227"
+    },
+    {
+      "material": "22021482",
+      "technicalName": "OVVI AF CAR.  PORTÁTIL UNIV 12000MAH CZ",
+      "serialNumber": "220214820037363"
+    },
+    {
+      "material": "22021611",
+      "technicalName": "DPC MASSAGEADOR SHIATSU DE PÉS RENPHO PT",
+      "serialNumber": "220216110008862"
+    },
+    {
+      "material": "22021611",
+      "technicalName": "DPC MASSAGEADOR SHIATSU DE PÉS RENPHO PT",
+      "serialNumber": "220216110008193"
+    },
+    {
+      "material": "22021611",
+      "technicalName": "DPC MASSAGEADOR SHIATSU DE PÉS RENPHO PT",
+      "serialNumber": "220216110008224"
+    },
+    {
+      "material": "22021611",
+      "technicalName": "DPC MASSAGEADOR SHIATSU DE PÉS RENPHO PT",
+      "serialNumber": "220216110008916"
+    },
+    {
+      "material": "22021676",
+      "technicalName": "OVVI AF CARREG PAREDE UNIV 35W PD PPS BR",
+      "serialNumber": "220216760023722"
+    },
+    {
+      "material": "22021678",
+      "technicalName": "OVVI AF CARREG PAREDE UNIV 65W PD QC BR",
+      "serialNumber": "220216780031346"
+    },
+    {
+      "material": "22021678",
+      "technicalName": "OVVI AF CARREG PAREDE UNIV 65W PD QC BR",
+      "serialNumber": "220216780031347"
+    },
+    {
+      "material": "22021678",
+      "technicalName": "OVVI AF CARREG PAREDE UNIV 65W PD QC BR",
+      "serialNumber": "220216780031408"
+    },
+    {
+      "material": "22021678",
+      "technicalName": "OVVI AF CARREG PAREDE UNIV 65W PD QC BR",
+      "serialNumber": "220216780029351"
+    },
+    {
+      "material": "22021686",
+      "technicalName": "MOTOROLA FONE DE OUVIDO BUDS 600 ANC PT",
+      "serialNumber": "22021686100094"
+    },
+    {
+      "material": "22021726",
+      "technicalName": "OVVI AF CARREG VEICULAR UNIV 38W PDQC CZ",
+      "serialNumber": "220217260039029"
+    },
+    {
+      "material": "22021726",
+      "technicalName": "OVVI AF CARREG VEICULAR UNIV 38W PDQC CZ",
+      "serialNumber": "220217260039175"
+    },
+    {
+      "material": "22021805",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA PT",
+      "serialNumber": "220218380006664"
+    },
+    {
+      "material": "22021805",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA PT",
+      "serialNumber": "220218380006668"
+    },
+    {
+      "material": "22021805",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA PT",
+      "serialNumber": "220218380006670"
+    },
+    {
+      "material": "22021805",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA PT",
+      "serialNumber": "220218380006539"
+    },
+    {
+      "material": "22021805",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA PT",
+      "serialNumber": "220218380006538"
+    },
+    {
+      "material": "22021805",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA PT",
+      "serialNumber": "220218380007619"
+    },
+    {
+      "material": "22021805",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA PT",
+      "serialNumber": "220218380010118"
+    },
+    {
+      "material": "22021805",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA PT",
+      "serialNumber": "220218050052076"
+    },
+    {
+      "material": "22021815",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA BR",
+      "serialNumber": "220218150006306"
+    },
+    {
+      "material": "22021815",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA BR",
+      "serialNumber": "220218150005741"
+    },
+    {
+      "material": "22021817",
+      "technicalName": "AMAZON ECHO POP SPEAKER ALEXA BR",
+      "serialNumber": "220218170000196"
+    },
+    {
+      "material": "22021820",
+      "technicalName": "HARMAN JBL HEADPHONE TUNE 520 BT PT",
+      "serialNumber": "22021820107585"
+    },
+    {
+      "material": "22021855",
+      "technicalName": "AMAZON ECHO POP SPEAKER ALEXA PT",
+      "serialNumber": "220218550000008"
+    },
+    {
+      "material": "22021855",
+      "technicalName": "AMAZON ECHO POP SPEAKER ALEXA PT",
+      "serialNumber": "220218550009322"
+    },
+    {
+      "material": "22021855",
+      "technicalName": "AMAZON ECHO POP SPEAKER ALEXA PT",
+      "serialNumber": "220218550018767"
+    },
+    {
+      "material": "22021855",
+      "technicalName": "AMAZON ECHO POP SPEAKER ALEXA PT",
+      "serialNumber": "220218550014313"
+    },
+    {
+      "material": "22021855",
+      "technicalName": "AMAZON ECHO POP SPEAKER ALEXA PT",
+      "serialNumber": "220218550013936"
+    },
+    {
+      "material": "22021980",
+      "technicalName": "VIVO PLAY SMART TV STICK PT",
+      "serialNumber": "220219800017799"
+    },
+    {
+      "material": "22021980",
+      "technicalName": "VIVO PLAY SMART TV STICK PT",
+      "serialNumber": "220219800003464"
+    },
+    {
+      "material": "22021980",
+      "technicalName": "VIVO PLAY SMART TV STICK PT",
+      "serialNumber": "220219800003748"
+    },
+    {
+      "material": "22021980",
+      "technicalName": "VIVO PLAY SMART TV STICK PT",
+      "serialNumber": "220219800003629"
+    },
+    {
+      "material": "22021980",
+      "technicalName": "VIVO PLAY SMART TV STICK PT",
+      "serialNumber": "220219800003657"
+    },
+    {
+      "material": "22021980",
+      "technicalName": "VIVO PLAY SMART TV STICK PT",
+      "serialNumber": "220219800003507"
+    },
+    {
+      "material": "22021985",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL VM",
+      "serialNumber": "220219851009643"
+    },
+    {
+      "material": "22021985",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL VM",
+      "serialNumber": "220219851009642"
+    },
+    {
+      "material": "22021985",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL VM",
+      "serialNumber": "220219851009650"
+    },
+    {
+      "material": "22022077",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA APPLE CZ",
+      "serialNumber": "220220770015044"
+    },
+    {
+      "material": "22022077",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA APPLE CZ",
+      "serialNumber": "220220770015045"
+    },
+    {
+      "material": "22022078",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA SAMSUNG CZ",
+      "serialNumber": "220220780015994"
+    },
+    {
+      "material": "22022078",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA SAMSUNG CZ",
+      "serialNumber": "220220780015999"
+    },
+    {
+      "material": "22022078",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA SAMSUNG CZ",
+      "serialNumber": "220220780015338"
+    },
+    {
+      "material": "22022078",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA SAMSUNG CZ",
+      "serialNumber": "220220780015340"
+    },
+    {
+      "material": "22022079",
+      "technicalName": "OVVI AF CARREG 3x1 BASE Z APPLE CZ",
+      "serialNumber": "220220790012989"
+    },
+    {
+      "material": "22022079",
+      "technicalName": "OVVI AF CARREG 3x1 BASE Z APPLE CZ",
+      "serialNumber": "220220790012854"
+    },
+    {
+      "material": "22022079",
+      "technicalName": "OVVI AF CARREG 3x1 BASE Z APPLE CZ",
+      "serialNumber": "220220790012987"
+    },
+    {
+      "material": "22022079",
+      "technicalName": "OVVI AF CARREG 3x1 BASE Z APPLE CZ",
+      "serialNumber": "220220790012990"
+    },
+    {
+      "material": "22022219",
+      "technicalName": "WAP CAIXA SOM BT WAAW US 200SB DUO PT",
+      "serialNumber": "220222190001616"
+    },
+    {
+      "material": "22022375",
+      "technicalName": "SAMSUNG SMARTWATCH FIT 3 R390 GF",
+      "serialNumber": "22022375155025"
+    },
+    {
+      "material": "22022375",
+      "technicalName": "SAMSUNG SMARTWATCH FIT 3 R390 GF",
+      "serialNumber": "22022375157619"
+    },
+    {
+      "material": "22022496",
+      "technicalName": "SAMSUNG PROJETOR THE FREESTYLE 2ªGER BR",
+      "serialNumber": "22022496110366"
+    },
+    {
+      "material": "22022496",
+      "technicalName": "SAMSUNG PROJETOR THE FREESTYLE 2ªGER BR",
+      "serialNumber": "22022496110378"
+    },
+    {
+      "material": "22022526",
+      "technicalName": "APPLE CARREGADOR USB-C 20W BR",
+      "serialNumber": "22022526370589"
+    },
+    {
+      "material": "22022526",
+      "technicalName": "APPLE CARREGADOR USB-C 20W BR",
+      "serialNumber": "22022526370605"
+    },
+    {
+      "material": "22022526",
+      "technicalName": "APPLE CARREGADOR USB-C 20W BR",
+      "serialNumber": "22022526370657"
+    },
+    {
+      "material": "22022526",
+      "technicalName": "APPLE CARREGADOR USB-C 20W BR",
+      "serialNumber": "22022526370714"
+    },
+    {
+      "material": "22022526",
+      "technicalName": "APPLE CARREGADOR USB-C 20W BR",
+      "serialNumber": "22022526370839"
+    },
+    {
+      "material": "22022526",
+      "technicalName": "APPLE CARREGADOR USB-C 20W BR",
+      "serialNumber": "22022526370859"
+    },
+    {
+      "material": "22022526",
+      "technicalName": "APPLE CARREGADOR USB-C 20W BR",
+      "serialNumber": "22022526370124"
+    },
+    {
+      "material": "22022605",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 PT",
+      "serialNumber": "22022605114902"
+    },
+    {
+      "material": "22022605",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 PT",
+      "serialNumber": "22022605101473"
+    },
+    {
+      "material": "22022605",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 PT",
+      "serialNumber": "22022605101477"
+    },
+    {
+      "material": "22022605",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 PT",
+      "serialNumber": "22022605115027"
+    },
+    {
+      "material": "22022613",
+      "technicalName": "APPLE CABO USB-C PARA LIGHTNING BR",
+      "serialNumber": "22022613107870"
+    },
+    {
+      "material": "22022613",
+      "technicalName": "APPLE CABO USB-C PARA LIGHTNING BR",
+      "serialNumber": "22022613107723"
+    },
+    {
+      "material": "22022613",
+      "technicalName": "APPLE CABO USB-C PARA LIGHTNING BR",
+      "serialNumber": "22022613117597"
+    },
+    {
+      "material": "22022622",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL VM",
+      "serialNumber": "220226221001407"
+    },
+    {
+      "material": "22022623",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL PT",
+      "serialNumber": "220226231010677"
+    },
+    {
+      "material": "22022624",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL BG",
+      "serialNumber": "220226241005776"
+    },
+    {
+      "material": "22022627",
+      "technicalName": "GEONAV CABO USBC CONECT. LIGHTNING 2M AZ",
+      "serialNumber": "220226270002746"
+    },
+    {
+      "material": "22022627",
+      "technicalName": "GEONAV CABO USBC CONECT. LIGHTNING 2M AZ",
+      "serialNumber": "220226270002741"
+    },
+    {
+      "material": "22022627",
+      "technicalName": "GEONAV CABO USBC CONECT. LIGHTNING 2M AZ",
+      "serialNumber": "220226270002742"
+    },
+    {
+      "material": "22022629",
+      "technicalName": "I2GO CARREG PAREDE USB i2GWAL029BK PT",
+      "serialNumber": "220226290008025"
+    },
+    {
+      "material": "22022629",
+      "technicalName": "I2GO CARREG PAREDE USB i2GWAL029BK PT",
+      "serialNumber": "220226290008154"
+    },
+    {
+      "material": "22022629",
+      "technicalName": "I2GO CARREG PAREDE USB i2GWAL029BK PT",
+      "serialNumber": "220226290008179"
+    },
+    {
+      "material": "22022629",
+      "technicalName": "I2GO CARREG PAREDE USB i2GWAL029BK PT",
+      "serialNumber": "220226290007980"
+    },
+    {
+      "material": "22022629",
+      "technicalName": "I2GO CARREG PAREDE USB i2GWAL029BK PT",
+      "serialNumber": "220226290007993"
+    },
+    {
+      "material": "22022629",
+      "technicalName": "I2GO CARREG PAREDE USB i2GWAL029BK PT",
+      "serialNumber": "220226290008001"
+    },
+    {
+      "material": "22022629",
+      "technicalName": "I2GO CARREG PAREDE USB i2GWAL029BK PT",
+      "serialNumber": "220226290008157"
+    },
+    {
+      "material": "22022629",
+      "technicalName": "I2GO CARREG PAREDE USB i2GWAL029BK PT",
+      "serialNumber": "220226290008182"
+    },
+    {
+      "material": "22022631",
+      "technicalName": "I2GO CARREG PAREDE PD PROWAL030 BR",
+      "serialNumber": "220226310009057"
+    },
+    {
+      "material": "22022631",
+      "technicalName": "I2GO CARREG PAREDE PD PROWAL030 BR",
+      "serialNumber": "220226310002192"
+    },
+    {
+      "material": "22022631",
+      "technicalName": "I2GO CARREG PAREDE PD PROWAL030 BR",
+      "serialNumber": "220226310009098"
+    },
+    {
+      "material": "22022633",
+      "technicalName": "I2GO CARREG PAREDE PD PROWAL028 BR CZ",
+      "serialNumber": "220226330000087"
+    },
+    {
+      "material": "22022633",
+      "technicalName": "I2GO CARREG PAREDE PD PROWAL028 BR CZ",
+      "serialNumber": "220226330003069"
+    },
+    {
+      "material": "22022634",
+      "technicalName": "I2GO CABO LIGHTNING 1,5M I2GCBL975 BR PT",
+      "serialNumber": "220226340004448"
+    },
+    {
+      "material": "22022634",
+      "technicalName": "I2GO CABO LIGHTNING 1,5M I2GCBL975 BR PT",
+      "serialNumber": "220226340006325"
+    },
+    {
+      "material": "22022669",
+      "technicalName": "OVVI AF CARREG PAREDE UNIV 65W PD QC BR",
+      "serialNumber": "220226690000422"
+    },
+    {
+      "material": "22022676",
+      "technicalName": "POSITIVO SMART ALIMENTADOR PET WIFI BR",
+      "serialNumber": "220226760000908"
+    },
+    {
+      "material": "22022676",
+      "technicalName": "POSITIVO SMART ALIMENTADOR PET WIFI BR",
+      "serialNumber": "220226760000635"
+    },
+    {
+      "material": "22022725",
+      "technicalName": "I2GO POWER BANK 10000mAh PROBAT017 PT",
+      "serialNumber": "220227250002834"
+    },
+    {
+      "material": "22022726",
+      "technicalName": "I2GO CARREG PAREDE PD USBC PROWAL024 BR",
+      "serialNumber": "220227260004081"
+    },
+    {
+      "material": "22022727",
+      "technicalName": "I2GO CABO USBC 1,5M I2GCBL976 BR PT",
+      "serialNumber": "220227270005340"
+    },
+    {
+      "material": "22022727",
+      "technicalName": "I2GO CABO USBC 1,5M I2GCBL976 BR PT",
+      "serialNumber": "220227270005370"
+    },
+    {
+      "material": "22022747",
+      "technicalName": "OVVI CM CP IPHONE 13 SILIC MAGSAFE PT",
+      "serialNumber": "220227471003202"
+    },
+    {
+      "material": "22022748",
+      "technicalName": "OVVI CM CP IPHONE 15 SILIC MAGSAFE PT",
+      "serialNumber": "220227481007240"
+    },
+    {
+      "material": "22022756",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL AZ",
+      "serialNumber": "220227561002701"
+    },
+    {
+      "material": "22022762",
+      "technicalName": "OVVI AF CABO USBC LIGHTNING 2M KEVLAR PT",
+      "serialNumber": "220227620001273"
+    },
+    {
+      "material": "22022771",
+      "technicalName": "OVVI AF CABO 3X1 KEVLAR 2M CZ",
+      "serialNumber": "220227710001770"
+    },
+    {
+      "material": "22022777",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA APPLE CZ",
+      "serialNumber": "220227770000362"
+    },
+    {
+      "material": "22022777",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA APPLE CZ",
+      "serialNumber": "220227770000365"
+    },
+    {
+      "material": "22022777",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA APPLE CZ",
+      "serialNumber": "220227770000367"
+    },
+    {
+      "material": "22022826",
+      "technicalName": "GEONAV CARREGADOR S POWER GAN DUO 65W BR",
+      "serialNumber": "220228260021107"
+    },
+    {
+      "material": "22022835",
+      "technicalName": "WAP CAIXA SOM BT WAAW BOOM 200 PT",
+      "serialNumber": "220228350005787"
+    },
+    {
+      "material": "22022835",
+      "technicalName": "WAP CAIXA SOM BT WAAW BOOM 200 PT",
+      "serialNumber": "220228350001950"
+    },
+    {
+      "material": "22022836",
+      "technicalName": "WAP CAIXA SOM WAAW HYPERBOOM 1000 PT",
+      "serialNumber": "220228360006327"
+    },
+    {
+      "material": "22022845",
+      "technicalName": "OVVI CM CP IPHONE 16 ANTIBAC BR",
+      "serialNumber": "220228451003398"
+    },
+    {
+      "material": "22022845",
+      "technicalName": "OVVI CM CP IPHONE 16 ANTIBAC BR",
+      "serialNumber": "220228451003586"
+    },
+    {
+      "material": "22022852",
+      "technicalName": "OVVI CM CP IPHONE 16PRO ANTIBAC BR",
+      "serialNumber": "220228521004154"
+    },
+    {
+      "material": "22022852",
+      "technicalName": "OVVI CM CP IPHONE 16PRO ANTIBAC BR",
+      "serialNumber": "220228521003883"
+    },
+    {
+      "material": "22022852",
+      "technicalName": "OVVI CM CP IPHONE 16PRO ANTIBAC BR",
+      "serialNumber": "220228521003882"
+    },
+    {
+      "material": "22022857",
+      "technicalName": "OVVI CM CP IPHONE 16PMAX SILIC MGSAFE CZ",
+      "serialNumber": "220228571000602"
+    },
+    {
+      "material": "22022857",
+      "technicalName": "OVVI CM CP IPHONE 16PMAX SILIC MGSAFE CZ",
+      "serialNumber": "220228571001445"
+    },
+    {
+      "material": "22023005",
+      "technicalName": "WAP FONE OUVIDO BT WAAW SENSE 210 PT",
+      "serialNumber": "220230050003352"
+    },
+    {
+      "material": "22023005",
+      "technicalName": "WAP FONE OUVIDO BT WAAW SENSE 210 PT",
+      "serialNumber": "220230050003351"
+    },
+    {
+      "material": "22023005",
+      "technicalName": "WAP FONE OUVIDO BT WAAW SENSE 210 PT",
+      "serialNumber": "220230050003355"
+    },
+    {
+      "material": "22023005",
+      "technicalName": "WAP FONE OUVIDO BT WAAW SENSE 210 PT",
+      "serialNumber": "220230050003279"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250004620"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250000714"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250000704"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250000733"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250000734"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250000738"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250000741"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250000746"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250002206"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250002244"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250002245"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250002253"
+    },
+    {
+      "material": "22023025",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "serialNumber": "220230250002267"
+    },
+    {
+      "material": "22023046",
+      "technicalName": "APPLE AIRPODS 4 COM CANCEL. DE RUIDO BR",
+      "serialNumber": "22023046106084"
+    },
+    {
+      "material": "22023096",
+      "technicalName": "SSG GALAXY TAB S10 ULTRA 14,6\" 512GB CZ",
+      "serialNumber": "22023096100237"
+    },
+    {
+      "material": "22023165",
+      "technicalName": "OVVI CM CP IPHONE 16 ANTIBAC BR",
+      "serialNumber": "220231651008787"
+    },
+    {
+      "material": "22023166",
+      "technicalName": "OVVI CM CP IPHONE 16 CLEAR MGSAFE",
+      "serialNumber": "220231661019327"
+    },
+    {
+      "material": "22023167",
+      "technicalName": "OVVI CM CP IPHONE 16PRO CLEAR MGSAFE",
+      "serialNumber": "220231671000946"
+    },
+    {
+      "material": "22023167",
+      "technicalName": "OVVI CM CP IPHONE 16PRO CLEAR MGSAFE",
+      "serialNumber": "220231671001001"
+    },
+    {
+      "material": "22023167",
+      "technicalName": "OVVI CM CP IPHONE 16PRO CLEAR MGSAFE",
+      "serialNumber": "220231671001002"
+    },
+    {
+      "material": "22023167",
+      "technicalName": "OVVI CM CP IPHONE 16PRO CLEAR MGSAFE",
+      "serialNumber": "220231671001010"
+    },
+    {
+      "material": "22023169",
+      "technicalName": "OVVI CM CP IPHONE 16PMAX CLEAR MGSAFE",
+      "serialNumber": "220231691008394"
+    },
+    {
+      "material": "22023169",
+      "technicalName": "OVVI CM CP IPHONE 16PMAX CLEAR MGSAFE",
+      "serialNumber": "220231691007770"
+    },
+    {
+      "material": "22023171",
+      "technicalName": "OVVI CM CP IPHONE 16PMAX SILIC MGSAFE CZ",
+      "serialNumber": "220231711001690"
+    },
+    {
+      "material": "22023192",
+      "technicalName": "OVVI CM CP IPHONE 16PRO SILIC MGSAFE PT",
+      "serialNumber": "220231921001854"
+    },
+    {
+      "material": "22023200",
+      "technicalName": "OVVI CM CP IPHONE 16 SILIC MGSAFE PT",
+      "serialNumber": "220232001008898"
+    },
+    {
+      "material": "22023221",
+      "technicalName": "OVVI CM CP GALAXY S25 SILIC PT",
+      "serialNumber": "220232211008626"
+    },
+    {
+      "material": "22023223",
+      "technicalName": "OVVI CM CP GALAXY S25 ULTRA SILIC PT",
+      "serialNumber": "220232231023557"
+    },
+    {
+      "material": "22023223",
+      "technicalName": "OVVI CM CP GALAXY S25 ULTRA SILIC PT",
+      "serialNumber": "220232231023586"
+    },
+    {
+      "material": "22023233",
+      "technicalName": "AMAZON KINDLE 11 GER 2024 16GB PT",
+      "serialNumber": "220232330000722"
+    },
+    {
+      "material": "22023233",
+      "technicalName": "AMAZON KINDLE 11 GER 2024 16GB PT",
+      "serialNumber": "220232330000724"
+    },
+    {
+      "material": "22023245",
+      "technicalName": "SSG CP PROTETORA GALAXY S24 FE TPT",
+      "serialNumber": "22023245105622"
+    },
+    {
+      "material": "22023245",
+      "technicalName": "SSG CP PROTETORA GALAXY S24 FE TPT",
+      "serialNumber": "22023245105814"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071801"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071802"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071803"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071804"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071805"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071806"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071807"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071808"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071809"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071810"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071811"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071812"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071813"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071814"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071815"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071816"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071817"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071818"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071819"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071820"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071821"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071822"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620071823"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094178"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094179"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094180"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094181"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094182"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094183"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094184"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094185"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094186"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094187"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094188"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094189"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094190"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094191"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094192"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094193"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094194"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094195"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094196"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094197"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620094198"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620099646"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620007153"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620007154"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620007155"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620007157"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620007113"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620007165"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620007172"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620006759"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620006761"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620099643"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620006770"
+    },
+    {
+      "material": "22023262",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "serialNumber": "220232620090784"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020676"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020679"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020681"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020682"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020683"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020684"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020685"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020686"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020687"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020688"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020690"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020691"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020693"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020694"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020696"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020697"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020698"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020700"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095851"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095852"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095853"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095854"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095855"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095856"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095857"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095858"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095859"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095860"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095861"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095862"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095863"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095864"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095865"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095866"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095867"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095868"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095869"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095870"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095871"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095872"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095873"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095874"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630095875"
+    },
+    {
+      "material": "22023263",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "serialNumber": "220232630020678"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055926"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055927"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055928"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055929"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055930"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055931"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055932"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055933"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055934"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055935"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055936"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055937"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055938"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055939"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055940"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055941"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055942"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055943"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055944"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055945"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055946"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055947"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055948"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055949"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640055950"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640009733"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640009735"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640009742"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640009746"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640009747"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640009748"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640009726"
+    },
+    {
+      "material": "22023264",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "serialNumber": "220232640009728"
+    },
+    {
+      "material": "22023266",
+      "technicalName": "OVVI CM CP GALAXY S25+ SILIC PT",
+      "serialNumber": "220232661002515"
+    },
+    {
+      "material": "22023266",
+      "technicalName": "OVVI CM CP GALAXY S25+ SILIC PT",
+      "serialNumber": "220232661003597"
+    },
+    {
+      "material": "22023266",
+      "technicalName": "OVVI CM CP GALAXY S25+ SILIC PT",
+      "serialNumber": "220232661003546"
+    },
+    {
+      "material": "22023269",
+      "technicalName": "OVVI CM CP GALAXY S25 ANTIBAC BR",
+      "serialNumber": "220232691007379"
+    },
+    {
+      "material": "22023269",
+      "technicalName": "OVVI CM CP GALAXY S25 ANTIBAC BR",
+      "serialNumber": "220232691007236"
+    },
+    {
+      "material": "22023271",
+      "technicalName": "OVVI CM CP GALAXY S25+ ANTIBAC BR",
+      "serialNumber": "220232711000393"
+    },
+    {
+      "material": "22023271",
+      "technicalName": "OVVI CM CP GALAXY S25+ ANTIBAC BR",
+      "serialNumber": "220232711000394"
+    },
+    {
+      "material": "22023272",
+      "technicalName": "CM CP MOTOROLA G75 5G SOFT TOUCH PT",
+      "serialNumber": "220232721001482"
+    },
+    {
+      "material": "22023272",
+      "technicalName": "CM CP MOTOROLA G75 5G SOFT TOUCH PT",
+      "serialNumber": "220232721001481"
+    },
+    {
+      "material": "22023272",
+      "technicalName": "CM CP MOTOROLA G75 5G SOFT TOUCH PT",
+      "serialNumber": "220232721001751"
+    },
+    {
+      "material": "22023272",
+      "technicalName": "CM CP MOTOROLA G75 5G SOFT TOUCH PT",
+      "serialNumber": "220232721001752"
+    },
+    {
+      "material": "22023272",
+      "technicalName": "CM CP MOTOROLA G75 5G SOFT TOUCH PT",
+      "serialNumber": "220232721002116"
+    },
+    {
+      "material": "22023277",
+      "technicalName": "CM CP GALAXY A16 5G IMPACTOR CLEAR",
+      "serialNumber": "220232771002195"
+    },
+    {
+      "material": "22023277",
+      "technicalName": "CM CP GALAXY A16 5G IMPACTOR CLEAR",
+      "serialNumber": "220232771002199"
+    },
+    {
+      "material": "22023277",
+      "technicalName": "CM CP GALAXY A16 5G IMPACTOR CLEAR",
+      "serialNumber": "220232771002200"
+    },
+    {
+      "material": "22023277",
+      "technicalName": "CM CP GALAXY A16 5G IMPACTOR CLEAR",
+      "serialNumber": "220232771001802"
+    },
+    {
+      "material": "22023277",
+      "technicalName": "CM CP GALAXY A16 5G IMPACTOR CLEAR",
+      "serialNumber": "220232771001803"
+    },
+    {
+      "material": "22023277",
+      "technicalName": "CM CP GALAXY A16 5G IMPACTOR CLEAR",
+      "serialNumber": "220232771002592"
+    },
+    {
+      "material": "22023277",
+      "technicalName": "CM CP GALAXY A16 5G IMPACTOR CLEAR",
+      "serialNumber": "220232771012349"
+    },
+    {
+      "material": "22023277",
+      "technicalName": "CM CP GALAXY A16 5G IMPACTOR CLEAR",
+      "serialNumber": "220232771012344"
+    },
+    {
+      "material": "22023279",
+      "technicalName": "CM CP MOTOROLA G35 5G SOFT TOUCH PT",
+      "serialNumber": "220232791017212"
+    },
+    {
+      "material": "22023280",
+      "technicalName": "CM CP MOTOROLA G55 5G SOFT TOUCH PT",
+      "serialNumber": "220232801003266"
+    },
+    {
+      "material": "22023280",
+      "technicalName": "CM CP MOTOROLA G55 5G SOFT TOUCH PT",
+      "serialNumber": "220232801003311"
+    },
+    {
+      "material": "22023280",
+      "technicalName": "CM CP MOTOROLA G55 5G SOFT TOUCH PT",
+      "serialNumber": "220232801003317"
+    },
+    {
+      "material": "22023280",
+      "technicalName": "CM CP MOTOROLA G55 5G SOFT TOUCH PT",
+      "serialNumber": "220232801004304"
+    },
+    {
+      "material": "22023316",
+      "technicalName": "CM CP MOTOROLA G15 SOFT SERIES 1.5 PT",
+      "serialNumber": "220233161001788"
+    },
+    {
+      "material": "22023316",
+      "technicalName": "CM CP MOTOROLA G15 SOFT SERIES 1.5 PT",
+      "serialNumber": "220233161001789"
+    },
+    {
+      "material": "22023316",
+      "technicalName": "CM CP MOTOROLA G15 SOFT SERIES 1.5 PT",
+      "serialNumber": "220233161001790"
+    },
+    {
+      "material": "22023316",
+      "technicalName": "CM CP MOTOROLA G15 SOFT SERIES 1.5 PT",
+      "serialNumber": "220233161003632"
+    },
+    {
+      "material": "22023316",
+      "technicalName": "CM CP MOTOROLA G15 SOFT SERIES 1.5 PT",
+      "serialNumber": "220233161003633"
+    },
+    {
+      "material": "22023316",
+      "technicalName": "CM CP MOTOROLA G15 SOFT SERIES 1.5 PT",
+      "serialNumber": "220233161003704"
+    },
+    {
+      "material": "22023317",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233171025693"
+    },
+    {
+      "material": "22023317",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233171026001"
+    },
+    {
+      "material": "22023317",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233171018963"
+    },
+    {
+      "material": "22023318",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233181018157"
+    },
+    {
+      "material": "22023318",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233181003350"
+    },
+    {
+      "material": "22023318",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233181040598"
+    },
+    {
+      "material": "22023318",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233181003475"
+    },
+    {
+      "material": "22023319",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233191063761"
+    },
+    {
+      "material": "22023319",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233191063587"
+    },
+    {
+      "material": "22023319",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233191065773"
+    },
+    {
+      "material": "22023320",
+      "technicalName": "CM CP GALAXY A16 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233201005952"
+    },
+    {
+      "material": "22023320",
+      "technicalName": "CM CP GALAXY A16 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233201005953"
+    },
+    {
+      "material": "22023320",
+      "technicalName": "CM CP GALAXY A16 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233201004421"
+    },
+    {
+      "material": "22023320",
+      "technicalName": "CM CP GALAXY A16 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233201004426"
+    },
+    {
+      "material": "22023320",
+      "technicalName": "CM CP GALAXY A16 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233201004427"
+    },
+    {
+      "material": "22023320",
+      "technicalName": "CM CP GALAXY A16 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233201004430"
+    },
+    {
+      "material": "22023320",
+      "technicalName": "CM CP GALAXY A16 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220233201006543"
+    },
+    {
+      "material": "22023321",
+      "technicalName": "RM MINI PISTOLA MASSAG. DEEP THERAPY AZ",
+      "serialNumber": "220233210001870"
+    },
+    {
+      "material": "22023323",
+      "technicalName": "RM ALMOFADA MASSAG. SHIATSU PILLOW CZ",
+      "serialNumber": "220233230008874"
+    },
+    {
+      "material": "22023323",
+      "technicalName": "RM ALMOFADA MASSAG. SHIATSU PILLOW CZ",
+      "serialNumber": "220233230008628"
+    },
+    {
+      "material": "22023324",
+      "technicalName": "RM BALANCA DIGITAL GO BALANCE BIOIMPE BR",
+      "serialNumber": "220233240002447"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860171361"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860261175"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860261170"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860261174"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860261151"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860261152"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860261153"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860261168"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860261169"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385826"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385827"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385828"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385830"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385831"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385832"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385833"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385834"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385835"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385837"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385838"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385839"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385840"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385841"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385842"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385843"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385846"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860385849"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860260493"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860260495"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860260499"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860170949"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860115412"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860115413"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860115417"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860326723"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860302386"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860302387"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860171358"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860170942"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860261979"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860191117"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860174468"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860174471"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860174472"
+    },
+    {
+      "material": "22023386",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "serialNumber": "220233860325596"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870003428"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870003434"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870003441"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870003442"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081417"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081401"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081402"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081403"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081404"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081405"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081406"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081407"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081408"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081409"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081410"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081411"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081412"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081413"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081414"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081415"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081416"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081418"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081419"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081420"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081421"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081422"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081423"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081424"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870081425"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178774"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178751"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178752"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178753"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178754"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178755"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178756"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178757"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178758"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178759"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178760"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178761"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178762"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178763"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178764"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178765"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178775"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870124727"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870124742"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870003446"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870178770"
+    },
+    {
+      "material": "22023387",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "serialNumber": "220233870124736"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142051"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142052"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142053"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142054"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142055"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142056"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142057"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142058"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142059"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142060"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142061"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142062"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142063"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142064"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142065"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142066"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142067"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142068"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142069"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142070"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142071"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142072"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142073"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142074"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880142075"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035192"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035193"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035194"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035195"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035197"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035199"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035185"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035188"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035200"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880001637"
+    },
+    {
+      "material": "22023388",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "serialNumber": "220233880035177"
+    },
+    {
+      "material": "22023395",
+      "technicalName": "SSG CP PROTETORA GALAXY S25 TPT",
+      "serialNumber": "22023395107993"
+    },
+    {
+      "material": "22023395",
+      "technicalName": "SSG CP PROTETORA GALAXY S25 TPT",
+      "serialNumber": "22023395108407"
+    },
+    {
+      "material": "22023395",
+      "technicalName": "SSG CP PROTETORA GALAXY S25 TPT",
+      "serialNumber": "22023395108415"
+    },
+    {
+      "material": "22023416",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 BR",
+      "serialNumber": "22023416107228"
+    },
+    {
+      "material": "22023416",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 BR",
+      "serialNumber": "22023416107238"
+    },
+    {
+      "material": "22023416",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 BR",
+      "serialNumber": "22023416107050"
+    },
+    {
+      "material": "22023416",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 BR",
+      "serialNumber": "22023416106871"
+    },
+    {
+      "material": "22023416",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 BR",
+      "serialNumber": "22023416107137"
+    },
+    {
+      "material": "22023425",
+      "technicalName": "I2GO SMARTWATCH TRACK S200 PT",
+      "serialNumber": "220234250001212"
+    },
+    {
+      "material": "22023425",
+      "technicalName": "I2GO SMARTWATCH TRACK S200 PT",
+      "serialNumber": "220234250001222"
+    },
+    {
+      "material": "22023425",
+      "technicalName": "I2GO SMARTWATCH TRACK S200 PT",
+      "serialNumber": "220234250003204"
+    },
+    {
+      "material": "22023425",
+      "technicalName": "I2GO SMARTWATCH TRACK S200 PT",
+      "serialNumber": "220234250003723"
+    },
+    {
+      "material": "22023426",
+      "technicalName": "I2GO SMARTWATCH TRACK R200 PT",
+      "serialNumber": "220234260003166"
+    },
+    {
+      "material": "22023426",
+      "technicalName": "I2GO SMARTWATCH TRACK R200 PT",
+      "serialNumber": "220234260001333"
+    },
+    {
+      "material": "22023426",
+      "technicalName": "I2GO SMARTWATCH TRACK R200 PT",
+      "serialNumber": "220234260003666"
+    },
+    {
+      "material": "22023426",
+      "technicalName": "I2GO SMARTWATCH TRACK R200 PT",
+      "serialNumber": "220234260003587"
+    },
+    {
+      "material": "22023435",
+      "technicalName": "I2GO HEADPHONE BLUETOOTH BASS 550 ANC PT",
+      "serialNumber": "220234350004057"
+    },
+    {
+      "material": "22023435",
+      "technicalName": "I2GO HEADPHONE BLUETOOTH BASS 550 ANC PT",
+      "serialNumber": "220234350002403"
+    },
+    {
+      "material": "22023440",
+      "technicalName": "I2GO FONE USBC METAL BEATS 1,2M PT",
+      "serialNumber": "220234400001835"
+    },
+    {
+      "material": "22023440",
+      "technicalName": "I2GO FONE USBC METAL BEATS 1,2M PT",
+      "serialNumber": "220234400001998"
+    },
+    {
+      "material": "22023440",
+      "technicalName": "I2GO FONE USBC METAL BEATS 1,2M PT",
+      "serialNumber": "220234400001838"
+    },
+    {
+      "material": "22023495",
+      "technicalName": "OVVI AF POWERBANK 5000MAH MGSAFE SLIM GF",
+      "serialNumber": "220234950003621"
+    },
+    {
+      "material": "22023545",
+      "technicalName": "AMVOX CAIXA AMPLIF ACA 251 NEW X PT",
+      "serialNumber": "220235450001642"
+    },
+    {
+      "material": "22023555",
+      "technicalName": "OVVI CP IPHONE 16E CLEAR MAGSAFE",
+      "serialNumber": "220235551002530"
+    },
+    {
+      "material": "22023555",
+      "technicalName": "OVVI CP IPHONE 16E CLEAR MAGSAFE",
+      "serialNumber": "220235551002409"
+    },
+    {
+      "material": "22023555",
+      "technicalName": "OVVI CP IPHONE 16E CLEAR MAGSAFE",
+      "serialNumber": "220235551002686"
+    },
+    {
+      "material": "22023555",
+      "technicalName": "OVVI CP IPHONE 16E CLEAR MAGSAFE",
+      "serialNumber": "220235551002687"
+    },
+    {
+      "material": "22023560",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM PT",
+      "serialNumber": "220235600007693"
+    },
+    {
+      "material": "22023560",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM PT",
+      "serialNumber": "220235600001133"
+    },
+    {
+      "material": "22023560",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM PT",
+      "serialNumber": "220235600000853"
+    },
+    {
+      "material": "22023560",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM PT",
+      "serialNumber": "220235600000892"
+    },
+    {
+      "material": "22023561",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM CZ",
+      "serialNumber": "220235610005382"
+    },
+    {
+      "material": "22023561",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM CZ",
+      "serialNumber": "220235610005391"
+    },
+    {
+      "material": "22023561",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM CZ",
+      "serialNumber": "220235610000696"
+    },
+    {
+      "material": "22023562",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM DR",
+      "serialNumber": "220235620002986"
+    },
+    {
+      "material": "22023562",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM DR",
+      "serialNumber": "220235620002956"
+    },
+    {
+      "material": "22023562",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM DR",
+      "serialNumber": "220235620002958"
+    },
+    {
+      "material": "22023562",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM DR",
+      "serialNumber": "220235620000418"
+    },
+    {
+      "material": "22023563",
+      "technicalName": "CM CAPA GALAXY S25 EDGE IMPACTOR CLEAR",
+      "serialNumber": "220235631004431"
+    },
+    {
+      "material": "22023563",
+      "technicalName": "CM CAPA GALAXY S25 EDGE IMPACTOR CLEAR",
+      "serialNumber": "220235631004696"
+    },
+    {
+      "material": "22023563",
+      "technicalName": "CM CAPA GALAXY S25 EDGE IMPACTOR CLEAR",
+      "serialNumber": "220235631004697"
+    },
+    {
+      "material": "22023564",
+      "technicalName": "CM CAPA GALAXY S25 EDGE SOFT 1.5 PT",
+      "serialNumber": "220235641009733"
+    },
+    {
+      "material": "22023564",
+      "technicalName": "CM CAPA GALAXY S25 EDGE SOFT 1.5 PT",
+      "serialNumber": "220235641009734"
+    },
+    {
+      "material": "22023569",
+      "technicalName": "RM MINI PISTOLA MASSAG. DEEP THERAPY CZ",
+      "serialNumber": "220235690002236"
+    },
+    {
+      "material": "22023613",
+      "technicalName": "GSHIELD FILME EXPRESS 7 POL CLEAR",
+      "serialNumber": "220236130008454"
+    },
+    {
+      "material": "22023613",
+      "technicalName": "GSHIELD FILME EXPRESS 7 POL CLEAR",
+      "serialNumber": "220236130008463"
+    },
+    {
+      "material": "22023617",
+      "technicalName": "CM CP MOTO EDGE 60 FUSION SOFT 1.5 PT",
+      "serialNumber": "220236171003685"
+    },
+    {
+      "material": "22023617",
+      "technicalName": "CM CP MOTO EDGE 60 FUSION SOFT 1.5 PT",
+      "serialNumber": "220236171010051"
+    },
+    {
+      "material": "22023627",
+      "technicalName": "CM CAPA GALAXY A56 5G IMPACTOR CLEAR",
+      "serialNumber": "220236271008285"
+    },
+    {
+      "material": "22023647",
+      "technicalName": "OVVI CM CP IPHONE 17 CLEAR MGSAFE",
+      "serialNumber": "220236471006847"
+    },
+    {
+      "material": "22023649",
+      "technicalName": "OVVI CM CP IPHONE 17PMAX SILIC MGSAFE CZ",
+      "serialNumber": "220236491001461"
+    },
+    {
+      "material": "22023649",
+      "technicalName": "OVVI CM CP IPHONE 17PMAX SILIC MGSAFE CZ",
+      "serialNumber": "220236491003466"
+    },
+    {
+      "material": "22023650",
+      "technicalName": "OVVI CM CP IPHONE 17PMAX SILIC MGSAFE PT",
+      "serialNumber": "220236501000969"
+    },
+    {
+      "material": "22023650",
+      "technicalName": "OVVI CM CP IPHONE 17PMAX SILIC MGSAFE PT",
+      "serialNumber": "220236501000993"
+    },
+    {
+      "material": "22023654",
+      "technicalName": "OVVI CM CP IPHONE 17 SILIC MGSAFE VD",
+      "serialNumber": "220236541001611"
+    },
+    {
+      "material": "22023654",
+      "technicalName": "OVVI CM CP IPHONE 17 SILIC MGSAFE VD",
+      "serialNumber": "220236541001663"
+    },
+    {
+      "material": "22023655",
+      "technicalName": "OVVI CM CP IPHONE 17 SILIC MGSAFE CZ",
+      "serialNumber": "220236551001353"
+    },
+    {
+      "material": "22023656",
+      "technicalName": "OVVI CM CP IPHONE 17 SILIC MGSAFE PT",
+      "serialNumber": "220236561000666"
+    },
+    {
+      "material": "22023696",
+      "technicalName": "OVVI CM CP IPHONE 17PMAX SILIC MGSAFE VD",
+      "serialNumber": "220236961001030"
+    },
+    {
+      "material": "22023701",
+      "technicalName": "CM CAPA MOTO EDGE 60 PRO SOFT 1.5 PT",
+      "serialNumber": "220237011002408"
+    },
+    {
+      "material": "22023701",
+      "technicalName": "CM CAPA MOTO EDGE 60 PRO SOFT 1.5 PT",
+      "serialNumber": "220237011002428"
+    },
+    {
+      "material": "22023701",
+      "technicalName": "CM CAPA MOTO EDGE 60 PRO SOFT 1.5 PT",
+      "serialNumber": "220237011002459"
+    },
+    {
+      "material": "22023702",
+      "technicalName": "CM CAPA MOTO EDGE 60 PRO IMPACTOR CLEAR",
+      "serialNumber": "220237021004837"
+    },
+    {
+      "material": "22023711",
+      "technicalName": "OVVI CP IPHONE 17PMAX SILIC MGSAFE AZ",
+      "serialNumber": "220237110001282"
+    },
+    {
+      "material": "22023711",
+      "technicalName": "OVVI CP IPHONE 17PMAX SILIC MGSAFE AZ",
+      "serialNumber": "220237110001294"
+    },
+    {
+      "material": "22023739",
+      "technicalName": "OVVI CP IPHONE 17 SILIC MGSAFE VD",
+      "serialNumber": "220237390000526"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745102964"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745102968"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745102972"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745102976"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745103107"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745103111"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745103115"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745101108"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745101112"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745101116"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745101120"
+    },
+    {
+      "material": "22023745",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "serialNumber": "22023745103119"
+    },
+    {
+      "material": "22023746",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "serialNumber": "22023746100877"
+    },
+    {
+      "material": "22023746",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "serialNumber": "22023746100881"
+    },
+    {
+      "material": "22023746",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "serialNumber": "22023746100885"
+    },
+    {
+      "material": "22023746",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "serialNumber": "22023746100889"
+    },
+    {
+      "material": "22023746",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "serialNumber": "22023746100893"
+    },
+    {
+      "material": "22023746",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "serialNumber": "22023746100897"
+    },
+    {
+      "material": "22023746",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "serialNumber": "22023746100900"
+    },
+    {
+      "material": "22023746",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "serialNumber": "22023746100901"
+    },
+    {
+      "material": "22023746",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "serialNumber": "22023746100905"
+    },
+    {
+      "material": "22023768",
+      "technicalName": "OVVI CM CP IPHONE 17 FLEX ECO TPT",
+      "serialNumber": "220237681000805"
+    },
+    {
+      "material": "22023768",
+      "technicalName": "OVVI CM CP IPHONE 17 FLEX ECO TPT",
+      "serialNumber": "220237681000806"
+    },
+    {
+      "material": "22023768",
+      "technicalName": "OVVI CM CP IPHONE 17 FLEX ECO TPT",
+      "serialNumber": "220237681000897"
+    },
+    {
+      "material": "22023770",
+      "technicalName": "OVVI CM CP IPHONE 17 PRO FLEX ECO TPT",
+      "serialNumber": "220237701007569"
+    },
+    {
+      "material": "22023771",
+      "technicalName": "CM CAPA MOTO G56 SOFT SERIES 1.5 PT",
+      "serialNumber": "220237711009704"
+    },
+    {
+      "material": "22023772",
+      "technicalName": "CM CAPA MOTO G56 IMPACTOR CLEAR",
+      "serialNumber": "220237721008660"
+    },
+    {
+      "material": "22023773",
+      "technicalName": "CM CAPA MOTO G86 SOFT SERIES 1.5 PT",
+      "serialNumber": "220237731015027"
+    },
+    {
+      "material": "22023782",
+      "technicalName": "WAP FONE OUVIDO BT WAAW MOB 500 ANC PT N",
+      "serialNumber": "220237820036074"
+    },
+    {
+      "material": "22023797",
+      "technicalName": "OVVI CM CP IPHONE 17 PMAX FLEX ECO TPT",
+      "serialNumber": "220237971004112"
+    },
+    {
+      "material": "22023798",
+      "technicalName": "I2GO KIT CARREG. PD 20W + CABO C 1,5M BR",
+      "serialNumber": "220237980007249"
+    },
+    {
+      "material": "22023798",
+      "technicalName": "I2GO KIT CARREG. PD 20W + CABO C 1,5M BR",
+      "serialNumber": "220237980007209"
+    },
+    {
+      "material": "22023798",
+      "technicalName": "I2GO KIT CARREG. PD 20W + CABO C 1,5M BR",
+      "serialNumber": "220237980007243"
+    },
+    {
+      "material": "22023810",
+      "technicalName": "OVVI CP IPHONE 17 PRO SILIC MGSAFE PT",
+      "serialNumber": "220238100001835"
+    },
+    {
+      "material": "22023819",
+      "technicalName": "I2GO CABO MGNETIC USB-C PARA C 1,2M PT",
+      "serialNumber": "220238190011634"
+    },
+    {
+      "material": "22023819",
+      "technicalName": "I2GO CABO MGNETIC USB-C PARA C 1,2M PT",
+      "serialNumber": "220238190013238"
+    },
+    {
+      "material": "22023819",
+      "technicalName": "I2GO CABO MGNETIC USB-C PARA C 1,2M PT",
+      "serialNumber": "220238190012633"
+    },
+    {
+      "material": "22023819",
+      "technicalName": "I2GO CABO MGNETIC USB-C PARA C 1,2M PT",
+      "serialNumber": "220238190001931"
+    },
+    {
+      "material": "22023819",
+      "technicalName": "I2GO CABO MGNETIC USB-C PARA C 1,2M PT",
+      "serialNumber": "220238190002185"
+    },
+    {
+      "material": "22023825",
+      "technicalName": "OVVI CP IPHONE 17PMAX CLEAR MAGSAFE",
+      "serialNumber": "220238250002855"
+    },
+    {
+      "material": "22023825",
+      "technicalName": "OVVI CP IPHONE 17PMAX CLEAR MAGSAFE",
+      "serialNumber": "220238250002281"
+    },
+    {
+      "material": "22023826",
+      "technicalName": "OVVI CP IPHONE 17PMAX COM SUPT MGSAFE PT",
+      "serialNumber": "220238260001019"
+    },
+    {
+      "material": "22023866",
+      "technicalName": "CM CP MOTO G86 IMPACTOR CLEAR",
+      "serialNumber": "220238661002374"
+    },
+    {
+      "material": "22023866",
+      "technicalName": "CM CP MOTO G86 IMPACTOR CLEAR",
+      "serialNumber": "220238661002477"
+    },
+    {
+      "material": "22023869",
+      "technicalName": "I2GO CABO FLAT USB-C + USB-C 1,2M 3A CZ",
+      "serialNumber": "220238690008175"
+    },
+    {
+      "material": "22023869",
+      "technicalName": "I2GO CABO FLAT USB-C + USB-C 1,2M 3A CZ",
+      "serialNumber": "220238690008179"
+    },
+    {
+      "material": "22023869",
+      "technicalName": "I2GO CABO FLAT USB-C + USB-C 1,2M 3A CZ",
+      "serialNumber": "220238690008442"
+    },
+    {
+      "material": "22023871",
+      "technicalName": "I2GO CABO FLAT LIGHTNING USB-C 1,2M CZ",
+      "serialNumber": "220238710003136"
+    },
+    {
+      "material": "22023871",
+      "technicalName": "I2GO CABO FLAT LIGHTNING USB-C 1,2M CZ",
+      "serialNumber": "220238710006714"
+    },
+    {
+      "material": "22023871",
+      "technicalName": "I2GO CABO FLAT LIGHTNING USB-C 1,2M CZ",
+      "serialNumber": "220238710006715"
+    },
+    {
+      "material": "22023871",
+      "technicalName": "I2GO CABO FLAT LIGHTNING USB-C 1,2M CZ",
+      "serialNumber": "220238710003625"
+    },
+    {
+      "material": "22023873",
+      "technicalName": "I2GO CARREGADOR PAREDE 20W 1 USB-C BR",
+      "serialNumber": "220238730005073"
+    },
+    {
+      "material": "22023873",
+      "technicalName": "I2GO CARREGADOR PAREDE 20W 1 USB-C BR",
+      "serialNumber": "220238730004737"
+    },
+    {
+      "material": "22023873",
+      "technicalName": "I2GO CARREGADOR PAREDE 20W 1 USB-C BR",
+      "serialNumber": "220238730001087"
+    },
+    {
+      "material": "22023875",
+      "technicalName": "I2GO POWERBANK POCKET 5.000 LIGHTNING PT",
+      "serialNumber": "220238750000979"
+    },
+    {
+      "material": "22023875",
+      "technicalName": "I2GO POWERBANK POCKET 5.000 LIGHTNING PT",
+      "serialNumber": "220238750000980"
+    },
+    {
+      "material": "22023875",
+      "technicalName": "I2GO POWERBANK POCKET 5.000 LIGHTNING PT",
+      "serialNumber": "220238750009226"
+    },
+    {
+      "material": "22023877",
+      "technicalName": "I2GO POWERBANK POCKET 5.000 USB-C PT",
+      "serialNumber": "220238770010893"
+    },
+    {
+      "material": "22023877",
+      "technicalName": "I2GO POWERBANK POCKET 5.000 USB-C PT",
+      "serialNumber": "220238770004515"
+    },
+    {
+      "material": "22023877",
+      "technicalName": "I2GO POWERBANK POCKET 5.000 USB-C PT",
+      "serialNumber": "220238770004594"
+    },
+    {
+      "material": "22023877",
+      "technicalName": "I2GO POWERBANK POCKET 5.000 USB-C PT",
+      "serialNumber": "220238770005846"
+    },
+    {
+      "material": "22023879",
+      "technicalName": "I2GO SUPORTE VEICULAR AIR VENT HOLDER PT",
+      "serialNumber": "220238790004286"
+    },
+    {
+      "material": "22023879",
+      "technicalName": "I2GO SUPORTE VEICULAR AIR VENT HOLDER PT",
+      "serialNumber": "220238790004346"
+    },
+    {
+      "material": "22023879",
+      "technicalName": "I2GO SUPORTE VEICULAR AIR VENT HOLDER PT",
+      "serialNumber": "220238790001308"
+    },
+    {
+      "material": "22023879",
+      "technicalName": "I2GO SUPORTE VEICULAR AIR VENT HOLDER PT",
+      "serialNumber": "220238790003820"
+    },
+    {
+      "material": "22023879",
+      "technicalName": "I2GO SUPORTE VEICULAR AIR VENT HOLDER PT",
+      "serialNumber": "220238790003859"
+    },
+    {
+      "material": "22023881",
+      "technicalName": "I2GO CABO MGNETIC LIGHTNING USBC 1,2M PT",
+      "serialNumber": "220238810008767"
+    },
+    {
+      "material": "22023881",
+      "technicalName": "I2GO CABO MGNETIC LIGHTNING USBC 1,2M PT",
+      "serialNumber": "220238810010177"
+    },
+    {
+      "material": "22023881",
+      "technicalName": "I2GO CABO MGNETIC LIGHTNING USBC 1,2M PT",
+      "serialNumber": "220238810002056"
+    },
+    {
+      "material": "22023883",
+      "technicalName": "I2GO SUPORTE VEICULAR ULTRA MAGNETIC PT",
+      "serialNumber": "220238830008876"
+    },
+    {
+      "material": "22023883",
+      "technicalName": "I2GO SUPORTE VEICULAR ULTRA MAGNETIC PT",
+      "serialNumber": "220238830009117"
+    },
+    {
+      "material": "22023883",
+      "technicalName": "I2GO SUPORTE VEICULAR ULTRA MAGNETIC PT",
+      "serialNumber": "220238830009031"
+    },
+    {
+      "material": "22023902",
+      "technicalName": "I2GO CABO USB-C 3M 2,4A PVC PT",
+      "serialNumber": "220239020009648"
+    },
+    {
+      "material": "22023902",
+      "technicalName": "I2GO CABO USB-C 3M 2,4A PVC PT",
+      "serialNumber": "220239020009087"
+    },
+    {
+      "material": "22023902",
+      "technicalName": "I2GO CABO USB-C 3M 2,4A PVC PT",
+      "serialNumber": "220239020000503"
+    },
+    {
+      "material": "22023921",
+      "technicalName": "SSG WATCH 8 40MM BT GF",
+      "serialNumber": "22023921103592"
+    },
+    {
+      "material": "22023922",
+      "technicalName": "I2GO CABO FLAT USBC A 1,2M BK PT",
+      "serialNumber": "220239220005441"
+    },
+    {
+      "material": "22023922",
+      "technicalName": "I2GO CABO FLAT USBC A 1,2M BK PT",
+      "serialNumber": "220239220005449"
+    },
+    {
+      "material": "22023922",
+      "technicalName": "I2GO CABO FLAT USBC A 1,2M BK PT",
+      "serialNumber": "220239220005450"
+    },
+    {
+      "material": "22024005",
+      "technicalName": "WAP CAIXA SOM BT WAAW BY ALOK ME110 PT N",
+      "serialNumber": "220240050034652"
+    },
+    {
+      "material": "22024005",
+      "technicalName": "WAP CAIXA SOM BT WAAW BY ALOK ME110 PT N",
+      "serialNumber": "220240050034653"
+    },
+    {
+      "material": "22024005",
+      "technicalName": "WAP CAIXA SOM BT WAAW BY ALOK ME110 PT N",
+      "serialNumber": "220240050006360"
+    },
+    {
+      "material": "22024055",
+      "technicalName": "STECK CAMERA 360° PTZ SCAM3BS1 BR",
+      "serialNumber": "220240550002168"
+    },
+    {
+      "material": "22024055",
+      "technicalName": "STECK CAMERA 360° PTZ SCAM3BS1 BR",
+      "serialNumber": "220240550002673"
+    },
+    {
+      "material": "22024068",
+      "technicalName": "SSG CAPA C/ARGOLA GALAXY FLIP 7 TPT",
+      "serialNumber": "22024068101062"
+    },
+    {
+      "material": "22024068",
+      "technicalName": "SSG CAPA C/ARGOLA GALAXY FLIP 7 TPT",
+      "serialNumber": "22024068101064"
+    },
+    {
+      "material": "22024069",
+      "technicalName": "SSG CAPA GALAXY FLIP 7 TPT",
+      "serialNumber": "22024069101540"
+    },
+    {
+      "material": "22024069",
+      "technicalName": "SSG CAPA GALAXY FLIP 7 TPT",
+      "serialNumber": "22024069101655"
+    },
+    {
+      "material": "22024070",
+      "technicalName": "SSG CAPA C/ARGOLA GALAXY FLIP 7 AZM",
+      "serialNumber": "22024070101210"
+    },
+    {
+      "material": "22024085",
+      "technicalName": "ACER NOTEBOOK ASPIRE 5939 Ci5 8GB 256 CZ",
+      "serialNumber": "22024085100680"
+    },
+    {
+      "material": "22024130",
+      "technicalName": "OVVI CP SUPER PROTECAO IPHONE 17 PRO PT",
+      "serialNumber": "220241300001100"
+    },
+    {
+      "material": "22024130",
+      "technicalName": "OVVI CP SUPER PROTECAO IPHONE 17 PRO PT",
+      "serialNumber": "220241300001099"
+    },
+    {
+      "material": "22024137",
+      "technicalName": "OVVI CP SUPER PROTECAO IPHONE 16 PMAX PT",
+      "serialNumber": "220241370001678"
+    },
+    {
+      "material": "22024145",
+      "technicalName": "WAP ROBO ASPIRADOR PO 3EM1 W90 PT",
+      "serialNumber": "220241450001733"
+    },
+    {
+      "material": "22024145",
+      "technicalName": "WAP ROBO ASPIRADOR PO 3EM1 W90 PT",
+      "serialNumber": "220241450001122"
+    },
+    {
+      "material": "22024145",
+      "technicalName": "WAP ROBO ASPIRADOR PO 3EM1 W90 PT",
+      "serialNumber": "220241450001351"
+    },
+    {
+      "material": "22024145",
+      "technicalName": "WAP ROBO ASPIRADOR PO 3EM1 W90 PT",
+      "serialNumber": "220241450001734"
+    },
+    {
+      "material": "22024179",
+      "technicalName": "OVVI CP GALAXY S25 FE SILIC MAGSAFE PT",
+      "serialNumber": "220241790000093"
+    },
+    {
+      "material": "22024179",
+      "technicalName": "OVVI CP GALAXY S25 FE SILIC MAGSAFE PT",
+      "serialNumber": "220241790000321"
+    },
+    {
+      "material": "22024189",
+      "technicalName": "OVVI CP GALAXY S25 FE SILIC PT",
+      "serialNumber": "220241891001385"
+    },
+    {
+      "material": "22024189",
+      "technicalName": "OVVI CP GALAXY S25 FE SILIC PT",
+      "serialNumber": "220241891001249"
+    },
+    {
+      "material": "22024194",
+      "technicalName": "CM CP GALAXY A17 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220241941016251"
+    },
+    {
+      "material": "22024194",
+      "technicalName": "CM CP GALAXY A17 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220241941016252"
+    },
+    {
+      "material": "22024194",
+      "technicalName": "CM CP GALAXY A17 5G SOFT SERIES 1.5 PT",
+      "serialNumber": "220241941006431"
+    },
+    {
+      "material": "22024210",
+      "technicalName": "CM CP GALAXY A17 5G IMPACTOR CLEAR",
+      "serialNumber": "220242100004907"
+    },
+    {
+      "material": "22024210",
+      "technicalName": "CM CP GALAXY A17 5G IMPACTOR CLEAR",
+      "serialNumber": "220242100004919"
+    },
+    {
+      "material": "22024233",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 AZ",
+      "serialNumber": "220242331001198"
+    },
+    {
+      "material": "22024233",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 AZ",
+      "serialNumber": "220242331002323"
+    },
+    {
+      "material": "22024234",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 VD",
+      "serialNumber": "220242341003130"
+    },
+    {
+      "material": "22024235",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 AZ",
+      "serialNumber": "220242351000190"
+    },
+    {
+      "material": "22024236",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 RS",
+      "serialNumber": "220242361000383"
+    },
+    {
+      "material": "22024237",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 VD",
+      "serialNumber": "220242371000106"
+    },
+    {
+      "material": "22024237",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 VD",
+      "serialNumber": "220242371000110"
+    },
+    {
+      "material": "22024239",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 AZ",
+      "serialNumber": "220242391000099"
+    },
+    {
+      "material": "22024240",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 VD",
+      "serialNumber": "220242401000127"
+    },
+    {
+      "material": "22024241",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 RS",
+      "serialNumber": "220242411000140"
+    },
+    {
+      "material": "22024249",
+      "technicalName": "UP2 FONE OUVIDO S/FIO JBL TUNE 520BT PT",
+      "serialNumber": "22024249071462"
+    },
+    {
+      "material": "22024249",
+      "technicalName": "UP2 FONE OUVIDO S/FIO JBL TUNE 520BT PT",
+      "serialNumber": "22024249071463"
+    },
+    {
+      "material": "22024249",
+      "technicalName": "UP2 FONE OUVIDO S/FIO JBL TUNE 520BT PT",
+      "serialNumber": "22024249071465"
+    },
+    {
+      "material": "22024249",
+      "technicalName": "UP2 FONE OUVIDO S/FIO JBL TUNE 520BT PT",
+      "serialNumber": "22024249071466"
+    },
+    {
+      "material": "22024249",
+      "technicalName": "UP2 FONE OUVIDO S/FIO JBL TUNE 520BT PT",
+      "serialNumber": "22024249070986"
+    },
+    {
+      "material": "22024256",
+      "technicalName": "UP2 NOTEBOOK LENOVO CORE I5 8GB 512 CZ",
+      "serialNumber": "22024256224489"
+    },
+    {
+      "material": "22024300",
+      "technicalName": "WAP ROBO ASPIRADOR DE PO 3EM1 W90 PT",
+      "serialNumber": "220243000006886"
+    },
+    {
+      "material": "22024315",
+      "technicalName": "APPLE WATCH SE 3 GPS 40MM BR",
+      "serialNumber": "22024315100543"
+    },
+    {
+      "material": "22024315",
+      "technicalName": "APPLE WATCH SE 3 GPS 40MM BR",
+      "serialNumber": "22024315100525"
+    },
+    {
+      "material": "22024316",
+      "technicalName": "APPLE WATCH SE 3 GPS 44MM PT",
+      "serialNumber": "22024316100600"
+    },
+    {
+      "material": "22024316",
+      "technicalName": "APPLE WATCH SE 3 GPS 44MM PT",
+      "serialNumber": "22024316100449"
+    },
+    {
+      "material": "22024435",
+      "technicalName": "MOTO FONE DE OUVIDO BUDS BASS PT",
+      "serialNumber": "22024435103292"
+    },
+    {
+      "material": "22024554",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN VD",
+      "serialNumber": "220245541000429"
+    },
+    {
+      "material": "22024556",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN RX",
+      "serialNumber": "220245561000700"
+    },
+    {
+      "material": "22024558",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN CZ",
+      "serialNumber": "220245581000190"
+    },
+    {
+      "material": "22024558",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN CZ",
+      "serialNumber": "220245581001769"
+    },
+    {
+      "material": "22024559",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN AZ",
+      "serialNumber": "220245591001705"
+    },
+    {
+      "material": "22024560",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN PT",
+      "serialNumber": "220245601001435"
+    },
+    {
+      "material": "22024562",
+      "technicalName": "OVVI CM CP GALAXY S26 TECIDO MAGN PT",
+      "serialNumber": "220245621000927"
+    },
+    {
+      "material": "22024565",
+      "technicalName": "OVVI CM CP GALAXY S26 TECIDO MAGN CB",
+      "serialNumber": "220245651000683"
+    },
+    {
+      "material": "22024565",
+      "technicalName": "OVVI CM CP GALAXY S26 TECIDO MAGN CB",
+      "serialNumber": "220245651000798"
+    },
+    {
+      "material": "22024568",
+      "technicalName": "OVVI CM CP GALAXY S26 CLEAR MAGN",
+      "serialNumber": "220245681001034"
+    },
+    {
+      "material": "22024569",
+      "technicalName": "OVVI CM CP GALAXY S26+ CLEAR MAGN",
+      "serialNumber": "220245691000365"
+    },
+    {
+      "material": "22024571",
+      "technicalName": "OVVI CM CP GALAXY S26 FLEX ECO",
+      "serialNumber": "220245711001844"
+    },
+    {
+      "material": "22024572",
+      "technicalName": "OVVI CM CP GALAXY S26+ FLEX ECO",
+      "serialNumber": "220245721000209"
+    },
+    {
+      "material": "22024606",
+      "technicalName": "MOTOROLA CAPA PROTETORA EDGE 70 TPT",
+      "serialNumber": "22024606104137"
+    },
+    {
+      "material": "22024627",
+      "technicalName": "OVVI CM CP GALAXY S26+ SILIC MAGN CZ",
+      "serialNumber": "220246271001102"
+    },
+    {
+      "material": "22024628",
+      "technicalName": "OVVI CM CP GALAXY S26+ SILIC MAGN AZ",
+      "serialNumber": "220246281000435"
+    },
+    {
+      "material": "22024628",
+      "technicalName": "OVVI CM CP GALAXY S26+ SILIC MAGN AZ",
+      "serialNumber": "220246281000453"
+    },
+    {
+      "material": "22024630",
+      "technicalName": "OVVI CM CP GALAXY S26 HOLO MAGN RS",
+      "serialNumber": "220246301001642"
+    },
+    {
+      "material": "22024631",
+      "technicalName": "OVVI CM CP GALAXY S26+ HOLO MAGN RS",
+      "serialNumber": "220246311000602"
+    },
+    {
+      "material": "22024632",
+      "technicalName": "OVVI CM CP GALAXY S26 ULT SILIC MAGN CZ",
+      "serialNumber": "220246321001333"
+    },
+    {
+      "material": "22024634",
+      "technicalName": "OVVI CM CP GALAXY S26 ULT SILIC MAGN AZ",
+      "serialNumber": "220246341001586"
+    },
+    {
+      "material": "22024636",
+      "technicalName": "OVVI CM CP GALAXY S26+ SILIC MAGN PT",
+      "serialNumber": "220246361001265"
+    },
+    {
+      "material": "22024745",
+      "technicalName": "MOTO CAPA PROTETORA EDGE 70 FUSION TPT",
+      "serialNumber": "22024745104383"
+    },
+    {
+      "material": "22024745",
+      "technicalName": "MOTO CAPA PROTETORA EDGE 70 FUSION TPT",
+      "serialNumber": "22024745104387"
+    },
+    {
+      "material": "22024775",
+      "technicalName": "MOTOROLA CAPA SIGNATURE TPT",
+      "serialNumber": "22024775100935"
+    },
+    {
+      "material": "22024800",
+      "technicalName": "CM CP MOTO G67/G77 IMPACTOR CLEAR",
+      "serialNumber": "220248001000279"
+    },
+    {
+      "material": "22024800",
+      "technicalName": "CM CP MOTO G67/G77 IMPACTOR CLEAR",
+      "serialNumber": "220248001000280"
+    },
+    {
+      "material": "22024801",
+      "technicalName": "CM CP MOTO G67/G77 SOFT SERIES 1.5 PT",
+      "serialNumber": "220248011005212"
+    },
+    {
+      "material": "22024801",
+      "technicalName": "CM CP MOTO G67/G77 SOFT SERIES 1.5 PT",
+      "serialNumber": "220248011005026"
+    },
+    {
+      "material": "22024804",
+      "technicalName": "CM CP GALAXY A37 IMPACTOR CLEAR",
+      "serialNumber": "220248041002739"
+    },
+    {
+      "material": "22024804",
+      "technicalName": "CM CP GALAXY A37 IMPACTOR CLEAR",
+      "serialNumber": "220248041005876"
+    },
+    {
+      "material": "22024806",
+      "technicalName": "OVVI I2GO CP GLX S26 ULTRA CLEAR MAGN",
+      "serialNumber": "220248060001858"
+    },
+    {
+      "material": "22024818",
+      "technicalName": "OVVI I2GO CP GLX S26 ULTRA TPT",
+      "serialNumber": "220248180000672"
+    },
+    {
+      "material": "22024841",
+      "technicalName": "OVVI I2GO CP GLX S26 ULTRA SILIC MAGN AZ",
+      "serialNumber": "220248410001641"
+    },
+    {
+      "material": "22024877",
+      "technicalName": "UP2 CONSOLE PS5 825GB DIGITAL BR",
+      "serialNumber": "22024877263769"
+    },
+    {
+      "material": "22024877",
+      "technicalName": "UP2 CONSOLE PS5 825GB DIGITAL BR",
+      "serialNumber": "22024877263776"
+    },
+    {
+      "material": "22024915",
+      "technicalName": "OVVI CM CP IPHONE 17E SILICONE MAGN PT",
+      "serialNumber": "220249151007667"
+    },
+    {
+      "material": "22024916",
+      "technicalName": "OVVI CM CP IPHONE 17E CLEAR MAGN",
+      "serialNumber": "220249161007891"
+    },
+    {
+      "material": "22024916",
+      "technicalName": "OVVI CM CP IPHONE 17E CLEAR MAGN",
+      "serialNumber": "220249161007892"
+    },
+    {
+      "material": "22024917",
+      "technicalName": "OVVI CM CP IPHONE 17E FLEX ECO TPT",
+      "serialNumber": "220249171008113"
+    },
+    {
+      "material": "22024925",
+      "technicalName": "CM CP GALAXY A37 SOFT SERIES 1.5 PT",
+      "serialNumber": "220249251000758"
+    },
+    {
+      "material": "22024925",
+      "technicalName": "CM CP GALAXY A37 SOFT SERIES 1.5 PT",
+      "serialNumber": "220249251000657"
+    },
+    {
+      "material": "22024926",
+      "technicalName": "CM CP GALAXY A57 SOFT SERIES 1.5 PT",
+      "serialNumber": "220249261009400"
+    },
+    {
+      "material": "22024926",
+      "technicalName": "CM CP GALAXY A57 SOFT SERIES 1.5 PT",
+      "serialNumber": "220249261004292"
+    },
+    {
+      "material": "22024926",
+      "technicalName": "CM CP GALAXY A57 SOFT SERIES 1.5 PT",
+      "serialNumber": "220249261009399"
+    },
+    {
+      "material": "22024927",
+      "technicalName": "CM CP GALAXY A57 IMPACTOR CLEAR",
+      "serialNumber": "220249271008513"
+    },
+    {
+      "material": "22025008",
+      "technicalName": "I2GO CAPA IPHONE 17 CBF AZM",
+      "serialNumber": "220250080002064"
+    },
+    {
+      "material": "22025010",
+      "technicalName": "I2GO CAPA IPHONE 17 PRO MAX CBF AZM",
+      "serialNumber": "220250100000948"
+    },
+    {
+      "material": "22025013",
+      "technicalName": "I2GO CABO C/C 2M CBF AZM",
+      "serialNumber": "220250130000067"
+    },
+    {
+      "material": "22025013",
+      "technicalName": "I2GO CABO C/C 2M CBF AZM",
+      "serialNumber": "220250130000260"
+    },
+    {
+      "material": "22025014",
+      "technicalName": "I2GO ALCA CABO C/C 1,5M CBF AZM",
+      "serialNumber": "220250140002755"
+    },
+    {
+      "material": "22025015",
+      "technicalName": "I2GO ALCA CABO C/C 30CM CBF AZM",
+      "serialNumber": "220250150000323"
+    },
+    {
+      "material": "22025015",
+      "technicalName": "I2GO ALCA CABO C/C 30CM CBF AZM",
+      "serialNumber": "220250150000664"
+    },
+    {
+      "material": "22025017",
+      "technicalName": "I2GO POWER BANK 10.000MAH 4EM1 CBF AZM",
+      "serialNumber": "220250170002277"
+    },
+    {
+      "material": "22025017",
+      "technicalName": "I2GO POWER BANK 10.000MAH 4EM1 CBF AZM",
+      "serialNumber": "220250170002279"
+    },
+    {
+      "material": "22025017",
+      "technicalName": "I2GO POWER BANK 10.000MAH 4EM1 CBF AZM",
+      "serialNumber": "220250170002280"
+    },
+    {
+      "material": "22025017",
+      "technicalName": "I2GO POWER BANK 10.000MAH 4EM1 CBF AZM",
+      "serialNumber": "220250170002296"
+    },
+    {
+      "material": "22025018",
+      "technicalName": "I2GO VENTOSA SUPORTE C/ MAGN CBF AZM",
+      "serialNumber": "220250180000261"
+    },
+    {
+      "material": "22025025",
+      "technicalName": "I2GO CABO DUAL C/C 1,5M PT",
+      "serialNumber": "220250250002737"
+    },
+    {
+      "material": "22025025",
+      "technicalName": "I2GO CABO DUAL C/C 1,5M PT",
+      "serialNumber": "220250250002792"
+    },
+    {
+      "material": "BGAP25243000",
+      "technicalName": "APPLE IPAD 11 POL WIFI+CEL 128GB PR",
+      "serialNumber": "357585650706194"
+    },
+    {
+      "material": "BGAP25243000",
+      "technicalName": "APPLE IPAD 11 POL WIFI+CEL 128GB PR",
+      "serialNumber": "357585650512089"
+    },
+    {
+      "material": "BGSA569C4000",
+      "technicalName": "SSG GALAXY TAB S10 FE 5G 128GB CZ PPB/14",
+      "serialNumber": "357741900186113"
+    },
+    {
+      "material": "BGSA569C4000",
+      "technicalName": "SSG GALAXY TAB S10 FE 5G 128GB CZ PPB/14",
+      "serialNumber": "357741900172188"
+    },
+    {
+      "material": "BGSA569C4000",
+      "technicalName": "SSG GALAXY TAB S10 FE 5G 128GB CZ PPB/14",
+      "serialNumber": "357741900186022"
+    },
+    {
+      "material": "BGSA569C4000",
+      "technicalName": "SSG GALAXY TAB S10 FE 5G 128GB CZ PPB/14",
+      "serialNumber": "357741900228576"
+    },
+    {
+      "material": "BGSA569C4000",
+      "technicalName": "SSG GALAXY TAB S10 FE 5G 128GB CZ PPB/14",
+      "serialNumber": "357741900228808"
+    },
+    {
+      "material": "BGSA569C4000",
+      "technicalName": "SSG GALAXY TAB S10 FE 5G 128GB CZ PPB/14",
+      "serialNumber": "357741900215698"
+    },
+    {
+      "material": "BGSA569C4000",
+      "technicalName": "SSG GALAXY TAB S10 FE 5G 128GB CZ PPB/14",
+      "serialNumber": "357741900216316"
+    },
+    {
+      "material": "BGSA569C4000",
+      "technicalName": "SSG GALAXY TAB S10 FE 5G 128GB CZ PPB/14",
+      "serialNumber": "357741900216936"
+    },
+    {
+      "material": "DGAP14862000",
+      "technicalName": "APPLE IPHONE 13 256GB PT N",
+      "serialNumber": "359358941597006"
+    },
+    {
+      "material": "DGAP20312000",
+      "technicalName": "APPLE IPHONE 15 256GB N AZ",
+      "serialNumber": "358434160333299"
+    },
+    {
+      "material": "DGAP20312000",
+      "technicalName": "APPLE IPHONE 15 256GB N AZ",
+      "serialNumber": "359936833104211"
+    },
+    {
+      "material": "DGAP20362000",
+      "technicalName": "APPLE IPHONE 15 256GB N PT",
+      "serialNumber": "351713517087998"
+    },
+    {
+      "material": "DGAP20362000",
+      "technicalName": "APPLE IPHONE 15 256GB N PT",
+      "serialNumber": "357205926196035"
+    },
+    {
+      "material": "DGAP22163000",
+      "technicalName": "APPLE WATCH ULTRA 2 GPS+CELLULAR 49MM PT",
+      "serialNumber": "355767497114202"
+    },
+    {
+      "material": "DGAP22722000",
+      "technicalName": "APPLE IPHONE 16 256GB N BR",
+      "serialNumber": "356342310044306"
+    },
+    {
+      "material": "DGAP22722000",
+      "technicalName": "APPLE IPHONE 16 256GB N BR",
+      "serialNumber": "355628869452580"
+    },
+    {
+      "material": "DGAP22762000",
+      "technicalName": "APPLE IPHONE 16 256GB N PT",
+      "serialNumber": "357140340715377"
+    },
+    {
+      "material": "DGAP22762000",
+      "technicalName": "APPLE IPHONE 16 256GB N PT",
+      "serialNumber": "357908799952653"
+    },
+    {
+      "material": "DGAP22762000",
+      "technicalName": "APPLE IPHONE 16 256GB N PT",
+      "serialNumber": "357908799885564"
+    },
+    {
+      "material": "DGAP26912000",
+      "technicalName": "APPLE IPHONE 17 256GB N AZ",
+      "serialNumber": "352501903274752"
+    },
+    {
+      "material": "DGAP26922000",
+      "technicalName": "APPLE IPHONE 17 256GB N BR",
+      "serialNumber": "354170462932529"
+    },
+    {
+      "material": "DGAP27022000",
+      "technicalName": "APPLE IPHONE 17 512GB N BR",
+      "serialNumber": "352501900527590"
+    },
+    {
+      "material": "DGAP27163000",
+      "technicalName": "APPLE IPHONE AIR 256GB PT",
+      "serialNumber": "356523764339769"
+    },
+    {
+      "material": "DGAP27443000",
+      "technicalName": "APPLE IPHONE 17 PRO 256GB PR",
+      "serialNumber": "355146932298708"
+    },
+    {
+      "material": "DGAP274B3000",
+      "technicalName": "APPLE IPHONE 17 PRO 256GB AZM",
+      "serialNumber": "352550681774566"
+    },
+    {
+      "material": "DGAP274U3000",
+      "technicalName": "APPLE IPHONE 17 PRO 256GB LJ",
+      "serialNumber": "355146930191400"
+    },
+    {
+      "material": "DGAP27543000",
+      "technicalName": "APPLE IPHONE 17 PRO 512GB PR",
+      "serialNumber": "354890669803906"
+    },
+    {
+      "material": "DGAP27543000",
+      "technicalName": "APPLE IPHONE 17 PRO 512GB PR",
+      "serialNumber": "359226587807957"
+    },
+    {
+      "material": "DGAP275B3000",
+      "technicalName": "APPLE IPHONE 17 PRO 512GB AZM",
+      "serialNumber": "355146936412925"
+    },
+    {
+      "material": "DGAP275U3000",
+      "technicalName": "APPLE IPHONE 17 PRO 512GB LJ",
+      "serialNumber": "354710610560357"
+    },
+    {
+      "material": "DGAP27743000",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 256GB PR",
+      "serialNumber": "350651448296265"
+    },
+    {
+      "material": "DGAP277B3000",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 256GB AZM",
+      "serialNumber": "358361786189906"
+    },
+    {
+      "material": "DGAP277U3000",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 256GB LJ",
+      "serialNumber": "351500502574118"
+    },
+    {
+      "material": "DGAP277U6000",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 256GB LJ DEMO",
+      "serialNumber": "351008263818229"
+    },
+    {
+      "material": "DGAP277U6000",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 256GB LJ DEMO",
+      "serialNumber": "354687610563278"
+    },
+    {
+      "material": "DGAP27843000",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 512GB PR",
+      "serialNumber": "357352409919150"
+    },
+    {
+      "material": "DGAP278B3000",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 512GB AZM",
+      "serialNumber": "351459293928654"
+    },
+    {
+      "material": "DGAP278U3000",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 512GB LJ",
+      "serialNumber": "353806448089972"
+    },
+    {
+      "material": "DGAP27943000",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 1TB PR",
+      "serialNumber": "351500504720230"
+    },
+    {
+      "material": "DGAP29322000",
+      "technicalName": "APPLE IPHONE 17E 256GB N BR",
+      "serialNumber": "351927993023463"
+    },
+    {
+      "material": "RGHU06623000",
+      "technicalName": "HUAWEI ROTEADOR 5G CPE 5S BR",
+      "serialNumber": "865840077336546"
+    },
+    {
+      "material": "TGMO479G2000",
+      "technicalName": "MOTOROLA XT2433-1 SMARTPHONE 128GB VD",
+      "serialNumber": "353044843367138"
+    },
+    {
+      "material": "TGMO491C2000",
+      "technicalName": "MOTOROLA XT2503-1 SMARTPHONE 256GB CZ",
+      "serialNumber": "358459768285211"
+    },
+    {
+      "material": "TGMO50212000",
+      "technicalName": "MOTOROLA XT2507-1 SMARTPHONE 256GB AZ",
+      "serialNumber": "350986052327117"
+    },
+    {
+      "material": "TGMO50212000",
+      "technicalName": "MOTOROLA XT2507-1 SMARTPHONE 256GB AZ",
+      "serialNumber": "350986052174394"
+    },
+    {
+      "material": "TGMO50212000",
+      "technicalName": "MOTOROLA XT2507-1 SMARTPHONE 256GB AZ",
+      "serialNumber": "350986052419534"
+    },
+    {
+      "material": "TGMO50212000",
+      "technicalName": "MOTOROLA XT2507-1 SMARTPHONE 256GB AZ",
+      "serialNumber": "350986052163215"
+    },
+    {
+      "material": "TGMO50212000",
+      "technicalName": "MOTOROLA XT2507-1 SMARTPHONE 256GB AZ",
+      "serialNumber": "350986052419591"
+    },
+    {
+      "material": "TGMO50212000",
+      "technicalName": "MOTOROLA XT2507-1 SMARTPHONE 256GB AZ",
+      "serialNumber": "350986052420094"
+    },
+    {
+      "material": "TGMO55602000",
+      "technicalName": "MOTOROLA XT2527-1 SMARTPHONE 256GB VM",
+      "serialNumber": "350629703260697"
+    },
+    {
+      "material": "TGMO55652000",
+      "technicalName": "MOTOROLA XT2527-1 SMARTPHONE 256GB GF",
+      "serialNumber": "350629705964353"
+    },
+    {
+      "material": "TGMO55652000",
+      "technicalName": "MOTOROLA XT2527-1 SMARTPHONE 256GB GF",
+      "serialNumber": "350629702321938"
+    },
+    {
+      "material": "TGMO57852000",
+      "technicalName": "MOTOROLA XT2601-3 SMARTPHONE 512GB GF",
+      "serialNumber": "352128281286198"
+    },
+    {
+      "material": "TGMO57852000",
+      "technicalName": "MOTOROLA XT2601-3 SMARTPHONE 512GB GF",
+      "serialNumber": "352128281230857"
+    },
+    {
+      "material": "TGMO583G2000",
+      "technicalName": "MOTOROLA XT2621-3 SMARTPHONE 256GB VD",
+      "serialNumber": "359632580911490"
+    },
+    {
+      "material": "TGMO583M2000",
+      "technicalName": "MOTOROLA XT2621-3 SMARTPHONE 256GB MR",
+      "serialNumber": "352468710778690"
+    },
+    {
+      "material": "TGMO583M2000",
+      "technicalName": "MOTOROLA XT2621-3 SMARTPHONE 256GB MR",
+      "serialNumber": "352468710790257"
+    },
+    {
+      "material": "TGMO583M2000",
+      "technicalName": "MOTOROLA XT2621-3 SMARTPHONE 256GB MR",
+      "serialNumber": "352468710790638"
+    },
+    {
+      "material": "TGMO586G2000",
+      "technicalName": "MOTOROLA XT2621-1 SMARTPHONE 128GB VD",
+      "serialNumber": "352923950715570"
+    },
+    {
+      "material": "TGMO587C2000",
+      "technicalName": "MOTOROLA XT2621-1 SMARTPHONE 256GB CZ",
+      "serialNumber": "357497950825791"
+    },
+    {
+      "material": "TGMO587C2000",
+      "technicalName": "MOTOROLA XT2621-1 SMARTPHONE 256GB CZ",
+      "serialNumber": "357497950851995"
+    },
+    {
+      "material": "TGMO587C2000",
+      "technicalName": "MOTOROLA XT2621-1 SMARTPHONE 256GB CZ",
+      "serialNumber": "357497950863610"
+    },
+    {
+      "material": "TGMO587C2000",
+      "technicalName": "MOTOROLA XT2621-1 SMARTPHONE 256GB CZ",
+      "serialNumber": "357497950865672"
+    },
+    {
+      "material": "TGMO587G2000",
+      "technicalName": "MOTOROLA XT2621-1 SMARTPHONE 256GB VD",
+      "serialNumber": "356513930948817"
+    },
+    {
+      "material": "TGMO59352000",
+      "technicalName": "MOTOROLA XT2605-3 SMARTPHONE 256GB GF",
+      "serialNumber": "359609480759716"
+    },
+    {
+      "material": "TGMO59352000",
+      "technicalName": "MOTOROLA XT2605-3 SMARTPHONE 256GB GF",
+      "serialNumber": "359609480705735"
+    },
+    {
+      "material": "TGMO59462000",
+      "technicalName": "MOTOROLA XT2603-2 SMARTPHONE 512GB PT",
+      "serialNumber": "350826111011759"
+    },
+    {
+      "material": "TGMO594G2000",
+      "technicalName": "MOTOROLA XT2603-2 SMARTPHONE 512GB VD",
+      "serialNumber": "350826110785577"
+    },
+    {
+      "material": "TGSA55344000",
+      "technicalName": "SSG GALAXY S931B 256GB PR PPB/P291/14",
+      "serialNumber": "359143275868045"
+    },
+    {
+      "material": "TGSA553B4000",
+      "technicalName": "SSG GALAXY S931B 256GB AZM PPB/P291/14",
+      "serialNumber": "359143275981251"
+    },
+    {
+      "material": "TGSA553B4000",
+      "technicalName": "SSG GALAXY S931B 256GB AZM PPB/P291/14",
+      "serialNumber": "359143275982366"
+    },
+    {
+      "material": "TGSA55664000",
+      "technicalName": "SSG GALAXY S938B 256GB TN PT PPB/P291/14",
+      "serialNumber": "357445725848416"
+    },
+    {
+      "material": "TGSA55664000",
+      "technicalName": "SSG GALAXY S938B 256GB TN PT PPB/P291/14",
+      "serialNumber": "357445725848267"
+    },
+    {
+      "material": "TGSA55664000",
+      "technicalName": "SSG GALAXY S938B 256GB TN PT PPB/P291/14",
+      "serialNumber": "357445725687251"
+    },
+    {
+      "material": "TGSA55664000",
+      "technicalName": "SSG GALAXY S938B 256GB TN PT PPB/P291/14",
+      "serialNumber": "357445725687731"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699982014878"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699981772989"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699981773185"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699981773805"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699981825779"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699981825852"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699981825977"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699982021428"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699982021493"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699981825753"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699981825886"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699982015024"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699981772922"
+    },
+    {
+      "material": "TGSA56064000",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "serialNumber": "357699982028654"
+    },
+    {
+      "material": "TGSA560C2000",
+      "technicalName": "SSG GALAXY A066M 128GB CZ PPB/P291/12",
+      "serialNumber": "354640971069591"
+    },
+    {
+      "material": "TGSA56164000",
+      "technicalName": "SSG GALAXY A266M 256GB PT PPB/P291/14",
+      "serialNumber": "357896890596794"
+    },
+    {
+      "material": "TGSA56224000",
+      "technicalName": "SSG GALAXY A366E 256GB BR PPB/P291/14",
+      "serialNumber": "352230460126086"
+    },
+    {
+      "material": "TGSA57162000",
+      "technicalName": "SSG GALAXY F966B/DS 512GB PT PPB/P291/12",
+      "serialNumber": "351838140096528"
+    },
+    {
+      "material": "TGSA57162000",
+      "technicalName": "SSG GALAXY F966B/DS 512GB PT PPB/P291/12",
+      "serialNumber": "351838140066992"
+    },
+    {
+      "material": "TGSA57162000",
+      "technicalName": "SSG GALAXY F966B/DS 512GB PT PPB/P291/12",
+      "serialNumber": "351838140067099"
+    },
+    {
+      "material": "TGSA57162000",
+      "technicalName": "SSG GALAXY F966B/DS 512GB PT PPB/P291/12",
+      "serialNumber": "351838140051374"
+    },
+    {
+      "material": "TGSA57312000",
+      "technicalName": "SSG GALAXY F766B 256GB AZ PPB/P291/12",
+      "serialNumber": "351185140039227"
+    },
+    {
+      "material": "TGSA57362000",
+      "technicalName": "SSG GALAXY F766B 256GB PT PPB/P291/12",
+      "serialNumber": "351185140029236"
+    },
+    {
+      "material": "TGSA57362000",
+      "technicalName": "SSG GALAXY F766B 256GB PT PPB/P291/12",
+      "serialNumber": "351185140188933"
+    },
+    {
+      "material": "TGSA57462000",
+      "technicalName": "SSG GALAXY F766B 512GB PT PPB/P291/12",
+      "serialNumber": "353028230004750"
+    },
+    {
+      "material": "TGSA57462000",
+      "technicalName": "SSG GALAXY F766B 512GB PT PPB/P291/12",
+      "serialNumber": "353028230092847"
+    },
+    {
+      "material": "TGSA57622000",
+      "technicalName": "SSG GALAXY F761B 256GB BR PPB/P291/12",
+      "serialNumber": "358133810027489"
+    },
+    {
+      "material": "TGSA58664000",
+      "technicalName": "SSG GALAXY A176B 128GB PT PPB/P291/14",
+      "serialNumber": "357884917826014"
+    },
+    {
+      "material": "TGSA586C4000",
+      "technicalName": "SSG GALAXY A176B 128GB CZ PPB/P291/14",
+      "serialNumber": "357884917917193"
+    },
+    {
+      "material": "TGSA58764000",
+      "technicalName": "SSG GALAXY A176B 256GB PT PPB/P291/14",
+      "serialNumber": "358680815360489"
+    },
+    {
+      "material": "TGSA59064000",
+      "technicalName": "SSG GALAXY S731B 256GB PT PPB/P291/14",
+      "serialNumber": "357749666594198"
+    },
+    {
+      "material": "TGSA590B4000",
+      "technicalName": "SSG GALAXY S731B 256GB AZM PPB/P291/14",
+      "serialNumber": "357749666523106"
+    },
+    {
+      "material": "TGSA59662000",
+      "technicalName": "SSG GALAXY S948B 256GB PT PPB/P291/12",
+      "serialNumber": "353878430136616"
+    },
+    {
+      "material": "TGSA59664000",
+      "technicalName": "SSG GALAXY S948B 256GB PT PPB/P291/14",
+      "serialNumber": "353878435101680"
+    },
+    {
+      "material": "TGSA596R4000",
+      "technicalName": "SSG GALAXY S948B 256GB VT PPB/P291/14",
+      "serialNumber": "353878435082252"
+    },
+    {
+      "material": "TGSA596R4000",
+      "technicalName": "SSG GALAXY S948B 256GB VT PPB/P291/14",
+      "serialNumber": "353878435061728"
+    },
+    {
+      "material": "TGSA60064000",
+      "technicalName": "SSG GALAXY S947B 256GB PT PPB/P291/14",
+      "serialNumber": "356203275008464"
+    },
+    {
+      "material": "TGSA600R4000",
+      "technicalName": "SSG GALAXY S947B 256GB VT PPB/P291/14",
+      "serialNumber": "356203275031821"
+    },
+    {
+      "material": "TGSA60164000",
+      "technicalName": "SSG GALAXY S947B 512GB PT PPB/P291/14",
+      "serialNumber": "357253485090611"
+    },
+    {
+      "material": "TGSA60164000",
+      "technicalName": "SSG GALAXY S947B 512GB PT PPB/P291/14",
+      "serialNumber": "357253485084200"
+    },
+    {
+      "material": "TGSA601R4000",
+      "technicalName": "SSG GALAXY S947B 512GB VT PPB/P291/14",
+      "serialNumber": "357253485129906"
+    },
+    {
+      "material": "TGSA60364000",
+      "technicalName": "SSG GALAXY S942B 256GB PT PPB/P291/14",
+      "serialNumber": "354781914299760"
+    },
+    {
+      "material": "TGSA60364000",
+      "technicalName": "SSG GALAXY S942B 256GB PT PPB/P291/14",
+      "serialNumber": "354781914299828"
+    },
+    {
+      "material": "TGSA60364000",
+      "technicalName": "SSG GALAXY S942B 256GB PT PPB/P291/14",
+      "serialNumber": "354781914307860"
+    },
+    {
+      "material": "TGSA603R4000",
+      "technicalName": "SSG GALAXY S942B 256GB VT PPB/P291/14",
+      "serialNumber": "354781914022253"
+    },
+    {
+      "material": "TGSA60562000",
+      "technicalName": "SSG GALAXY S942B 512GB PT PPB/P291/12",
+      "serialNumber": "354944750106016"
+    },
+    {
+      "material": "TGSA60724000",
+      "technicalName": "SSG GALAXY A376B 256GB BRPPB/P291/14",
+      "serialNumber": "356599705289156"
+    },
+    {
+      "material": "TGSA60764000",
+      "technicalName": "SSG GALAXY A376B 256GB PTPPB/P291/14",
+      "serialNumber": "356599705142272"
+    },
+    {
+      "material": "TGSA60764000",
+      "technicalName": "SSG GALAXY A376B 256GB PTPPB/P291/14",
+      "serialNumber": "356599705142082"
+    },
+    {
+      "material": "TGSA609B4000",
+      "technicalName": "SSG GALAXY A576B 256GB AZMPPB/P291/14",
+      "serialNumber": "358852340247602"
+    },
+    {
+      "material": "TGSA609B4000",
+      "technicalName": "SSG GALAXY A576B 256GB AZMPPB/P291/14",
+      "serialNumber": "358852340243981"
+    },
+    {
+      "material": "TGSA609B4000",
+      "technicalName": "SSG GALAXY A576B 256GB AZMPPB/P291/14",
+      "serialNumber": "358852340253766"
+    },
+    {
+      "material": "TGSA609C4000",
+      "technicalName": "SSG GALAXY A576B 256GB CZPPB/P291/14",
+      "serialNumber": "358852341091165"
+    },
+    {
+      "material": "TGSA609C4000",
+      "technicalName": "SSG GALAXY A576B 256GB CZPPB/P291/14",
+      "serialNumber": "358852341101980"
+    },
+    {
+      "material": "TGSA609C4000",
+      "technicalName": "SSG GALAXY A576B 256GB CZPPB/P291/14",
+      "serialNumber": "358852340471137"
+    },
+    {
+      "material": "TGSA609C4000",
+      "technicalName": "SSG GALAXY A576B 256GB CZPPB/P291/14",
+      "serialNumber": "358852340471277"
+    },
+    {
+      "material": "TGSA61262000",
+      "technicalName": "SSG GALAXY A076M 128GB PT PPB/P291/12",
+      "serialNumber": "353313820151827"
+    },
+    {
+      "material": "TGSA61262000",
+      "technicalName": "SSG GALAXY A076M 128GB PT PPB/P291/12",
+      "serialNumber": "353313820161206"
+    },
+    {
+      "material": "TGSA61262000",
+      "technicalName": "SSG GALAXY A076M 128GB PT PPB/P291/12",
+      "serialNumber": "353313820285948"
+    },
+    {
+      "material": "TGSA61262000",
+      "technicalName": "SSG GALAXY A076M 128GB PT PPB/P291/12",
+      "serialNumber": "353313820155166"
+    },
+    {
+      "material": "TGSA61262000",
+      "technicalName": "SSG GALAXY A076M 128GB PT PPB/P291/12",
+      "serialNumber": "353313820161735"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000962871"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000962855"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000962863"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000962889"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000962897"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000962962"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000962970"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000962988"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000962996"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963002"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963010"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963028"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963036"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963077"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963143"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963150"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963168"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963176"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963184"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963192"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963200"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963218"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963226"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963234"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963242"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963259"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963267"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963275"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963283"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963291"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963309"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963317"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963325"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963333"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963358"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963366"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963374"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963382"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963390"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963408"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963416"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963424"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963432"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963440"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963457"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963465"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963473"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963481"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963499"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963507"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963515"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963523"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963531"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963549"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963556"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963564"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963572"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963580"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963598"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963606"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963614"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963622"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355261000963630"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355361002972439"
+    },
+    {
+      "material": "YBSC001A1000",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "serialNumber": "552355361002971829"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950079"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400116"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400124"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400140"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400157"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400165"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400173"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400181"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400199"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400207"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400215"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400223"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400231"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400249"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400256"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400264"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400272"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400280"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400298"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400306"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400314"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400322"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400330"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400348"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400355"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400363"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400371"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400389"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400397"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400405"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400413"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400421"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400439"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400447"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400454"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400462"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400470"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400488"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400496"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400504"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400512"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400520"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400538"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381589"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381605"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381548"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381563"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381597"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381613"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381621"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381639"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381712"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381746"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381753"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381787"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381795"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381829"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381837"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381977"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009381993"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382017"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382025"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382041"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382058"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382066"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382074"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382082"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382090"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382108"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382116"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382124"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382132"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382140"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382157"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382165"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382173"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382181"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382199"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382207"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382215"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382223"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382231"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382249"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382256"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382264"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382272"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382280"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382298"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382306"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382314"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382322"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382330"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382355"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382389"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382454"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382462"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382470"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382488"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382496"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382504"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382512"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382520"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009382538"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399557"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399565"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399573"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399599"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399672"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399748"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399755"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399771"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399797"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399805"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399813"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399821"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399847"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399854"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399862"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399870"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399888"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399896"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399904"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399912"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399920"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399938"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399946"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399953"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399961"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399979"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399987"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009399995"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400017"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400041"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400058"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400066"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400074"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400082"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400090"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269009400108"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008949782"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008949832"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008949857"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008949873"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008949881"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008949899"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008949949"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950020"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950046"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950053"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950087"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950095"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950202"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950210"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950228"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950236"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950350"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950368"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950418"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950467"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950483"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950491"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950509"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950525"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950533"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950558"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008950590"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355169004999783"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008645117"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269008645323"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269004645806"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355169006540882"
+    },
+    {
+      "material": "YBSC001A2000",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "serialNumber": "552355269005954397"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042246002"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042245236"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042246507"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042246515"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042246549"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042246556"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042246564"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042246622"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042246663"
+    },
+    {
+      "material": "YGSC246U1000",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "serialNumber": "551097471042246671"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733402"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733428"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733444"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733485"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733501"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733519"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733535"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733543"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733550"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471086733568"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471053586932"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097271084072682"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097171152181425"
+    },
+    {
+      "material": "YGSC246U4000",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "serialNumber": "551097471046807254"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164571"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164498"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164506"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164514"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164522"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164530"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164548"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164555"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164563"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097371131164589"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097171210506878"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471010665977"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097171209054765"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097171209054534"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471011417030"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248404"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248412"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248420"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248438"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248446"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248453"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248461"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248479"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248487"
+    },
+    {
+      "material": "YGSC301U2000",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "serialNumber": "551097471075248495"
+    }
+  ]
+}

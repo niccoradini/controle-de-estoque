@@ -1,0 +1,2238 @@
+{
+  "tableDate": "2026-08-04",
+  "inventoryCount": 287,
+  "planPricedMaterialCount": 64,
+  "fixedPricedMaterialCount": 223,
+  "items": [
+    {
+      "materialCode": "22024085",
+      "displayName": "ACER NOTEBOOK ASPIRE 5939 CI5 8GB 256 CINZA",
+      "cluster": "notebooks",
+      "priceCents": 359900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Acer Aspire Go 15 i5 8GB 256GB"
+    },
+    {
+      "materialCode": "22021815",
+      "displayName": "AMAZON ECHO DOT 5ª GERAÇÃO SPEAKER ALEXA BRANCO",
+      "cluster": "speakers",
+      "priceCents": 45900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Echo Dot 5ª geração"
+    },
+    {
+      "materialCode": "22021805",
+      "displayName": "AMAZON ECHO DOT 5ª GERAÇÃO SPEAKER ALEXA PRETO",
+      "cluster": "speakers",
+      "priceCents": 45900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Echo Dot 5ª geração"
+    },
+    {
+      "materialCode": "22021817",
+      "displayName": "AMAZON ECHO POP SPEAKER ALEXA BRANCO",
+      "cluster": "speakers",
+      "priceCents": 37900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Echo Pop"
+    },
+    {
+      "materialCode": "22021855",
+      "displayName": "AMAZON ECHO POP SPEAKER ALEXA PRETO",
+      "cluster": "speakers",
+      "priceCents": 37900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Echo Pop"
+    },
+    {
+      "materialCode": "22023233",
+      "displayName": "AMAZON KINDLE 11 GERAÇÃO 2024 16GB PRETO",
+      "cluster": "devices",
+      "priceCents": 64900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Kindle 11ª geração 16GB"
+    },
+    {
+      "materialCode": "22023545",
+      "displayName": "AMVOX CAIXA AMPLIF ACA 251 NEW X PRETO",
+      "cluster": "speakers",
+      "priceCents": 16900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Amvox ACA 251 New X"
+    },
+    {
+      "materialCode": "22023046",
+      "displayName": "APPLE AIRPODS 4 COM CANCELAMENTO DE RUÍDO BRANCO",
+      "cluster": "misc",
+      "priceCents": 159900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Apple AirPods 4 com cancelamento de ruído"
+    },
+    {
+      "materialCode": "22022613",
+      "displayName": "APPLE CABO USB-C PARA LIGHTNING BRANCO",
+      "cluster": "cables",
+      "priceCents": 22900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Apple cabo USB-C para Lightning 1m"
+    },
+    {
+      "materialCode": "22022526",
+      "displayName": "APPLE CARREGADOR USB-C 20W BRANCO",
+      "cluster": "chargers",
+      "priceCents": 21900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Apple carregador USB-C 20W"
+    },
+    {
+      "materialCode": "BGAP25243000",
+      "displayName": "APPLE IPAD 11 POLEGADAS WIFI+CEL 128GB PRATA",
+      "cluster": "devices",
+      "priceCents": 629900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Loja Vivo · referência de catálogo",
+      "referenceName": "Apple iPad 11 Wi-Fi + Cellular 128GB"
+    },
+    {
+      "materialCode": "22024315",
+      "displayName": "APPLE WATCH SE 3 GPS 40MM BRANCO",
+      "cluster": "devices",
+      "priceCents": 249900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Apple Watch SE 3 GPS 40mm"
+    },
+    {
+      "materialCode": "22024316",
+      "displayName": "APPLE WATCH SE 3 GPS 44MM PRETO",
+      "cluster": "devices",
+      "priceCents": 269900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Apple Watch SE 3 GPS 44mm"
+    },
+    {
+      "materialCode": "DGAP22163000",
+      "displayName": "APPLE WATCH ULTRA 2 GPS+CELLULAR 49MM PRETO",
+      "cluster": "devices",
+      "priceCents": 629900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Apple Watch Ultra 2 GPS + Cellular"
+    },
+    {
+      "materialCode": "22018137",
+      "displayName": "CABO GEONAV PREMIUM 3X1 1,5M NYLON CINZA",
+      "cluster": "cables",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Geonav Premium 3 em 1 1,5m"
+    },
+    {
+      "materialCode": "22023277",
+      "displayName": "CAPA GALAXY A16 5G IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023320",
+      "displayName": "CAPA GALAXY A16 5G SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024210",
+      "displayName": "CAPA GALAXY A17 5G IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic Impactor — linha atual Galaxy"
+    },
+    {
+      "materialCode": "22024194",
+      "displayName": "CAPA GALAXY A17 5G SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic Soft Series 1.5 — linha atual Galaxy"
+    },
+    {
+      "materialCode": "22024239",
+      "displayName": "CAPA GALAXY A26 5G SOFT SERIES 1.5 AZUL",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023317",
+      "displayName": "CAPA GALAXY A26 5G SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024241",
+      "displayName": "CAPA GALAXY A26 5G SOFT SERIES 1.5 ROSA",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024235",
+      "displayName": "CAPA GALAXY A36 5G SOFT SERIES 1.5 AZUL",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023318",
+      "displayName": "CAPA GALAXY A36 5G SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024237",
+      "displayName": "CAPA GALAXY A36 5G SOFT SERIES 1.5 VERDE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024804",
+      "displayName": "CAPA GALAXY A37 IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic Impactor — linha atual Galaxy"
+    },
+    {
+      "materialCode": "22024925",
+      "displayName": "CAPA GALAXY A37 SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic Soft Series 1.5 — linha atual Galaxy"
+    },
+    {
+      "materialCode": "22023627",
+      "displayName": "CAPA GALAXY A56 5G IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024233",
+      "displayName": "CAPA GALAXY A56 5G SOFT SERIES 1.5 AZUL",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023319",
+      "displayName": "CAPA GALAXY A56 5G SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024236",
+      "displayName": "CAPA GALAXY A56 5G SOFT SERIES 1.5 ROSA",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024234",
+      "displayName": "CAPA GALAXY A56 5G SOFT SERIES 1.5 VERDE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024927",
+      "displayName": "CAPA GALAXY A57 IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic Impactor — linha atual Galaxy"
+    },
+    {
+      "materialCode": "22024926",
+      "displayName": "CAPA GALAXY A57 SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic Soft Series 1.5 — linha atual Galaxy"
+    },
+    {
+      "materialCode": "22023563",
+      "displayName": "CAPA GALAXY S25 EDGE IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023564",
+      "displayName": "CAPA GALAXY S25 EDGE SOFT 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023617",
+      "displayName": "CAPA MOTO EDGE 60 FUSION SOFT 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023702",
+      "displayName": "CAPA MOTO EDGE 60 PRO IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023701",
+      "displayName": "CAPA MOTO EDGE 60 PRO SOFT 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023772",
+      "displayName": "CAPA MOTO G56 IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023771",
+      "displayName": "CAPA MOTO G56 SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22024800",
+      "displayName": "CAPA MOTO G67/G77 IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic Impactor Moto G67/G77"
+    },
+    {
+      "materialCode": "22024801",
+      "displayName": "CAPA MOTO G67/G77 SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic Soft Series Moto G67/G77"
+    },
+    {
+      "materialCode": "22023866",
+      "displayName": "CAPA MOTO G86 IMPACTOR TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023773",
+      "displayName": "CAPA MOTO G86 SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023316",
+      "displayName": "CAPA MOTOROLA G15 SOFT SERIES 1.5 PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023279",
+      "displayName": "CAPA MOTOROLA G35 5G SOFT TOUCH PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023280",
+      "displayName": "CAPA MOTOROLA G55 5G SOFT TOUCH PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22023272",
+      "displayName": "CAPA MOTOROLA G75 5G SOFT TOUCH PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Customic capa da linha Essenciais"
+    },
+    {
+      "materialCode": "22018668",
+      "displayName": "CARREGADOR MAGNÉTICO APPLE WATCH 2M",
+      "cluster": "chargers",
+      "priceCents": 34900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Apple cabo magnético para Watch 2m"
+    },
+    {
+      "materialCode": "22021611",
+      "displayName": "DPC MASSAGEADOR SHIATSU DE PÉS RENPHO PRETO",
+      "cluster": "misc",
+      "priceCents": 94900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Renpho massageador Shiatsu para pés"
+    },
+    {
+      "materialCode": "22022627",
+      "displayName": "GEONAV CABO USB-C CONECTOR LIGHTNING 2M AZUL",
+      "cluster": "cables",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Geonav USB-C para Lightning 2m"
+    },
+    {
+      "materialCode": "22019463",
+      "displayName": "GEONAV CARREGADOR PORTÁTIL 5000MAH PRETO",
+      "cluster": "chargers",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Geonav power bank 5.000mAh"
+    },
+    {
+      "materialCode": "22022826",
+      "displayName": "GEONAV CARREGADOR S POWER GAN DUO 65W BRANCO",
+      "cluster": "chargers",
+      "priceCents": 13900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Geonav carregador GaN Duo 65W"
+    },
+    {
+      "materialCode": "22021820",
+      "displayName": "HARMAN JBL HEADPHONE TUNE 520 BLUETOOTH PRETO",
+      "cluster": "misc",
+      "priceCents": 18900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "JBL Tune 520BT"
+    },
+    {
+      "materialCode": "RGHU06623000",
+      "displayName": "HUAWEI ROTEADOR 5G CPE 5S BRANCO",
+      "cluster": "misc",
+      "priceCents": 129900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Huawei roteador 5G"
+    },
+    {
+      "materialCode": "22025014",
+      "displayName": "I2GO ALÇA CABO C/C 1,5M CBF AZUL-MARINHO",
+      "cluster": "cables",
+      "priceCents": 14900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO alça cabo USB-C/USB-C 1,5m CBF"
+    },
+    {
+      "materialCode": "22025015",
+      "displayName": "I2GO ALÇA CABO C/C 30CM CBF AZUL-MARINHO",
+      "cluster": "cables",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO alça cabo USB-C/USB-C 30cm CBF"
+    },
+    {
+      "materialCode": "22025013",
+      "displayName": "I2GO CABO C/C 2M CBF AZUL-MARINHO",
+      "cluster": "cables",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo USB-C/USB-C 2m CBF"
+    },
+    {
+      "materialCode": "22025025",
+      "displayName": "I2GO CABO DUAL C/C 1,5M PRETO",
+      "cluster": "cables",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo Dual USB-C/USB-C 1,5m"
+    },
+    {
+      "materialCode": "22023871",
+      "displayName": "I2GO CABO FLAT LIGHTNING USB-C 1,2M CINZA",
+      "cluster": "cables",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo Flat Lightning/USB-C 1,2m"
+    },
+    {
+      "materialCode": "22023869",
+      "displayName": "I2GO CABO FLAT USB-C + USB-C 1,2M 3A CINZA",
+      "cluster": "cables",
+      "priceCents": 5900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo Flat USB-C/USB-C 1,2m"
+    },
+    {
+      "materialCode": "22023922",
+      "displayName": "I2GO CABO FLAT USB-C A 1,2M BK PRETO",
+      "cluster": "cables",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo Flat USB-C/USB-A 1,2m"
+    },
+    {
+      "materialCode": "22022634",
+      "displayName": "I2GO CABO LIGHTNING 1,5M I2GCBL975 BR PRETO",
+      "cluster": "cables",
+      "priceCents": 6900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo Lightning 1,5m"
+    },
+    {
+      "materialCode": "22023881",
+      "displayName": "I2GO CABO MAGNÉTICO LIGHTNING USB-C 1,2M PRETO",
+      "cluster": "cables",
+      "priceCents": 10900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo magnético Lightning/USB-C 1,2m"
+    },
+    {
+      "materialCode": "22023819",
+      "displayName": "I2GO CABO MAGNÉTICO USB-C PARA C 1,2M PRETO",
+      "cluster": "cables",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo magnético USB-C/USB-C 1,2m"
+    },
+    {
+      "materialCode": "22022727",
+      "displayName": "I2GO CABO USB-C 1,5M I2GCBL976 BR PRETO",
+      "cluster": "cables",
+      "priceCents": 3900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo USB-C 1,5m"
+    },
+    {
+      "materialCode": "22023902",
+      "displayName": "I2GO CABO USB-C 3M 2,4A PVC PRETO",
+      "cluster": "cables",
+      "priceCents": 5900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo USB-C/USB-A 3m"
+    },
+    {
+      "materialCode": "22023025",
+      "displayName": "I2GO CABO USB-C+USB-C 2M 60W PROCBL012 CINZA",
+      "cluster": "cables",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO cabo USB-C/USB-C 2m 60W"
+    },
+    {
+      "materialCode": "22025008",
+      "displayName": "I2GO CAPA IPHONE 17 CBF AZUL-MARINHO",
+      "cluster": "cases",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO capa iPhone 17 CBF"
+    },
+    {
+      "materialCode": "22025010",
+      "displayName": "I2GO CAPA IPHONE 17 PRO MAX CBF AZUL-MARINHO",
+      "cluster": "cases",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO capa iPhone 17 Pro Max CBF"
+    },
+    {
+      "materialCode": "22023873",
+      "displayName": "I2GO CARREGADOR PAREDE 20W 1 USB-C BRANCO",
+      "cluster": "chargers",
+      "priceCents": 8900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO carregador de parede 20W USB-C"
+    },
+    {
+      "materialCode": "22022633",
+      "displayName": "I2GO CARREGADOR PAREDE PD PROWAL028 BR CINZA",
+      "cluster": "chargers",
+      "priceCents": 10900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO carregador de parede 36W PROWAL028"
+    },
+    {
+      "materialCode": "22022631",
+      "displayName": "I2GO CARREGADOR PAREDE PD PROWAL030 BRANCO",
+      "cluster": "chargers",
+      "priceCents": 18900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO carregador de parede 65W PROWAL030"
+    },
+    {
+      "materialCode": "22022726",
+      "displayName": "I2GO CARREGADOR PAREDE PD USB-C PROWAL024 BRANCO",
+      "cluster": "chargers",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO carregador de parede 20W PROWAL024"
+    },
+    {
+      "materialCode": "22022629",
+      "displayName": "I2GO CARREGADOR PAREDE USB I2GWAL029BK PRETO",
+      "cluster": "chargers",
+      "priceCents": 3900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO carregador de parede USB 10W"
+    },
+    {
+      "materialCode": "22023561",
+      "displayName": "I2GO CORDÃO LANYARD NYLON PREMIUM CINZA",
+      "cluster": "misc",
+      "priceCents": 6900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Loja Vivo · referência de catálogo",
+      "referenceName": "i2GO cordão Lanyard Premium"
+    },
+    {
+      "materialCode": "22023562",
+      "displayName": "I2GO CORDÃO LANYARD NYLON PREMIUM DOURADO",
+      "cluster": "misc",
+      "priceCents": 6900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Loja Vivo · referência de catálogo",
+      "referenceName": "i2GO cordão Lanyard Premium"
+    },
+    {
+      "materialCode": "22023560",
+      "displayName": "I2GO CORDÃO LANYARD NYLON PREMIUM PRETO",
+      "cluster": "misc",
+      "priceCents": 6900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Loja Vivo · referência de catálogo",
+      "referenceName": "i2GO cordão Lanyard Premium"
+    },
+    {
+      "materialCode": "22023440",
+      "displayName": "I2GO FONE USB-C METAL BEATS 1,2M PRETO",
+      "cluster": "misc",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO Metal Beats USB-C"
+    },
+    {
+      "materialCode": "22023435",
+      "displayName": "I2GO HEADPHONE BLUETOOTH BASS 550 ANC PRETO",
+      "cluster": "misc",
+      "priceCents": 14900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO Bass 550 ANC"
+    },
+    {
+      "materialCode": "22023798",
+      "displayName": "I2GO KIT CARREGADOR PD 20W + CABO C 1,5M BRANCO",
+      "cluster": "chargers",
+      "priceCents": 11900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO kit carregador PD 20W e cabo USB-C"
+    },
+    {
+      "materialCode": "22025017",
+      "displayName": "I2GO POWER BANK 10.000MAH 4 EM 1 CBF AZUL-MARINHO",
+      "cluster": "chargers",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO power bank 10.000mAh 4 em 1 CBF"
+    },
+    {
+      "materialCode": "22022725",
+      "displayName": "I2GO POWER BANK 10000MAH PROBAT017 PRETO",
+      "cluster": "chargers",
+      "priceCents": 14900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO power bank 10.000mAh PROBAT017"
+    },
+    {
+      "materialCode": "22023875",
+      "displayName": "I2GO POWERBANK POCKET 5.000 LIGHTNING PRETO",
+      "cluster": "chargers",
+      "priceCents": 13900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO power bank Pocket Lightning 5.000mAh"
+    },
+    {
+      "materialCode": "22023877",
+      "displayName": "I2GO POWERBANK POCKET 5.000 USB-C PRETO",
+      "cluster": "chargers",
+      "priceCents": 13900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO power bank Pocket USB-C 5.000mAh"
+    },
+    {
+      "materialCode": "22023426",
+      "displayName": "I2GO SMARTWATCH TRACK R200 PRETO",
+      "cluster": "devices",
+      "priceCents": 15900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO Track R200"
+    },
+    {
+      "materialCode": "22023425",
+      "displayName": "I2GO SMARTWATCH TRACK S200 PRETO",
+      "cluster": "devices",
+      "priceCents": 14900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO Track S200"
+    },
+    {
+      "materialCode": "22023879",
+      "displayName": "I2GO SUPORTE VEICULAR AIR VENT HOLDER PRETO",
+      "cluster": "misc",
+      "priceCents": 5900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO suporte veicular Air Vent"
+    },
+    {
+      "materialCode": "22023883",
+      "displayName": "I2GO SUPORTE VEICULAR ULTRA MAGNETIC PRETO",
+      "cluster": "misc",
+      "priceCents": 6900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO suporte Ultra Magnetic"
+    },
+    {
+      "materialCode": "22025018",
+      "displayName": "I2GO VENTOSA SUPORTE C/ MAGNÉTICA CBF AZUL-MARINHO",
+      "cluster": "misc",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "i2GO suporte magnético com ventosa CBF"
+    },
+    {
+      "materialCode": "22024745",
+      "displayName": "MOTO CAPA PROTETORA EDGE 70 FUSION TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Motorola capa protetora Edge 70 Fusion"
+    },
+    {
+      "materialCode": "22024435",
+      "displayName": "MOTO FONE DE OUVIDO BUDS BASS PRETO",
+      "cluster": "misc",
+      "priceCents": 29900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Moto Buds Bass"
+    },
+    {
+      "materialCode": "22024606",
+      "displayName": "MOTOROLA CAPA PROTETORA EDGE 70 TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Motorola capa protetora Edge 70"
+    },
+    {
+      "materialCode": "22024775",
+      "displayName": "MOTOROLA CAPA SIGNATURE TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 14900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Motorola capa Signature"
+    },
+    {
+      "materialCode": "TGMO61052000",
+      "displayName": "MOTOROLA MOTO G87 256GB GRAFITE",
+      "cluster": "devices",
+      "priceCents": 224910,
+      "priceKind": "reference",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Motorola Brasil · produto equivalente",
+      "referenceName": "Motorola Moto g Max 5G 256GB — equivalente brasileiro"
+    },
+    {
+      "materialCode": "22022756",
+      "displayName": "OVVI ALÇA UNIVERSAL AZUL",
+      "cluster": "misc",
+      "priceCents": 14900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi alça universal Azul/Urbano"
+    },
+    {
+      "materialCode": "22022624",
+      "displayName": "OVVI ALÇA UNIVERSAL BEGE",
+      "cluster": "misc",
+      "priceCents": 16900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi alça universal Areia"
+    },
+    {
+      "materialCode": "22022623",
+      "displayName": "OVVI ALÇA UNIVERSAL PRETO",
+      "cluster": "misc",
+      "priceCents": 14900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi alça universal Urbano"
+    },
+    {
+      "materialCode": "22021985",
+      "displayName": "OVVI ALÇA UNIVERSAL VERMELHO",
+      "cluster": "misc",
+      "priceCents": 16900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi alça universal Hibisco"
+    },
+    {
+      "materialCode": "22022622",
+      "displayName": "OVVI ALÇA UNIVERSAL VERMELHO",
+      "cluster": "misc",
+      "priceCents": 16900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi alça universal Hibisco"
+    },
+    {
+      "materialCode": "22021307",
+      "displayName": "OVVI CABO 2X1 KEVLAR 2M BRANCO",
+      "cluster": "cables",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi cabo 2 em 1 Kevlar 2m"
+    },
+    {
+      "materialCode": "22021313",
+      "displayName": "OVVI CABO 3X1 KEVLAR 2M CINZA",
+      "cluster": "cables",
+      "priceCents": 10900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi cabo 3 em 1 Kevlar 2m"
+    },
+    {
+      "materialCode": "22022771",
+      "displayName": "OVVI CABO 3X1 KEVLAR 2M CINZA",
+      "cluster": "cables",
+      "priceCents": 10900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi cabo 3 em 1 Kevlar 2m"
+    },
+    {
+      "materialCode": "22021308",
+      "displayName": "OVVI CABO USB-C LIGHTNING 2M KEVLAR PRETO",
+      "cluster": "cables",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi cabo USB-C/Lightning 2m Kevlar"
+    },
+    {
+      "materialCode": "22022762",
+      "displayName": "OVVI CABO USB-C LIGHTNING 2M KEVLAR PRETO",
+      "cluster": "cables",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi cabo USB-C/Lightning 2m Kevlar"
+    },
+    {
+      "materialCode": "22021297",
+      "displayName": "OVVI CABO USB-C USB-C KEVLAR 2M PRETO",
+      "cluster": "cables",
+      "priceCents": 11900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi cabo USB-C/USB-C 2m Kevlar"
+    },
+    {
+      "materialCode": "22023269",
+      "displayName": "OVVI CAPA GALAXY S25 ANTIBACTERIANA BRANCO",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S25 antibacteriana"
+    },
+    {
+      "materialCode": "22024179",
+      "displayName": "OVVI CAPA GALAXY S25 FE SILICONE MAGSAFE PRETO",
+      "cluster": "cases",
+      "priceCents": 13900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S25 FE silicone magnética"
+    },
+    {
+      "materialCode": "22024189",
+      "displayName": "OVVI CAPA GALAXY S25 FE SILICONE PRETO",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S25 FE silicone"
+    },
+    {
+      "materialCode": "22023221",
+      "displayName": "OVVI CAPA GALAXY S25 SILICONE PRETO",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S25 silicone"
+    },
+    {
+      "materialCode": "22023223",
+      "displayName": "OVVI CAPA GALAXY S25 ULTRA SILICONE PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S25 Ultra silicone"
+    },
+    {
+      "materialCode": "22023271",
+      "displayName": "OVVI CAPA GALAXY S25+ ANTIBACTERIANA BRANCO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S25+ antibacteriana"
+    },
+    {
+      "materialCode": "22023266",
+      "displayName": "OVVI CAPA GALAXY S25+ SILICONE PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S25+ silicone"
+    },
+    {
+      "materialCode": "22024571",
+      "displayName": "OVVI CAPA GALAXY S26 FLEX ECO",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · referência equivalente do Simulador Produtos",
+      "referenceName": "Ovvi Flex Eco Galaxy S26"
+    },
+    {
+      "materialCode": "22024630",
+      "displayName": "OVVI CAPA GALAXY S26 HOLO MAGNÉTICA ROSA",
+      "cluster": "cases",
+      "priceCents": 21900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 Holo magnética"
+    },
+    {
+      "materialCode": "22024559",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA AZUL",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 silicone magnética"
+    },
+    {
+      "materialCode": "22024558",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA CINZA",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 silicone magnética"
+    },
+    {
+      "materialCode": "22024560",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA PRETO",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 silicone magnética"
+    },
+    {
+      "materialCode": "22024556",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA ROXO",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 silicone magnética"
+    },
+    {
+      "materialCode": "22024554",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA VERDE",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 silicone magnética"
+    },
+    {
+      "materialCode": "22024565",
+      "displayName": "OVVI CAPA GALAXY S26 TECIDO MAGNÉTICA CB",
+      "cluster": "cases",
+      "priceCents": 23900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 tecido magnética"
+    },
+    {
+      "materialCode": "22024562",
+      "displayName": "OVVI CAPA GALAXY S26 TECIDO MAGNÉTICA PRETO",
+      "cluster": "cases",
+      "priceCents": 23900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 tecido magnética"
+    },
+    {
+      "materialCode": "22024568",
+      "displayName": "OVVI CAPA GALAXY S26 TRANSPARENTE MAGNÉTICA",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 transparente magnética"
+    },
+    {
+      "materialCode": "22024634",
+      "displayName": "OVVI CAPA GALAXY S26 ULTRA SILICONE MAGNÉTICA AZUL",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 Ultra silicone magnética"
+    },
+    {
+      "materialCode": "22024632",
+      "displayName": "OVVI CAPA GALAXY S26 ULTRA SILICONE MAGNÉTICA CINZA",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 Ultra silicone magnética"
+    },
+    {
+      "materialCode": "22024572",
+      "displayName": "OVVI CAPA GALAXY S26+ FLEX ECO",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · referência equivalente do Simulador Produtos",
+      "referenceName": "Ovvi Flex Eco Galaxy S26+"
+    },
+    {
+      "materialCode": "22024631",
+      "displayName": "OVVI CAPA GALAXY S26+ HOLO MAGNÉTICA ROSA",
+      "cluster": "cases",
+      "priceCents": 21900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26+ Holo magnética"
+    },
+    {
+      "materialCode": "22024628",
+      "displayName": "OVVI CAPA GALAXY S26+ SILICONE MAGNÉTICA AZUL",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26+ silicone magnética"
+    },
+    {
+      "materialCode": "22024627",
+      "displayName": "OVVI CAPA GALAXY S26+ SILICONE MAGNÉTICA CINZA",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26+ silicone magnética"
+    },
+    {
+      "materialCode": "22024636",
+      "displayName": "OVVI CAPA GALAXY S26+ SILICONE MAGNÉTICA PRETO",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26+ silicone magnética"
+    },
+    {
+      "materialCode": "22024569",
+      "displayName": "OVVI CAPA GALAXY S26+ TRANSPARENTE MAGNÉTICA",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26+ transparente magnética"
+    },
+    {
+      "materialCode": "22022747",
+      "displayName": "OVVI CAPA IPHONE 13 SILICONE MAGSAFE PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 13 silicone MagSafe"
+    },
+    {
+      "materialCode": "22022748",
+      "displayName": "OVVI CAPA IPHONE 15 SILICONE MAGSAFE PRETO",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 15 silicone MagSafe"
+    },
+    {
+      "materialCode": "22022845",
+      "displayName": "OVVI CAPA IPHONE 16 ANTIBACTERIANA BRANCO",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16"
+    },
+    {
+      "materialCode": "22022852",
+      "displayName": "OVVI CAPA IPHONE 16 PRO ANTIBACTERIANA BRANCO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16 Pro"
+    },
+    {
+      "materialCode": "22022857",
+      "displayName": "OVVI CAPA IPHONE 16 PRO MAX SILICONE MAGSAFE CINZA",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16 Pro Max MagSafe"
+    },
+    {
+      "materialCode": "22023171",
+      "displayName": "OVVI CAPA IPHONE 16 PRO MAX SILICONE MAGSAFE CINZA",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16 Pro Max MagSafe"
+    },
+    {
+      "materialCode": "22023169",
+      "displayName": "OVVI CAPA IPHONE 16 PRO MAX TRANSPARENTE MAGSAFE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16 Pro Max MagSafe"
+    },
+    {
+      "materialCode": "22023192",
+      "displayName": "OVVI CAPA IPHONE 16 PRO SILICONE MAGSAFE PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16 Pro"
+    },
+    {
+      "materialCode": "22023167",
+      "displayName": "OVVI CAPA IPHONE 16 PRO TRANSPARENTE MAGSAFE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16 Pro"
+    },
+    {
+      "materialCode": "22023200",
+      "displayName": "OVVI CAPA IPHONE 16 SILICONE MAGSAFE PRETO",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16"
+    },
+    {
+      "materialCode": "22023166",
+      "displayName": "OVVI CAPA IPHONE 16 TRANSPARENTE MAGSAFE",
+      "cluster": "cases",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16"
+    },
+    {
+      "materialCode": "22023555",
+      "displayName": "OVVI CAPA IPHONE 16E TRANSPARENTE MAGSAFE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 16E transparente MagSafe"
+    },
+    {
+      "materialCode": "22023768",
+      "displayName": "OVVI CAPA IPHONE 17 FLEX ECO TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi Flex Eco iPhone 17"
+    },
+    {
+      "materialCode": "22023770",
+      "displayName": "OVVI CAPA IPHONE 17 PRO FLEX ECO TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi Flex Eco iPhone 17 Pro"
+    },
+    {
+      "materialCode": "22023797",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX FLEX ECO TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi Flex Eco iPhone 17 Pro Max"
+    },
+    {
+      "materialCode": "22023711",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX SILICONE MAGSAFE AZUL",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 Pro Max MagSafe"
+    },
+    {
+      "materialCode": "22023649",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX SILICONE MAGSAFE CINZA",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 Pro Max MagSafe"
+    },
+    {
+      "materialCode": "22023650",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX SILICONE MAGSAFE PRETO",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 Pro Max MagSafe"
+    },
+    {
+      "materialCode": "22023696",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX SILICONE MAGSAFE VERDE",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 Pro Max MagSafe"
+    },
+    {
+      "materialCode": "22023825",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX TRANSPARENTE MAGSAFE",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 Pro Max MagSafe"
+    },
+    {
+      "materialCode": "22023810",
+      "displayName": "OVVI CAPA IPHONE 17 PRO SILICONE MAGSAFE PRETO",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 Pro silicone MagSafe"
+    },
+    {
+      "materialCode": "22023655",
+      "displayName": "OVVI CAPA IPHONE 17 SILICONE MAGSAFE CINZA",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 MagSafe"
+    },
+    {
+      "materialCode": "22023656",
+      "displayName": "OVVI CAPA IPHONE 17 SILICONE MAGSAFE PRETO",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 MagSafe"
+    },
+    {
+      "materialCode": "22023736",
+      "displayName": "OVVI CAPA IPHONE 17 SILICONE MAGSAFE PRETO",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 MagSafe"
+    },
+    {
+      "materialCode": "22023654",
+      "displayName": "OVVI CAPA IPHONE 17 SILICONE MAGSAFE VERDE",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 MagSafe"
+    },
+    {
+      "materialCode": "22023739",
+      "displayName": "OVVI CAPA IPHONE 17 SILICONE MAGSAFE VERDE",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 MagSafe"
+    },
+    {
+      "materialCode": "22023647",
+      "displayName": "OVVI CAPA IPHONE 17 TRANSPARENTE MAGSAFE",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17 MagSafe"
+    },
+    {
+      "materialCode": "22024917",
+      "displayName": "OVVI CAPA IPHONE 17E FLEX ECO TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · referência equivalente do Simulador Produtos",
+      "referenceName": "Ovvi Flex Eco iPhone 17E"
+    },
+    {
+      "materialCode": "22024915",
+      "displayName": "OVVI CAPA IPHONE 17E SILICONE MAGNÉTICA PRETO",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17E magnética"
+    },
+    {
+      "materialCode": "22024916",
+      "displayName": "OVVI CAPA IPHONE 17E TRANSPARENTE MAGNÉTICA",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa iPhone 17E magnética"
+    },
+    {
+      "materialCode": "22024137",
+      "displayName": "OVVI CAPA SUPER PROTEÇÃO IPHONE 16 PRO MAX PRETO",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi Super Proteção iPhone 16 Pro Max"
+    },
+    {
+      "materialCode": "22024130",
+      "displayName": "OVVI CAPA SUPER PROTEÇÃO IPHONE 17 PRO PRETO",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi Super Proteção iPhone 17 Pro"
+    },
+    {
+      "materialCode": "22022079",
+      "displayName": "OVVI CARREGADOR 3X1 BASE Z APPLE CINZA",
+      "cluster": "chargers",
+      "priceCents": 44900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · referência equivalente do Simulador Produtos",
+      "referenceName": "Carregador 3 em 1 dobrável Apple"
+    },
+    {
+      "materialCode": "22022077",
+      "displayName": "OVVI CARREGADOR 3X1 ESTEIRA APPLE CINZA",
+      "cluster": "chargers",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi carregador 3 em 1 Esteira Apple"
+    },
+    {
+      "materialCode": "22022777",
+      "displayName": "OVVI CARREGADOR 3X1 ESTEIRA APPLE CINZA",
+      "cluster": "chargers",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi carregador 3 em 1 Esteira Apple"
+    },
+    {
+      "materialCode": "22022078",
+      "displayName": "OVVI CARREGADOR 3X1 ESTEIRA SAMSUNG CINZA",
+      "cluster": "chargers",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi carregador 3 em 1 Esteira Samsung"
+    },
+    {
+      "materialCode": "22021676",
+      "displayName": "OVVI CARREGADOR PAREDE UNIV 35W PD PPS BRANCO",
+      "cluster": "chargers",
+      "priceCents": 15900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi carregador de parede universal 35W"
+    },
+    {
+      "materialCode": "22021678",
+      "displayName": "OVVI CARREGADOR PAREDE UNIV 65W PD QC BRANCO",
+      "cluster": "chargers",
+      "priceCents": 24900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi carregador de parede universal 65W"
+    },
+    {
+      "materialCode": "22022669",
+      "displayName": "OVVI CARREGADOR PAREDE UNIV 65W PD QC BRANCO",
+      "cluster": "chargers",
+      "priceCents": 24900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi carregador de parede universal 65W"
+    },
+    {
+      "materialCode": "22021726",
+      "displayName": "OVVI CARREGADOR VEICULAR UNIV 38W PDQC CINZA",
+      "cluster": "chargers",
+      "priceCents": 6900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi carregador veicular universal 38W"
+    },
+    {
+      "materialCode": "22023387",
+      "displayName": "OVVI GSHIELD FILME FOSCA",
+      "cluster": "screen_protectors",
+      "priceCents": 8900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Película Fosca"
+    },
+    {
+      "materialCode": "22023388",
+      "displayName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "cluster": "screen_protectors",
+      "priceCents": 8900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Película Privacidade"
+    },
+    {
+      "materialCode": "22023263",
+      "displayName": "OVVI GSHIELD FILME PRO FOSCA",
+      "cluster": "screen_protectors",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Película Fosca Pro"
+    },
+    {
+      "materialCode": "22023264",
+      "displayName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "cluster": "screen_protectors",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Película Privacidade Pro"
+    },
+    {
+      "materialCode": "22023262",
+      "displayName": "OVVI GSHIELD FILME PRO TRANSPARENTE",
+      "cluster": "screen_protectors",
+      "priceCents": 8900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Película Transparente Pro"
+    },
+    {
+      "materialCode": "22023386",
+      "displayName": "OVVI GSHIELD FILME TRANSPARENTE",
+      "cluster": "screen_protectors",
+      "priceCents": 6900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Película Transparente"
+    },
+    {
+      "materialCode": "22024841",
+      "displayName": "OVVI I2GO CAPA GLX S26 ULTRA SILICONE MAGNÉTICA AZUL",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 Ultra silicone magnética"
+    },
+    {
+      "materialCode": "22024818",
+      "displayName": "OVVI I2GO CAPA GLX S26 ULTRA TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 12900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 Ultra transparente"
+    },
+    {
+      "materialCode": "22024806",
+      "displayName": "OVVI I2GO CAPA GLX S26 ULTRA TRANSPARENTE MAGNÉTICA",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi capa Galaxy S26 Ultra transparente magnética"
+    },
+    {
+      "materialCode": "22023495",
+      "displayName": "OVVI POWERBANK 5000MAH MAGSAFE SLIM GRAFITE",
+      "cluster": "chargers",
+      "priceCents": 39900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Ovvi power bank 5.000mAh MagSafe Slim"
+    },
+    {
+      "materialCode": "22020879",
+      "displayName": "POSITIVO ROBÔ ASPIRADOR SMART WIFI BRANCO",
+      "cluster": "misc",
+      "priceCents": 69900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Positivo robô aspirador Smart Wi-Fi"
+    },
+    {
+      "materialCode": "22022676",
+      "displayName": "POSITIVO SMART ALIMENTADOR PET WIFI BRANCO",
+      "cluster": "misc",
+      "priceCents": 34900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Positivo Smart Alimentador Pet"
+    },
+    {
+      "materialCode": "22019525",
+      "displayName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "cluster": "misc",
+      "priceCents": 7900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Positivo Smart Controle Universal"
+    },
+    {
+      "materialCode": "22019295",
+      "displayName": "POSITIVO SMART LÂMPADA WI-FI BRANCO",
+      "cluster": "misc",
+      "priceCents": 3900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Positivo Smart Lâmpada"
+    },
+    {
+      "materialCode": "22018944",
+      "displayName": "POSITIVO SMART PLUG WIFI",
+      "cluster": "misc",
+      "priceCents": 6900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Positivo Smart Plug"
+    },
+    {
+      "materialCode": "22023323",
+      "displayName": "RM ALMOFADA MASSAG. SHIATSU PILLOW CINZA",
+      "cluster": "misc",
+      "priceCents": 28900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Relaxmedic Shiatsu Pillow"
+    },
+    {
+      "materialCode": "22023324",
+      "displayName": "RM BALANÇA DIGITAL GO BALANCE BIOIMPE BRANCO",
+      "cluster": "misc",
+      "priceCents": 9900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Relaxmedic Go Balance"
+    },
+    {
+      "materialCode": "22023321",
+      "displayName": "RM MINI PISTOLA MASSAG. DEEP THERAPY AZUL",
+      "cluster": "misc",
+      "priceCents": 31900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Relaxmedic Deep Therapy Mini"
+    },
+    {
+      "materialCode": "22023569",
+      "displayName": "RM MINI PISTOLA MASSAG. DEEP THERAPY CINZA",
+      "cluster": "misc",
+      "priceCents": 31900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Relaxmedic Deep Therapy Mini"
+    },
+    {
+      "materialCode": "22024070",
+      "displayName": "SAMSUNG CAPA C/ARGOLA GALAXY FLIP 7 AZUL-MARINHO",
+      "cluster": "cases",
+      "priceCents": 26900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Samsung capa Galaxy Z Flip7 com argola"
+    },
+    {
+      "materialCode": "22024068",
+      "displayName": "SAMSUNG CAPA C/ARGOLA GALAXY FLIP 7 TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 26900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Samsung capa Galaxy Z Flip7 com argola"
+    },
+    {
+      "materialCode": "22024069",
+      "displayName": "SAMSUNG CAPA GALAXY FLIP 7 TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Samsung capa Galaxy Z Flip7 transparente"
+    },
+    {
+      "materialCode": "22023245",
+      "displayName": "SAMSUNG CAPA PROTETORA GALAXY S24 FE TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · referência equivalente do Simulador Produtos",
+      "referenceName": "Samsung capa protetora Galaxy S24 FE"
+    },
+    {
+      "materialCode": "22023395",
+      "displayName": "SAMSUNG CAPA PROTETORA GALAXY S25 TRANSPARENTE",
+      "cluster": "cases",
+      "priceCents": 4900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · referência equivalente do Simulador Produtos",
+      "referenceName": "Samsung capa protetora Galaxy S25"
+    },
+    {
+      "materialCode": "BGSA569C4000",
+      "displayName": "SAMSUNG GALAXY TAB S10 FE 5G 128GB CINZA",
+      "cluster": "devices",
+      "priceCents": 329900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Loja Vivo · referência de catálogo",
+      "referenceName": "Samsung Galaxy Tab S10 FE 5G 128GB"
+    },
+    {
+      "materialCode": "22023096",
+      "displayName": "SAMSUNG GALAXY TAB S10 ULTRA 14,6\" 512GB CINZA",
+      "cluster": "devices",
+      "priceCents": 699900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Samsung Galaxy Tab S10 Ultra 512GB"
+    },
+    {
+      "materialCode": "22022496",
+      "displayName": "SAMSUNG PROJETOR THE FREESTYLE 2ªGERAÇÃO BRANCO",
+      "cluster": "misc",
+      "priceCents": 269900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Samsung The Freestyle 2ª geração"
+    },
+    {
+      "materialCode": "22023745",
+      "displayName": "SAMSUNG SMART TV 32\" HD H5000F 2025 PRETO",
+      "cluster": "tvs",
+      "priceCents": 114900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Smart TV Samsung HD H5000F 32\""
+    },
+    {
+      "materialCode": "22023746",
+      "displayName": "SAMSUNG SMART TV 43\" UHD 4K U8600F 2025 PRETO",
+      "cluster": "tvs",
+      "priceCents": 199900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Smart TV Samsung UHD Crystal 4K U8600F 43\""
+    },
+    {
+      "materialCode": "22022375",
+      "displayName": "SAMSUNG SMARTWATCH FIT 3 R390 GRAFITE",
+      "cluster": "devices",
+      "priceCents": 39900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Samsung Galaxy Fit3"
+    },
+    {
+      "materialCode": "22023921",
+      "displayName": "SAMSUNG WATCH 8 40MM BLUETOOTH GRAFITE",
+      "cluster": "devices",
+      "priceCents": 129900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Samsung Galaxy Watch8 BT 40mm"
+    },
+    {
+      "materialCode": "YGSC246U1000",
+      "displayName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "cluster": "misc",
+      "priceCents": 0,
+      "priceKind": "no_charge",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Chip Vivo — sem cobrança no pedido"
+    },
+    {
+      "materialCode": "YGSC301U2000",
+      "displayName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "cluster": "misc",
+      "priceCents": 0,
+      "priceKind": "no_charge",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Chip Vivo — sem cobrança no pedido"
+    },
+    {
+      "materialCode": "YGSC246U4000",
+      "displayName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "cluster": "misc",
+      "priceCents": 0,
+      "priceKind": "no_charge",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Chip Vivo — sem cobrança no pedido"
+    },
+    {
+      "materialCode": "YBSC001A2000",
+      "displayName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "cluster": "misc",
+      "priceCents": 0,
+      "priceKind": "no_charge",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Chip Vivo — sem cobrança no pedido"
+    },
+    {
+      "materialCode": "22024055",
+      "displayName": "STECK CAMERA 360° PTZ SCAM3BS1 BRANCO",
+      "cluster": "misc",
+      "priceCents": 13900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Steck câmera 360° PTZ"
+    },
+    {
+      "materialCode": "22019904",
+      "displayName": "TELLESCOM REPETIDOR SMT WIFI RG3110W PRETO",
+      "cluster": "misc",
+      "priceCents": 19900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Vivo Smart Wi-Fi RG3110W"
+    },
+    {
+      "materialCode": "22023954",
+      "displayName": "UP2 CONSOLE NINTENDO SWITCH OLED BRANCO",
+      "cluster": "misc",
+      "priceCents": 209900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Nintendo Switch OLED"
+    },
+    {
+      "materialCode": "22024877",
+      "displayName": "UP2 CONSOLE PS5 825GB DIGITAL BRANCO",
+      "cluster": "misc",
+      "priceCents": 409900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "PlayStation 5 Slim Digital"
+    },
+    {
+      "materialCode": "22024249",
+      "displayName": "UP2 FONE DE OUVIDO SEM FIO JBL TUNE 520BT PRETO",
+      "cluster": "misc",
+      "priceCents": 18900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "JBL Tune 520BT"
+    },
+    {
+      "materialCode": "22024256",
+      "displayName": "UP2 NOTEBOOK LENOVO CORE I5 8GB 512 CINZA",
+      "cluster": "notebooks",
+      "priceCents": 379900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Lenovo IdeaPad Slim 3i i5 8GB 512GB"
+    },
+    {
+      "materialCode": "22021980",
+      "displayName": "VIVO PLAY SMART TV STICK PRETO",
+      "cluster": "misc",
+      "priceCents": 17900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Vivo Play Smart TV Stick"
+    },
+    {
+      "materialCode": "22023416",
+      "displayName": "VIVO REPETIDOR WI-FI 6 500IX4X4 BRANCO",
+      "cluster": "misc",
+      "priceCents": 44900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Vivo repetidor Wi-Fi 6"
+    },
+    {
+      "materialCode": "22022605",
+      "displayName": "VIVO REPETIDOR WI-FI 6 500IX4X4 PRETO",
+      "cluster": "misc",
+      "priceCents": 44900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "Vivo repetidor Wi-Fi 6"
+    },
+    {
+      "materialCode": "22022835",
+      "displayName": "WAP CAIXA SOM BLUETOOTH WAAW BOOM 200 PRETO",
+      "cluster": "speakers",
+      "priceCents": 44900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "WAAW Boom 200"
+    },
+    {
+      "materialCode": "22024005",
+      "displayName": "WAP CAIXA SOM BLUETOOTH WAAW BY ALOK ME110 PRETO",
+      "cluster": "speakers",
+      "priceCents": 14900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "WAAW ME110"
+    },
+    {
+      "materialCode": "22022219",
+      "displayName": "WAP CAIXA SOM BLUETOOTH WAAW US 200SB DUO PRETO",
+      "cluster": "speakers",
+      "priceCents": 29900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "WAAW US 200SB Duo"
+    },
+    {
+      "materialCode": "22022836",
+      "displayName": "WAP CAIXA SOM WAAW HYPERBOOM 1000 PRETO",
+      "cluster": "speakers",
+      "priceCents": 119900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "WAAW Hyperboom 1000"
+    },
+    {
+      "materialCode": "22023005",
+      "displayName": "WAP FONE DE OUVIDO BLUETOOTH WAAW SENSE 210 PRETO",
+      "cluster": "misc",
+      "priceCents": 21900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "WAAW Sense 210"
+    },
+    {
+      "materialCode": "22024300",
+      "displayName": "WAP ROBÔ ASPIRADOR DE PÓ 3 EM 1 W90 PRETO",
+      "cluster": "misc",
+      "priceCents": 32900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "WAP robô aspirador W90"
+    },
+    {
+      "materialCode": "22024145",
+      "displayName": "WAP ROBÔ ASPIRADOR PÓ 3 EM 1 W90 PRETO",
+      "cluster": "misc",
+      "priceCents": 32900,
+      "priceKind": "fixed",
+      "tableDate": "2026-08-04",
+      "sourceLabel": "Gramcell · Simulador Produtos",
+      "referenceName": "WAP robô aspirador W90"
+    }
+  ]
+}

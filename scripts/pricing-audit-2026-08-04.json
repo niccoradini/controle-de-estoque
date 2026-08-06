@@ -1,0 +1,779 @@
+{
+  "source": "Simulador Produtos - Intranet Gramcell",
+  "checkedAt": "2026-08-04",
+  "validation": "Nome exato do aparelho e metadado Smartphone · PLANO confirmados antes de aceitar o valor",
+  "pricedCategories": [
+    "PRÉ",
+    "CONTROLE BTL",
+    "CONTROLE ENTRADA",
+    "CONTROLE ALTO VALOR",
+    "PÓS INDIVIDUAL",
+    "FAMILIA 2",
+    "FAMILIA 3",
+    "FAMILIA 4/5",
+    "VIVO V"
+  ],
+  "unavailableCategories": [
+    "B2B - 10x",
+    "B2B - 24x"
+  ],
+  "models": [
+    {
+      "key": "iphone 13 256gb",
+      "name": "iPhone 13 256GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 359900,
+        "CONTROLE BTL": 359900,
+        "CONTROLE ENTRADA": 349900,
+        "CONTROLE ALTO VALOR": 329900,
+        "PÓS INDIVIDUAL": 319900,
+        "FAMILIA 2": 309900,
+        "FAMILIA 3": 299900,
+        "FAMILIA 4/5": 289900,
+        "VIVO V": 279900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 15 256gb",
+      "name": "iPhone 15 256GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 479900,
+        "CONTROLE BTL": 479900,
+        "CONTROLE ENTRADA": 469900,
+        "CONTROLE ALTO VALOR": 459900,
+        "PÓS INDIVIDUAL": 409900,
+        "FAMILIA 2": 399900,
+        "FAMILIA 3": 369900,
+        "FAMILIA 4/5": 359900,
+        "VIVO V": 349900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 16 256gb",
+      "name": "iPhone 16 256GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 579900,
+        "CONTROLE BTL": 579900,
+        "CONTROLE ENTRADA": 539900,
+        "CONTROLE ALTO VALOR": 534900,
+        "PÓS INDIVIDUAL": 524900,
+        "FAMILIA 2": 509900,
+        "FAMILIA 3": 474900,
+        "FAMILIA 4/5": 454900,
+        "VIVO V": 439900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 16e 256gb",
+      "name": "iPhone 16E 256GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 429900,
+        "CONTROLE BTL": 429900,
+        "CONTROLE ENTRADA": 399900,
+        "CONTROLE ALTO VALOR": 394900,
+        "PÓS INDIVIDUAL": 389900,
+        "FAMILIA 2": 379900,
+        "FAMILIA 3": 359900,
+        "FAMILIA 4/5": 329900,
+        "VIVO V": 309900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 17 256gb",
+      "name": "iPhone 17 256GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 669900,
+        "CONTROLE BTL": 649900,
+        "CONTROLE ENTRADA": 639900,
+        "CONTROLE ALTO VALOR": 629900,
+        "PÓS INDIVIDUAL": 619900,
+        "FAMILIA 2": 589900,
+        "FAMILIA 3": 579900,
+        "FAMILIA 4/5": 559900,
+        "VIVO V": 549900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 17 512gb",
+      "name": "iPhone 17 512GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 869900,
+        "CONTROLE BTL": 869900,
+        "CONTROLE ENTRADA": 849900,
+        "CONTROLE ALTO VALOR": 839900,
+        "PÓS INDIVIDUAL": 829900,
+        "FAMILIA 2": 779900,
+        "FAMILIA 3": 749900,
+        "FAMILIA 4/5": 729900,
+        "VIVO V": 699900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 17 pro 256gb",
+      "name": "iPhone 17 Pro 256GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 1039900,
+        "CONTROLE BTL": 1039900,
+        "CONTROLE ENTRADA": 1029900,
+        "CONTROLE ALTO VALOR": 1019900,
+        "PÓS INDIVIDUAL": 999900,
+        "FAMILIA 2": 979900,
+        "FAMILIA 3": 959900,
+        "FAMILIA 4/5": 934900,
+        "VIVO V": 879900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 17 pro 512gb",
+      "name": "iPhone 17 Pro 512GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 1234900,
+        "CONTROLE BTL": 1234900,
+        "CONTROLE ENTRADA": 1169900,
+        "CONTROLE ALTO VALOR": 1139900,
+        "PÓS INDIVIDUAL": 1124900,
+        "FAMILIA 2": 1069900,
+        "FAMILIA 3": 1049900,
+        "FAMILIA 4/5": 1019900,
+        "VIVO V": 969900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 17 pro max 1tb",
+      "name": "iPhone 17 Pro Max 1TB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 1449900,
+        "CONTROLE BTL": 1449900,
+        "CONTROLE ENTRADA": 1339900,
+        "CONTROLE ALTO VALOR": 1309900,
+        "PÓS INDIVIDUAL": 1289900,
+        "FAMILIA 2": 1239900,
+        "FAMILIA 3": 1209900,
+        "FAMILIA 4/5": 1179900,
+        "VIVO V": 1119900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 17 pro max 256gb",
+      "name": "iPhone 17 Pro Max 256GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 1109900,
+        "CONTROLE BTL": 1109900,
+        "CONTROLE ENTRADA": 1049900,
+        "CONTROLE ALTO VALOR": 1039900,
+        "PÓS INDIVIDUAL": 1019900,
+        "FAMILIA 2": 999900,
+        "FAMILIA 3": 989900,
+        "FAMILIA 4/5": 979900,
+        "VIVO V": 959900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 17 pro max 512gb",
+      "name": "iPhone 17 Pro Max 512GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 1329900,
+        "CONTROLE BTL": 1329900,
+        "CONTROLE ENTRADA": 1249900,
+        "CONTROLE ALTO VALOR": 1229900,
+        "PÓS INDIVIDUAL": 1209900,
+        "FAMILIA 2": 1189900,
+        "FAMILIA 3": 1159900,
+        "FAMILIA 4/5": 1129900,
+        "VIVO V": 1079900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone 17e 256gb",
+      "name": "iPhone 17E 256GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 519900,
+        "CONTROLE BTL": 519900,
+        "CONTROLE ENTRADA": 484900,
+        "CONTROLE ALTO VALOR": 494900,
+        "PÓS INDIVIDUAL": 454900,
+        "FAMILIA 2": 434900,
+        "FAMILIA 3": 404900,
+        "FAMILIA 4/5": 399900,
+        "VIVO V": 389900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "iphone air 256gb",
+      "name": "iPhone Air 256GB",
+      "brand": "Apple",
+      "prices": {
+        "PRÉ": 719900,
+        "CONTROLE BTL": 719900,
+        "CONTROLE ENTRADA": 669900,
+        "CONTROLE ALTO VALOR": 659900,
+        "PÓS INDIVIDUAL": 649900,
+        "FAMILIA 2": 639900,
+        "FAMILIA 3": 609900,
+        "FAMILIA 4/5": 579900,
+        "VIVO V": 549900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "moto g35 5g",
+      "name": "Moto G35 5G",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 104900,
+        "CONTROLE BTL": 104900,
+        "CONTROLE ENTRADA": 99900,
+        "CONTROLE ALTO VALOR": 97900,
+        "PÓS INDIVIDUAL": 92900,
+        "FAMILIA 2": 89900,
+        "FAMILIA 3": 84900,
+        "FAMILIA 4/5": 79900,
+        "VIVO V": 74900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "moto g47 5g 128gb",
+      "name": "Moto G47 5G 128GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 149900,
+        "CONTROLE BTL": 149900,
+        "CONTROLE ENTRADA": 124900,
+        "CONTROLE ALTO VALOR": 119900,
+        "PÓS INDIVIDUAL": 114900,
+        "FAMILIA 2": 109900,
+        "FAMILIA 3": 104900,
+        "FAMILIA 4/5": 99900,
+        "VIVO V": 94900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "moto g86 5g 256gb",
+      "name": "Moto G86 5G 256GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 189900,
+        "CONTROLE BTL": 189900,
+        "CONTROLE ENTRADA": 179900,
+        "CONTROLE ALTO VALOR": 172900,
+        "PÓS INDIVIDUAL": 164900,
+        "FAMILIA 2": 159900,
+        "FAMILIA 3": 154900,
+        "FAMILIA 4/5": 149900,
+        "VIVO V": 144900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "motorola edge 60 fusion 256gb",
+      "name": "Motorola Edge 60 Fusion 256GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 216900,
+        "CONTROLE BTL": 216900,
+        "CONTROLE ENTRADA": 209900,
+        "CONTROLE ALTO VALOR": 199900,
+        "PÓS INDIVIDUAL": 194900,
+        "FAMILIA 2": 189900,
+        "FAMILIA 3": 184900,
+        "FAMILIA 4/5": 179900,
+        "VIVO V": 174900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "motorola edge 60 pro 256gb",
+      "name": "Motorola Edge 60 Pro 256GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 329900,
+        "CONTROLE BTL": 329900,
+        "CONTROLE ENTRADA": 289900,
+        "CONTROLE ALTO VALOR": 279900,
+        "PÓS INDIVIDUAL": 269900,
+        "FAMILIA 2": 239900,
+        "FAMILIA 3": 229900,
+        "FAMILIA 4/5": 219900,
+        "VIVO V": 209900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "motorola edge 70 512gb",
+      "name": "Motorola Edge 70 512GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 469900,
+        "CONTROLE BTL": 469900,
+        "CONTROLE ENTRADA": 359900,
+        "CONTROLE ALTO VALOR": 349900,
+        "PÓS INDIVIDUAL": 339900,
+        "FAMILIA 2": 329900,
+        "FAMILIA 3": 319900,
+        "FAMILIA 4/5": 309900,
+        "VIVO V": 299900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "motorola edge 70 fusion 256gb",
+      "name": "Motorola Edge 70 Fusion 256GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 269900,
+        "CONTROLE BTL": 269900,
+        "CONTROLE ENTRADA": 219900,
+        "CONTROLE ALTO VALOR": 214900,
+        "PÓS INDIVIDUAL": 209900,
+        "FAMILIA 2": 199900,
+        "FAMILIA 3": 189900,
+        "FAMILIA 4/5": 179900,
+        "VIVO V": 169900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "motorola moto g67 5g 128gb",
+      "name": "Motorola Moto G67 5G 128GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 129900,
+        "CONTROLE BTL": 129900,
+        "CONTROLE ENTRADA": 126900,
+        "CONTROLE ALTO VALOR": 123900,
+        "PÓS INDIVIDUAL": 120900,
+        "FAMILIA 2": 117900,
+        "FAMILIA 3": 114900,
+        "FAMILIA 4/5": 111900,
+        "VIVO V": 108900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "motorola moto g67 5g 256gb",
+      "name": "Motorola Moto G67 5G 256GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 158900,
+        "CONTROLE BTL": 158900,
+        "CONTROLE ENTRADA": 142900,
+        "CONTROLE ALTO VALOR": 137900,
+        "PÓS INDIVIDUAL": 132900,
+        "FAMILIA 2": 127900,
+        "FAMILIA 3": 122900,
+        "FAMILIA 4/5": 117900,
+        "VIVO V": 112900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "motorola moto g77 5g 256gb",
+      "name": "Motorola Moto G77 5G 256GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 174900,
+        "CONTROLE BTL": 174900,
+        "CONTROLE ENTRADA": 171900,
+        "CONTROLE ALTO VALOR": 168900,
+        "PÓS INDIVIDUAL": 159900,
+        "FAMILIA 2": 156900,
+        "FAMILIA 3": 153900,
+        "FAMILIA 4/5": 150900,
+        "VIVO V": 147900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "motorola signature 512gb",
+      "name": "Motorola Signature 512GB",
+      "brand": "Motorola",
+      "prices": {
+        "PRÉ": 859900,
+        "CONTROLE BTL": 859900,
+        "CONTROLE ENTRADA": 619900,
+        "CONTROLE ALTO VALOR": 609900,
+        "PÓS INDIVIDUAL": 549900,
+        "FAMILIA 2": 539900,
+        "FAMILIA 3": 519900,
+        "FAMILIA 4/5": 499900,
+        "VIVO V": 489900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy a06 4g 128gb",
+      "name": "Samsung Galaxy A06 4G 128GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 97900,
+        "CONTROLE BTL": 97900,
+        "CONTROLE ENTRADA": 92900,
+        "CONTROLE ALTO VALOR": 87900,
+        "PÓS INDIVIDUAL": 82900,
+        "FAMILIA 2": 77900,
+        "FAMILIA 3": 72900,
+        "FAMILIA 4/5": 67900,
+        "VIVO V": 62900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy a07 5g 128gb",
+      "name": "Samsung Galaxy A07 5G 128GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 106900,
+        "CONTROLE BTL": 106900,
+        "CONTROLE ENTRADA": 101900,
+        "CONTROLE ALTO VALOR": 99900,
+        "PÓS INDIVIDUAL": 96900,
+        "FAMILIA 2": 94900,
+        "FAMILIA 3": 91900,
+        "FAMILIA 4/5": 89900,
+        "VIVO V": 86900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy a17 5g 128gb",
+      "name": "Samsung Galaxy A17 5G 128GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 127900,
+        "CONTROLE BTL": 127900,
+        "CONTROLE ENTRADA": 119900,
+        "CONTROLE ALTO VALOR": 116900,
+        "PÓS INDIVIDUAL": 111900,
+        "FAMILIA 2": 106900,
+        "FAMILIA 3": 101900,
+        "FAMILIA 4/5": 96900,
+        "VIVO V": 91900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy a17 5g 256gb",
+      "name": "Samsung Galaxy A17 5G 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 154900,
+        "CONTROLE BTL": 154900,
+        "CONTROLE ENTRADA": 139900,
+        "CONTROLE ALTO VALOR": 134900,
+        "PÓS INDIVIDUAL": 129900,
+        "FAMILIA 2": 124900,
+        "FAMILIA 3": 119900,
+        "FAMILIA 4/5": 114900,
+        "VIVO V": 109900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy a37 5g 256gb",
+      "name": "Samsung Galaxy A37 5G 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 214900,
+        "CONTROLE BTL": 214900,
+        "CONTROLE ENTRADA": 189900,
+        "CONTROLE ALTO VALOR": 184900,
+        "PÓS INDIVIDUAL": 179900,
+        "FAMILIA 2": 169900,
+        "FAMILIA 3": 164900,
+        "FAMILIA 4/5": 159900,
+        "VIVO V": 154900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy a57 5g 256gb",
+      "name": "Samsung Galaxy A57 5G 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 249900,
+        "CONTROLE BTL": 249900,
+        "CONTROLE ENTRADA": 239900,
+        "CONTROLE ALTO VALOR": 237900,
+        "PÓS INDIVIDUAL": 202900,
+        "FAMILIA 2": 197900,
+        "FAMILIA 3": 192900,
+        "FAMILIA 4/5": 187900,
+        "VIVO V": 182900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy s25 256gb",
+      "name": "Samsung Galaxy S25 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 399900,
+        "CONTROLE BTL": 399900,
+        "CONTROLE ENTRADA": 389900,
+        "CONTROLE ALTO VALOR": 379900,
+        "PÓS INDIVIDUAL": 369900,
+        "FAMILIA 2": 349900,
+        "FAMILIA 3": 339900,
+        "FAMILIA 4/5": 319900,
+        "VIVO V": 309900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy s25 fe 5g 256gb",
+      "name": "Samsung Galaxy S25 FE 5G 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 399900,
+        "CONTROLE BTL": 399900,
+        "CONTROLE ENTRADA": 349900,
+        "CONTROLE ALTO VALOR": 329900,
+        "PÓS INDIVIDUAL": 309900,
+        "FAMILIA 2": 289900,
+        "FAMILIA 3": 269900,
+        "FAMILIA 4/5": 259900,
+        "VIVO V": 249900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy s25 ultra 256gb",
+      "name": "Samsung Galaxy S25 Ultra 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 597900,
+        "CONTROLE BTL": 597900,
+        "CONTROLE ENTRADA": 589900,
+        "CONTROLE ALTO VALOR": 579900,
+        "PÓS INDIVIDUAL": 559900,
+        "FAMILIA 2": 519900,
+        "FAMILIA 3": 509900,
+        "FAMILIA 4/5": 504900,
+        "VIVO V": 499900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy s26 256gb",
+      "name": "Samsung Galaxy S26 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 479900,
+        "CONTROLE BTL": 479900,
+        "CONTROLE ENTRADA": 439900,
+        "CONTROLE ALTO VALOR": 429900,
+        "PÓS INDIVIDUAL": 419900,
+        "FAMILIA 2": 329900,
+        "FAMILIA 3": 319900,
+        "FAMILIA 4/5": 299900,
+        "VIVO V": 289900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy s26 512gb",
+      "name": "Samsung Galaxy S26 512GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 789900,
+        "CONTROLE BTL": 789900,
+        "CONTROLE ENTRADA": 629900,
+        "CONTROLE ALTO VALOR": 599900,
+        "PÓS INDIVIDUAL": 539900,
+        "FAMILIA 2": 439900,
+        "FAMILIA 3": 429900,
+        "FAMILIA 4/5": 399900,
+        "VIVO V": 389900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy s26 ultra 256gb",
+      "name": "Samsung Galaxy S26 Ultra 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 859900,
+        "CONTROLE BTL": 859900,
+        "CONTROLE ENTRADA": 849900,
+        "CONTROLE ALTO VALOR": 829900,
+        "PÓS INDIVIDUAL": 689900,
+        "FAMILIA 2": 589900,
+        "FAMILIA 3": 584900,
+        "FAMILIA 4/5": 579900,
+        "VIVO V": 559900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy s26+ 256gb",
+      "name": "Samsung Galaxy S26+ 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 869900,
+        "CONTROLE BTL": 869900,
+        "CONTROLE ENTRADA": 829900,
+        "CONTROLE ALTO VALOR": 699900,
+        "PÓS INDIVIDUAL": 599900,
+        "FAMILIA 2": 549900,
+        "FAMILIA 3": 539900,
+        "FAMILIA 4/5": 499900,
+        "VIVO V": 489900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy s26+ 512gb",
+      "name": "Samsung Galaxy S26+ 512GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 929900,
+        "CONTROLE BTL": 929900,
+        "CONTROLE ENTRADA": 799900,
+        "CONTROLE ALTO VALOR": 749900,
+        "PÓS INDIVIDUAL": 649900,
+        "FAMILIA 2": 579900,
+        "FAMILIA 3": 569900,
+        "FAMILIA 4/5": 549900,
+        "VIVO V": 519900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy z flip 7 256gb",
+      "name": "Samsung Galaxy Z Flip 7 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 389900,
+        "CONTROLE BTL": 389900,
+        "CONTROLE ENTRADA": 339900,
+        "CONTROLE ALTO VALOR": 334900,
+        "PÓS INDIVIDUAL": 289900,
+        "FAMILIA 2": 269900,
+        "FAMILIA 3": 259900,
+        "FAMILIA 4/5": 249900,
+        "VIVO V": 239900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy z flip 7 512gb",
+      "name": "Samsung Galaxy Z Flip 7 512GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 419900,
+        "CONTROLE BTL": 419900,
+        "CONTROLE ENTRADA": 369900,
+        "CONTROLE ALTO VALOR": 364900,
+        "PÓS INDIVIDUAL": 319900,
+        "FAMILIA 2": 289900,
+        "FAMILIA 3": 279900,
+        "FAMILIA 4/5": 269900,
+        "VIVO V": 259900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy z flip 7 fe 256gb",
+      "name": "Samsung Galaxy Z Flip 7 FE 256GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 309900,
+        "CONTROLE BTL": 309900,
+        "CONTROLE ENTRADA": 259900,
+        "CONTROLE ALTO VALOR": 254900,
+        "PÓS INDIVIDUAL": 219900,
+        "FAMILIA 2": 204900,
+        "FAMILIA 3": 194900,
+        "FAMILIA 4/5": 184900,
+        "VIVO V": 174900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    },
+    {
+      "key": "samsung galaxy z fold 7 512gb",
+      "name": "Samsung Galaxy Z Fold 7 512GB",
+      "brand": "Samsung",
+      "prices": {
+        "PRÉ": 699900,
+        "CONTROLE BTL": 699900,
+        "CONTROLE ENTRADA": 649900,
+        "CONTROLE ALTO VALOR": 644900,
+        "PÓS INDIVIDUAL": 579900,
+        "FAMILIA 2": 549900,
+        "FAMILIA 3": 539900,
+        "FAMILIA 4/5": 529900,
+        "VIVO V": 519900,
+        "B2B - 10x": null,
+        "B2B - 24x": null
+      }
+    }
+  ]
+}
+

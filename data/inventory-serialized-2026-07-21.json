@@ -1,0 +1,4469 @@
+{
+  "importedAt": "2026-07-21",
+  "source": "Planilha em Basis (1).xlsx",
+  "productCount": 298,
+  "totalQuantity": 1182,
+  "serialCount": 1182,
+  "products": [
+    {
+      "materialCode": "22024085",
+      "displayName": "ACER NOTEBOOK ASPIRE 5939 CI5 8GB 256 CINZA",
+      "technicalName": "ACER NOTEBOOK ASPIRE 5939 Ci5 8GB 256 CZ",
+      "category": "phone",
+      "cluster": "notebooks",
+      "brand": "Acer",
+      "quantity": 1,
+      "serialNumbers": [
+        "22024085100680"
+      ]
+    },
+    {
+      "materialCode": "22021815",
+      "displayName": "AMAZON ECHO DOT 5ª GERAÇÃO SPEAKER ALEXA BRANCO",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA BR",
+      "category": "accessory",
+      "cluster": "speakers",
+      "brand": "Amazon",
+      "quantity": 2,
+      "serialNumbers": [
+        "220218150005741",
+        "220218150006306"
+      ]
+    },
+    {
+      "materialCode": "22021805",
+      "displayName": "AMAZON ECHO DOT 5ª GERAÇÃO SPEAKER ALEXA PRETO",
+      "technicalName": "AMAZON ECHO DOT 5ª GER SPEAKER ALEXA PT",
+      "category": "accessory",
+      "cluster": "speakers",
+      "brand": "Amazon",
+      "quantity": 8,
+      "serialNumbers": [
+        "220218050052076",
+        "220218380006538",
+        "220218380006539",
+        "220218380006664",
+        "220218380006668",
+        "220218380006670",
+        "220218380007619",
+        "220218380010118"
+      ]
+    },
+    {
+      "materialCode": "22021817",
+      "displayName": "AMAZON ECHO POP SPEAKER ALEXA BRANCO",
+      "technicalName": "AMAZON ECHO POP SPEAKER ALEXA BR",
+      "category": "accessory",
+      "cluster": "speakers",
+      "brand": "Amazon",
+      "quantity": 1,
+      "serialNumbers": [
+        "220218170000196"
+      ]
+    },
+    {
+      "materialCode": "22021855",
+      "displayName": "AMAZON ECHO POP SPEAKER ALEXA PRETO",
+      "technicalName": "AMAZON ECHO POP SPEAKER ALEXA PT",
+      "category": "accessory",
+      "cluster": "speakers",
+      "brand": "Amazon",
+      "quantity": 5,
+      "serialNumbers": [
+        "220218550000008",
+        "220218550009322",
+        "220218550013936",
+        "220218550014313",
+        "220218550018767"
+      ]
+    },
+    {
+      "materialCode": "22023233",
+      "displayName": "AMAZON KINDLE 11 GERAÇÃO 2024 16GB PRETO",
+      "technicalName": "AMAZON KINDLE 11 GER 2024 16GB PT",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Amazon",
+      "quantity": 2,
+      "serialNumbers": [
+        "220232330000722",
+        "220232330000724"
+      ]
+    },
+    {
+      "materialCode": "22023545",
+      "displayName": "AMVOX CAIXA AMPLIF ACA 251 NEW X PRETO",
+      "technicalName": "AMVOX CAIXA AMPLIF ACA 251 NEW X PT",
+      "category": "accessory",
+      "cluster": "speakers",
+      "brand": "Amvox",
+      "quantity": 1,
+      "serialNumbers": [
+        "220235450001642"
+      ]
+    },
+    {
+      "materialCode": "22023046",
+      "displayName": "APPLE AIRPODS 4 COM CANCELAMENTO DE RUÍDO BRANCO",
+      "technicalName": "APPLE AIRPODS 4 COM CANCEL. DE RUIDO BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "22023046106084"
+      ]
+    },
+    {
+      "materialCode": "22022613",
+      "displayName": "APPLE CABO USB-C PARA LIGHTNING BRANCO",
+      "technicalName": "APPLE CABO USB-C PARA LIGHTNING BR",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "Apple",
+      "quantity": 3,
+      "serialNumbers": [
+        "22022613107723",
+        "22022613107870",
+        "22022613117597"
+      ]
+    },
+    {
+      "materialCode": "22022526",
+      "displayName": "APPLE CARREGADOR USB-C 20W BRANCO",
+      "technicalName": "APPLE CARREGADOR USB-C 20W BR",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Apple",
+      "quantity": 7,
+      "serialNumbers": [
+        "22022526370124",
+        "22022526370589",
+        "22022526370605",
+        "22022526370657",
+        "22022526370714",
+        "22022526370839",
+        "22022526370859"
+      ]
+    },
+    {
+      "materialCode": "BGAP25243000",
+      "displayName": "APPLE IPAD 11 POLEGADAS WIFI+CEL 128GB PRATA",
+      "technicalName": "APPLE IPAD 11 POL WIFI+CEL 128GB PR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 2,
+      "serialNumbers": [
+        "357585650512089",
+        "357585650706194"
+      ]
+    },
+    {
+      "materialCode": "DGAP14862000",
+      "displayName": "APPLE IPHONE 13 256GB PRETO",
+      "technicalName": "APPLE IPHONE 13 256GB PT N",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "359358941597006"
+      ]
+    },
+    {
+      "materialCode": "DGAP20312000",
+      "displayName": "APPLE IPHONE 15 256GB AZUL",
+      "technicalName": "APPLE IPHONE 15 256GB N AZ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 2,
+      "serialNumbers": [
+        "358434160333299",
+        "359936833104211"
+      ]
+    },
+    {
+      "materialCode": "DGAP20362000",
+      "displayName": "APPLE IPHONE 15 256GB PRETO",
+      "technicalName": "APPLE IPHONE 15 256GB N PT",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 2,
+      "serialNumbers": [
+        "351713517087998",
+        "357205926196035"
+      ]
+    },
+    {
+      "materialCode": "DGAP22722000",
+      "displayName": "APPLE IPHONE 16 256GB BRANCO",
+      "technicalName": "APPLE IPHONE 16 256GB N BR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 2,
+      "serialNumbers": [
+        "355628869452580",
+        "356342310044306"
+      ]
+    },
+    {
+      "materialCode": "DGAP22762000",
+      "displayName": "APPLE IPHONE 16 256GB PRETO",
+      "technicalName": "APPLE IPHONE 16 256GB N PT",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 3,
+      "serialNumbers": [
+        "357140340715377",
+        "357908799885564",
+        "357908799952653"
+      ]
+    },
+    {
+      "materialCode": "DGAP26912000",
+      "displayName": "APPLE IPHONE 17 256GB AZUL",
+      "technicalName": "APPLE IPHONE 17 256GB N AZ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "352501903274752"
+      ]
+    },
+    {
+      "materialCode": "DGAP26922000",
+      "displayName": "APPLE IPHONE 17 256GB BRANCO",
+      "technicalName": "APPLE IPHONE 17 256GB N BR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "354170462932529"
+      ]
+    },
+    {
+      "materialCode": "DGAP27022000",
+      "displayName": "APPLE IPHONE 17 512GB BRANCO",
+      "technicalName": "APPLE IPHONE 17 512GB N BR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "352501900527590"
+      ]
+    },
+    {
+      "materialCode": "DGAP274B3000",
+      "displayName": "APPLE IPHONE 17 PRO 256GB AZUL-MARINHO",
+      "technicalName": "APPLE IPHONE 17 PRO 256GB AZM",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "352550681774566"
+      ]
+    },
+    {
+      "materialCode": "DGAP274U3000",
+      "displayName": "APPLE IPHONE 17 PRO 256GB LARANJA",
+      "technicalName": "APPLE IPHONE 17 PRO 256GB LJ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "355146930191400"
+      ]
+    },
+    {
+      "materialCode": "DGAP27443000",
+      "displayName": "APPLE IPHONE 17 PRO 256GB PRATA",
+      "technicalName": "APPLE IPHONE 17 PRO 256GB PR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "355146932298708"
+      ]
+    },
+    {
+      "materialCode": "DGAP275B3000",
+      "displayName": "APPLE IPHONE 17 PRO 512GB AZUL-MARINHO",
+      "technicalName": "APPLE IPHONE 17 PRO 512GB AZM",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "355146936412925"
+      ]
+    },
+    {
+      "materialCode": "DGAP275U3000",
+      "displayName": "APPLE IPHONE 17 PRO 512GB LARANJA",
+      "technicalName": "APPLE IPHONE 17 PRO 512GB LJ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "354710610560357"
+      ]
+    },
+    {
+      "materialCode": "DGAP27543000",
+      "displayName": "APPLE IPHONE 17 PRO 512GB PRATA",
+      "technicalName": "APPLE IPHONE 17 PRO 512GB PR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 2,
+      "serialNumbers": [
+        "354890669803906",
+        "359226587807957"
+      ]
+    },
+    {
+      "materialCode": "DGAP27943000",
+      "displayName": "APPLE IPHONE 17 PRO MAX 1TB PRATA",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 1TB PR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "351500504720230"
+      ]
+    },
+    {
+      "materialCode": "DGAP277B3000",
+      "displayName": "APPLE IPHONE 17 PRO MAX 256GB AZUL-MARINHO",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 256GB AZM",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "358361786189906"
+      ]
+    },
+    {
+      "materialCode": "DGAP277U3000",
+      "displayName": "APPLE IPHONE 17 PRO MAX 256GB LARANJA",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 256GB LJ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "351500502574118"
+      ]
+    },
+    {
+      "materialCode": "DGAP277U6000",
+      "displayName": "APPLE IPHONE 17 PRO MAX 256GB LARANJA DEMO",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 256GB LJ DEMO",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 2,
+      "serialNumbers": [
+        "351008263818229",
+        "354687610563278"
+      ]
+    },
+    {
+      "materialCode": "DGAP27743000",
+      "displayName": "APPLE IPHONE 17 PRO MAX 256GB PRATA",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 256GB PR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "350651448296265"
+      ]
+    },
+    {
+      "materialCode": "DGAP278B3000",
+      "displayName": "APPLE IPHONE 17 PRO MAX 512GB AZUL-MARINHO",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 512GB AZM",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "351459293928654"
+      ]
+    },
+    {
+      "materialCode": "DGAP278U3000",
+      "displayName": "APPLE IPHONE 17 PRO MAX 512GB LARANJA",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 512GB LJ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "353806448089972"
+      ]
+    },
+    {
+      "materialCode": "DGAP27843000",
+      "displayName": "APPLE IPHONE 17 PRO MAX 512GB PRATA",
+      "technicalName": "APPLE IPHONE 17 PRO MAX 512GB PR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "357352409919150"
+      ]
+    },
+    {
+      "materialCode": "DGAP29322000",
+      "displayName": "APPLE IPHONE 17E 256GB BRANCO",
+      "technicalName": "APPLE IPHONE 17E 256GB N BR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "351927993023463"
+      ]
+    },
+    {
+      "materialCode": "DGAP27163000",
+      "displayName": "APPLE IPHONE AIR 256GB PRETO",
+      "technicalName": "APPLE IPHONE AIR 256GB PT",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "356523764339769"
+      ]
+    },
+    {
+      "materialCode": "22024315",
+      "displayName": "APPLE WATCH SE 3 GPS 40MM BRANCO",
+      "technicalName": "APPLE WATCH SE 3 GPS 40MM BR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 2,
+      "serialNumbers": [
+        "22024315100525",
+        "22024315100543"
+      ]
+    },
+    {
+      "materialCode": "22024316",
+      "displayName": "APPLE WATCH SE 3 GPS 44MM PRETO",
+      "technicalName": "APPLE WATCH SE 3 GPS 44MM PT",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 2,
+      "serialNumbers": [
+        "22024316100449",
+        "22024316100600"
+      ]
+    },
+    {
+      "materialCode": "DGAP22163000",
+      "displayName": "APPLE WATCH ULTRA 2 GPS+CELLULAR 49MM PRETO",
+      "technicalName": "APPLE WATCH ULTRA 2 GPS+CELLULAR 49MM PT",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Apple",
+      "quantity": 1,
+      "serialNumbers": [
+        "355767497114202"
+      ]
+    },
+    {
+      "materialCode": "22018137",
+      "displayName": "CABO GEONAV PREMIUM 3X1 1,5M NYLON CINZA",
+      "technicalName": "CABO GEONAV PREMIUM 3X1 1,5M NYLON CINZA",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "Cabo",
+      "quantity": 1,
+      "serialNumbers": [
+        "220181370044450"
+      ]
+    },
+    {
+      "materialCode": "22023277",
+      "displayName": "CAPA GALAXY A16 5G IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CP GALAXY A16 5G IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 8,
+      "serialNumbers": [
+        "220232771001802",
+        "220232771001803",
+        "220232771002195",
+        "220232771002199",
+        "220232771002200",
+        "220232771002592",
+        "220232771012344",
+        "220232771012349"
+      ]
+    },
+    {
+      "materialCode": "22023320",
+      "displayName": "CAPA GALAXY A16 5G SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CP GALAXY A16 5G SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 7,
+      "serialNumbers": [
+        "220233201004421",
+        "220233201004426",
+        "220233201004427",
+        "220233201004430",
+        "220233201005952",
+        "220233201005953",
+        "220233201006543"
+      ]
+    },
+    {
+      "materialCode": "22024210",
+      "displayName": "CAPA GALAXY A17 5G IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CP GALAXY A17 5G IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220242100004907",
+        "220242100004919"
+      ]
+    },
+    {
+      "materialCode": "22024194",
+      "displayName": "CAPA GALAXY A17 5G SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CP GALAXY A17 5G SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 3,
+      "serialNumbers": [
+        "220241941006431",
+        "220241941016251",
+        "220241941016252"
+      ]
+    },
+    {
+      "materialCode": "22024239",
+      "displayName": "CAPA GALAXY A26 5G SOFT SERIES 1.5 AZUL",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 AZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220242391000099"
+      ]
+    },
+    {
+      "materialCode": "22023317",
+      "displayName": "CAPA GALAXY A26 5G SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 3,
+      "serialNumbers": [
+        "220233171018963",
+        "220233171025693",
+        "220233171026001"
+      ]
+    },
+    {
+      "materialCode": "22024241",
+      "displayName": "CAPA GALAXY A26 5G SOFT SERIES 1.5 ROSA",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 RS",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220242411000140"
+      ]
+    },
+    {
+      "materialCode": "22024240",
+      "displayName": "CAPA GALAXY A26 5G SOFT SERIES 1.5 VERDE",
+      "technicalName": "CM CP GALAXY A26 5G SOFT SERIES 1.5 VD",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220242401000127"
+      ]
+    },
+    {
+      "materialCode": "22024235",
+      "displayName": "CAPA GALAXY A36 5G SOFT SERIES 1.5 AZUL",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 AZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220242351000190"
+      ]
+    },
+    {
+      "materialCode": "22023318",
+      "displayName": "CAPA GALAXY A36 5G SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 4,
+      "serialNumbers": [
+        "220233181003350",
+        "220233181003475",
+        "220233181018157",
+        "220233181040598"
+      ]
+    },
+    {
+      "materialCode": "22024237",
+      "displayName": "CAPA GALAXY A36 5G SOFT SERIES 1.5 VERDE",
+      "technicalName": "CM CP GALAXY A36 5G SOFT SERIES 1.5 VD",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220242371000106",
+        "220242371000110"
+      ]
+    },
+    {
+      "materialCode": "22024804",
+      "displayName": "CAPA GALAXY A37 IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CP GALAXY A37 IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220248041002739",
+        "220248041005876"
+      ]
+    },
+    {
+      "materialCode": "22024925",
+      "displayName": "CAPA GALAXY A37 SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CP GALAXY A37 SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220249251000657",
+        "220249251000758"
+      ]
+    },
+    {
+      "materialCode": "22023627",
+      "displayName": "CAPA GALAXY A56 5G IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CAPA GALAXY A56 5G IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220236271008285"
+      ]
+    },
+    {
+      "materialCode": "22024233",
+      "displayName": "CAPA GALAXY A56 5G SOFT SERIES 1.5 AZUL",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 AZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220242331001198",
+        "220242331002323"
+      ]
+    },
+    {
+      "materialCode": "22023319",
+      "displayName": "CAPA GALAXY A56 5G SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 3,
+      "serialNumbers": [
+        "220233191063587",
+        "220233191063761",
+        "220233191065773"
+      ]
+    },
+    {
+      "materialCode": "22024236",
+      "displayName": "CAPA GALAXY A56 5G SOFT SERIES 1.5 ROSA",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 RS",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220242361000383"
+      ]
+    },
+    {
+      "materialCode": "22024234",
+      "displayName": "CAPA GALAXY A56 5G SOFT SERIES 1.5 VERDE",
+      "technicalName": "CM CP GALAXY A56 5G SOFT SERIES 1.5 VD",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220242341003130"
+      ]
+    },
+    {
+      "materialCode": "22024927",
+      "displayName": "CAPA GALAXY A57 IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CP GALAXY A57 IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220249271008513"
+      ]
+    },
+    {
+      "materialCode": "22024926",
+      "displayName": "CAPA GALAXY A57 SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CP GALAXY A57 SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 3,
+      "serialNumbers": [
+        "220249261004292",
+        "220249261009399",
+        "220249261009400"
+      ]
+    },
+    {
+      "materialCode": "22023563",
+      "displayName": "CAPA GALAXY S25 EDGE IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CAPA GALAXY S25 EDGE IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 3,
+      "serialNumbers": [
+        "220235631004431",
+        "220235631004696",
+        "220235631004697"
+      ]
+    },
+    {
+      "materialCode": "22023564",
+      "displayName": "CAPA GALAXY S25 EDGE SOFT 1.5 PRETO",
+      "technicalName": "CM CAPA GALAXY S25 EDGE SOFT 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220235641009733",
+        "220235641009734"
+      ]
+    },
+    {
+      "materialCode": "22023617",
+      "displayName": "CAPA MOTO EDGE 60 FUSION SOFT 1.5 PRETO",
+      "technicalName": "CM CP MOTO EDGE 60 FUSION SOFT 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220236171003685",
+        "220236171010051"
+      ]
+    },
+    {
+      "materialCode": "22023702",
+      "displayName": "CAPA MOTO EDGE 60 PRO IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CAPA MOTO EDGE 60 PRO IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220237021004837"
+      ]
+    },
+    {
+      "materialCode": "22023701",
+      "displayName": "CAPA MOTO EDGE 60 PRO SOFT 1.5 PRETO",
+      "technicalName": "CM CAPA MOTO EDGE 60 PRO SOFT 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 3,
+      "serialNumbers": [
+        "220237011002408",
+        "220237011002428",
+        "220237011002459"
+      ]
+    },
+    {
+      "materialCode": "22023772",
+      "displayName": "CAPA MOTO G56 IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CAPA MOTO G56 IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220237721008660"
+      ]
+    },
+    {
+      "materialCode": "22023771",
+      "displayName": "CAPA MOTO G56 SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CAPA MOTO G56 SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220237711009704"
+      ]
+    },
+    {
+      "materialCode": "22024800",
+      "displayName": "CAPA MOTO G67/G77 IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CP MOTO G67/G77 IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220248001000279",
+        "220248001000280"
+      ]
+    },
+    {
+      "materialCode": "22024801",
+      "displayName": "CAPA MOTO G67/G77 SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CP MOTO G67/G77 SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220248011005026",
+        "220248011005212"
+      ]
+    },
+    {
+      "materialCode": "22023866",
+      "displayName": "CAPA MOTO G86 IMPACTOR TRANSPARENTE",
+      "technicalName": "CM CP MOTO G86 IMPACTOR CLEAR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 2,
+      "serialNumbers": [
+        "220238661002374",
+        "220238661002477"
+      ]
+    },
+    {
+      "materialCode": "22023773",
+      "displayName": "CAPA MOTO G86 SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CAPA MOTO G86 SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220237731015027"
+      ]
+    },
+    {
+      "materialCode": "22023316",
+      "displayName": "CAPA MOTOROLA G15 SOFT SERIES 1.5 PRETO",
+      "technicalName": "CM CP MOTOROLA G15 SOFT SERIES 1.5 PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 6,
+      "serialNumbers": [
+        "220233161001788",
+        "220233161001789",
+        "220233161001790",
+        "220233161003632",
+        "220233161003633",
+        "220233161003704"
+      ]
+    },
+    {
+      "materialCode": "22023279",
+      "displayName": "CAPA MOTOROLA G35 5G SOFT TOUCH PRETO",
+      "technicalName": "CM CP MOTOROLA G35 5G SOFT TOUCH PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 1,
+      "serialNumbers": [
+        "220232791017212"
+      ]
+    },
+    {
+      "materialCode": "22023280",
+      "displayName": "CAPA MOTOROLA G55 5G SOFT TOUCH PRETO",
+      "technicalName": "CM CP MOTOROLA G55 5G SOFT TOUCH PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 4,
+      "serialNumbers": [
+        "220232801003266",
+        "220232801003311",
+        "220232801003317",
+        "220232801004304"
+      ]
+    },
+    {
+      "materialCode": "22023272",
+      "displayName": "CAPA MOTOROLA G75 5G SOFT TOUCH PRETO",
+      "technicalName": "CM CP MOTOROLA G75 5G SOFT TOUCH PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Case-Mate",
+      "quantity": 5,
+      "serialNumbers": [
+        "220232721001481",
+        "220232721001482",
+        "220232721001751",
+        "220232721001752",
+        "220232721002116"
+      ]
+    },
+    {
+      "materialCode": "22018668",
+      "displayName": "CARREGADOR MAGNÉTICO APPLE WATCH 2M",
+      "technicalName": "CARREGADOR MAGNETICO APPLE WATCH 2M",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Carregador",
+      "quantity": 1,
+      "serialNumbers": [
+        "22018668100313"
+      ]
+    },
+    {
+      "materialCode": "22021611",
+      "displayName": "DPC MASSAGEADOR SHIATSU DE PÉS RENPHO PRETO",
+      "technicalName": "DPC MASSAGEADOR SHIATSU DE PÉS RENPHO PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "DPC",
+      "quantity": 4,
+      "serialNumbers": [
+        "220216110008193",
+        "220216110008224",
+        "220216110008862",
+        "220216110008916"
+      ]
+    },
+    {
+      "materialCode": "22022627",
+      "displayName": "GEONAV CABO USB-C CONECTOR LIGHTNING 2M AZUL",
+      "technicalName": "GEONAV CABO USBC CONECT. LIGHTNING 2M AZ",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "Geonav",
+      "quantity": 3,
+      "serialNumbers": [
+        "220226270002741",
+        "220226270002742",
+        "220226270002746"
+      ]
+    },
+    {
+      "materialCode": "22019463",
+      "displayName": "GEONAV CARREGADOR PORTÁTIL 5000MAH PRETO",
+      "technicalName": "GEONAV CARREGADOR PORTATIL 5000mAh PT",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Geonav",
+      "quantity": 1,
+      "serialNumbers": [
+        "220194630017150"
+      ]
+    },
+    {
+      "materialCode": "22022826",
+      "displayName": "GEONAV CARREGADOR S POWER GAN DUO 65W BRANCO",
+      "technicalName": "GEONAV CARREGADOR S POWER GAN DUO 65W BR",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Geonav",
+      "quantity": 1,
+      "serialNumbers": [
+        "220228260021107"
+      ]
+    },
+    {
+      "materialCode": "22023613",
+      "displayName": "GSHIELD FILME EXPRESS 7 POLEGADAS TRANSPARENTE",
+      "technicalName": "GSHIELD FILME EXPRESS 7 POL CLEAR",
+      "category": "screen_protector",
+      "cluster": "screen_protectors",
+      "brand": "GShield",
+      "quantity": 2,
+      "serialNumbers": [
+        "220236130008454",
+        "220236130008463"
+      ]
+    },
+    {
+      "materialCode": "22021820",
+      "displayName": "HARMAN JBL HEADPHONE TUNE 520 BLUETOOTH PRETO",
+      "technicalName": "HARMAN JBL HEADPHONE TUNE 520 BT PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Harman",
+      "quantity": 1,
+      "serialNumbers": [
+        "22021820107585"
+      ]
+    },
+    {
+      "materialCode": "RGHU06623000",
+      "displayName": "HUAWEI ROTEADOR 5G CPE 5S BRANCO",
+      "technicalName": "HUAWEI ROTEADOR 5G CPE 5S BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Huawei",
+      "quantity": 1,
+      "serialNumbers": [
+        "865840077336546"
+      ]
+    },
+    {
+      "materialCode": "22025014",
+      "displayName": "I2GO ALÇA CABO C/C 1,5M CBF AZUL-MARINHO",
+      "technicalName": "I2GO ALCA CABO C/C 1,5M CBF AZM",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 1,
+      "serialNumbers": [
+        "220250140002755"
+      ]
+    },
+    {
+      "materialCode": "22025015",
+      "displayName": "I2GO ALÇA CABO C/C 30CM CBF AZUL-MARINHO",
+      "technicalName": "I2GO ALCA CABO C/C 30CM CBF AZM",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 2,
+      "serialNumbers": [
+        "220250150000323",
+        "220250150000664"
+      ]
+    },
+    {
+      "materialCode": "22025013",
+      "displayName": "I2GO CABO C/C 2M CBF AZUL-MARINHO",
+      "technicalName": "I2GO CABO C/C 2M CBF AZM",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 2,
+      "serialNumbers": [
+        "220250130000067",
+        "220250130000260"
+      ]
+    },
+    {
+      "materialCode": "22025025",
+      "displayName": "I2GO CABO DUAL C/C 1,5M PRETO",
+      "technicalName": "I2GO CABO DUAL C/C 1,5M PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 2,
+      "serialNumbers": [
+        "220250250002737",
+        "220250250002792"
+      ]
+    },
+    {
+      "materialCode": "22023871",
+      "displayName": "I2GO CABO FLAT LIGHTNING USB-C 1,2M CINZA",
+      "technicalName": "I2GO CABO FLAT LIGHTNING USB-C 1,2M CZ",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 4,
+      "serialNumbers": [
+        "220238710003136",
+        "220238710003625",
+        "220238710006714",
+        "220238710006715"
+      ]
+    },
+    {
+      "materialCode": "22023869",
+      "displayName": "I2GO CABO FLAT USB-C + USB-C 1,2M 3A CINZA",
+      "technicalName": "I2GO CABO FLAT USB-C + USB-C 1,2M 3A CZ",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220238690008175",
+        "220238690008179",
+        "220238690008442"
+      ]
+    },
+    {
+      "materialCode": "22023922",
+      "displayName": "I2GO CABO FLAT USB-C A 1,2M BK PRETO",
+      "technicalName": "I2GO CABO FLAT USBC A 1,2M BK PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220239220005441",
+        "220239220005449",
+        "220239220005450"
+      ]
+    },
+    {
+      "materialCode": "22022634",
+      "displayName": "I2GO CABO LIGHTNING 1,5M I2GCBL975 BR PRETO",
+      "technicalName": "I2GO CABO LIGHTNING 1,5M I2GCBL975 BR PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 2,
+      "serialNumbers": [
+        "220226340004448",
+        "220226340006325"
+      ]
+    },
+    {
+      "materialCode": "22023881",
+      "displayName": "I2GO CABO MAGNÉTICO LIGHTNING USB-C 1,2M PRETO",
+      "technicalName": "I2GO CABO MGNETIC LIGHTNING USBC 1,2M PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220238810002056",
+        "220238810008767",
+        "220238810010177"
+      ]
+    },
+    {
+      "materialCode": "22023819",
+      "displayName": "I2GO CABO MAGNÉTICO USB-C PARA C 1,2M PRETO",
+      "technicalName": "I2GO CABO MGNETIC USB-C PARA C 1,2M PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 5,
+      "serialNumbers": [
+        "220238190001931",
+        "220238190002185",
+        "220238190011634",
+        "220238190012633",
+        "220238190013238"
+      ]
+    },
+    {
+      "materialCode": "22022727",
+      "displayName": "I2GO CABO USB-C 1,5M I2GCBL976 BR PRETO",
+      "technicalName": "I2GO CABO USBC 1,5M I2GCBL976 BR PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 2,
+      "serialNumbers": [
+        "220227270005340",
+        "220227270005370"
+      ]
+    },
+    {
+      "materialCode": "22023902",
+      "displayName": "I2GO CABO USB-C 3M 2,4A PVC PRETO",
+      "technicalName": "I2GO CABO USB-C 3M 2,4A PVC PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220239020000503",
+        "220239020009087",
+        "220239020009648"
+      ]
+    },
+    {
+      "materialCode": "22023025",
+      "displayName": "I2GO CABO USB-C+USB-C 2M 60W PROCBL012 CINZA",
+      "technicalName": "I2GO CABO USBC+USBC 2M 60W PROCBL012 CZ",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "i2GO",
+      "quantity": 13,
+      "serialNumbers": [
+        "220230250000704",
+        "220230250000714",
+        "220230250000733",
+        "220230250000734",
+        "220230250000738",
+        "220230250000741",
+        "220230250000746",
+        "220230250002206",
+        "220230250002244",
+        "220230250002245",
+        "220230250002253",
+        "220230250002267",
+        "220230250004620"
+      ]
+    },
+    {
+      "materialCode": "22025008",
+      "displayName": "I2GO CAPA IPHONE 17 CBF AZUL-MARINHO",
+      "technicalName": "I2GO CAPA IPHONE 17 CBF AZM",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "i2GO",
+      "quantity": 1,
+      "serialNumbers": [
+        "220250080002064"
+      ]
+    },
+    {
+      "materialCode": "22025010",
+      "displayName": "I2GO CAPA IPHONE 17 PRO MAX CBF AZUL-MARINHO",
+      "technicalName": "I2GO CAPA IPHONE 17 PRO MAX CBF AZM",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "i2GO",
+      "quantity": 1,
+      "serialNumbers": [
+        "220250100000948"
+      ]
+    },
+    {
+      "materialCode": "22023873",
+      "displayName": "I2GO CARREGADOR PAREDE 20W 1 USB-C BRANCO",
+      "technicalName": "I2GO CARREGADOR PAREDE 20W 1 USB-C BR",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220238730001087",
+        "220238730004737",
+        "220238730005073"
+      ]
+    },
+    {
+      "materialCode": "22022633",
+      "displayName": "I2GO CARREGADOR PAREDE PD PROWAL028 BR CINZA",
+      "technicalName": "I2GO CARREG PAREDE PD PROWAL028 BR CZ",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 2,
+      "serialNumbers": [
+        "220226330000087",
+        "220226330003069"
+      ]
+    },
+    {
+      "materialCode": "22022631",
+      "displayName": "I2GO CARREGADOR PAREDE PD PROWAL030 BRANCO",
+      "technicalName": "I2GO CARREG PAREDE PD PROWAL030 BR",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220226310002192",
+        "220226310009057",
+        "220226310009098"
+      ]
+    },
+    {
+      "materialCode": "22022726",
+      "displayName": "I2GO CARREGADOR PAREDE PD USB-C PROWAL024 BRANCO",
+      "technicalName": "I2GO CARREG PAREDE PD USBC PROWAL024 BR",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 1,
+      "serialNumbers": [
+        "220227260004081"
+      ]
+    },
+    {
+      "materialCode": "22022629",
+      "displayName": "I2GO CARREGADOR PAREDE USB I2GWAL029BK PRETO",
+      "technicalName": "I2GO CARREG PAREDE USB i2GWAL029BK PT",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 8,
+      "serialNumbers": [
+        "220226290007980",
+        "220226290007993",
+        "220226290008001",
+        "220226290008025",
+        "220226290008154",
+        "220226290008157",
+        "220226290008179",
+        "220226290008182"
+      ]
+    },
+    {
+      "materialCode": "22023561",
+      "displayName": "I2GO CORDÃO LANYARD NYLON PREMIUM CINZA",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM CZ",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220235610000696",
+        "220235610005382",
+        "220235610005391"
+      ]
+    },
+    {
+      "materialCode": "22023562",
+      "displayName": "I2GO CORDÃO LANYARD NYLON PREMIUM DOURADO",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM DR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "i2GO",
+      "quantity": 4,
+      "serialNumbers": [
+        "220235620000418",
+        "220235620002956",
+        "220235620002958",
+        "220235620002986"
+      ]
+    },
+    {
+      "materialCode": "22023560",
+      "displayName": "I2GO CORDÃO LANYARD NYLON PREMIUM PRETO",
+      "technicalName": "I2GO CORDÃO LANYARD NYLON PREMIUM PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "i2GO",
+      "quantity": 4,
+      "serialNumbers": [
+        "220235600000853",
+        "220235600000892",
+        "220235600001133",
+        "220235600007693"
+      ]
+    },
+    {
+      "materialCode": "22023440",
+      "displayName": "I2GO FONE USB-C METAL BEATS 1,2M PRETO",
+      "technicalName": "I2GO FONE USBC METAL BEATS 1,2M PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220234400001835",
+        "220234400001838",
+        "220234400001998"
+      ]
+    },
+    {
+      "materialCode": "22023435",
+      "displayName": "I2GO HEADPHONE BLUETOOTH BASS 550 ANC PRETO",
+      "technicalName": "I2GO HEADPHONE BLUETOOTH BASS 550 ANC PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "i2GO",
+      "quantity": 2,
+      "serialNumbers": [
+        "220234350002403",
+        "220234350004057"
+      ]
+    },
+    {
+      "materialCode": "22023798",
+      "displayName": "I2GO KIT CARREGADOR PD 20W + CABO C 1,5M BRANCO",
+      "technicalName": "I2GO KIT CARREG. PD 20W + CABO C 1,5M BR",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220237980007209",
+        "220237980007243",
+        "220237980007249"
+      ]
+    },
+    {
+      "materialCode": "22025017",
+      "displayName": "I2GO POWER BANK 10.000MAH 4 EM 1 CBF AZUL-MARINHO",
+      "technicalName": "I2GO POWER BANK 10.000MAH 4EM1 CBF AZM",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 4,
+      "serialNumbers": [
+        "220250170002277",
+        "220250170002279",
+        "220250170002280",
+        "220250170002296"
+      ]
+    },
+    {
+      "materialCode": "22022725",
+      "displayName": "I2GO POWER BANK 10000MAH PROBAT017 PRETO",
+      "technicalName": "I2GO POWER BANK 10000mAh PROBAT017 PT",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 1,
+      "serialNumbers": [
+        "220227250002834"
+      ]
+    },
+    {
+      "materialCode": "22023875",
+      "displayName": "I2GO POWERBANK POCKET 5.000 LIGHTNING PRETO",
+      "technicalName": "I2GO POWERBANK POCKET 5.000 LIGHTNING PT",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220238750000979",
+        "220238750000980",
+        "220238750009226"
+      ]
+    },
+    {
+      "materialCode": "22023877",
+      "displayName": "I2GO POWERBANK POCKET 5.000 USB-C PRETO",
+      "technicalName": "I2GO POWERBANK POCKET 5.000 USB-C PT",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "i2GO",
+      "quantity": 4,
+      "serialNumbers": [
+        "220238770004515",
+        "220238770004594",
+        "220238770005846",
+        "220238770010893"
+      ]
+    },
+    {
+      "materialCode": "22023426",
+      "displayName": "I2GO SMARTWATCH TRACK R200 PRETO",
+      "technicalName": "I2GO SMARTWATCH TRACK R200 PT",
+      "category": "accessory",
+      "cluster": "devices",
+      "brand": "i2GO",
+      "quantity": 4,
+      "serialNumbers": [
+        "220234260001333",
+        "220234260003166",
+        "220234260003587",
+        "220234260003666"
+      ]
+    },
+    {
+      "materialCode": "22023425",
+      "displayName": "I2GO SMARTWATCH TRACK S200 PRETO",
+      "technicalName": "I2GO SMARTWATCH TRACK S200 PT",
+      "category": "accessory",
+      "cluster": "devices",
+      "brand": "i2GO",
+      "quantity": 4,
+      "serialNumbers": [
+        "220234250001212",
+        "220234250001222",
+        "220234250003204",
+        "220234250003723"
+      ]
+    },
+    {
+      "materialCode": "22023879",
+      "displayName": "I2GO SUPORTE VEICULAR AIR VENT HOLDER PRETO",
+      "technicalName": "I2GO SUPORTE VEICULAR AIR VENT HOLDER PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "i2GO",
+      "quantity": 5,
+      "serialNumbers": [
+        "220238790001308",
+        "220238790003820",
+        "220238790003859",
+        "220238790004286",
+        "220238790004346"
+      ]
+    },
+    {
+      "materialCode": "22023883",
+      "displayName": "I2GO SUPORTE VEICULAR ULTRA MAGNETIC PRETO",
+      "technicalName": "I2GO SUPORTE VEICULAR ULTRA MAGNETIC PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "i2GO",
+      "quantity": 3,
+      "serialNumbers": [
+        "220238830008876",
+        "220238830009031",
+        "220238830009117"
+      ]
+    },
+    {
+      "materialCode": "22025018",
+      "displayName": "I2GO VENTOSA SUPORTE C/ MAGNÉTICA CBF AZUL-MARINHO",
+      "technicalName": "I2GO VENTOSA SUPORTE C/ MAGN CBF AZM",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "i2GO",
+      "quantity": 1,
+      "serialNumbers": [
+        "220250180000261"
+      ]
+    },
+    {
+      "materialCode": "22024745",
+      "displayName": "MOTO CAPA PROTETORA EDGE 70 FUSION TRANSPARENTE",
+      "technicalName": "MOTO CAPA PROTETORA EDGE 70 FUSION TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Moto",
+      "quantity": 2,
+      "serialNumbers": [
+        "22024745104383",
+        "22024745104387"
+      ]
+    },
+    {
+      "materialCode": "22024435",
+      "displayName": "MOTO FONE DE OUVIDO BUDS BASS PRETO",
+      "technicalName": "MOTO FONE DE OUVIDO BUDS BASS PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Moto",
+      "quantity": 1,
+      "serialNumbers": [
+        "22024435103292"
+      ]
+    },
+    {
+      "materialCode": "22024606",
+      "displayName": "MOTOROLA CAPA PROTETORA EDGE 70 TRANSPARENTE",
+      "technicalName": "MOTOROLA CAPA PROTETORA EDGE 70 TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "22024606104137"
+      ]
+    },
+    {
+      "materialCode": "22024775",
+      "displayName": "MOTOROLA CAPA SIGNATURE TRANSPARENTE",
+      "technicalName": "MOTOROLA CAPA SIGNATURE TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "22024775100935"
+      ]
+    },
+    {
+      "materialCode": "TGMO491C2000",
+      "displayName": "MOTOROLA EDGE 60 FUSION 256GB CINZA",
+      "technicalName": "MOTOROLA XT2503-1 SMARTPHONE 256GB CZ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "358459768285211"
+      ]
+    },
+    {
+      "materialCode": "TGMO50212000",
+      "displayName": "MOTOROLA EDGE 60 PRO 256GB AZUL",
+      "technicalName": "MOTOROLA XT2507-1 SMARTPHONE 256GB AZ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 6,
+      "serialNumbers": [
+        "350986052163215",
+        "350986052174394",
+        "350986052327117",
+        "350986052419534",
+        "350986052419591",
+        "350986052420094"
+      ]
+    },
+    {
+      "materialCode": "TGMO57852000",
+      "displayName": "MOTOROLA EDGE 70 512GB GRAFITE",
+      "technicalName": "MOTOROLA XT2601-3 SMARTPHONE 512GB GF",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 2,
+      "serialNumbers": [
+        "352128281230857",
+        "352128281286198"
+      ]
+    },
+    {
+      "materialCode": "TGMO59352000",
+      "displayName": "MOTOROLA EDGE 70 FUSION 256GB GRAFITE",
+      "technicalName": "MOTOROLA XT2605-3 SMARTPHONE 256GB GF",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 2,
+      "serialNumbers": [
+        "359609480705735",
+        "359609480759716"
+      ]
+    },
+    {
+      "materialCode": "22021686",
+      "displayName": "MOTOROLA FONE DE OUVIDO BUDS 600 ANC PRETO",
+      "technicalName": "MOTOROLA FONE DE OUVIDO BUDS 600 ANC PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "22021686100094"
+      ]
+    },
+    {
+      "materialCode": "TGMO479G2000",
+      "displayName": "MOTOROLA MOTO G35 128GB VERDE",
+      "technicalName": "MOTOROLA XT2433-1 SMARTPHONE 128GB VD",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "353044843367138"
+      ]
+    },
+    {
+      "materialCode": "TGMO586G2000",
+      "displayName": "MOTOROLA MOTO G67 128GB VERDE",
+      "technicalName": "MOTOROLA XT2621-1 SMARTPHONE 128GB VD",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "352923950715570"
+      ]
+    },
+    {
+      "materialCode": "TGMO587C2000",
+      "displayName": "MOTOROLA MOTO G67 256GB CINZA",
+      "technicalName": "MOTOROLA XT2621-1 SMARTPHONE 256GB CZ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 4,
+      "serialNumbers": [
+        "357497950825791",
+        "357497950851995",
+        "357497950863610",
+        "357497950865672"
+      ]
+    },
+    {
+      "materialCode": "TGMO587G2000",
+      "displayName": "MOTOROLA MOTO G67 256GB VERDE",
+      "technicalName": "MOTOROLA XT2621-1 SMARTPHONE 256GB VD",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "356513930948817"
+      ]
+    },
+    {
+      "materialCode": "TGMO583M2000",
+      "displayName": "MOTOROLA MOTO G77 256GB MARROM",
+      "technicalName": "MOTOROLA XT2621-3 SMARTPHONE 256GB MR",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 3,
+      "serialNumbers": [
+        "352468710778690",
+        "352468710790257",
+        "352468710790638"
+      ]
+    },
+    {
+      "materialCode": "TGMO583G2000",
+      "displayName": "MOTOROLA MOTO G77 256GB VERDE",
+      "technicalName": "MOTOROLA XT2621-3 SMARTPHONE 256GB VD",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "359632580911490"
+      ]
+    },
+    {
+      "materialCode": "TGMO55652000",
+      "displayName": "MOTOROLA MOTO G86 256GB GRAFITE",
+      "technicalName": "MOTOROLA XT2527-1 SMARTPHONE 256GB GF",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 2,
+      "serialNumbers": [
+        "350629702321938",
+        "350629705964353"
+      ]
+    },
+    {
+      "materialCode": "TGMO55602000",
+      "displayName": "MOTOROLA MOTO G86 256GB VERMELHO",
+      "technicalName": "MOTOROLA XT2527-1 SMARTPHONE 256GB VM",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "350629703260697"
+      ]
+    },
+    {
+      "materialCode": "TGMO59462000",
+      "displayName": "MOTOROLA SIGNATURE 512GB PRETO",
+      "technicalName": "MOTOROLA XT2603-2 SMARTPHONE 512GB PT",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "350826111011759"
+      ]
+    },
+    {
+      "materialCode": "TGMO594G2000",
+      "displayName": "MOTOROLA SIGNATURE 512GB VERDE",
+      "technicalName": "MOTOROLA XT2603-2 SMARTPHONE 512GB VD",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Motorola",
+      "quantity": 1,
+      "serialNumbers": [
+        "350826110785577"
+      ]
+    },
+    {
+      "materialCode": "22022756",
+      "displayName": "OVVI ALÇA UNIVERSAL AZUL",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL AZ",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220227561002701"
+      ]
+    },
+    {
+      "materialCode": "22022624",
+      "displayName": "OVVI ALÇA UNIVERSAL BEGE",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL BG",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220226241005776"
+      ]
+    },
+    {
+      "materialCode": "22022623",
+      "displayName": "OVVI ALÇA UNIVERSAL PRETO",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220226231010677"
+      ]
+    },
+    {
+      "materialCode": "22021985",
+      "displayName": "OVVI ALÇA UNIVERSAL VERMELHO",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL VM",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Ovvi",
+      "quantity": 3,
+      "serialNumbers": [
+        "220219851009642",
+        "220219851009643",
+        "220219851009650"
+      ]
+    },
+    {
+      "materialCode": "22022622",
+      "displayName": "OVVI ALÇA UNIVERSAL VERMELHO",
+      "technicalName": "OVVI CM ALÇA UNIVERSAL VM",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220226221001407"
+      ]
+    },
+    {
+      "materialCode": "22021307",
+      "displayName": "OVVI CABO 2X1 KEVLAR 2M BRANCO",
+      "technicalName": "OVVI AF CABO 2X1 KEVLAR 2M BR",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "Ovvi",
+      "quantity": 4,
+      "serialNumbers": [
+        "220213070000533",
+        "220213070028069",
+        "220213070028547",
+        "220213070029786"
+      ]
+    },
+    {
+      "materialCode": "22021313",
+      "displayName": "OVVI CABO 3X1 KEVLAR 2M CINZA",
+      "technicalName": "OVVI AF CABO 3X1 KEVLAR 2M CZ",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "Ovvi",
+      "quantity": 3,
+      "serialNumbers": [
+        "220213130023225",
+        "220213130023226",
+        "220213130023227"
+      ]
+    },
+    {
+      "materialCode": "22022771",
+      "displayName": "OVVI CABO 3X1 KEVLAR 2M CINZA",
+      "technicalName": "OVVI AF CABO 3X1 KEVLAR 2M CZ",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220227710001770"
+      ]
+    },
+    {
+      "materialCode": "22021308",
+      "displayName": "OVVI CABO USB-C LIGHTNING 2M KEVLAR PRETO",
+      "technicalName": "OVVI AF CABO USBC LIGHTNING 2M KEVLAR PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "Ovvi",
+      "quantity": 5,
+      "serialNumbers": [
+        "220213080034112",
+        "220213080040157",
+        "220213080041293",
+        "220213080042015",
+        "220213080042017"
+      ]
+    },
+    {
+      "materialCode": "22022762",
+      "displayName": "OVVI CABO USB-C LIGHTNING 2M KEVLAR PRETO",
+      "technicalName": "OVVI AF CABO USBC LIGHTNING 2M KEVLAR PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220227620001273"
+      ]
+    },
+    {
+      "materialCode": "22021297",
+      "displayName": "OVVI CABO USB-C USB-C KEVLAR 2M PRETO",
+      "technicalName": "OVVI AF CABO USB-C USB-C KEVLAR 2M PT",
+      "category": "accessory",
+      "cluster": "cables",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220212970049072"
+      ]
+    },
+    {
+      "materialCode": "22023269",
+      "displayName": "OVVI CAPA GALAXY S25 ANTIBACTERIANA BRANCO",
+      "technicalName": "OVVI CM CP GALAXY S25 ANTIBAC BR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220232691007236",
+        "220232691007379"
+      ]
+    },
+    {
+      "materialCode": "22024179",
+      "displayName": "OVVI CAPA GALAXY S25 FE SILICONE MAGSAFE PRETO",
+      "technicalName": "OVVI CP GALAXY S25 FE SILIC MAGSAFE PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220241790000093",
+        "220241790000321"
+      ]
+    },
+    {
+      "materialCode": "22024189",
+      "displayName": "OVVI CAPA GALAXY S25 FE SILICONE PRETO",
+      "technicalName": "OVVI CP GALAXY S25 FE SILIC PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220241891001249",
+        "220241891001385"
+      ]
+    },
+    {
+      "materialCode": "22023221",
+      "displayName": "OVVI CAPA GALAXY S25 SILICONE PRETO",
+      "technicalName": "OVVI CM CP GALAXY S25 SILIC PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220232211008626"
+      ]
+    },
+    {
+      "materialCode": "22023223",
+      "displayName": "OVVI CAPA GALAXY S25 ULTRA SILICONE PRETO",
+      "technicalName": "OVVI CM CP GALAXY S25 ULTRA SILIC PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220232231023557",
+        "220232231023586"
+      ]
+    },
+    {
+      "materialCode": "22023271",
+      "displayName": "OVVI CAPA GALAXY S25+ ANTIBACTERIANA BRANCO",
+      "technicalName": "OVVI CM CP GALAXY S25+ ANTIBAC BR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220232711000393",
+        "220232711000394"
+      ]
+    },
+    {
+      "materialCode": "22023266",
+      "displayName": "OVVI CAPA GALAXY S25+ SILICONE PRETO",
+      "technicalName": "OVVI CM CP GALAXY S25+ SILIC PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 3,
+      "serialNumbers": [
+        "220232661002515",
+        "220232661003546",
+        "220232661003597"
+      ]
+    },
+    {
+      "materialCode": "22024571",
+      "displayName": "OVVI CAPA GALAXY S26 FLEX ECO",
+      "technicalName": "OVVI CM CP GALAXY S26 FLEX ECO",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220245711001844"
+      ]
+    },
+    {
+      "materialCode": "22024630",
+      "displayName": "OVVI CAPA GALAXY S26 HOLO MAGNÉTICA ROSA",
+      "technicalName": "OVVI CM CP GALAXY S26 HOLO MAGN RS",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220246301001642"
+      ]
+    },
+    {
+      "materialCode": "22024559",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA AZUL",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN AZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220245591001705"
+      ]
+    },
+    {
+      "materialCode": "22024558",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA CINZA",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN CZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220245581000190",
+        "220245581001769"
+      ]
+    },
+    {
+      "materialCode": "22024560",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA PRETO",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220245601001435"
+      ]
+    },
+    {
+      "materialCode": "22024556",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA ROXO",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN RX",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220245561000700"
+      ]
+    },
+    {
+      "materialCode": "22024554",
+      "displayName": "OVVI CAPA GALAXY S26 SILICONE MAGNÉTICA VERDE",
+      "technicalName": "OVVI CM CP GALAXY S26 SILIC MAGN VD",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220245541000429"
+      ]
+    },
+    {
+      "materialCode": "22024565",
+      "displayName": "OVVI CAPA GALAXY S26 TECIDO MAGNÉTICA CB",
+      "technicalName": "OVVI CM CP GALAXY S26 TECIDO MAGN CB",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220245651000683",
+        "220245651000798"
+      ]
+    },
+    {
+      "materialCode": "22024562",
+      "displayName": "OVVI CAPA GALAXY S26 TECIDO MAGNÉTICA PRETO",
+      "technicalName": "OVVI CM CP GALAXY S26 TECIDO MAGN PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220245621000927"
+      ]
+    },
+    {
+      "materialCode": "22024568",
+      "displayName": "OVVI CAPA GALAXY S26 TRANSPARENTE MAGNÉTICA",
+      "technicalName": "OVVI CM CP GALAXY S26 CLEAR MAGN",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220245681001034"
+      ]
+    },
+    {
+      "materialCode": "22024634",
+      "displayName": "OVVI CAPA GALAXY S26 ULTRA SILICONE MAGNÉTICA AZUL",
+      "technicalName": "OVVI CM CP GALAXY S26 ULT SILIC MAGN AZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220246341001586"
+      ]
+    },
+    {
+      "materialCode": "22024632",
+      "displayName": "OVVI CAPA GALAXY S26 ULTRA SILICONE MAGNÉTICA CINZA",
+      "technicalName": "OVVI CM CP GALAXY S26 ULT SILIC MAGN CZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220246321001333"
+      ]
+    },
+    {
+      "materialCode": "22024572",
+      "displayName": "OVVI CAPA GALAXY S26+ FLEX ECO",
+      "technicalName": "OVVI CM CP GALAXY S26+ FLEX ECO",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220245721000209"
+      ]
+    },
+    {
+      "materialCode": "22024631",
+      "displayName": "OVVI CAPA GALAXY S26+ HOLO MAGNÉTICA ROSA",
+      "technicalName": "OVVI CM CP GALAXY S26+ HOLO MAGN RS",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220246311000602"
+      ]
+    },
+    {
+      "materialCode": "22024628",
+      "displayName": "OVVI CAPA GALAXY S26+ SILICONE MAGNÉTICA AZUL",
+      "technicalName": "OVVI CM CP GALAXY S26+ SILIC MAGN AZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220246281000435",
+        "220246281000453"
+      ]
+    },
+    {
+      "materialCode": "22024627",
+      "displayName": "OVVI CAPA GALAXY S26+ SILICONE MAGNÉTICA CINZA",
+      "technicalName": "OVVI CM CP GALAXY S26+ SILIC MAGN CZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220246271001102"
+      ]
+    },
+    {
+      "materialCode": "22024636",
+      "displayName": "OVVI CAPA GALAXY S26+ SILICONE MAGNÉTICA PRETO",
+      "technicalName": "OVVI CM CP GALAXY S26+ SILIC MAGN PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220246361001265"
+      ]
+    },
+    {
+      "materialCode": "22024569",
+      "displayName": "OVVI CAPA GALAXY S26+ TRANSPARENTE MAGNÉTICA",
+      "technicalName": "OVVI CM CP GALAXY S26+ CLEAR MAGN",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220245691000365"
+      ]
+    },
+    {
+      "materialCode": "22022747",
+      "displayName": "OVVI CAPA IPHONE 13 SILICONE MAGSAFE PRETO",
+      "technicalName": "OVVI CM CP IPHONE 13 SILIC MAGSAFE PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220227471003202"
+      ]
+    },
+    {
+      "materialCode": "22022748",
+      "displayName": "OVVI CAPA IPHONE 15 SILICONE MAGSAFE PRETO",
+      "technicalName": "OVVI CM CP IPHONE 15 SILIC MAGSAFE PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220227481007240"
+      ]
+    },
+    {
+      "materialCode": "22022845",
+      "displayName": "OVVI CAPA IPHONE 16 ANTIBACTERIANA BRANCO",
+      "technicalName": "OVVI CM CP IPHONE 16 ANTIBAC BR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220228451003398",
+        "220228451003586"
+      ]
+    },
+    {
+      "materialCode": "22023165",
+      "displayName": "OVVI CAPA IPHONE 16 ANTIBACTERIANA BRANCO",
+      "technicalName": "OVVI CM CP IPHONE 16 ANTIBAC BR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220231651008787"
+      ]
+    },
+    {
+      "materialCode": "22022852",
+      "displayName": "OVVI CAPA IPHONE 16 PRO ANTIBACTERIANA BRANCO",
+      "technicalName": "OVVI CM CP IPHONE 16PRO ANTIBAC BR",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 3,
+      "serialNumbers": [
+        "220228521003882",
+        "220228521003883",
+        "220228521004154"
+      ]
+    },
+    {
+      "materialCode": "22022857",
+      "displayName": "OVVI CAPA IPHONE 16 PRO MAX SILICONE MAGSAFE CINZA",
+      "technicalName": "OVVI CM CP IPHONE 16PMAX SILIC MGSAFE CZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220228571000602",
+        "220228571001445"
+      ]
+    },
+    {
+      "materialCode": "22023171",
+      "displayName": "OVVI CAPA IPHONE 16 PRO MAX SILICONE MAGSAFE CINZA",
+      "technicalName": "OVVI CM CP IPHONE 16PMAX SILIC MGSAFE CZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220231711001690"
+      ]
+    },
+    {
+      "materialCode": "22023169",
+      "displayName": "OVVI CAPA IPHONE 16 PRO MAX TRANSPARENTE MAGSAFE",
+      "technicalName": "OVVI CM CP IPHONE 16PMAX CLEAR MGSAFE",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220231691007770",
+        "220231691008394"
+      ]
+    },
+    {
+      "materialCode": "22023192",
+      "displayName": "OVVI CAPA IPHONE 16 PRO SILICONE MAGSAFE PRETO",
+      "technicalName": "OVVI CM CP IPHONE 16PRO SILIC MGSAFE PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220231921001854"
+      ]
+    },
+    {
+      "materialCode": "22023167",
+      "displayName": "OVVI CAPA IPHONE 16 PRO TRANSPARENTE MAGSAFE",
+      "technicalName": "OVVI CM CP IPHONE 16PRO CLEAR MGSAFE",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 4,
+      "serialNumbers": [
+        "220231671000946",
+        "220231671001001",
+        "220231671001002",
+        "220231671001010"
+      ]
+    },
+    {
+      "materialCode": "22023200",
+      "displayName": "OVVI CAPA IPHONE 16 SILICONE MAGSAFE PRETO",
+      "technicalName": "OVVI CM CP IPHONE 16 SILIC MGSAFE PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220232001008898"
+      ]
+    },
+    {
+      "materialCode": "22023166",
+      "displayName": "OVVI CAPA IPHONE 16 TRANSPARENTE MAGSAFE",
+      "technicalName": "OVVI CM CP IPHONE 16 CLEAR MGSAFE",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220231661019327"
+      ]
+    },
+    {
+      "materialCode": "22023555",
+      "displayName": "OVVI CAPA IPHONE 16E TRANSPARENTE MAGSAFE",
+      "technicalName": "OVVI CP IPHONE 16E CLEAR MAGSAFE",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 4,
+      "serialNumbers": [
+        "220235551002409",
+        "220235551002530",
+        "220235551002686",
+        "220235551002687"
+      ]
+    },
+    {
+      "materialCode": "22023768",
+      "displayName": "OVVI CAPA IPHONE 17 FLEX ECO TRANSPARENTE",
+      "technicalName": "OVVI CM CP IPHONE 17 FLEX ECO TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 3,
+      "serialNumbers": [
+        "220237681000805",
+        "220237681000806",
+        "220237681000897"
+      ]
+    },
+    {
+      "materialCode": "22023770",
+      "displayName": "OVVI CAPA IPHONE 17 PRO FLEX ECO TRANSPARENTE",
+      "technicalName": "OVVI CM CP IPHONE 17 PRO FLEX ECO TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220237701007569"
+      ]
+    },
+    {
+      "materialCode": "22023826",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX COM SUPORTE MAGSAFE PRETO",
+      "technicalName": "OVVI CP IPHONE 17PMAX COM SUPT MGSAFE PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220238260001019"
+      ]
+    },
+    {
+      "materialCode": "22023797",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX FLEX ECO TRANSPARENTE",
+      "technicalName": "OVVI CM CP IPHONE 17 PMAX FLEX ECO TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220237971004112"
+      ]
+    },
+    {
+      "materialCode": "22023711",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX SILICONE MAGSAFE AZUL",
+      "technicalName": "OVVI CP IPHONE 17PMAX SILIC MGSAFE AZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220237110001282",
+        "220237110001294"
+      ]
+    },
+    {
+      "materialCode": "22023649",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX SILICONE MAGSAFE CINZA",
+      "technicalName": "OVVI CM CP IPHONE 17PMAX SILIC MGSAFE CZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220236491001461",
+        "220236491003466"
+      ]
+    },
+    {
+      "materialCode": "22023650",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX SILICONE MAGSAFE PRETO",
+      "technicalName": "OVVI CM CP IPHONE 17PMAX SILIC MGSAFE PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220236501000969",
+        "220236501000993"
+      ]
+    },
+    {
+      "materialCode": "22023696",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX SILICONE MAGSAFE VERDE",
+      "technicalName": "OVVI CM CP IPHONE 17PMAX SILIC MGSAFE VD",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220236961001030"
+      ]
+    },
+    {
+      "materialCode": "22023825",
+      "displayName": "OVVI CAPA IPHONE 17 PRO MAX TRANSPARENTE MAGSAFE",
+      "technicalName": "OVVI CP IPHONE 17PMAX CLEAR MAGSAFE",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220238250002281",
+        "220238250002855"
+      ]
+    },
+    {
+      "materialCode": "22023810",
+      "displayName": "OVVI CAPA IPHONE 17 PRO SILICONE MAGSAFE PRETO",
+      "technicalName": "OVVI CP IPHONE 17 PRO SILIC MGSAFE PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220238100001835"
+      ]
+    },
+    {
+      "materialCode": "22023655",
+      "displayName": "OVVI CAPA IPHONE 17 SILICONE MAGSAFE CINZA",
+      "technicalName": "OVVI CM CP IPHONE 17 SILIC MGSAFE CZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220236551001353"
+      ]
+    },
+    {
+      "materialCode": "22023656",
+      "displayName": "OVVI CAPA IPHONE 17 SILICONE MAGSAFE PRETO",
+      "technicalName": "OVVI CM CP IPHONE 17 SILIC MGSAFE PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220236561000666"
+      ]
+    },
+    {
+      "materialCode": "22023654",
+      "displayName": "OVVI CAPA IPHONE 17 SILICONE MAGSAFE VERDE",
+      "technicalName": "OVVI CM CP IPHONE 17 SILIC MGSAFE VD",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220236541001611",
+        "220236541001663"
+      ]
+    },
+    {
+      "materialCode": "22023739",
+      "displayName": "OVVI CAPA IPHONE 17 SILICONE MAGSAFE VERDE",
+      "technicalName": "OVVI CP IPHONE 17 SILIC MGSAFE VD",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220237390000526"
+      ]
+    },
+    {
+      "materialCode": "22023647",
+      "displayName": "OVVI CAPA IPHONE 17 TRANSPARENTE MAGSAFE",
+      "technicalName": "OVVI CM CP IPHONE 17 CLEAR MGSAFE",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220236471006847"
+      ]
+    },
+    {
+      "materialCode": "22024917",
+      "displayName": "OVVI CAPA IPHONE 17E FLEX ECO TRANSPARENTE",
+      "technicalName": "OVVI CM CP IPHONE 17E FLEX ECO TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220249171008113"
+      ]
+    },
+    {
+      "materialCode": "22024915",
+      "displayName": "OVVI CAPA IPHONE 17E SILICONE MAGNÉTICA PRETO",
+      "technicalName": "OVVI CM CP IPHONE 17E SILICONE MAGN PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220249151007667"
+      ]
+    },
+    {
+      "materialCode": "22024916",
+      "displayName": "OVVI CAPA IPHONE 17E TRANSPARENTE MAGNÉTICA",
+      "technicalName": "OVVI CM CP IPHONE 17E CLEAR MAGN",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220249161007891",
+        "220249161007892"
+      ]
+    },
+    {
+      "materialCode": "22024137",
+      "displayName": "OVVI CAPA SUPER PROTEÇÃO IPHONE 16 PRO MAX PRETO",
+      "technicalName": "OVVI CP SUPER PROTECAO IPHONE 16 PMAX PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220241370001678"
+      ]
+    },
+    {
+      "materialCode": "22024130",
+      "displayName": "OVVI CAPA SUPER PROTEÇÃO IPHONE 17 PRO PRETO",
+      "technicalName": "OVVI CP SUPER PROTECAO IPHONE 17 PRO PT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220241300001099",
+        "220241300001100"
+      ]
+    },
+    {
+      "materialCode": "22022079",
+      "displayName": "OVVI CARREGADOR 3X1 BASE Z APPLE CINZA",
+      "technicalName": "OVVI AF CARREG 3x1 BASE Z APPLE CZ",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 4,
+      "serialNumbers": [
+        "220220790012854",
+        "220220790012987",
+        "220220790012989",
+        "220220790012990"
+      ]
+    },
+    {
+      "materialCode": "22022077",
+      "displayName": "OVVI CARREGADOR 3X1 ESTEIRA APPLE CINZA",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA APPLE CZ",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220220770015044",
+        "220220770015045"
+      ]
+    },
+    {
+      "materialCode": "22022777",
+      "displayName": "OVVI CARREGADOR 3X1 ESTEIRA APPLE CINZA",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA APPLE CZ",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 3,
+      "serialNumbers": [
+        "220227770000362",
+        "220227770000365",
+        "220227770000367"
+      ]
+    },
+    {
+      "materialCode": "22022078",
+      "displayName": "OVVI CARREGADOR 3X1 ESTEIRA SAMSUNG CINZA",
+      "technicalName": "OVVI AF CARREG 3x1 ESTEIRA SAMSUNG CZ",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 4,
+      "serialNumbers": [
+        "220220780015338",
+        "220220780015340",
+        "220220780015994",
+        "220220780015999"
+      ]
+    },
+    {
+      "materialCode": "22021676",
+      "displayName": "OVVI CARREGADOR PAREDE UNIV 35W PD PPS BRANCO",
+      "technicalName": "OVVI AF CARREG PAREDE UNIV 35W PD PPS BR",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220216760023722"
+      ]
+    },
+    {
+      "materialCode": "22021678",
+      "displayName": "OVVI CARREGADOR PAREDE UNIV 65W PD QC BRANCO",
+      "technicalName": "OVVI AF CARREG PAREDE UNIV 65W PD QC BR",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 4,
+      "serialNumbers": [
+        "220216780029351",
+        "220216780031346",
+        "220216780031347",
+        "220216780031408"
+      ]
+    },
+    {
+      "materialCode": "22022669",
+      "displayName": "OVVI CARREGADOR PAREDE UNIV 65W PD QC BRANCO",
+      "technicalName": "OVVI AF CARREG PAREDE UNIV 65W PD QC BR",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220226690000422"
+      ]
+    },
+    {
+      "materialCode": "22021482",
+      "displayName": "OVVI CARREGADOR PORTÁTIL UNIV 12000MAH CINZA",
+      "technicalName": "OVVI AF CAR.  PORTÁTIL UNIV 12000MAH CZ",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220214820037363"
+      ]
+    },
+    {
+      "materialCode": "22021726",
+      "displayName": "OVVI CARREGADOR VEICULAR UNIV 38W PDQC CINZA",
+      "technicalName": "OVVI AF CARREG VEICULAR UNIV 38W PDQC CZ",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 2,
+      "serialNumbers": [
+        "220217260039029",
+        "220217260039175"
+      ]
+    },
+    {
+      "materialCode": "22023387",
+      "displayName": "OVVI GSHIELD FILME FOSCA",
+      "technicalName": "OVVI GSHIELD FILME FOSCA",
+      "category": "screen_protector",
+      "cluster": "screen_protectors",
+      "brand": "Ovvi",
+      "quantity": 51,
+      "serialNumbers": [
+        "220233870003428",
+        "220233870003434",
+        "220233870003441",
+        "220233870003442",
+        "220233870003446",
+        "220233870081401",
+        "220233870081402",
+        "220233870081403",
+        "220233870081404",
+        "220233870081405",
+        "220233870081406",
+        "220233870081407",
+        "220233870081408",
+        "220233870081409",
+        "220233870081410",
+        "220233870081411",
+        "220233870081412",
+        "220233870081413",
+        "220233870081414",
+        "220233870081415",
+        "220233870081416",
+        "220233870081417",
+        "220233870081418",
+        "220233870081419",
+        "220233870081420",
+        "220233870081421",
+        "220233870081422",
+        "220233870081423",
+        "220233870081424",
+        "220233870081425",
+        "220233870124727",
+        "220233870124736",
+        "220233870124742",
+        "220233870178751",
+        "220233870178752",
+        "220233870178753",
+        "220233870178754",
+        "220233870178755",
+        "220233870178756",
+        "220233870178757",
+        "220233870178758",
+        "220233870178759",
+        "220233870178760",
+        "220233870178761",
+        "220233870178762",
+        "220233870178763",
+        "220233870178764",
+        "220233870178765",
+        "220233870178770",
+        "220233870178774",
+        "220233870178775"
+      ]
+    },
+    {
+      "materialCode": "22023388",
+      "displayName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "technicalName": "OVVI GSHIELD FILME PRIVACIDADE",
+      "category": "screen_protector",
+      "cluster": "screen_protectors",
+      "brand": "Ovvi",
+      "quantity": 36,
+      "serialNumbers": [
+        "220233880001637",
+        "220233880035177",
+        "220233880035185",
+        "220233880035188",
+        "220233880035192",
+        "220233880035193",
+        "220233880035194",
+        "220233880035195",
+        "220233880035197",
+        "220233880035199",
+        "220233880035200",
+        "220233880142051",
+        "220233880142052",
+        "220233880142053",
+        "220233880142054",
+        "220233880142055",
+        "220233880142056",
+        "220233880142057",
+        "220233880142058",
+        "220233880142059",
+        "220233880142060",
+        "220233880142061",
+        "220233880142062",
+        "220233880142063",
+        "220233880142064",
+        "220233880142065",
+        "220233880142066",
+        "220233880142067",
+        "220233880142068",
+        "220233880142069",
+        "220233880142070",
+        "220233880142071",
+        "220233880142072",
+        "220233880142073",
+        "220233880142074",
+        "220233880142075"
+      ]
+    },
+    {
+      "materialCode": "22023263",
+      "displayName": "OVVI GSHIELD FILME PRO FOSCA",
+      "technicalName": "OVVI GSHIELD FILME PRO FOSCA",
+      "category": "screen_protector",
+      "cluster": "screen_protectors",
+      "brand": "Ovvi",
+      "quantity": 44,
+      "serialNumbers": [
+        "220232630020676",
+        "220232630020678",
+        "220232630020679",
+        "220232630020681",
+        "220232630020682",
+        "220232630020683",
+        "220232630020684",
+        "220232630020685",
+        "220232630020686",
+        "220232630020687",
+        "220232630020688",
+        "220232630020690",
+        "220232630020691",
+        "220232630020693",
+        "220232630020694",
+        "220232630020696",
+        "220232630020697",
+        "220232630020698",
+        "220232630020700",
+        "220232630095851",
+        "220232630095852",
+        "220232630095853",
+        "220232630095854",
+        "220232630095855",
+        "220232630095856",
+        "220232630095857",
+        "220232630095858",
+        "220232630095859",
+        "220232630095860",
+        "220232630095861",
+        "220232630095862",
+        "220232630095863",
+        "220232630095864",
+        "220232630095865",
+        "220232630095866",
+        "220232630095867",
+        "220232630095868",
+        "220232630095869",
+        "220232630095870",
+        "220232630095871",
+        "220232630095872",
+        "220232630095873",
+        "220232630095874",
+        "220232630095875"
+      ]
+    },
+    {
+      "materialCode": "22023264",
+      "displayName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "technicalName": "OVVI GSHIELD FILME PRO PRIVACIDADE",
+      "category": "screen_protector",
+      "cluster": "screen_protectors",
+      "brand": "Ovvi",
+      "quantity": 33,
+      "serialNumbers": [
+        "220232640009726",
+        "220232640009728",
+        "220232640009733",
+        "220232640009735",
+        "220232640009742",
+        "220232640009746",
+        "220232640009747",
+        "220232640009748",
+        "220232640055926",
+        "220232640055927",
+        "220232640055928",
+        "220232640055929",
+        "220232640055930",
+        "220232640055931",
+        "220232640055932",
+        "220232640055933",
+        "220232640055934",
+        "220232640055935",
+        "220232640055936",
+        "220232640055937",
+        "220232640055938",
+        "220232640055939",
+        "220232640055940",
+        "220232640055941",
+        "220232640055942",
+        "220232640055943",
+        "220232640055944",
+        "220232640055945",
+        "220232640055946",
+        "220232640055947",
+        "220232640055948",
+        "220232640055949",
+        "220232640055950"
+      ]
+    },
+    {
+      "materialCode": "22023262",
+      "displayName": "OVVI GSHIELD FILME PRO TRANSPARENTE",
+      "technicalName": "OVVI GSHIELD FILME PRO CLEAR",
+      "category": "screen_protector",
+      "cluster": "screen_protectors",
+      "brand": "Ovvi",
+      "quantity": 57,
+      "serialNumbers": [
+        "220232620006759",
+        "220232620006761",
+        "220232620006770",
+        "220232620007113",
+        "220232620007153",
+        "220232620007154",
+        "220232620007155",
+        "220232620007157",
+        "220232620007165",
+        "220232620007172",
+        "220232620071801",
+        "220232620071802",
+        "220232620071803",
+        "220232620071804",
+        "220232620071805",
+        "220232620071806",
+        "220232620071807",
+        "220232620071808",
+        "220232620071809",
+        "220232620071810",
+        "220232620071811",
+        "220232620071812",
+        "220232620071813",
+        "220232620071814",
+        "220232620071815",
+        "220232620071816",
+        "220232620071817",
+        "220232620071818",
+        "220232620071819",
+        "220232620071820",
+        "220232620071821",
+        "220232620071822",
+        "220232620071823",
+        "220232620090784",
+        "220232620094178",
+        "220232620094179",
+        "220232620094180",
+        "220232620094181",
+        "220232620094182",
+        "220232620094183",
+        "220232620094184",
+        "220232620094185",
+        "220232620094186",
+        "220232620094187",
+        "220232620094188",
+        "220232620094189",
+        "220232620094190",
+        "220232620094191",
+        "220232620094192",
+        "220232620094193",
+        "220232620094194",
+        "220232620094195",
+        "220232620094196",
+        "220232620094197",
+        "220232620094198",
+        "220232620099643",
+        "220232620099646"
+      ]
+    },
+    {
+      "materialCode": "22023386",
+      "displayName": "OVVI GSHIELD FILME TRANSPARENTE",
+      "technicalName": "OVVI GSHIELD FILME CLEAR",
+      "category": "screen_protector",
+      "cluster": "screen_protectors",
+      "brand": "Ovvi",
+      "quantity": 45,
+      "serialNumbers": [
+        "220233860115412",
+        "220233860115413",
+        "220233860115417",
+        "220233860170942",
+        "220233860170949",
+        "220233860171358",
+        "220233860171361",
+        "220233860174468",
+        "220233860174471",
+        "220233860174472",
+        "220233860191117",
+        "220233860260493",
+        "220233860260495",
+        "220233860260499",
+        "220233860261151",
+        "220233860261152",
+        "220233860261153",
+        "220233860261168",
+        "220233860261169",
+        "220233860261170",
+        "220233860261174",
+        "220233860261175",
+        "220233860261979",
+        "220233860302386",
+        "220233860302387",
+        "220233860325596",
+        "220233860326723",
+        "220233860385826",
+        "220233860385827",
+        "220233860385828",
+        "220233860385830",
+        "220233860385831",
+        "220233860385832",
+        "220233860385833",
+        "220233860385834",
+        "220233860385835",
+        "220233860385837",
+        "220233860385838",
+        "220233860385839",
+        "220233860385840",
+        "220233860385841",
+        "220233860385842",
+        "220233860385843",
+        "220233860385846",
+        "220233860385849"
+      ]
+    },
+    {
+      "materialCode": "22024841",
+      "displayName": "OVVI I2GO CAPA GLX S26 ULTRA SILICONE MAGNÉTICA AZUL",
+      "technicalName": "OVVI I2GO CP GLX S26 ULTRA SILIC MAGN AZ",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220248410001641"
+      ]
+    },
+    {
+      "materialCode": "22024818",
+      "displayName": "OVVI I2GO CAPA GLX S26 ULTRA TRANSPARENTE",
+      "technicalName": "OVVI I2GO CP GLX S26 ULTRA TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220248180000672"
+      ]
+    },
+    {
+      "materialCode": "22024806",
+      "displayName": "OVVI I2GO CAPA GLX S26 ULTRA TRANSPARENTE MAGNÉTICA",
+      "technicalName": "OVVI I2GO CP GLX S26 ULTRA CLEAR MAGN",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220248060001858"
+      ]
+    },
+    {
+      "materialCode": "22023495",
+      "displayName": "OVVI POWERBANK 5000MAH MAGSAFE SLIM GRAFITE",
+      "technicalName": "OVVI AF POWERBANK 5000MAH MGSAFE SLIM GF",
+      "category": "accessory",
+      "cluster": "chargers",
+      "brand": "Ovvi",
+      "quantity": 1,
+      "serialNumbers": [
+        "220234950003621"
+      ]
+    },
+    {
+      "materialCode": "22020879",
+      "displayName": "POSITIVO ROBÔ ASPIRADOR SMART WIFI BRANCO",
+      "technicalName": "POSITIVO ROBO ASPIRADOR SMART WIFI BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Positivo",
+      "quantity": 4,
+      "serialNumbers": [
+        "220208790015397",
+        "220208790017020",
+        "220208790017231",
+        "220208790023639"
+      ]
+    },
+    {
+      "materialCode": "22022676",
+      "displayName": "POSITIVO SMART ALIMENTADOR PET WIFI BRANCO",
+      "technicalName": "POSITIVO SMART ALIMENTADOR PET WIFI BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Positivo",
+      "quantity": 2,
+      "serialNumbers": [
+        "220226760000635",
+        "220226760000908"
+      ]
+    },
+    {
+      "materialCode": "22019525",
+      "displayName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "technicalName": "POSITIVO SMART CONTROLE UNIVERSAL WI-FI",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Positivo",
+      "quantity": 7,
+      "serialNumbers": [
+        "220195250001817",
+        "220195250002132",
+        "220195250002196",
+        "220195250002948",
+        "220195250003057",
+        "220195250003095",
+        "220195250006510"
+      ]
+    },
+    {
+      "materialCode": "22019295",
+      "displayName": "POSITIVO SMART LÂMPADA WI-FI BRANCO",
+      "technicalName": "POSITIVO SMART LAMPADA WI-FI N BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Positivo",
+      "quantity": 1,
+      "serialNumbers": [
+        "220192950006536"
+      ]
+    },
+    {
+      "materialCode": "22018944",
+      "displayName": "POSITIVO SMART PLUG WIFI",
+      "technicalName": "POSITIVO SMART PLUG WIFI",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Positivo",
+      "quantity": 1,
+      "serialNumbers": [
+        "220189440004247"
+      ]
+    },
+    {
+      "materialCode": "22023323",
+      "displayName": "RM ALMOFADA MASSAG. SHIATSU PILLOW CINZA",
+      "technicalName": "RM ALMOFADA MASSAG. SHIATSU PILLOW CZ",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Renpho",
+      "quantity": 2,
+      "serialNumbers": [
+        "220233230008628",
+        "220233230008874"
+      ]
+    },
+    {
+      "materialCode": "22023324",
+      "displayName": "RM BALANÇA DIGITAL GO BALANCE BIOIMPE BRANCO",
+      "technicalName": "RM BALANCA DIGITAL GO BALANCE BIOIMPE BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Renpho",
+      "quantity": 1,
+      "serialNumbers": [
+        "220233240002447"
+      ]
+    },
+    {
+      "materialCode": "22023321",
+      "displayName": "RM MINI PISTOLA MASSAG. DEEP THERAPY AZUL",
+      "technicalName": "RM MINI PISTOLA MASSAG. DEEP THERAPY AZ",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Renpho",
+      "quantity": 1,
+      "serialNumbers": [
+        "220233210001870"
+      ]
+    },
+    {
+      "materialCode": "22023569",
+      "displayName": "RM MINI PISTOLA MASSAG. DEEP THERAPY CINZA",
+      "technicalName": "RM MINI PISTOLA MASSAG. DEEP THERAPY CZ",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Renpho",
+      "quantity": 1,
+      "serialNumbers": [
+        "220235690002236"
+      ]
+    },
+    {
+      "materialCode": "22024070",
+      "displayName": "SAMSUNG CAPA C/ARGOLA GALAXY FLIP 7 AZUL-MARINHO",
+      "technicalName": "SSG CAPA C/ARGOLA GALAXY FLIP 7 AZM",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "22024070101210"
+      ]
+    },
+    {
+      "materialCode": "22024068",
+      "displayName": "SAMSUNG CAPA C/ARGOLA GALAXY FLIP 7 TRANSPARENTE",
+      "technicalName": "SSG CAPA C/ARGOLA GALAXY FLIP 7 TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "22024068101062",
+        "22024068101064"
+      ]
+    },
+    {
+      "materialCode": "22024069",
+      "displayName": "SAMSUNG CAPA GALAXY FLIP 7 TRANSPARENTE",
+      "technicalName": "SSG CAPA GALAXY FLIP 7 TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "22024069101540",
+        "22024069101655"
+      ]
+    },
+    {
+      "materialCode": "22023245",
+      "displayName": "SAMSUNG CAPA PROTETORA GALAXY S24 FE TRANSPARENTE",
+      "technicalName": "SSG CP PROTETORA GALAXY S24 FE TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "22023245105622",
+        "22023245105814"
+      ]
+    },
+    {
+      "materialCode": "22023395",
+      "displayName": "SAMSUNG CAPA PROTETORA GALAXY S25 TRANSPARENTE",
+      "technicalName": "SSG CP PROTETORA GALAXY S25 TPT",
+      "category": "case",
+      "cluster": "cases",
+      "brand": "Samsung",
+      "quantity": 3,
+      "serialNumbers": [
+        "22023395107993",
+        "22023395108407",
+        "22023395108415"
+      ]
+    },
+    {
+      "materialCode": "TGSA560C2000",
+      "displayName": "SAMSUNG GALAXY A06 128GB CINZA",
+      "technicalName": "SSG GALAXY A066M 128GB CZ PPB/P291/12",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "354640971069591"
+      ]
+    },
+    {
+      "materialCode": "TGSA56064000",
+      "displayName": "SAMSUNG GALAXY A06 128GB PRETO",
+      "technicalName": "SSG GALAXY A066M 128GB PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 14,
+      "serialNumbers": [
+        "357699981772922",
+        "357699981772989",
+        "357699981773185",
+        "357699981773805",
+        "357699981825753",
+        "357699981825779",
+        "357699981825852",
+        "357699981825886",
+        "357699981825977",
+        "357699982014878",
+        "357699982015024",
+        "357699982021428",
+        "357699982021493",
+        "357699982028654"
+      ]
+    },
+    {
+      "materialCode": "TGSA61262000",
+      "displayName": "SAMSUNG GALAXY A07 128GB PRETO",
+      "technicalName": "SSG GALAXY A076M 128GB PT PPB/P291/12",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 5,
+      "serialNumbers": [
+        "353313820151827",
+        "353313820155166",
+        "353313820161206",
+        "353313820161735",
+        "353313820285948"
+      ]
+    },
+    {
+      "materialCode": "TGSA586C4000",
+      "displayName": "SAMSUNG GALAXY A17 5G 128GB CINZA",
+      "technicalName": "SSG GALAXY A176B 128GB CZ PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "357884917917193"
+      ]
+    },
+    {
+      "materialCode": "TGSA58664000",
+      "displayName": "SAMSUNG GALAXY A17 5G 128GB PRETO",
+      "technicalName": "SSG GALAXY A176B 128GB PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "357884917826014"
+      ]
+    },
+    {
+      "materialCode": "TGSA58764000",
+      "displayName": "SAMSUNG GALAXY A17 5G 256GB PRETO",
+      "technicalName": "SSG GALAXY A176B 256GB PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "358680815360489"
+      ]
+    },
+    {
+      "materialCode": "TGSA56164000",
+      "displayName": "SAMSUNG GALAXY A26 5G 256GB PRETO",
+      "technicalName": "SSG GALAXY A266M 256GB PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "357896890596794"
+      ]
+    },
+    {
+      "materialCode": "TGSA56224000",
+      "displayName": "SAMSUNG GALAXY A36 5G 256GB BRANCO",
+      "technicalName": "SSG GALAXY A366E 256GB BR PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "352230460126086"
+      ]
+    },
+    {
+      "materialCode": "TGSA60724000",
+      "displayName": "SAMSUNG GALAXY A37 5G 256GB BRANCO",
+      "technicalName": "SSG GALAXY A376B 256GB BRPPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "356599705289156"
+      ]
+    },
+    {
+      "materialCode": "TGSA60764000",
+      "displayName": "SAMSUNG GALAXY A37 5G 256GB PRETO",
+      "technicalName": "SSG GALAXY A376B 256GB PTPPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "356599705142082",
+        "356599705142272"
+      ]
+    },
+    {
+      "materialCode": "TGSA609B4000",
+      "displayName": "SAMSUNG GALAXY A57 5G 256GB AZUL-MARINHO",
+      "technicalName": "SSG GALAXY A576B 256GB AZMPPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 3,
+      "serialNumbers": [
+        "358852340243981",
+        "358852340247602",
+        "358852340253766"
+      ]
+    },
+    {
+      "materialCode": "TGSA609C4000",
+      "displayName": "SAMSUNG GALAXY A57 5G 256GB CINZA",
+      "technicalName": "SSG GALAXY A576B 256GB CZPPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 4,
+      "serialNumbers": [
+        "358852340471137",
+        "358852340471277",
+        "358852341091165",
+        "358852341101980"
+      ]
+    },
+    {
+      "materialCode": "TGSA553B4000",
+      "displayName": "SAMSUNG GALAXY S25 256GB AZUL-MARINHO",
+      "technicalName": "SSG GALAXY S931B 256GB AZM PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "359143275981251",
+        "359143275982366"
+      ]
+    },
+    {
+      "materialCode": "TGSA55344000",
+      "displayName": "SAMSUNG GALAXY S25 256GB PRATA",
+      "technicalName": "SSG GALAXY S931B 256GB PR PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "359143275868045"
+      ]
+    },
+    {
+      "materialCode": "TGSA590B4000",
+      "displayName": "SAMSUNG GALAXY S25 FE 256GB AZUL-MARINHO",
+      "technicalName": "SSG GALAXY S731B 256GB AZM PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "357749666523106"
+      ]
+    },
+    {
+      "materialCode": "TGSA59064000",
+      "displayName": "SAMSUNG GALAXY S25 FE 256GB PRETO",
+      "technicalName": "SSG GALAXY S731B 256GB PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "357749666594198"
+      ]
+    },
+    {
+      "materialCode": "TGSA55664000",
+      "displayName": "SAMSUNG GALAXY S25 ULTRA 256GB TITÂNIO PRETO",
+      "technicalName": "SSG GALAXY S938B 256GB TN PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 4,
+      "serialNumbers": [
+        "357445725687251",
+        "357445725687731",
+        "357445725848267",
+        "357445725848416"
+      ]
+    },
+    {
+      "materialCode": "TGSA60364000",
+      "displayName": "SAMSUNG GALAXY S26 256GB PRETO",
+      "technicalName": "SSG GALAXY S942B 256GB PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 3,
+      "serialNumbers": [
+        "354781914299760",
+        "354781914299828",
+        "354781914307860"
+      ]
+    },
+    {
+      "materialCode": "TGSA603R4000",
+      "displayName": "SAMSUNG GALAXY S26 256GB VIOLETA",
+      "technicalName": "SSG GALAXY S942B 256GB VT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "354781914022253"
+      ]
+    },
+    {
+      "materialCode": "TGSA60562000",
+      "displayName": "SAMSUNG GALAXY S26 512GB PRETO",
+      "technicalName": "SSG GALAXY S942B 512GB PT PPB/P291/12",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "354944750106016"
+      ]
+    },
+    {
+      "materialCode": "TGSA59662000",
+      "displayName": "SAMSUNG GALAXY S26 ULTRA 256GB PRETO",
+      "technicalName": "SSG GALAXY S948B 256GB PT PPB/P291/12",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "353878430136616"
+      ]
+    },
+    {
+      "materialCode": "TGSA59664000",
+      "displayName": "SAMSUNG GALAXY S26 ULTRA 256GB PRETO",
+      "technicalName": "SSG GALAXY S948B 256GB PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "353878435101680"
+      ]
+    },
+    {
+      "materialCode": "TGSA596R4000",
+      "displayName": "SAMSUNG GALAXY S26 ULTRA 256GB VIOLETA",
+      "technicalName": "SSG GALAXY S948B 256GB VT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "353878435061728",
+        "353878435082252"
+      ]
+    },
+    {
+      "materialCode": "TGSA60064000",
+      "displayName": "SAMSUNG GALAXY S26+ 256GB PRETO",
+      "technicalName": "SSG GALAXY S947B 256GB PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "356203275008464"
+      ]
+    },
+    {
+      "materialCode": "TGSA600R4000",
+      "displayName": "SAMSUNG GALAXY S26+ 256GB VIOLETA",
+      "technicalName": "SSG GALAXY S947B 256GB VT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "356203275031821"
+      ]
+    },
+    {
+      "materialCode": "TGSA60164000",
+      "displayName": "SAMSUNG GALAXY S26+ 512GB PRETO",
+      "technicalName": "SSG GALAXY S947B 512GB PT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "357253485084200",
+        "357253485090611"
+      ]
+    },
+    {
+      "materialCode": "TGSA601R4000",
+      "displayName": "SAMSUNG GALAXY S26+ 512GB VIOLETA",
+      "technicalName": "SSG GALAXY S947B 512GB VT PPB/P291/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "357253485129906"
+      ]
+    },
+    {
+      "materialCode": "BGSA569C4000",
+      "displayName": "SAMSUNG GALAXY TAB S10 FE 5G 128GB CINZA",
+      "technicalName": "SSG GALAXY TAB S10 FE 5G 128GB CZ PPB/14",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 8,
+      "serialNumbers": [
+        "357741900172188",
+        "357741900186022",
+        "357741900186113",
+        "357741900215698",
+        "357741900216316",
+        "357741900216936",
+        "357741900228576",
+        "357741900228808"
+      ]
+    },
+    {
+      "materialCode": "22023096",
+      "displayName": "SAMSUNG GALAXY TAB S10 ULTRA 14,6\" 512GB CINZA",
+      "technicalName": "SSG GALAXY TAB S10 ULTRA 14,6\" 512GB CZ",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "22023096100237"
+      ]
+    },
+    {
+      "materialCode": "TGSA57312000",
+      "displayName": "SAMSUNG GALAXY Z FLIP7 256GB AZUL",
+      "technicalName": "SSG GALAXY F766B 256GB AZ PPB/P291/12",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "351185140039227"
+      ]
+    },
+    {
+      "materialCode": "TGSA57362000",
+      "displayName": "SAMSUNG GALAXY Z FLIP7 256GB PRETO",
+      "technicalName": "SSG GALAXY F766B 256GB PT PPB/P291/12",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "351185140029236",
+        "351185140188933"
+      ]
+    },
+    {
+      "materialCode": "TGSA57462000",
+      "displayName": "SAMSUNG GALAXY Z FLIP7 512GB PRETO",
+      "technicalName": "SSG GALAXY F766B 512GB PT PPB/P291/12",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "353028230004750",
+        "353028230092847"
+      ]
+    },
+    {
+      "materialCode": "TGSA57622000",
+      "displayName": "SAMSUNG GALAXY Z FLIP7 FE 256GB BRANCO",
+      "technicalName": "SSG GALAXY F761B 256GB BR PPB/P291/12",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "358133810027489"
+      ]
+    },
+    {
+      "materialCode": "TGSA57162000",
+      "displayName": "SAMSUNG GALAXY Z FOLD7 512GB PRETO",
+      "technicalName": "SSG GALAXY F966B/DS 512GB PT PPB/P291/12",
+      "category": "phone",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 4,
+      "serialNumbers": [
+        "351838140051374",
+        "351838140066992",
+        "351838140067099",
+        "351838140096528"
+      ]
+    },
+    {
+      "materialCode": "22022496",
+      "displayName": "SAMSUNG PROJETOR THE FREESTYLE 2ªGERAÇÃO BRANCO",
+      "technicalName": "SAMSUNG PROJETOR THE FREESTYLE 2ªGER BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "22022496110366",
+        "22022496110378"
+      ]
+    },
+    {
+      "materialCode": "22023745",
+      "displayName": "SAMSUNG SMART TV 32\" HD H5000F 2025 PRETO",
+      "technicalName": "SSG SMART TV 32\" HD H5000F 2025 PT",
+      "category": "accessory",
+      "cluster": "tvs",
+      "brand": "Samsung",
+      "quantity": 12,
+      "serialNumbers": [
+        "22023745101108",
+        "22023745101112",
+        "22023745101116",
+        "22023745101120",
+        "22023745102964",
+        "22023745102968",
+        "22023745102972",
+        "22023745102976",
+        "22023745103107",
+        "22023745103111",
+        "22023745103115",
+        "22023745103119"
+      ]
+    },
+    {
+      "materialCode": "22023746",
+      "displayName": "SAMSUNG SMART TV 43\" UHD 4K U8600F 2025 PRETO",
+      "technicalName": "SSG SMART TV 43\" UHD 4K U8600F 2025 PT",
+      "category": "accessory",
+      "cluster": "tvs",
+      "brand": "Samsung",
+      "quantity": 9,
+      "serialNumbers": [
+        "22023746100877",
+        "22023746100881",
+        "22023746100885",
+        "22023746100889",
+        "22023746100893",
+        "22023746100897",
+        "22023746100900",
+        "22023746100901",
+        "22023746100905"
+      ]
+    },
+    {
+      "materialCode": "22022375",
+      "displayName": "SAMSUNG SMARTWATCH FIT 3 R390 GRAFITE",
+      "technicalName": "SAMSUNG SMARTWATCH FIT 3 R390 GF",
+      "category": "accessory",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 2,
+      "serialNumbers": [
+        "22022375155025",
+        "22022375157619"
+      ]
+    },
+    {
+      "materialCode": "22023921",
+      "displayName": "SAMSUNG WATCH 8 40MM BLUETOOTH GRAFITE",
+      "technicalName": "SSG WATCH 8 40MM BT GF",
+      "category": "accessory",
+      "cluster": "devices",
+      "brand": "Samsung",
+      "quantity": 1,
+      "serialNumbers": [
+        "22023921103592"
+      ]
+    },
+    {
+      "materialCode": "YGSC246U1000",
+      "displayName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "technicalName": "SIM CARD 4G P71 HRS 2/3/4FF",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Vivo",
+      "quantity": 10,
+      "serialNumbers": [
+        "551097471042245236",
+        "551097471042246002",
+        "551097471042246507",
+        "551097471042246515",
+        "551097471042246549",
+        "551097471042246556",
+        "551097471042246564",
+        "551097471042246622",
+        "551097471042246663",
+        "551097471042246671"
+      ]
+    },
+    {
+      "materialCode": "YGSC301U2000",
+      "displayName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "technicalName": "SIM CARD 4G PN71 COMBO 15 HRS",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Vivo",
+      "quantity": 25,
+      "serialNumbers": [
+        "551097171209054534",
+        "551097171209054765",
+        "551097171210506878",
+        "551097371131164498",
+        "551097371131164506",
+        "551097371131164514",
+        "551097371131164522",
+        "551097371131164530",
+        "551097371131164548",
+        "551097371131164555",
+        "551097371131164563",
+        "551097371131164571",
+        "551097371131164589",
+        "551097471010665977",
+        "551097471011417030",
+        "551097471075248404",
+        "551097471075248412",
+        "551097471075248420",
+        "551097471075248438",
+        "551097471075248446",
+        "551097471075248453",
+        "551097471075248461",
+        "551097471075248479",
+        "551097471075248487",
+        "551097471075248495"
+      ]
+    },
+    {
+      "materialCode": "YGSC246U4000",
+      "displayName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "technicalName": "SIM CARD 4G PN71 HRS 2/3/4FF",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Vivo",
+      "quantity": 14,
+      "serialNumbers": [
+        "551097171152181425",
+        "551097271084072682",
+        "551097471046807254",
+        "551097471053586932",
+        "551097471086733402",
+        "551097471086733428",
+        "551097471086733444",
+        "551097471086733485",
+        "551097471086733501",
+        "551097471086733519",
+        "551097471086733535",
+        "551097471086733543",
+        "551097471086733550",
+        "551097471086733568"
+      ]
+    },
+    {
+      "materialCode": "YBSC001A1000",
+      "displayName": "SIM CARD 5G 2/3/4FF AVULSO P61 OLHAL MG",
+      "technicalName": "SIM CARD 5G 2/3/4FF  AVULSO P61 OLHAL MG",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Vivo",
+      "quantity": 65,
+      "serialNumbers": [
+        "552355261000962855",
+        "552355261000962863",
+        "552355261000962871",
+        "552355261000962889",
+        "552355261000962897",
+        "552355261000962962",
+        "552355261000962970",
+        "552355261000962988",
+        "552355261000962996",
+        "552355261000963002",
+        "552355261000963010",
+        "552355261000963028",
+        "552355261000963036",
+        "552355261000963077",
+        "552355261000963143",
+        "552355261000963150",
+        "552355261000963168",
+        "552355261000963176",
+        "552355261000963184",
+        "552355261000963192",
+        "552355261000963200",
+        "552355261000963218",
+        "552355261000963226",
+        "552355261000963234",
+        "552355261000963242",
+        "552355261000963259",
+        "552355261000963267",
+        "552355261000963275",
+        "552355261000963283",
+        "552355261000963291",
+        "552355261000963309",
+        "552355261000963317",
+        "552355261000963325",
+        "552355261000963333",
+        "552355261000963358",
+        "552355261000963366",
+        "552355261000963374",
+        "552355261000963382",
+        "552355261000963390",
+        "552355261000963408",
+        "552355261000963416",
+        "552355261000963424",
+        "552355261000963432",
+        "552355261000963440",
+        "552355261000963457",
+        "552355261000963465",
+        "552355261000963473",
+        "552355261000963481",
+        "552355261000963499",
+        "552355261000963507",
+        "552355261000963515",
+        "552355261000963523",
+        "552355261000963531",
+        "552355261000963549",
+        "552355261000963556",
+        "552355261000963564",
+        "552355261000963572",
+        "552355261000963580",
+        "552355261000963598",
+        "552355261000963606",
+        "552355261000963614",
+        "552355261000963622",
+        "552355261000963630",
+        "552355361002971829",
+        "552355361002972439"
+      ]
+    },
+    {
+      "materialCode": "YBSC001A2000",
+      "displayName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "technicalName": "SIM CARD 5G 2/3/4FF AVULSO P69 OLHAL MG",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Vivo",
+      "quantity": 172,
+      "serialNumbers": [
+        "552355169004999783",
+        "552355169006540882",
+        "552355269004645806",
+        "552355269005954397",
+        "552355269008645117",
+        "552355269008645323",
+        "552355269008949782",
+        "552355269008949832",
+        "552355269008949857",
+        "552355269008949873",
+        "552355269008949881",
+        "552355269008949899",
+        "552355269008949949",
+        "552355269008950020",
+        "552355269008950046",
+        "552355269008950053",
+        "552355269008950079",
+        "552355269008950087",
+        "552355269008950095",
+        "552355269008950202",
+        "552355269008950210",
+        "552355269008950228",
+        "552355269008950236",
+        "552355269008950350",
+        "552355269008950368",
+        "552355269008950418",
+        "552355269008950467",
+        "552355269008950483",
+        "552355269008950491",
+        "552355269008950509",
+        "552355269008950525",
+        "552355269008950533",
+        "552355269008950558",
+        "552355269008950590",
+        "552355269009381548",
+        "552355269009381563",
+        "552355269009381589",
+        "552355269009381597",
+        "552355269009381605",
+        "552355269009381613",
+        "552355269009381621",
+        "552355269009381639",
+        "552355269009381712",
+        "552355269009381746",
+        "552355269009381753",
+        "552355269009381787",
+        "552355269009381795",
+        "552355269009381829",
+        "552355269009381837",
+        "552355269009381977",
+        "552355269009381993",
+        "552355269009382017",
+        "552355269009382025",
+        "552355269009382041",
+        "552355269009382058",
+        "552355269009382066",
+        "552355269009382074",
+        "552355269009382082",
+        "552355269009382090",
+        "552355269009382108",
+        "552355269009382116",
+        "552355269009382124",
+        "552355269009382132",
+        "552355269009382140",
+        "552355269009382157",
+        "552355269009382165",
+        "552355269009382173",
+        "552355269009382181",
+        "552355269009382199",
+        "552355269009382207",
+        "552355269009382215",
+        "552355269009382223",
+        "552355269009382231",
+        "552355269009382249",
+        "552355269009382256",
+        "552355269009382264",
+        "552355269009382272",
+        "552355269009382280",
+        "552355269009382298",
+        "552355269009382306",
+        "552355269009382314",
+        "552355269009382322",
+        "552355269009382330",
+        "552355269009382355",
+        "552355269009382389",
+        "552355269009382454",
+        "552355269009382462",
+        "552355269009382470",
+        "552355269009382488",
+        "552355269009382496",
+        "552355269009382504",
+        "552355269009382512",
+        "552355269009382520",
+        "552355269009382538",
+        "552355269009399557",
+        "552355269009399565",
+        "552355269009399573",
+        "552355269009399599",
+        "552355269009399672",
+        "552355269009399748",
+        "552355269009399755",
+        "552355269009399771",
+        "552355269009399797",
+        "552355269009399805",
+        "552355269009399813",
+        "552355269009399821",
+        "552355269009399847",
+        "552355269009399854",
+        "552355269009399862",
+        "552355269009399870",
+        "552355269009399888",
+        "552355269009399896",
+        "552355269009399904",
+        "552355269009399912",
+        "552355269009399920",
+        "552355269009399938",
+        "552355269009399946",
+        "552355269009399953",
+        "552355269009399961",
+        "552355269009399979",
+        "552355269009399987",
+        "552355269009399995",
+        "552355269009400017",
+        "552355269009400041",
+        "552355269009400058",
+        "552355269009400066",
+        "552355269009400074",
+        "552355269009400082",
+        "552355269009400090",
+        "552355269009400108",
+        "552355269009400116",
+        "552355269009400124",
+        "552355269009400140",
+        "552355269009400157",
+        "552355269009400165",
+        "552355269009400173",
+        "552355269009400181",
+        "552355269009400199",
+        "552355269009400207",
+        "552355269009400215",
+        "552355269009400223",
+        "552355269009400231",
+        "552355269009400249",
+        "552355269009400256",
+        "552355269009400264",
+        "552355269009400272",
+        "552355269009400280",
+        "552355269009400298",
+        "552355269009400306",
+        "552355269009400314",
+        "552355269009400322",
+        "552355269009400330",
+        "552355269009400348",
+        "552355269009400355",
+        "552355269009400363",
+        "552355269009400371",
+        "552355269009400389",
+        "552355269009400397",
+        "552355269009400405",
+        "552355269009400413",
+        "552355269009400421",
+        "552355269009400439",
+        "552355269009400447",
+        "552355269009400454",
+        "552355269009400462",
+        "552355269009400470",
+        "552355269009400488",
+        "552355269009400496",
+        "552355269009400504",
+        "552355269009400512",
+        "552355269009400520",
+        "552355269009400538"
+      ]
+    },
+    {
+      "materialCode": "22024055",
+      "displayName": "STECK CAMERA 360° PTZ SCAM3BS1 BRANCO",
+      "technicalName": "STECK CAMERA 360° PTZ SCAM3BS1 BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Steck",
+      "quantity": 2,
+      "serialNumbers": [
+        "220240550002168",
+        "220240550002673"
+      ]
+    },
+    {
+      "materialCode": "22019904",
+      "displayName": "TELLESCOM REPETIDOR SMT WIFI RG3110W PRETO",
+      "technicalName": "TELLESCOM REPETIDOR SMT WIFI RG3110W PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Tellescom",
+      "quantity": 5,
+      "serialNumbers": [
+        "22019904106796",
+        "22019904107064",
+        "220199040027537",
+        "220199040030158",
+        "220199040030200"
+      ]
+    },
+    {
+      "materialCode": "22024877",
+      "displayName": "UP2 CONSOLE PS5 825GB DIGITAL BRANCO",
+      "technicalName": "UP2 CONSOLE PS5 825GB DIGITAL BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "UP2",
+      "quantity": 2,
+      "serialNumbers": [
+        "22024877263769",
+        "22024877263776"
+      ]
+    },
+    {
+      "materialCode": "22024249",
+      "displayName": "UP2 FONE DE OUVIDO SEM FIO JBL TUNE 520BT PRETO",
+      "technicalName": "UP2 FONE OUVIDO S/FIO JBL TUNE 520BT PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "UP2",
+      "quantity": 5,
+      "serialNumbers": [
+        "22024249070986",
+        "22024249071462",
+        "22024249071463",
+        "22024249071465",
+        "22024249071466"
+      ]
+    },
+    {
+      "materialCode": "22024256",
+      "displayName": "UP2 NOTEBOOK LENOVO CORE I5 8GB 512 CINZA",
+      "technicalName": "UP2 NOTEBOOK LENOVO CORE I5 8GB 512 CZ",
+      "category": "accessory",
+      "cluster": "notebooks",
+      "brand": "UP2",
+      "quantity": 1,
+      "serialNumbers": [
+        "22024256224489"
+      ]
+    },
+    {
+      "materialCode": "22021980",
+      "displayName": "VIVO PLAY SMART TV STICK PRETO",
+      "technicalName": "VIVO PLAY SMART TV STICK PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Vivo",
+      "quantity": 6,
+      "serialNumbers": [
+        "220219800003464",
+        "220219800003507",
+        "220219800003629",
+        "220219800003657",
+        "220219800003748",
+        "220219800017799"
+      ]
+    },
+    {
+      "materialCode": "22023416",
+      "displayName": "VIVO REPETIDOR WI-FI 6 500IX4X4 BRANCO",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 BR",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Vivo",
+      "quantity": 5,
+      "serialNumbers": [
+        "22023416106871",
+        "22023416107050",
+        "22023416107137",
+        "22023416107228",
+        "22023416107238"
+      ]
+    },
+    {
+      "materialCode": "22022605",
+      "displayName": "VIVO REPETIDOR WI-FI 6 500IX4X4 PRETO",
+      "technicalName": "VIVO REPETIDOR WI-FI 6 500IX4X4 PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "Vivo",
+      "quantity": 4,
+      "serialNumbers": [
+        "22022605101473",
+        "22022605101477",
+        "22022605114902",
+        "22022605115027"
+      ]
+    },
+    {
+      "materialCode": "22022835",
+      "displayName": "WAP CAIXA SOM BLUETOOTH WAAW BOOM 200 PRETO",
+      "technicalName": "WAP CAIXA SOM BT WAAW BOOM 200 PT",
+      "category": "accessory",
+      "cluster": "speakers",
+      "brand": "WAP",
+      "quantity": 2,
+      "serialNumbers": [
+        "220228350001950",
+        "220228350005787"
+      ]
+    },
+    {
+      "materialCode": "22024005",
+      "displayName": "WAP CAIXA SOM BLUETOOTH WAAW BY ALOK ME110 PRETO",
+      "technicalName": "WAP CAIXA SOM BT WAAW BY ALOK ME110 PT N",
+      "category": "accessory",
+      "cluster": "speakers",
+      "brand": "WAP",
+      "quantity": 3,
+      "serialNumbers": [
+        "220240050006360",
+        "220240050034652",
+        "220240050034653"
+      ]
+    },
+    {
+      "materialCode": "22022219",
+      "displayName": "WAP CAIXA SOM BLUETOOTH WAAW US 200SB DUO PRETO",
+      "technicalName": "WAP CAIXA SOM BT WAAW US 200SB DUO PT",
+      "category": "accessory",
+      "cluster": "speakers",
+      "brand": "WAP",
+      "quantity": 1,
+      "serialNumbers": [
+        "220222190001616"
+      ]
+    },
+    {
+      "materialCode": "22022836",
+      "displayName": "WAP CAIXA SOM WAAW HYPERBOOM 1000 PRETO",
+      "technicalName": "WAP CAIXA SOM WAAW HYPERBOOM 1000 PT",
+      "category": "accessory",
+      "cluster": "speakers",
+      "brand": "WAP",
+      "quantity": 1,
+      "serialNumbers": [
+        "220228360006327"
+      ]
+    },
+    {
+      "materialCode": "22023782",
+      "displayName": "WAP FONE DE OUVIDO BLUETOOTH WAAW MOB 500 ANC PRETO",
+      "technicalName": "WAP FONE OUVIDO BT WAAW MOB 500 ANC PT N",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "WAP",
+      "quantity": 1,
+      "serialNumbers": [
+        "220237820036074"
+      ]
+    },
+    {
+      "materialCode": "22023005",
+      "displayName": "WAP FONE DE OUVIDO BLUETOOTH WAAW SENSE 210 PRETO",
+      "technicalName": "WAP FONE OUVIDO BT WAAW SENSE 210 PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "WAP",
+      "quantity": 4,
+      "serialNumbers": [
+        "220230050003279",
+        "220230050003351",
+        "220230050003352",
+        "220230050003355"
+      ]
+    },
+    {
+      "materialCode": "22024300",
+      "displayName": "WAP ROBÔ ASPIRADOR DE PÓ 3 EM 1 W90 PRETO",
+      "technicalName": "WAP ROBO ASPIRADOR DE PO 3EM1 W90 PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "WAP",
+      "quantity": 1,
+      "serialNumbers": [
+        "220243000006886"
+      ]
+    },
+    {
+      "materialCode": "22024145",
+      "displayName": "WAP ROBÔ ASPIRADOR PÓ 3 EM 1 W90 PRETO",
+      "technicalName": "WAP ROBO ASPIRADOR PO 3EM1 W90 PT",
+      "category": "accessory",
+      "cluster": "misc",
+      "brand": "WAP",
+      "quantity": 4,
+      "serialNumbers": [
+        "220241450001122",
+        "220241450001351",
+        "220241450001733",
+        "220241450001734"
+      ]
+    }
+  ]
+}

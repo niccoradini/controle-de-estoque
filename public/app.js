@@ -1,0 +1,1754 @@
+import {
+  compatibleCaseChoices,
+  groupAccessoryChoices,
+  groupDeviceProducts,
+} from './catalog-groups.js';
+
+const root = document.querySelector('#root');
+const modalRoot = document.querySelector('#modal-root');
+const toastRoot = document.querySelector('#toast-root');
+
+const state = {
+  user: null,
+  view: 'dashboard',
+  requests: [],
+  users: [],
+  logs: [],
+  catalog: [],
+  pricing: { categories: [], tableDate: '', source: '' },
+  renovaCatalog: { tableDate: '', devices: [], boosts: [] },
+  priceCategory: '',
+  cart: new Map(),
+  renova: { enabled: false, deviceId: 0, condition: 'bom' },
+  deviceSelections: new Map(),
+  expandedDeviceFamily: '',
+  catalogSearch: '',
+  catalogCategory: '',
+  stockSearch: '',
+  stockCluster: '',
+  requestFilter: '',
+  alignmentTopic: '',
+  pendingCount: 0,
+};
+
+const viewTitles = {
+  dashboard: 'Visão geral',
+  stock: 'Loja e estoque',
+  'new-request': 'Novo pedido',
+  requests: 'Pedidos de retirada',
+  alignment: 'Central de Alinhamento',
+  users: 'Usuários',
+  audit: 'Histórico',
+};
+
+const statusInfo = {
+  pending: ['Pendente', 'pending'],
+  approved: ['Liberado', 'approved'],
+  rejected: ['Recusado', 'rejected'],
+  cancelled: ['Cancelado', 'cancelled'],
+};
+
+const clusterLabels = {
+  devices: 'Aparelhos',
+  cases: 'Capas',
+  screen_protectors: 'Películas',
+  speakers: 'Caixas de som',
+  notebooks: 'Notebooks',
+  tvs: 'TVs',
+  chargers: 'Carregadores',
+  cables: 'Cabos',
+  misc: 'Acessórios diversos',
+};
+
+const clusterOrder = ['devices', 'cases', 'screen_protectors', 'speakers', 'notebooks', 'tvs', 'chargers', 'cables', 'misc'];
+
+const alignmentTopics = [
+  {
+    id: 'customer-care',
+    number: '01',
+    icon: 'service',
+    eyebrow: 'Prioridade absoluta',
+    title: 'Resolver faz parte do atendimento',
+    summary: 'O cliente precisa ser acolhido, orientado e acompanhado até uma solução clara.',
+    minutes: 6,
+    wide: true,
+  },
+  {
+    id: 'responsibilities',
+    number: '02',
+    icon: 'tasks',
+    eyebrow: 'Função completa',
+    title: 'Responsabilidades do consultor',
+    summary: 'Vendas, serviços, suporte e compromisso com a operação fazem parte do mesmo cargo.',
+    minutes: 6,
+  },
+  {
+    id: 'conduct',
+    number: '03',
+    icon: 'conduct',
+    eyebrow: 'Postura profissional',
+    title: 'Comportamento em loja',
+    summary: 'Presença, respeito, comunicação adequada e clareza sobre a estrutura da equipe.',
+    minutes: 4,
+  },
+  {
+    id: 'organization',
+    number: '04',
+    icon: 'clean',
+    eyebrow: 'Responsabilidade coletiva',
+    title: 'A loja é de todos',
+    summary: 'Cozinha e estoque devem permanecer limpos, seguros e prontos para a rotina.',
+    minutes: 4,
+    wide: true,
+  },
+];
+
+class ApiError extends Error {
+  constructor(message, status, fields = {}) {
+    super(message);
+    this.status = status;
+    this.fields = fields;
+  }
+}
+
+function escapeHtml(value = '') {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function initials(name = '') {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'U';
+}
+
+function formatDate(value, withTime = true) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('pt-BR', withTime
+    ? { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+    : { day: '2-digit', month: 'short', year: 'numeric' }).format(date).replace('.', '');
+}
+
+function formatMoney(cents) {
+  if (cents === null || cents === undefined || !Number.isFinite(Number(cents))) return '—';
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(cents) / 100);
+}
+
+function installmentCount(totalCents) {
+  const total = Number(totalCents || 0);
+  if (total >= 499900) return 21;
+  if (total >= 299900) return 15;
+  if (total >= 99900) return 12;
+  if (total >= 49900) return 6;
+  if (total >= 9900) return 3;
+  return 1;
+}
+
+function selectedProductPrice(product, variant = null) {
+  if (product?.pricing) {
+    if (!state.priceCategory) return null;
+    const price = product.pricing.prices?.[state.priceCategory];
+    return price === undefined || price === null ? null : Number(price);
+  }
+  const retailPrice = variant?.retailPrice || product?.retailPrice;
+  return retailPrice?.priceCents == null ? null : Number(retailPrice.priceCents);
+}
+
+function productPriceKind(product, variant = null) {
+  if (product?.pricing) return 'plan';
+  return (variant?.retailPrice || product?.retailPrice)?.kind || '';
+}
+
+function priceText(product, variant = null) {
+  const price = selectedProductPrice(product, variant);
+  if (price == null) return 'Preço não disponível';
+  return productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(price);
+}
+
+function normalizeRenovaModelKey(value = '') {
+  return String(value)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/\b5G\b/g, '')
+    .replaceAll('+', ' PLUS ')
+    .replace(/[^A-Z0-9]+/g, '');
+}
+
+function manufacturerRenovaBonus(productName = '') {
+  const productKey = normalizeRenovaModelKey(productName);
+  const matchingBoost = [...(state.renovaCatalog.boosts || [])]
+    .filter((boost) => productKey.includes(String(boost.matchKey || '')))
+    .sort((left, right) => String(right.matchKey || '').length - String(left.matchKey || '').length)[0];
+  return matchingBoost ? Number(matchingBoost.bonusCents || 0) : 0;
+}
+
+function selectedRenovaTradeIn() {
+  const deviceId = Number(state.renova.deviceId || 0);
+  return (state.renovaCatalog.devices || []).find((device) => Number(device.id) === deviceId) || null;
+}
+
+function renovaTradeInByName(value = '') {
+  const name = String(value).trim().toLocaleUpperCase('pt-BR');
+  return (state.renovaCatalog.devices || []).find((device) => device.name.toLocaleUpperCase('pt-BR') === name) || null;
+}
+
+function renovaTableDateLabel(value = '') {
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
+}
+
+function renovaDiscountFor(selected) {
+  if (!state.renova.enabled) return { deviceSubtotalCents: 0, bonusCents: 0, voucherCents: 0, discountCents: 0 };
+  const devices = selected.filter((item) => item.product.cluster === 'devices' && item.unitPriceCents != null);
+  const deviceSubtotalCents = devices.reduce((sum, item) => sum + item.unitPriceCents * item.quantity, 0);
+  const automaticBonus = devices.length ? manufacturerRenovaBonus(devices[0].product.name) : 0;
+  const tradeIn = selectedRenovaTradeIn();
+  const bonusCents = Math.max(0, Number(automaticBonus));
+  const voucherCents = Math.max(0, Number(state.renova.condition === 'defeituoso' ? tradeIn?.defectiveCents : tradeIn?.goodCents) || 0);
+  return { deviceSubtotalCents, bonusCents, voucherCents, discountCents: Math.min(deviceSubtotalCents, bonusCents + voucherCents) };
+}
+
+function statusBadge(status) {
+  const [label, className] = statusInfo[status] || [status, 'cancelled'];
+  return `<span class="status status--${className}">${escapeHtml(label)}</span>`;
+}
+
+function roleLabel(role) {
+  if (role === 'manager') return 'Gerente';
+  if (role === 'stocker') return 'Estoquista';
+  return 'Vendedor';
+}
+
+function requestCode(id) {
+  const value = String(id);
+  return /^\d+$/.test(value) ? value.padStart(4, '0') : value.replaceAll('-', '').slice(0, 8).toUpperCase();
+}
+
+function uiIcon(name, className = '') {
+  const icons = {
+    home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/>',
+    stock: '<rect x="3" y="5" width="18" height="15" rx="2.5"/><path d="M3 10h18M8 5v5M16 5v5M8 14h3M8 17h6"/>',
+    orders: '<path d="M8 4h8M9 3h6v3H9z"/><rect x="5" y="5" width="14" height="16" rx="2.5"/><path d="m9 12 2 2 4-4M9 18h6"/>',
+    users: '<path d="M16 20v-1.6a4.4 4.4 0 0 0-4.4-4.4H6.4A4.4 4.4 0 0 0 2 18.4V20"/><circle cx="9" cy="7" r="4"/><path d="M17 11a3.5 3.5 0 0 1 0-7M22 20v-1.5a4 4 0 0 0-3-3.8"/>',
+    history: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2M4.7 5.8 2.8 4"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    logout: '<path d="M10 4H5.5A2.5 2.5 0 0 0 3 6.5v11A2.5 2.5 0 0 0 5.5 20H10M14 8l4 4-4 4M18 12H8"/>',
+    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    close: '<path d="m6 6 12 12M18 6 6 18"/>',
+    box: '<path d="m4 8 8-4 8 4-8 4-8-4Z"/><path d="m4 8 8 4 8-4v8l-8 4-8-4V8ZM12 12v8"/>',
+    copy: '<rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+    check: '<path d="m5 12 4 4L19 6"/>',
+    warning: '<path d="M12 8v5M12 17h.01"/><path d="M10.3 4.2 2.7 18a2 2 0 0 0 1.8 3h15a2 2 0 0 0 1.8-3L13.7 4.2a2 2 0 0 0-3.4 0Z"/>',
+    briefing: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h10M7 13h6M7 17h4"/>',
+    service: '<path d="M4 13v-2a8 8 0 0 1 16 0v2"/><path d="M4 13h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 13h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2ZM17 19c-1 2-3 2-5 2"/>',
+    tasks: '<path d="M9 5h6M10 3h4a2 2 0 0 1 2 2v1H8V5a2 2 0 0 1 2-2Z"/><rect x="5" y="5" width="14" height="16" rx="2.5"/><path d="m8.5 11 1.5 1.5 2.5-3M8.5 17h7"/>',
+    conduct: '<circle cx="9" cy="8" r="3.5"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5.5a3.5 3.5 0 0 1 0 6.5M18 14a4.5 4.5 0 0 1 3 4.2V20"/>',
+    clean: '<path d="m12 3 1.1 3.2L16 8l-2.9 1.8L12 13l-1.1-3.2L8 8l2.9-1.8L12 3ZM5.5 13l.8 2.2 2.2.8-2.2.8L5.5 19l-.8-2.2-2.2-.8 2.2-.8.8-2.2ZM18.5 13l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/>',
+    chevron: '<path d="m9 18 6-6-6-6"/>',
+  };
+  return `<svg class="ui-icon ${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${icons[name] || icons.box}</svg>`;
+}
+
+function clusterGraphic(cluster) {
+  const drawings = {
+    devices: `
+      <rect class="graphic-soft" x="44" y="11" width="70" height="98" rx="15"/>
+      <rect class="graphic-surface" x="51" y="18" width="56" height="78" rx="9"/>
+      <path d="M75 103h8"/>
+      <rect class="graphic-back" x="105" y="31" width="42" height="72" rx="10" transform="rotate(7 105 31)"/>
+      <circle cx="119" cy="45" r="5"/><circle cx="132" cy="47" r="5"/>`,
+    cases: `
+      <rect class="graphic-soft" x="52" y="10" width="76" height="100" rx="18" transform="rotate(-5 52 10)"/>
+      <rect class="graphic-surface" x="60" y="18" width="60" height="84" rx="12" transform="rotate(-5 60 18)"/>
+      <rect x="65" y="23" width="27" height="30" rx="8" transform="rotate(-5 65 23)"/>
+      <circle cx="73" cy="33" r="4"/><circle cx="84" cy="32" r="4"/><circle cx="74" cy="44" r="4"/>
+      <path d="M82 94h13"/>`,
+    screen_protectors: `
+      <rect class="graphic-back" x="42" y="18" width="67" height="91" rx="14" transform="rotate(-8 42 18)"/>
+      <rect class="graphic-soft" x="69" y="11" width="67" height="91" rx="14" transform="rotate(8 69 11)"/>
+      <rect class="graphic-surface" x="56" y="14" width="68" height="94" rx="14"/>
+      <path d="M80 23h20M68 88l36-55"/>`,
+    speakers: `
+      <rect class="graphic-soft" x="57" y="10" width="66" height="100" rx="16"/>
+      <circle class="graphic-surface" cx="90" cy="76" r="23"/><circle cx="90" cy="76" r="10"/>
+      <circle class="graphic-surface" cx="90" cy="34" r="10"/><path d="M132 48c8 6 8 18 0 24M142 40c14 12 14 28 0 40"/>`,
+    notebooks: `
+      <rect class="graphic-soft" x="35" y="18" width="110" height="69" rx="8"/>
+      <rect class="graphic-surface" x="44" y="27" width="92" height="51" rx="3"/>
+      <path class="graphic-surface" d="M27 94h126l-9 13H36L27 94Z"/><path d="M77 99h26"/>`,
+    tvs: `
+      <rect class="graphic-soft" x="25" y="17" width="130" height="78" rx="9"/>
+      <rect class="graphic-surface" x="34" y="26" width="112" height="60" rx="4"/>
+      <path d="M70 108h40M80 95l-5 13M100 95l5 13"/>`,
+    chargers: `
+      <rect class="graphic-soft" x="57" y="28" width="66" height="75" rx="15"/>
+      <path class="graphic-surface" d="M69 28V14M85 28V14"/>
+      <path d="m96 47-15 23h13l-9 19 21-27H93l3-15Z"/>
+      <path d="M90 103v8"/>`,
+    cables: `
+      <path class="graphic-cable" d="M47 28c-20 14-17 48 6 56 25 9 31-22 55-14 13 4 18 17 13 31"/>
+      <rect class="graphic-surface" x="34" y="15" width="25" height="19" rx="5" transform="rotate(-24 34 15)"/>
+      <path d="m36 17-5-10M45 13 40 3"/>
+      <rect class="graphic-surface" x="111" y="96" width="27" height="17" rx="5" transform="rotate(13 111 96)"/><path d="m137 104 12 3"/>`,
+    misc: `
+      <path class="graphic-soft" d="m90 14 53 26-53 27-53-27 53-26Z"/>
+      <path class="graphic-surface" d="m37 40 53 27 53-27v48l-53 26-53-26V40Z"/>
+      <path d="M90 67v47M62 27l54 27M117 27 63 54"/>`,
+  };
+  return `<svg class="cluster-graphic" viewBox="0 0 180 120" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${drawings[cluster] || drawings.misc}</svg>`;
+}
+
+async function api(url, options = {}) {
+  const method = options.method || 'GET';
+  const headers = { Accept: 'application/json', ...(options.headers || {}) };
+  if (!['GET', 'HEAD'].includes(method)) headers['X-Requested-With'] = 'estoque-web';
+  if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  const response = await fetch(url, {
+    method,
+    headers,
+    credentials: 'same-origin',
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+  });
+  if (response.status === 204) return null;
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    if (response.status === 401 && state.user && !options.keepSession) {
+      state.user = null;
+      renderLogin('Sua sessão expirou. Entre novamente.');
+    }
+    throw new ApiError(payload.error || 'Não foi possível concluir a ação.', response.status, payload.fields);
+  }
+  return payload;
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type === 'error' ? 'toast--error' : ''}`;
+  toast.innerHTML = `<span class="toast__icon">${uiIcon(type === 'error' ? 'warning' : 'check')}</span><p>${escapeHtml(message)}</p>`;
+  toastRoot.append(toast);
+  window.setTimeout(() => toast.remove(), 3800);
+}
+
+function setFormError(form, message = '') {
+  const area = form.querySelector('[data-form-error]');
+  if (!area) return;
+  area.textContent = message;
+  area.hidden = !message;
+}
+
+async function withBusy(button, task) {
+  if (!button || button.disabled) return;
+  const original = button.innerHTML;
+  button.disabled = true;
+  button.innerHTML = '<span class="loading-inline">Aguarde</span>';
+  try {
+    return await task();
+  } finally {
+    if (button.isConnected) {
+      button.disabled = false;
+      button.innerHTML = original;
+    }
+  }
+}
+
+async function copyText(value) {
+  const text = String(value || '');
+  if (!text) return;
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const field = document.createElement('textarea');
+  field.value = text;
+  field.setAttribute('readonly', '');
+  field.style.position = 'fixed';
+  field.style.opacity = '0';
+  document.body.append(field);
+  field.select();
+  const copied = document.execCommand('copy');
+  field.remove();
+  if (!copied) throw new Error('Não foi possível copiar o código.');
+}
+
+function authVisual() {
+  return `
+    <section class="auth-visual">
+      <div class="auth-brand"><div class="brand-mark" aria-hidden="true"><span></span></div>Estoque</div>
+      <div class="auth-copy">
+        <h1>Estoque,<br>com clareza.</h1>
+        <p>Produtos, pedidos e disponibilidade em uma experiência simples.</p>
+        <div class="auth-feature-list" aria-label="Recursos do sistema">
+          <span class="auth-feature">Estoque por material</span>
+          <span class="auth-feature">Liberação automática</span>
+          <span class="auth-feature">Histórico completo</span>
+        </div>
+      </div>
+      <div class="auth-footer">Acesso seguro para gerente, vendedores e estoquistas</div>
+    </section>`;
+}
+
+function renderSetup() {
+  root.innerHTML = `
+    <main class="auth-page">${authVisual()}
+      <section class="auth-panel"><div class="auth-card">
+        <p class="auth-card__eyebrow">Primeiro acesso</p><h2>Cadastre o gerente</h2>
+        <p class="auth-card__intro">Esta conta terá acesso completo ao estoque, aos pedidos e aos usuários.</p>
+        <form data-form="setup" novalidate>
+          <div class="form-error" data-form-error hidden></div>
+          <div class="form-grid form-grid--single">
+            <div class="field"><label for="setup-name">Nome completo</label><input class="input" id="setup-name" name="name" autocomplete="name" maxlength="100" required placeholder="Ex.: Maria Oliveira"></div>
+            <div class="field"><label for="setup-email">E-mail</label><input class="input" id="setup-email" name="email" type="email" autocomplete="email" maxlength="160" required placeholder="seuemail@empresa.com"></div>
+            <div class="field"><label for="setup-password">Crie uma senha</label><input class="input" id="setup-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="No mínimo 8 caracteres"></div>
+            <div class="field"><label for="setup-confirm">Confirme a senha</label><input class="input" id="setup-confirm" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></div>
+          </div>
+          <button class="btn" type="submit">Criar acesso gerencial</button>
+        </form>
+        <p class="auth-help">Os vendedores serão cadastrados depois, dentro do sistema.</p>
+      </div></section>
+    </main>`;
+}
+
+function renderLogin(message = '') {
+  root.innerHTML = `
+    <main class="auth-page">${authVisual()}
+      <section class="auth-panel"><div class="auth-card">
+        <p class="auth-card__eyebrow">Bem-vindo</p><h2>Entre na sua conta</h2>
+        <p class="auth-card__intro">Use o acesso fornecido pelo gerente.</p>
+        <form data-form="login" novalidate>
+          <div class="form-error" data-form-error ${message ? '' : 'hidden'}>${escapeHtml(message)}</div>
+          <div class="form-grid form-grid--single">
+            <div class="field"><label for="login-email">E-mail</label><input class="input" id="login-email" name="email" type="email" autocomplete="email" maxlength="160" required></div>
+            <div class="field"><label for="login-password">Senha</label><input class="input" id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" required></div>
+          </div>
+          <button class="btn" type="submit">Entrar no sistema</button>
+        </form>
+        <p class="auth-help">Problemas com o acesso? Solicite uma nova senha ao gerente.</p>
+      </div></section>
+    </main>`;
+}
+
+function navItems() {
+  if (state.user.role === 'manager') {
+    return [
+      ['dashboard', 'home', 'Visão geral'], ['stock', 'stock', 'Estoque'], ['requests', 'orders', 'Pedidos'],
+      ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
+    ];
+  }
+  if (state.user.role === 'stocker') {
+    return [['requests', 'orders', 'Pedidos para separar']];
+  }
+  return [
+    ['dashboard', 'home', 'Visão geral'], ['stock', 'stock', 'Loja / estoque'],
+    ['new-request', 'plus', 'Novo pedido'], ['requests', 'orders', 'Meus pedidos'],
+  ];
+}
+
+function renderShell() {
+  const links = navItems().map(([view, icon, label]) => `
+    <button class="nav-link ${state.view === view ? 'is-active' : ''}" data-action="navigate" data-view="${view}">
+      <span class="nav-icon">${uiIcon(icon)}</span><span>${escapeHtml(label)}</span>
+      ${view === 'requests' && state.pendingCount ? `<span class="nav-badge">${state.pendingCount}</span>` : ''}
+    </button>`).join('');
+  root.innerHTML = `
+    <div class="app-shell">
+      <button class="sidebar-overlay" data-action="close-menu" aria-label="Fechar menu"></button>
+      <aside class="sidebar">
+        <div class="sidebar__brand"><div class="brand-mark" aria-hidden="true"><span></span></div><div><strong>Estoque</strong><small>Loja interna</small></div></div>
+        <div class="nav-label">Menu principal</div><nav class="nav-list" aria-label="Menu principal">${links}</nav>
+        <div class="sidebar__spacer"></div>
+        <div class="sidebar-user"><div class="avatar">${escapeHtml(initials(state.user.name))}</div><div class="sidebar-user__text"><strong>${escapeHtml(state.user.name)}</strong><span>${escapeHtml(roleLabel(state.user.role))}</span></div><button class="btn btn--ghost btn--icon btn--small" data-action="logout" title="Sair" aria-label="Sair">${uiIcon('logout')}</button></div>
+      </aside>
+      <main class="main">
+        <header class="topbar"><div class="topbar__left"><button class="btn btn--secondary btn--icon mobile-menu" data-action="open-menu" aria-label="Abrir menu">${uiIcon('menu')}</button><h1 data-page-title>${escapeHtml(viewTitles[state.view])}</h1></div><div class="topbar__right"><span class="role-pill">${escapeHtml(roleLabel(state.user.role))}</span><button class="btn btn--secondary btn--small" data-action="password" title="Alterar senha">Senha</button></div></header>
+        <section class="content" id="view-content"><div class="loading-block"><span class="loading-inline">Carregando</span></div></section>
+      </main>
+    </div>`;
+}
+
+function updateShellNavigation() {
+  document.querySelectorAll('.nav-link').forEach((link) => link.classList.toggle('is-active', link.dataset.view === state.view));
+  const title = document.querySelector('[data-page-title]');
+  if (title) title.textContent = viewTitles[state.view] || 'Controle de Estoque';
+  document.body.classList.remove('menu-open');
+}
+
+function emptyState(title, text, action = '') {
+  return `<div class="empty-state"><div class="empty-icon">${uiIcon('box')}</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p>${action}</div>`;
+}
+
+function metric(label, value, hint, style = '') {
+  return `<article class="metric-card ${style}"><div class="metric-card__label"><span class="metric-dot"></span>${escapeHtml(label)}</div><strong class="metric-card__value">${escapeHtml(value)}</strong><span class="metric-card__hint">${escapeHtml(hint)}</span></article>`;
+}
+
+const teamBreakScheduleEntries = [
+  { name: 'Ana', start: '11:00', end: '12:36', offset: 0, duration: 96, color: '#a983ea', colorEnd: '#ceb9ff' },
+  { name: 'Thalia', start: '11:30', end: '13:06', offset: 30, duration: 96, color: '#d7931d', colorEnd: '#f2c04f' },
+  { name: 'Luiz', start: '12:36', end: '14:12', offset: 96, duration: 96, color: '#218f84', colorEnd: '#55b7aa' },
+  { name: 'Joice', start: '13:06', end: '14:42', offset: 126, duration: 96, color: '#9c4c9a', colorEnd: '#cc78bd' },
+  { name: 'Pedro', start: '14:12', end: '15:48', offset: 192, duration: 96, color: '#4068bf', colorEnd: '#7897e2' },
+];
+
+function teamBreakSchedule(variant = 'dashboard') {
+  const safeVariant = variant === 'alignment' ? 'alignment' : 'dashboard';
+  const timelineMinutes = 300;
+  const timeLabels = ['11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'];
+  const rows = teamBreakScheduleEntries.map((entry) => {
+    const left = ((entry.offset / timelineMinutes) * 100).toFixed(2);
+    const width = ((entry.duration / timelineMinutes) * 100).toFixed(2);
+    return `<div class="team-schedule__row">
+      <div class="team-schedule__person"><i style="--schedule-color:${entry.color}" aria-hidden="true"></i><div><strong>${escapeHtml(entry.name)}</strong><span>1h36 fora</span></div></div>
+      <div class="team-schedule__track" aria-label="${escapeHtml(entry.name)} ficará fora da loja das ${entry.start} às ${entry.end}"><span class="team-schedule__bar" style="--schedule-left:${left}%;--schedule-width:${width}%;--schedule-color:${entry.color};--schedule-color-end:${entry.colorEnd}">${escapeHtml(entry.start)} — ${escapeHtml(entry.end)}</span></div>
+    </div>`;
+  }).join('');
+  return `<section class="team-schedule team-schedule--${safeVariant}" aria-labelledby="team-schedule-title-${safeVariant}">
+    <header class="team-schedule__head">
+      <div class="team-schedule__title"><span class="team-schedule__clock">${uiIcon('history')}</span><div><span>Organização da equipe</span><h3 id="team-schedule-title-${safeVariant}">Relógio de saídas</h3><p>Horários em que cada funcionário ficará fora da loja.</p></div></div>
+      <div class="team-schedule__range"><span>Janela da escala</span><strong>11:00 — 15:48</strong></div>
+    </header>
+    <div class="team-schedule__scroll" role="region" aria-label="Linha do tempo da escala de saídas" tabindex="0">
+      <div class="team-schedule__table">
+        <div class="team-schedule__axis"><strong>Funcionário</strong><div>${timeLabels.map((time) => `<span>${time}</span>`).join('')}</div></div>
+        ${rows}
+      </div>
+    </div>
+    <footer class="team-schedule__coverage">
+      <div class="team-schedule__safe"><span>Cobertura da loja</span><strong>Máximo de 2 pessoas fora</strong><div><b>${uiIcon('check')} Escala segura</b><small>Máx. 2 fora</small></div></div>
+      <div class="team-schedule__remaining"><strong>3</strong><div><span>funcionários permanecem na loja</span><small>durante toda a escala</small></div></div>
+      <p>${uiIcon('check')}<strong>Próxima saída somente após o retorno confirmado do funcionário anterior.</strong></p>
+    </footer>
+  </section>`;
+}
+
+function managerInventoryGroupCard(group, totalAvailable) {
+  const cluster = clusterLabels[group.cluster] ? group.cluster : 'misc';
+  const share = totalAvailable > 0 && group.available > 0
+    ? Math.max(2, Math.round((group.available / totalAvailable) * 100))
+    : 0;
+  const topProducts = group.topProducts?.length
+    ? `<div class="inventory-preview"><span class="inventory-preview__title">Maiores saldos</span><ul>${group.topProducts.map((product) => `<li><div><strong title="${escapeHtml(product.name)}">${escapeHtml(product.name)}</strong><code class="mono">${escapeHtml(product.materialCode || '—')}</code></div><span>${Number(product.available)} un.</span></li>`).join('')}</ul></div>`
+    : '<div class="inventory-preview inventory-preview--empty">Nenhum produto disponível neste grupo.</div>';
+  const alerts = [
+    group.lowStockCount > 0 ? `<span class="inventory-alert inventory-alert--warning">${Number(group.lowStockCount)} com saldo baixo</span>` : '',
+    group.outOfStockCount > 0 ? `<span class="inventory-alert inventory-alert--empty">${Number(group.outOfStockCount)} sem saldo</span>` : '',
+    group.incoming > 0 ? `<span class="inventory-alert inventory-alert--incoming">${Number(group.incoming)} em entrega</span>` : '',
+  ].filter(Boolean).join('');
+
+  return `<article class="inventory-group-card">
+    <div class="inventory-group-card__head">
+      <div class="inventory-group-icon product-visual--${cluster}">${clusterGraphic(cluster)}</div>
+      <div><span>Grupo de produtos</span><h4>${escapeHtml(clusterLabels[cluster])}</h4><small>${Number(group.availableMaterials)} de ${Number(group.materialCount)} materiais com saldo</small></div>
+    </div>
+    <div class="inventory-group-card__numbers">
+      <div class="inventory-group-card__available"><strong>${Number(group.available)}</strong><span>unidades disponíveis</span></div>
+      <dl><div><dt>Materiais</dt><dd>${Number(group.materialCount)}</dd></div><div><dt>Reservadas</dt><dd>${Number(group.reserved)}</dd></div><div><dt>Em entrega</dt><dd>${Number(group.incoming || 0)}</dd></div></dl>
+    </div>
+    <div class="inventory-share" title="${Number(group.available)} de ${Number(totalAvailable)} unidades disponíveis"><span style="width:${share}%"></span></div>
+    ${alerts ? `<div class="inventory-alerts">${alerts}</div>` : ''}
+    ${topProducts}
+    <button class="inventory-group-card__action" data-action="open-stock-group" data-cluster="${cluster}"><span>Ver todos os produtos</span>${uiIcon('stock')}</button>
+  </article>`;
+}
+
+function managerInventoryOverview(groups = [], totalAvailable = 0) {
+  const groupsByCluster = new Map(groups.map((group) => [group.cluster, group]));
+  const orderedGroups = clusterOrder.map((cluster) => groupsByCluster.get(cluster)).filter(Boolean);
+  if (!orderedGroups.length) return '';
+  return `<section class="manager-inventory">
+    <div class="manager-inventory__head">
+      <div><p class="page-eyebrow">Estoque organizado</p><h3>Produtos por grupo</h3><p>Veja os saldos principais e abra somente a categoria que deseja consultar.</p></div>
+      <button class="btn btn--secondary" data-action="navigate" data-view="stock">Ver estoque completo</button>
+    </div>
+    <div class="inventory-group-grid">${orderedGroups.map((group) => managerInventoryGroupCard(group, totalAvailable)).join('')}</div>
+  </section>`;
+}
+
+function sellerInventoryGroupCard(group, totalAvailable) {
+  const cluster = clusterLabels[group.cluster] ? group.cluster : 'misc';
+  const share = totalAvailable > 0 && group.available > 0
+    ? Math.max(2, Math.round((group.available / totalAvailable) * 100))
+    : 0;
+  const topProducts = group.topProducts?.length
+    ? `<div class="inventory-preview"><span class="inventory-preview__title">Mais disponíveis</span><ul>${group.topProducts.map((product) => `<li><div><strong title="${escapeHtml(product.name)}">${escapeHtml(product.name)}</strong><code class="mono">${escapeHtml(product.materialCode || '—')}</code></div><span>${Number(product.available)} un.</span></li>`).join('')}</ul></div>`
+    : '<div class="inventory-preview inventory-preview--empty">Nenhum produto disponível neste grupo.</div>';
+
+  return `<article class="inventory-group-card inventory-group-card--seller">
+    <div class="inventory-group-card__head">
+      <div class="inventory-group-icon product-visual--${cluster}">${clusterGraphic(cluster)}</div>
+      <div><span>Produtos para pedido</span><h4>${escapeHtml(clusterLabels[cluster])}</h4><small>${Number(group.materialCount)} ${Number(group.materialCount) === 1 ? 'material disponível' : 'materiais disponíveis'}</small></div>
+    </div>
+    <div class="inventory-group-card__numbers inventory-group-card__numbers--seller">
+      <div class="inventory-group-card__available"><strong>${Number(group.available)}</strong><span>unidades disponíveis</span></div>
+      <div class="inventory-group-card__materials"><strong>${Number(group.materialCount)}</strong><span>códigos materiais com saldo</span></div>
+    </div>
+    <div class="inventory-share" title="${Number(group.available)} de ${Number(totalAvailable)} unidades disponíveis"><span style="width:${share}%"></span></div>
+    ${topProducts}
+    <button class="inventory-group-card__action" data-action="open-store-group" data-cluster="${cluster}"><span>Ver produtos e adicionar</span>${uiIcon('plus')}</button>
+  </article>`;
+}
+
+function sellerInventoryOverview(groups = [], totalAvailable = 0) {
+  const groupsByCluster = new Map(groups.map((group) => [group.cluster, group]));
+  const orderedGroups = clusterOrder.map((cluster) => groupsByCluster.get(cluster)).filter(Boolean);
+  if (!orderedGroups.length) return '';
+  return `<section class="manager-inventory seller-inventory">
+    <div class="manager-inventory__head">
+      <div><p class="page-eyebrow">Loja organizada</p><h3>Escolha por grupo</h3><p>Consulte os saldos e abra diretamente os produtos que deseja adicionar ao pedido.</p></div>
+      <button class="btn btn--secondary" data-action="navigate" data-view="new-request">Ver todos os produtos</button>
+    </div>
+    <div class="inventory-group-grid">${orderedGroups.map((group) => sellerInventoryGroupCard(group, totalAvailable)).join('')}</div>
+  </section>`;
+}
+
+function serialRelease(serialNumbers = [], requestStatus = '') {
+  if (!serialNumbers.length) return '';
+  const label = requestStatus === 'cancelled' ? 'Números de série preservados no histórico' : 'Números de série liberados';
+  return `<div class="serial-release"><span>${label}</span><div class="serial-release__list">${serialNumbers.map((serialNumber) => `<code class="serial-chip mono">${escapeHtml(serialNumber)}</code>`).join('')}</div></div>`;
+}
+
+function automaticSerialRelease(item, requestStatus = '') {
+  if (!item.automaticSerial) return '';
+  const label = requestStatus === 'cancelled'
+    ? 'Unidade devolvida automaticamente ao estoque'
+    : 'Unidade baixada automaticamente pelo sistema';
+  return `<div class="automatic-release">${uiIcon('check')}<span>${label}</span></div>`;
+}
+
+function requestCard(request, compact = false) {
+  const totalUnits = request.items.reduce((sum, item) => sum + Number(item.quantity), 0);
+  const showPrices = state.user.role !== 'stocker';
+  const items = request.items.map((item) => {
+    const price = showPrices && item.unitPriceCents != null
+      ? item.priceType === 'no_charge'
+        ? '<div class="request-item-price"><span>Sem cobrança</span><strong>R$ 0,00</strong></div>'
+        : `<div class="request-item-price"><span>${formatMoney(item.unitPriceCents)} por unidade</span><strong>${formatMoney(item.lineTotalCents)}</strong></div>`
+      : '';
+    return `<li><div><strong>${escapeHtml(item.productName)}</strong>${materialInline(item.materialCode)}${price}${automaticSerialRelease(item, request.status)}${serialRelease(item.serialNumbers, request.status)}</div><span class="item-quantity">${Number(item.quantity)} un.</span></li>`;
+  }).join('');
+  const pricing = showPrices && request.pricing
+    ? `<div class="request-pricing-summary">${request.pricing.category ? `<div><span>Categoria do plano</span><strong>${escapeHtml(request.pricing.category)}</strong></div>` : ''}${request.pricing.renova ? `<div class="request-renova"><span>Vivo Renova · ${escapeHtml(request.pricing.renova.usedDevice || 'aparelho usado')} · ${request.pricing.renova.condition === 'defeituoso' ? 'Defeituoso' : 'Bom'}</span><strong>− ${formatMoney(request.pricing.renova.discountCents)}</strong><small>Bônus ${formatMoney(request.pricing.renova.manufacturerBonusCents)} + voucher ASSURANT ${formatMoney(request.pricing.renova.voucherCents)}</small></div>` : ''}<div><span>Total do pedido</span><strong>${formatMoney(request.pricing.orderTotalCents)}</strong></div><small>Preços registrados no pedido · tabela de ${escapeHtml(request.pricing.tableDate || 'data preservada')}</small></div>`
+    : '';
+  const sellerAction = state.user.role === 'seller' && request.status === 'pending' ? `<div class="request-card__actions"><button class="btn btn--danger btn--small" data-action="cancel-request" data-id="${escapeHtml(request.id)}">Cancelar pedido</button></div>` : '';
+  const managerAction = state.user.role === 'manager' && ['pending', 'approved'].includes(request.status) && !compact
+    ? `<div class="request-card__actions"><button class="btn btn--danger btn--small" data-action="cancel-request" data-id="${escapeHtml(request.id)}">Cancelar e devolver ao estoque</button></div>`
+    : '';
+  return `<article class="request-card ${compact ? 'request-card--compact' : ''} ${state.user.role === 'stocker' ? 'request-card--stocker' : ''}"><div class="request-card__head"><div><span class="request-code">Pedido #${escapeHtml(requestCode(request.id))}</span><strong>${escapeHtml(request.seller.name)}</strong><span class="request-meta">${formatDate(request.createdAt)} · ${totalUnits} ${totalUnits === 1 ? 'unidade' : 'unidades'}</span></div>${statusBadge(request.status)}</div><ul class="request-items">${items}</ul>${pricing}${request.notes ? `<p class="request-note"><strong>Observação:</strong> ${escapeHtml(request.notes)}</p>` : ''}${request.decisionNote ? `<p class="request-note"><strong>Processamento:</strong> ${escapeHtml(request.decisionNote)}</p>` : ''}${sellerAction}${managerAction}</article>`;
+}
+
+function managementClusterChart(groups = []) {
+  const maxUnits = Math.max(1, ...groups.map((group) => Number(group.available) + Number(group.incoming || 0)));
+  return `<div class="stock-chart">${groups.map((group) => {
+    const availableWidth = Math.round((Number(group.available) / maxUnits) * 100);
+    const incomingWidth = Math.round((Number(group.incoming || 0) / maxUnits) * 100);
+    return `<div class="stock-chart__row"><div class="stock-chart__label"><span>${escapeHtml(clusterLabels[group.cluster] || clusterLabels.misc)}</span><small>${Number(group.available)} disponíveis${Number(group.incoming || 0) ? ` · ${Number(group.incoming)} em entrega` : ''}</small></div><div class="stock-chart__track"><span class="stock-chart__available" style="width:${availableWidth}%"></span><span class="stock-chart__incoming" style="width:${incomingWidth}%"></span></div></div>`;
+  }).join('')}</div>`;
+}
+
+function orderDonut(stats = {}) {
+  const approved = Number(stats.approved || 0);
+  const rejected = Number(stats.rejected || 0);
+  const cancelled = Number(stats.cancelled || 0);
+  const pending = Number(stats.pending || 0);
+  const total = approved + rejected + cancelled + pending;
+  const approvedEnd = total ? (approved / total) * 100 : 0;
+  const rejectedEnd = total ? approvedEnd + (rejected / total) * 100 : 0;
+  const cancelledEnd = total ? rejectedEnd + (cancelled / total) * 100 : 0;
+  const style = total
+    ? `background:conic-gradient(#48d89b 0 ${approvedEnd}%,#ff6075 ${approvedEnd}% ${rejectedEnd}%,#74747f ${rejectedEnd}% ${cancelledEnd}%,#ffb75c ${cancelledEnd}% 100%)`
+    : 'background:#29292e';
+  return `<div class="order-chart"><div class="order-donut" style="${style}"><div><strong>${total}</strong><span>pedidos</span></div></div><div class="order-legend"><span class="is-approved"><b>${approved}</b> liberados</span><span class="is-rejected"><b>${rejected}</b> recusados</span><span class="is-cancelled"><b>${cancelled}</b> cancelados</span><span class="is-pending"><b>${pending}</b> pendentes</span></div></div>`;
+}
+
+function managementProductList(products = [], emptyTitle, emptyText, valueKey = '') {
+  if (!products.length) return emptyState(emptyTitle, emptyText);
+  return `<ul class="management-product-list">${products.map((product) => `<li><div><strong>${escapeHtml(product.name)}</strong><code class="mono">${escapeHtml(product.materialCode || '—')}</code></div>${valueKey ? `<span>${Number(product[valueKey] || 0)} un.</span>` : `<span>${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</span>`}</li>`).join('')}</ul>`;
+}
+
+function recentAccessList(accesses = []) {
+  if (!accesses.length) return emptyState('Nenhum acesso recente', 'Os próximos logins aparecerão aqui.');
+  return `<ul class="access-list">${accesses.map((access) => `<li><div class="avatar avatar--small">${escapeHtml(initials(access.name))}</div><div><strong>${escapeHtml(access.name)}</strong><span>${escapeHtml(roleLabel(access.role))}${access.email ? ` · ${escapeHtml(access.email)}` : ''}</span></div><time>${formatDate(access.createdAt)}</time></li>`).join('')}</ul>`;
+}
+
+async function renderDashboard() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/dashboard');
+  state.pendingCount = state.user.role === 'manager' ? data.pendingRequests : data.requests.pending;
+  renderShellBadge();
+  if (state.user.role === 'manager') {
+    const management = data.management || {};
+    const snapshotText = management.snapshot?.date
+      ? `Atualizado em ${formatDate(`${management.snapshot.date}T12:00:00.000Z`, false)} · ${management.snapshot.source || 'planilha de estoque'}`
+      : 'Atualizado pela planilha de estoque';
+    content.innerHTML = `
+      <div class="page-heading"><div><p class="page-eyebrow">Central administrativa</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>${escapeHtml(snapshotText)}. Pedidos e IMEIs são liberados automaticamente.</p></div><div class="page-actions"><button class="btn" data-action="navigate" data-view="stock">Consultar estoque</button></div></div>
+      ${teamBreakSchedule('dashboard')}
+      <div class="metrics-grid">${metric('Itens disponíveis', data.stock.available, `${data.modelsAvailable} materiais com saldo`, 'metric-card--success')}${metric('Materiais em falta', management.outOfStockMaterials || 0, 'Sem saldo e sem entrega prevista', 'metric-card--warning')}${metric('Saldo baixo', management.lowStockMaterials || 0, 'Materiais com até 2 unidades', 'metric-card--info')}${metric('Em entrega', management.incomingUnits || 0, `Depósitos ${management.snapshot?.incomingDeposits || 'DEPS e NREM'}`)}</div>
+      <div class="admin-strip"><span><b>${Number(data.activeSellers || 0)}</b> vendedores ativos</span><span><b>${Number(data.activeStockers || 0)}</b> estoquistas ativos</span><span><b>${Number(management.orderStats?.approved || 0)}</b> pedidos liberados</span><span><b>${Number(data.stock.reserved || 0)}</b> unidades reservadas</span></div>
+      <div class="management-dashboard-grid">
+        <section class="card management-chart-card"><div class="card__head"><div><h3>Disponibilidade por grupo</h3><span>Comparação do saldo pronto e em entrega</span></div></div><div class="card__body">${managementClusterChart(data.inventoryGroups)}</div></section>
+        <section class="card management-chart-card"><div class="card__head"><div><h3>Fluxo de pedidos</h3><span>Distribuição de todo o histórico</span></div></div><div class="card__body">${orderDonut(management.orderStats)}</div></section>
+        <section class="card management-list-card"><div class="card__head"><div><h3>Produtos em falta</h3><span>${Number(management.outOfStockMaterials || 0)} materiais sem saldo</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="stock">Ver estoque</button></div><div class="card__body">${managementProductList(management.shortageProducts, 'Nenhum produto em falta', 'Todos os produtos monitorados possuem saldo ou entrega prevista.')}</div></section>
+        <section class="card management-list-card"><div class="card__head"><div><h3>Produtos em entrega</h3><span>Itens dos depósitos DEPS e NREM</span></div></div><div class="card__body">${managementProductList(management.incomingProducts, 'Nenhum item em entrega', 'A planilha atual não possui unidades em DEPS ou NREM.', 'incoming')}</div></section>
+      </div>
+      ${managerInventoryOverview(data.inventoryGroups, data.stock.available)}
+      <div class="dashboard-grid"><section class="card"><div class="card__head"><div><h3>Acessos recentes</h3><span>Login da equipe</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="audit">Histórico completo</button></div><div class="card__body">${recentAccessList(management.recentAccesses)}</div></section><section class="card"><div class="card__head"><h3>Pedidos recentes</h3><button class="btn btn--ghost btn--small" data-action="navigate" data-view="requests">Ver todos</button></div><div class="card-list">${data.recentRequests.length ? data.recentRequests.map((item) => requestCard(item, true)).join('') : emptyState('Nenhum pedido', 'As solicitações aparecerão aqui.')}</div></section></div>`;
+  } else {
+    content.innerHTML = `
+      <div class="page-heading"><div><p class="page-eyebrow">Sua área</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>Escolha os produtos disponíveis e envie seu pedido.</p></div><button class="btn" data-action="navigate" data-view="new-request">+ Novo pedido</button></div>
+      ${teamBreakSchedule('dashboard')}
+      <div class="metrics-grid">${metric('Itens disponíveis', data.stock.available, `${data.modelsAvailable} materiais disponíveis`, 'metric-card--success')}${metric('Pedidos liberados', data.requests.approved, 'Com IMEI definido automaticamente', 'metric-card--info')}${metric('Pedidos recusados', data.requests.rejected, 'Somente quando não há estoque', 'metric-card--warning')}${metric('Produtos disponíveis', data.modelsAvailable, 'Consulte na loja')}</div>
+      ${sellerInventoryOverview(data.inventoryGroups, data.stock.available)}
+      <section class="card"><div class="card__head"><h3>Meus pedidos recentes</h3><button class="btn btn--ghost btn--small" data-action="navigate" data-view="requests">Ver todos</button></div><div class="card-list">${data.recentRequests.length ? data.recentRequests.map((item) => requestCard(item, true)).join('') : emptyState('Nenhum pedido', 'Crie seu primeiro pedido para começar.')}</div></section>`;
+  }
+}
+
+function renderShellBadge() {
+  const badge = document.querySelector('.nav-link[data-view="requests"] .nav-badge');
+  if (badge) badge.textContent = state.pendingCount;
+}
+
+function productVisual(product) {
+  const cluster = clusterLabels[product.cluster] ? product.cluster : 'misc';
+  return `<div class="product-visual product-visual--${cluster}">${clusterGraphic(cluster)}<span class="product-visual__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
+}
+
+function materialCode(product) {
+  return product.variants[0]?.materialCode || product.variants[0]?.sku || '';
+}
+
+function materialInline(code) {
+  return `<span class="material-inline"><small>Código material</small><code class="mono">${escapeHtml(code || '—')}</code></span>`;
+}
+
+function materialCodeBox(code, copyable = false) {
+  const safeCode = escapeHtml(code || '—');
+  const copyButton = copyable && code ? `<button type="button" class="material-copy" data-action="copy-material" data-code="${safeCode}" aria-label="Copiar código material ${safeCode}" title="Copiar código">${uiIcon('copy')}</button>` : '';
+  return `<div class="material-code-box"><span class="material-code-box__label">Código material</span><div class="material-code-box__value"><code class="mono">${safeCode}</code>${copyButton}</div></div>`;
+}
+
+function productCard(product) {
+  const unavailable = product.available <= 0;
+  const variant = product.variants[0];
+  const price = selectedProductPrice(product, variant);
+  const installments = price == null || price <= 0 ? 1 : installmentCount(price);
+  const priceDetail = price == null
+    ? '<span>Não cadastrado</span>'
+    : productPriceKind(product, variant) === 'no_charge'
+      ? '<strong>Sem cobrança</strong><span>ativação do chip</span>'
+      : `<strong>${formatMoney(price)}</strong><span>${installments > 1 ? `${installments}x de ${formatMoney(Math.round(price / installments))} sem juros` : 'pagamento à vista'}</span>`;
+  return `<article class="store-card ${unavailable ? 'store-card--empty' : ''}">${productVisual(product)}<div class="store-card__body"><div class="store-card__meta"><span>${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</span><span>${escapeHtml(product.brand || 'Sem marca')}</span></div><h3>${escapeHtml(product.name)}</h3>${materialCodeBox(materialCode(product), true)}<div class="store-card__price">${priceDetail}</div><div class="store-card__stock"><strong>${product.available}</strong><span>${product.available === 1 ? 'unidade disponível' : 'unidades disponíveis'}</span></div><button class="btn store-card__button" data-action="choose-product" data-product-id="${product.id}" ${unavailable ? 'disabled' : ''}>${unavailable ? 'Sem estoque' : 'Adicionar ao pedido'}</button></div></article>`;
+}
+
+function variantRemaining(variant) {
+  return Math.max(0, Number(variant?.available || 0) - Number(state.cart.get(Number(variant?.id)) || 0));
+}
+
+function choiceRemaining(choice) {
+  return choice.products.reduce((total, product) => total
+    + product.variants.reduce((sum, variant) => sum + variantRemaining(variant), 0), 0);
+}
+
+function selectionForDeviceGroup(group) {
+  const previous = state.deviceSelections.get(group.key) || {};
+  const availableOptions = group.options.filter((option) => variantRemaining(option.variant) > 0);
+  const option = availableOptions.find((item) => item.variant.id === Number(previous.variantId))
+    || availableOptions[0]
+    || group.options[0];
+  const selection = {
+    variantId: option?.variant.id || 0,
+    caseKey: previous.caseKey || '',
+    filmKey: previous.filmKey || '',
+    quantity: Math.max(1, Number(previous.quantity) || 1),
+  };
+  state.deviceSelections.set(group.key, selection);
+  return { selection, option };
+}
+
+function selectOptions(items, selectedValue, label) {
+  return items.map(({ value, text, disabled = false }) => `<option value="${escapeHtml(value)}" ${String(value) === String(selectedValue) ? 'selected' : ''} ${disabled ? 'disabled' : ''}>${escapeHtml(text)}</option>`).join('') || `<option value="">${escapeHtml(label)}</option>`;
+}
+
+function accessorySelect({ action, familyKey, label, emptyLabel, choices, selectedKey }) {
+  const options = [
+    { value: '', text: emptyLabel },
+    ...choices.map((choice) => ({
+      value: choice.key,
+      text: `${choice.name} · ${priceText(choice.products[0], choice.products[0]?.variants?.[0])} · ${choiceRemaining(choice)} un.`,
+    })),
+  ];
+  return `<div class="device-accessory-field"><div class="device-accessory-field__label"><span>${escapeHtml(label)}</span><small>opcional</small></div><select class="select" data-action="${action}" data-family-key="${escapeHtml(familyKey)}">${selectOptions(options, selectedKey, emptyLabel)}</select><p>A baixa da unidade será feita automaticamente pelo sistema.</p></div>`;
+}
+
+function deviceGroupPrice(group) {
+  const hasPlanPrices = group.products.some((product) => product.pricing);
+  if (hasPlanPrices && !state.priceCategory) return `<div class="device-price-hint"><span>Preço oficial</span><strong>Escolha a categoria do plano</strong></div>`;
+  const prices = group.options.map((option) => selectedProductPrice(option.product, option.variant)).filter((price) => price != null);
+  if (!prices.length) return `<div class="device-price-hint device-price-hint--muted">Preço não disponível na tabela atual</div>`;
+  const minimum = Math.min(...prices);
+  const label = hasPlanPrices ? `A partir de · ${escapeHtml(state.priceCategory)}` : 'Preço a partir de';
+  return `<div class="device-price-hint"><span>${label}</span><strong>${formatMoney(minimum)}</strong></div>`;
+}
+
+function selectedDevicePrice(product, variant = null) {
+  if (!product?.pricing) {
+    const retailPrice = selectedProductPrice(product, variant);
+    if (retailPrice == null) return `<div class="device-selected-price device-selected-price--muted"><span>Preço do aparelho</span><strong>Não disponível no simulador</strong></div>`;
+    const installments = installmentCount(retailPrice);
+    const installmentText = installments > 1 ? `${installments}x de ${formatMoney(Math.round(retailPrice / installments))}` : 'à vista';
+    return `<div class="device-selected-price"><span>Preço do produto</span><strong>${formatMoney(retailPrice)}</strong><small>${installmentText} sem juros</small></div>`;
+  }
+  if (!state.priceCategory) {
+    return `<div class="device-selected-price"><span>Preço do aparelho</span><strong>Escolha a categoria do plano acima</strong></div>`;
+  }
+  const price = selectedProductPrice(product, variant);
+  if (price == null) {
+    return `<div class="device-selected-price device-selected-price--muted"><span>Preço do aparelho</span><strong>Indisponível para ${escapeHtml(state.priceCategory)}</strong></div>`;
+  }
+  const installments = installmentCount(price);
+  const installmentText = installments > 1 ? `${installments}x de ${formatMoney(Math.round(price / installments))}` : 'à vista';
+  return `<div class="device-selected-price"><span>${escapeHtml(state.priceCategory)}</span><strong>${formatMoney(price)}</strong><small>${installmentText} sem juros</small></div>`;
+}
+
+function renovaConfigurator(product) {
+  const bonusCents = manufacturerRenovaBonus(product?.name || '');
+  const tradeIn = selectedRenovaTradeIn();
+  const voucherCents = state.renova.condition === 'defeituoso' ? tradeIn?.defectiveCents : tradeIn?.goodCents;
+  const tableDate = renovaTableDateLabel(state.renovaCatalog.tableDate) || 'vigência cadastrada';
+  const deviceOptions = (state.renovaCatalog.devices || []).map((device) => `<option value="${escapeHtml(device.name)}">${escapeHtml(device.productType === 'TABLET' ? 'Tablet' : 'Smartphone')} · ${escapeHtml(device.manufacturer)}</option>`).join('');
+  return `<section class="renova-box ${state.renova.enabled ? 'is-active' : ''}">
+    <div class="renova-box__head"><div><span>Vivo Renova</span><strong>Cliente entregará um aparelho usado?</strong></div><label class="renova-switch"><input type="checkbox" data-action="renova-enabled" ${state.renova.enabled ? 'checked' : ''}><span>${state.renova.enabled ? 'Sim' : 'Não'}</span></label></div>
+    ${state.renova.enabled ? `<div class="renova-box__body">
+      ${bonusCents ? `<div class="renova-bonus"><span>Bônus do fabricante</span><strong>− ${formatMoney(bonusCents)}</strong><small>Aplicado automaticamente ao aparelho novo.</small></div>` : '<div class="renova-bonus renova-bonus--muted"><span>Bônus do fabricante</span><strong>Sem bônus cadastrado</strong><small>O voucher ASSURANT continua sendo calculado automaticamente.</small></div>'}
+      <div class="renova-fields"><div class="field"><label for="renova-used-device">Aparelho usado do cliente</label><input class="input" type="search" id="renova-used-device" data-action="renova-used-device-search" list="renova-used-device-options" value="${escapeHtml(tradeIn?.name || '')}" placeholder="Digite marca, modelo ou memória…" autocomplete="off"><datalist id="renova-used-device-options">${deviceOptions}</datalist><small class="renova-search-help">Busque entre ${Number(state.renovaCatalog.devices?.length || 0).toLocaleString('pt-BR')} aparelhos aceitos pela ASSURANT.</small></div><div class="field"><label for="renova-condition">Estado</label><select class="select" id="renova-condition" data-action="renova-condition"><option value="bom" ${state.renova.condition === 'bom' ? 'selected' : ''}>Bom</option><option value="defeituoso" ${state.renova.condition === 'defeituoso' ? 'selected' : ''}>Defeituoso</option></select></div></div>
+      <div class="renova-bonus ${tradeIn ? '' : 'renova-bonus--muted'}" aria-live="polite"><span>Voucher ASSURANT</span><strong>${tradeIn ? `− ${formatMoney(voucherCents)}` : 'Selecione o aparelho usado'}</strong><small>Valor automático e não editável · tabela ${escapeHtml(tableDate)}.</small></div>
+      <p class="renova-note">Bônus e voucher são conferidos novamente pelo servidor e incidem somente sobre o aparelho, antes de capa e película.</p>
+    </div>` : ''}
+  </section>`;
+}
+
+function pricingSelector() {
+  const categories = state.pricing.categories || [];
+  if (!categories.length) return '';
+  const tableDate = state.pricing.tableDate
+    ? formatDate(`${state.pricing.tableDate}T12:00:00.000Z`, false)
+    : 'data não informada';
+  return `<section class="pricing-selector"><div><span class="pricing-selector__eyebrow">Tabela de preços</span><h3>Categoria do plano</h3><p>Selecione para ver o valor exato dos aparelhos.</p></div><div class="pricing-selector__control"><label for="pricing-category">Categoria</label><select class="select" id="pricing-category" data-action="pricing-category"><option value="">Selecione o plano…</option>${categories.map((category) => `<option value="${escapeHtml(category)}" ${state.priceCategory === category ? 'selected' : ''}>${escapeHtml(category)}</option>`).join('')}</select><small>${escapeHtml(state.pricing.source || 'Tabela de preços')} · ${escapeHtml(tableDate)}</small></div></section>`;
+}
+
+function deviceFamilyCard(group) {
+  const expanded = state.expandedDeviceFamily === group.key;
+  const { selection, option } = selectionForDeviceGroup(group);
+  const memories = group.memories.map((memory) => ({
+    value: memory,
+    text: memory,
+    disabled: !group.options.some((item) => item.memory === memory && variantRemaining(item.variant) > 0),
+  }));
+  const selectedMemory = option?.memory || memories[0]?.value || '';
+  const colorOptions = group.options
+    .filter((item) => item.memory === selectedMemory)
+    .map((item) => ({
+      value: item.color,
+      text: `${item.color} · ${variantRemaining(item.variant)} un.`,
+      disabled: variantRemaining(item.variant) <= 0,
+    }));
+  const caseChoices = compatibleCaseChoices(
+    state.catalog.filter((product) => product.cluster === 'cases'),
+    group.familyName,
+  ).filter((choice) => choiceRemaining(choice) > 0);
+  const filmChoices = groupAccessoryChoices(
+    state.catalog.filter((product) => product.cluster === 'screen_protectors'),
+  ).filter((choice) => choiceRemaining(choice) > 0);
+  if (!caseChoices.some((choice) => choice.key === selection.caseKey)) selection.caseKey = '';
+  if (!filmChoices.some((choice) => choice.key === selection.filmKey)) selection.filmKey = '';
+
+  const selectedCase = caseChoices.find((choice) => choice.key === selection.caseKey);
+  const selectedFilm = filmChoices.find((choice) => choice.key === selection.filmKey);
+  const maxBundle = Math.min(
+    variantRemaining(option?.variant),
+    selectedCase ? choiceRemaining(selectedCase) : Number.MAX_SAFE_INTEGER,
+    selectedFilm ? choiceRemaining(selectedFilm) : Number.MAX_SAFE_INTEGER,
+  );
+  selection.quantity = Math.min(selection.quantity, Math.max(1, maxBundle));
+  state.deviceSelections.set(group.key, selection);
+  const selectedPriceAvailable = selectedProductPrice(option?.product, option?.variant) != null;
+
+  const representative = { ...group.products[0], name: group.familyName, cluster: 'devices' };
+  const summary = `<div class="device-family-summary"><span>${group.memories.join(' · ')}</span><span>${group.options.map((item) => item.color).filter((color, index, colors) => colors.indexOf(color) === index).join(' · ')}</span></div>`;
+  const configurator = expanded ? `
+    <div class="device-configurator">
+      <div class="device-configurator__heading"><div><span>Monte o conjunto</span><strong>Escolha aparelho, capa e película</strong></div><small>Somente opções com estoque aparecem abaixo.</small></div>
+      <div class="device-option-grid">
+        <div class="field"><label>Memória</label><select class="select" data-action="device-memory" data-family-key="${escapeHtml(group.key)}">${selectOptions(memories, selectedMemory, 'Sem memória disponível')}</select></div>
+        <div class="field"><label>Cor</label><select class="select" data-action="device-color" data-family-key="${escapeHtml(group.key)}">${selectOptions(colorOptions, option?.color || '', 'Sem cor disponível')}</select></div>
+      </div>
+      <div class="device-selected-material"><div><span>Aparelho selecionado</span><strong>${escapeHtml(option?.product.name || group.familyName)}</strong></div>${materialCodeBox(option?.variant.materialCode || '', true)}</div>
+      ${selectedDevicePrice(option?.product, option?.variant)}
+      ${renovaConfigurator(option?.product)}
+      <div class="device-accessory-grid">
+        ${accessorySelect({ action: 'device-case', familyKey: group.key, label: 'Capa compatível', emptyLabel: caseChoices.length ? 'Sem capa' : 'Nenhuma capa compatível em estoque', choices: caseChoices, selectedKey: selection.caseKey })}
+        ${accessorySelect({ action: 'device-film', familyKey: group.key, label: 'Película', emptyLabel: filmChoices.length ? 'Sem película' : 'Nenhuma película em estoque', choices: filmChoices, selectedKey: selection.filmKey })}
+      </div>
+      <div class="device-configurator__footer">
+        <div class="field device-quantity"><label>Quantidade do conjunto</label><input class="input" type="number" min="1" max="${Math.max(1, maxBundle)}" value="${selection.quantity}" data-action="device-quantity" data-family-key="${escapeHtml(group.key)}"></div>
+        <div class="device-configurator__action"><span>${selectedPriceAvailable ? (selection.caseKey || selection.filmKey ? 'Os acessórios serão adicionados na mesma quantidade do aparelho.' : 'Você pode adicionar somente o aparelho ou incluir os acessórios.') : (option?.product.pricing ? 'Escolha a categoria do plano para liberar este aparelho.' : 'Aguardando a inclusão deste aparelho no simulador de preços.')}</span><button class="btn" data-action="add-device-bundle" data-family-key="${escapeHtml(group.key)}" ${maxBundle <= 0 || !selectedPriceAvailable ? 'disabled' : ''}>${selectedPriceAvailable ? 'Adicionar ao pedido' : 'Aguardando preço'}</button></div>
+      </div>
+    </div>` : '';
+
+  return `<article class="store-card device-family-card ${expanded ? 'is-expanded' : ''}" data-family-key="${escapeHtml(group.key)}">
+    <div class="device-family-card__visual">${productVisual(representative)}<span class="device-family-card__variants">${group.options.length} ${group.options.length === 1 ? 'variação' : 'variações'}</span></div>
+    <div class="store-card__body"><div class="store-card__meta"><span>Modelo de aparelho</span><span>${escapeHtml(group.brand || 'Sem marca')}</span></div><h3>${escapeHtml(group.familyName)}</h3>${summary}${deviceGroupPrice(group)}<div class="store-card__stock"><strong>${group.available}</strong><span>${group.available === 1 ? 'unidade disponível' : 'unidades disponíveis'}</span></div><button class="btn ${expanded ? 'btn--secondary' : ''} store-card__button" data-action="toggle-device-family" data-family-key="${escapeHtml(group.key)}">${expanded ? 'Fechar opções' : 'Escolher memória, cor e acessórios'}</button>${configurator}</div>
+  </article>`;
+}
+
+function deviceGroupByKey(familyKey) {
+  return groupDeviceProducts(filteredCatalog()).find((group) => group.key === familyKey);
+}
+
+function accessoryChoiceByKey(cluster, group, key) {
+  if (!key) return null;
+  const products = state.catalog.filter((product) => product.cluster === cluster);
+  const choices = cluster === 'cases'
+    ? compatibleCaseChoices(products, group.familyName)
+    : groupAccessoryChoices(products);
+  return choices.find((choice) => choice.key === key) || null;
+}
+
+function stageVariant(staged, variant, quantity, productName) {
+  const nextQuantity = Number(staged.get(Number(variant.id)) || 0) + quantity;
+  if (nextQuantity > Number(variant.available)) {
+    throw new ApiError(`Não há ${quantity} unidades disponíveis de ${productName}. Atualize a escolha.`, 409);
+  }
+  staged.set(Number(variant.id), nextQuantity);
+}
+
+function stageAccessory(staged, choice, quantity) {
+  let remaining = quantity;
+  for (const product of choice.products) {
+    for (const variant of product.variants) {
+      const free = Math.max(0, Number(variant.available) - Number(staged.get(Number(variant.id)) || 0));
+      const allocated = Math.min(free, remaining);
+      if (allocated > 0) stageVariant(staged, variant, allocated, choice.name);
+      remaining -= allocated;
+      if (!remaining) return;
+    }
+  }
+  throw new ApiError(`Não há ${quantity} unidades disponíveis de ${choice.name}. Atualize a escolha.`, 409);
+}
+
+function addDeviceBundle(familyKey) {
+  const group = deviceGroupByKey(familyKey);
+  if (!group) throw new ApiError('Este modelo não está mais disponível. Atualize a loja.', 409);
+  const { selection, option } = selectionForDeviceGroup(group);
+  const quantity = Number(selection.quantity);
+  if (!option || !Number.isInteger(quantity) || quantity <= 0) throw new ApiError('Escolha uma variação e uma quantidade válida.', 400);
+  if (option.product.pricing && !state.priceCategory) {
+    throw new ApiError('Escolha a categoria do plano antes de adicionar este aparelho.', 400);
+  }
+  if (option.product.pricing && selectedProductPrice(option.product) == null) {
+    throw new ApiError(`Este aparelho não possui preço para ${state.priceCategory}.`, 409);
+  }
+  if (selectedProductPrice(option.product, option.variant) == null) {
+    throw new ApiError('Este aparelho ainda não possui preço verificado no simulador.', 409);
+  }
+
+  const staged = new Map(state.cart);
+  stageVariant(staged, option.variant, quantity, option.product.name);
+  const selectedCase = accessoryChoiceByKey('cases', group, selection.caseKey);
+  const selectedFilm = accessoryChoiceByKey('screen_protectors', group, selection.filmKey);
+  if (selection.caseKey && !selectedCase) throw new ApiError('A capa escolhida não está mais disponível.', 409);
+  if (selection.filmKey && !selectedFilm) throw new ApiError('A película escolhida não está mais disponível.', 409);
+  if (selectedCase) stageAccessory(staged, selectedCase, quantity);
+  if (selectedFilm) stageAccessory(staged, selectedFilm, quantity);
+
+  state.cart.clear();
+  for (const [variantId, itemQuantity] of staged) state.cart.set(variantId, itemQuantity);
+  state.expandedDeviceFamily = '';
+  state.deviceSelections.set(group.key, { ...selection, quantity: 1 });
+  const accessoryCount = Number(Boolean(selectedCase)) + Number(Boolean(selectedFilm));
+  showToast(accessoryCount ? `Aparelho e ${accessoryCount === 2 ? 'dois acessórios' : 'acessório'} adicionados ao pedido.` : 'Aparelho adicionado ao pedido.');
+  renderCatalogGrid();
+  renderCartBar();
+}
+
+function filteredCatalog() {
+  const search = state.catalogSearch.trim().toLocaleLowerCase('pt-BR');
+  return state.catalog.filter((product) => {
+    if (state.catalogCategory && product.cluster !== state.catalogCategory) return false;
+    if (!search) return true;
+    return [product.name, product.technicalName, product.brand, materialCode(product)].some((value) => String(value || '').toLocaleLowerCase('pt-BR').includes(search));
+  });
+}
+
+function catalogToolbar() {
+  const clusters = [['', 'Todos'], ...clusterOrder.map((value) => [value, clusterLabels[value]])];
+  return `<div class="catalog-toolbar"><div class="search-box"><input class="input" data-action="catalog-search" value="${escapeHtml(state.catalogSearch)}" placeholder="Buscar nome ou código material..."></div><div class="category-chips">${clusters.map(([value, label]) => `<button class="chip ${state.catalogCategory === value ? 'is-active' : ''}" data-action="filter-category" data-category="${value}">${label}</button>`).join('')}</div></div>`;
+}
+
+function renderCatalogGrid() {
+  document.querySelectorAll('[data-action="filter-category"]').forEach((button) => button.classList.toggle('is-active', button.dataset.category === state.catalogCategory));
+  const target = document.querySelector('[data-catalog-grid]');
+  if (!target) return;
+  const products = filteredCatalog();
+  const groups = clusterOrder.map((cluster) => ({ cluster, products: products.filter((product) => product.cluster === cluster) })).filter((group) => group.products.length);
+  target.innerHTML = groups.length ? groups.map((group) => {
+    if (group.cluster !== 'devices') {
+      return `<section class="catalog-cluster"><div class="catalog-cluster__head"><h3>${escapeHtml(clusterLabels[group.cluster])}</h3><span>${group.products.length} ${group.products.length === 1 ? 'material' : 'materiais'}</span></div><div class="store-grid">${group.products.map(productCard).join('')}</div></section>`;
+    }
+    const deviceGroups = groupDeviceProducts(group.products);
+    return `<section class="catalog-cluster catalog-cluster--devices"><div class="catalog-cluster__head"><div><h3>Aparelhos por modelo</h3><small>Abra um modelo para escolher memória, cor, capa e película.</small></div><span>${deviceGroups.length} ${deviceGroups.length === 1 ? 'modelo' : 'modelos'} · ${group.products.length} materiais</span></div><div class="store-grid device-family-grid">${deviceGroups.map(deviceFamilyCard).join('')}</div></section>`;
+  }).join('') : emptyState('Nenhum produto encontrado', 'Altere a busca ou escolha outro grupo.');
+}
+
+async function loadCatalog() {
+  const data = await api('/api/catalog');
+  state.catalog = data.products;
+  state.pricing = data.pricing || { categories: [], tableDate: '', source: '' };
+  state.renovaCatalog = data.renova || { tableDate: '', devices: [], boosts: [] };
+  if (state.priceCategory && !state.pricing.categories.includes(state.priceCategory)) state.priceCategory = '';
+  if (state.renova.deviceId && !selectedRenovaTradeIn()) state.renova.deviceId = 0;
+  for (const [variantId, quantity] of [...state.cart]) {
+    const found = findCatalogVariant(variantId);
+    if (!found || found.variant.available <= 0) state.cart.delete(variantId);
+    else if (quantity > found.variant.available) state.cart.set(variantId, found.variant.available);
+  }
+  return state.catalog;
+}
+
+function findCatalogVariant(variantId) {
+  for (const product of state.catalog) {
+    const variant = product.variants.find((item) => item.id === Number(variantId));
+    if (variant) return { product, variant };
+  }
+  return null;
+}
+
+function filteredStockRows() {
+  const search = state.stockSearch.trim().toLocaleLowerCase('pt-BR');
+  return state.catalog.flatMap((product) => product.variants.map((variant) => ({ product, variant }))).filter(({ product, variant }) => {
+    if (state.stockCluster && product.cluster !== state.stockCluster) return false;
+    return !search || [product.name, product.technicalName, product.brand, variant.materialCode].some((value) => String(value || '').toLocaleLowerCase('pt-BR').includes(search));
+  });
+}
+
+function renderStockTable() {
+  document.querySelectorAll('[data-action="filter-stock-category"]').forEach((button) => button.classList.toggle('is-active', button.dataset.category === state.stockCluster));
+  const target = document.querySelector('[data-stock-table]');
+  if (!target) return;
+  const rows = filteredStockRows();
+  if (!rows.length) {
+    target.innerHTML = emptyState('Nenhum material encontrado', 'Altere a busca para consultar outro produto.');
+    return;
+  }
+  const groups = clusterOrder.map((cluster) => ({ cluster, rows: rows.filter(({ product }) => product.cluster === cluster) })).filter((group) => group.rows.length);
+  const body = groups.map((group) => {
+    const groupHeader = `<tr class="stock-cluster-row"><td colspan="9"><div><strong>${escapeHtml(clusterLabels[group.cluster])}</strong><span>${group.rows.length} ${group.rows.length === 1 ? 'material' : 'materiais'}</span></div></td></tr>`;
+    const groupRows = group.rows.map(({ product, variant }) => {
+      const planPrices = product.pricing ? Object.values(product.pricing.prices || {}).map(Number) : [];
+      const minimumPlanPrice = planPrices.length ? Math.min(...planPrices) : null;
+      const retailPrice = selectedProductPrice(product, variant);
+      const shownPrice = minimumPlanPrice ?? retailPrice;
+      const priceCaption = minimumPlanPrice != null ? 'a partir de · por plano' : productPriceKind(product, variant) === 'no_charge' ? 'sem cobrança' : 'preço fixo';
+      return `<tr><td data-label="Produto"><div class="cell-main">${escapeHtml(product.name)}</div><div class="cell-sub">${escapeHtml(product.brand || 'Sem marca')}</div></td><td data-label="Código material"><code class="material-pill mono">${escapeHtml(variant.materialCode)}</code></td><td data-label="Grupo">${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</td><td data-label="Preço">${shownPrice == null ? '<span class="price-unavailable">—</span>' : `<div class="stock-price"><strong>${productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(shownPrice)}</strong><span>${priceCaption}</span></div>`}</td><td data-label="Saldo físico"><strong>${variant.onHand}</strong></td><td data-label="Reservado">${variant.reserved}</td><td data-label="Disponível"><strong>${variant.available}</strong></td><td data-label="Em entrega"><strong class="${Number(variant.incoming || 0) ? 'incoming-value' : ''}">${Number(variant.incoming || 0)}</strong></td><td data-label="Controle">${variant.serialTracked ? `<span class="serial-tracked-badge">${uiIcon('check')} Serializado</span>` : `<button class="btn btn--secondary btn--small" data-action="adjust-quantity" data-variant-id="${variant.id}">Ajustar</button>`}</td></tr>`;
+    }).join('');
+    return groupHeader + groupRows;
+  }).join('');
+  target.innerHTML = `<div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Produto</th><th>Código material</th><th>Grupo</th><th>Preço</th><th>Saldo físico</th><th>Reservado</th><th>Disponível</th><th>Em entrega</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+async function renderStock() {
+  const content = document.querySelector('#view-content');
+  if (state.user.role === 'seller') return renderSellerStore('Produtos disponíveis', 'Consulte o saldo e adicione itens ao seu próximo pedido.');
+  await loadCatalog();
+  const total = state.catalog.reduce((sum, product) => sum + product.onHand, 0);
+  const hasQuantityOnly = state.catalog.some((product) => product.variants.some((variant) => !variant.serialTracked));
+  const movementButton = hasQuantityOnly ? '<button class="btn" data-action="open-quantity">+ Nova movimentação</button>' : '';
+  const clusters = [['', 'Todos'], ...clusterOrder.map((value) => [value, clusterLabels[value]])];
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Inventário serializado</p><h2>Estoque por código material</h2><p>${state.catalog.length} materiais cadastrados · ${total} unidades com número de série.</p></div>${movementButton}</div><section class="card stock-section"><div class="card__head"><h3>Produtos</h3></div><div class="stock-toolbar"><div class="search-box"><input class="input" data-action="stock-search" value="${escapeHtml(state.stockSearch)}" placeholder="Buscar nome ou código material..."></div><div class="category-chips">${clusters.map(([value, label]) => `<button class="chip ${state.stockCluster === value ? 'is-active' : ''}" data-action="filter-stock-category" data-category="${value}">${label}</button>`).join('')}</div></div><div class="card__body--flush" data-stock-table></div></section>`;
+  renderStockTable();
+}
+
+function renderCartBar() {
+  const target = document.querySelector('[data-cart-bar]');
+  if (!target) return;
+  const units = [...state.cart.values()].reduce((sum, quantity) => sum + quantity, 0);
+  const pricedSelection = [...state.cart].map(([variantId, quantity]) => {
+    const found = findCatalogVariant(variantId);
+    return found ? { ...found, quantity, unitPriceCents: selectedProductPrice(found.product, found.variant) } : null;
+  }).filter(Boolean);
+  const subtotal = pricedSelection.reduce((sum, item) => sum + (item.unitPriceCents == null ? 0 : item.unitPriceCents * item.quantity), 0);
+  const orderTotal = Math.max(0, subtotal - renovaDiscountFor(pricedSelection).discountCents);
+  const orderPriceText = state.cart.size ? ` · total: ${formatMoney(orderTotal)}` : '';
+  target.innerHTML = units ? `<div class="cart-bar"><div><strong>${units} ${units === 1 ? 'item' : 'itens'} no pedido</strong><span>${state.cart.size} ${state.cart.size === 1 ? 'material selecionado' : 'materiais selecionados'}${orderPriceText}</span></div><button class="btn" data-action="review-request">Revisar pedido</button></div>` : '';
+}
+
+async function renderSellerStore(title = 'Monte seu pedido', description = 'Escolha os produtos e informe as quantidades.') {
+  const content = document.querySelector('#view-content');
+  await loadCatalog();
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Loja interna</p><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div></div>${pricingSelector()}${catalogToolbar()}<div data-catalog-grid></div><div data-cart-bar></div>`;
+  renderCatalogGrid();
+  renderCartBar();
+}
+
+async function renderNewRequest() {
+  return renderSellerStore('Monte seu pedido', 'Busque pelo nome ou código material e escolha a quantidade.');
+}
+
+async function renderRequests() {
+  const content = document.querySelector('#view-content');
+  const query = state.requestFilter ? `?status=${encodeURIComponent(state.requestFilter)}` : '';
+  const data = await api(`/api/requests${query}`);
+  state.requests = data.requests;
+  const filters = state.user.role === 'stocker'
+    ? [['approved', 'Prontos para separar'], ['', 'Todos']]
+    : [['', 'Todos'], ['approved', 'Liberados'], ['rejected', 'Recusados'], ['cancelled', 'Cancelados']];
+  const heading = state.user.role === 'manager'
+    ? ['Monitoramento', 'Pedidos de retirada', 'Acompanhe produtos, vendedor, horário e números de série liberados automaticamente.']
+    : state.user.role === 'stocker'
+      ? ['Separação', 'Pedidos para separar', 'Veja somente o que precisa ser separado, com os códigos e IMEIs já definidos.']
+      : ['Seus pedidos', 'Meus pedidos', 'Os pedidos são liberados automaticamente e o IMEI aparece logo após o envio.'];
+  const stockerSchedule = state.user.role === 'stocker' ? teamBreakSchedule('dashboard') : '';
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">${heading[0]}</p><h2>${heading[1]}</h2><p>${heading[2]}</p></div>${state.user.role === 'seller' ? '<button class="btn" data-action="navigate" data-view="new-request">+ Novo pedido</button>' : ''}</div>${stockerSchedule}<div class="filter-tabs">${filters.map(([value, label]) => `<button class="chip ${state.requestFilter === value ? 'is-active' : ''}" data-action="filter-requests" data-status="${value}">${label}</button>`).join('')}</div><div class="requests-list ${state.user.role === 'stocker' ? 'requests-list--stocker' : ''}">${state.requests.length ? state.requests.map((item) => requestCard(item)).join('') : emptyState('Nenhum pedido encontrado', 'Não há solicitações com este status.')}</div>`;
+}
+
+async function renderUsers() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/users');
+  state.users = data.users;
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Acessos</p><h2>Usuários</h2><p>Edite todos os dados ou exclua acessos que não são mais utilizados.</p></div><button class="btn" data-action="open-user">+ Novo usuário</button></div><section class="card"><div class="card__body--flush"><div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Criado em</th><th></th></tr></thead><tbody>${state.users.map((user) => `<tr><td data-label="Nome"><div class="cell-main">${escapeHtml(user.name)}</div></td><td data-label="E-mail">${escapeHtml(user.email)}</td><td data-label="Perfil">${escapeHtml(roleLabel(user.role))}</td><td data-label="Status"><span class="status status--${user.active ? 'available' : 'cancelled'}">${user.active ? 'Ativo' : 'Inativo'}</span></td><td data-label="Criado em">${formatDate(user.createdAt, false)}</td><td data-label="Ações"><div class="table-actions"><button class="btn btn--secondary btn--small" data-action="edit-user" data-id="${user.id}">Editar</button>${user.id === state.user.id ? '' : `<button class="btn btn--danger btn--small" data-action="delete-user" data-id="${user.id}">Excluir</button>`}</div></td></tr>`).join('')}</tbody></table></div></div></section>`;
+}
+
+function alignmentNavigationItem(topic) {
+  const selected = state.alignmentTopic === topic.id;
+  return `<button type="button" id="alignment-tab-${escapeHtml(topic.id)}" class="alignment-nav__item ${selected ? 'is-selected' : ''}" data-action="open-alignment" data-topic="${escapeHtml(topic.id)}" role="tab" aria-selected="${selected}" aria-controls="alignment-detail" tabindex="${selected ? '0' : '-1'}">
+    <span class="alignment-nav__number">${escapeHtml(topic.number)}</span>
+    <span class="alignment-nav__icon">${uiIcon(topic.icon)}</span>
+    <span class="alignment-nav__copy"><small>${escapeHtml(topic.eyebrow)} · ${Number(topic.minutes)} min</small><strong>${escapeHtml(topic.title)}</strong></span>
+    <span class="alignment-nav__arrow">${uiIcon('chevron')}</span>
+  </button>`;
+}
+
+function alignmentServiceTiles() {
+  const services = [
+    ['Atendimento e tratamento', 'Não limitar a atuação à venda: acolher com linguagem acessível, identificar a demanda, usar os recursos da loja e acompanhar o encaminhamento.'],
+    ['Troca de chip', 'Receber a solicitação, conferir os dados e executar ou encaminhar pelo procedimento correto.'],
+    ['Faturas', 'Consultar valores e serviços ativos, explicar a cobrança e registrar ou orientar corretamente uma contestação.'],
+    ['Recargas', 'Explicar as opções e concluir a solicitação com segurança.'],
+    ['Ativação de Pré', 'Cadastrar e ativar o plano conforme o procedimento vigente.'],
+    ['Portabilidade', 'Orientar requisitos, registrar corretamente e explicar os próximos passos.'],
+    ['Informação correta', 'Explicar preço, fidelidade, multa, serviços adicionais, primeira fatura e demais condições antes da confirmação.'],
+    ['Conferência da operação', 'Confirmar titularidade, linhas, plano final, dependentes e encerramento de ofertas antigas antes de concluir.'],
+    ['Documentos e protocolo', 'Entregar ou viabilizar contrato, comprovantes, Etiqueta Padrão e identificação para acompanhar a demanda.'],
+    ['Dados e consentimento', 'Usar somente os dados necessários, proteger credenciais e nunca incluir produto ou serviço sem autorização.'],
+  ];
+  return services.map(([title, text], index) => `<article class="alignment-service"><span>${String(index + 1).padStart(2, '0')}</span><div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div></article>`).join('');
+}
+
+function alignmentLeadershipMessages() {
+  const renatoMessage = [
+    'Bom dia, um ótimo mês a todos.',
+    'Ponto de atenção.',
+    'Ainda temos CN/ lojas enviando ou pedindo para clientes ligarem na central para resolver seus problemas com operadora!! Isso é uma prática INACEITÁVEL e PROIBIDA dentro da nossa REDE. Se não souberem o procedimentos a empresa está a disposição para ajudar, inclusive se o caso podem me acionar que a solução vem.',
+    'Os clientes que buscam nossos canais de atendimento precisam ser resolvido em loja, hoje as lojas tem mesma autonomia que a central 10315 ou 1058 e não vejo motivo para esse direcionamento.',
+    'Ótimo mês a todos e boas vendas',
+  ];
+  const mariaMessage = [
+    'É isto, Renato! Desde que nos propusemos a ser parceiros da Vivo, nossa principal preocupação é “sempre” atender e resolver todos os problemas em loja! Como bem disse o Renato, é INACEITÁVEL e INADMISSÍVEL encaminhar o cliente para o 10315! Chegamos onde estamos porque essa sempre foi nossa prioridade maior: cliente tem que sair da loja com seu problema resolvido! Se acaso for absolutamente necessário entrar em contato com a Central, fazê-lo para o cliente e colocá-lo para falar dentro da loja, dando todo o suporte necessário! Cliente tem que sair de loja completamente satisfeito e feliz com o nosso atendimento! É assim que fizemos a Gramcell crescer e é assim que queremos ser a PRIMEIRA em atendimento para o nosso cliente! Vcs são a GRAMCELL e eu me orgulho muito disso! Obrigada e um ótimo mês para todos!',
+  ];
+  const messageParagraphs = (paragraphs) => paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('');
+  return `<section class="alignment-conversation" aria-label="Mensagens da liderança sobre atendimento ao cliente">
+    <header class="alignment-conversation__head">
+      <div><span class="alignment-panel__label">Orientações que deram origem a este alinhamento</span><h4>Direcionamento direto da liderança.</h4><p>Mensagens reproduzidas integralmente para preservar o contexto e a importância do comunicado.</p></div>
+      <span class="alignment-conversation__status"><i aria-hidden="true"></i>Comunicado interno</span>
+    </header>
+    <div class="alignment-conversation__thread">
+      <article class="alignment-message alignment-message--supervisor">
+        <header class="alignment-message__head"><span class="alignment-message__avatar" aria-hidden="true">RD</span><div class="alignment-message__sender"><strong>Renato Dal Negro</strong><span>Supervisor Comercial</span></div><time datetime="2026-08-01T07:37:00-03:00">01 de agosto · 7:37</time></header>
+        <div class="alignment-message__bubble">${messageParagraphs(renatoMessage)}</div>
+        <footer class="alignment-message__meta"><span aria-label="24 reações positivas">${uiIcon('check')}<strong>24</strong></span><small>Mensagem da liderança comercial</small></footer>
+      </article>
+      <article class="alignment-message alignment-message--owner">
+        <header class="alignment-message__head"><span class="alignment-message__avatar" aria-hidden="true">MC</span><div class="alignment-message__sender"><strong>Maria Caldas</strong><span>Dona da empresa</span></div><time datetime="2026-08-01T09:59:00-03:00">01 de agosto · 9:59</time></header>
+        <div class="alignment-message__reply"><span>Em resposta a</span><strong>Renato Dal Negro</strong><p>Bom dia, um ótimo mês a todos.<br>Ponto de atenção.</p></div>
+        <div class="alignment-message__bubble">${messageParagraphs(mariaMessage)}</div>
+        <footer class="alignment-message__meta"><span aria-label="17 reações positivas">${uiIcon('check')}<strong>17</strong></span><small>Confirmação da direção da empresa</small></footer>
+      </article>
+    </div>
+  </section>`;
+}
+
+function customerCareAlignment() {
+  const steps = [
+    ['Acolher', 'Receba a demanda sem interromper ou transferir a responsabilidade.'],
+    ['Entender', 'Faça as perguntas necessárias e confirme qual é o problema real.'],
+    ['Resolver', 'Use os procedimentos e recursos disponíveis na loja.'],
+    ['Confirmar', 'Explique o resultado e certifique-se de que o cliente entendeu o próximo passo.'],
+  ];
+  return `<div class="alignment-detail__body">
+    <div class="alignment-principle alignment-principle--priority"><span>Diretriz central</span><strong>Resolver o problema do cliente não é um favor: é parte essencial do atendimento.</strong><p>O atendimento não termina com “ligue para a central”. A equipe acolhe, orienta e acompanha a solução.</p></div>
+    <div class="alignment-detail-grid">
+      <section class="alignment-panel"><span class="alignment-panel__label">Fluxo esperado</span><div class="alignment-process">${steps.map(([title, text], index) => `<article><span>${index + 1}</span><div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div></article>`).join('')}</div></section>
+      <aside class="alignment-panel alignment-panel--contrast"><span class="alignment-panel__label">Quando precisar de apoio</span><h4>O cliente continua acompanhado pela loja.</h4><ul class="alignment-checklist"><li>Acione o gerente quando faltar procedimento, permissão ou segurança para concluir.</li><li>Se uma central for indispensável, faça o contato com o cliente na loja e ofereça o suporte necessário.</li><li>Não prometa o que não pode cumprir; informe prazo, responsável e próximo passo com clareza.</li><li>Antes de encerrar, confirme que a demanda foi resolvida ou corretamente encaminhada.</li></ul></aside>
+    </div>
+    ${alignmentLeadershipMessages()}
+  </div>`;
+}
+
+function responsibilitiesAlignment() {
+  return `<div class="alignment-detail__body">
+    <div class="alignment-principle"><span>O cargo por inteiro</span><strong>A função do consultor vai além de vender.</strong><p>A remuneração corresponde ao conjunto completo do cargo: atendimento, serviços, informação correta, conferência, pós-venda, proteção de dados, organização e compromisso com a operação.</p></div>
+    <section class="alignment-panel"><div class="alignment-panel__heading"><div><span class="alignment-panel__label">Serviços e deveres da rotina</span><h4>Responsabilidades que precisam ser atendidas com o mesmo cuidado.</h4></div><span class="alignment-count">10 frentes</span></div><div class="alignment-services">${alignmentServiceTiles()}</div></section>
+    <section class="alignment-legal"><div class="alignment-legal__heading"><div><span class="alignment-panel__label">Base legal e regulatória</span><h4>O essencial para aplicar na rotina.</h4></div><span>Resumo guiado · 2 min</span></div>
+      <div class="alignment-legal__distinction"><span>${uiIcon('warning')}</span><div><strong>A obrigação legal é principalmente da Vivo ou da empresa responsável pela loja.</strong><p>O consultor não precisa resolver tudo sozinho: deve receber, orientar, registrar, encaminhar e acompanhar dentro de seus acessos.</p></div></div>
+      <div class="alignment-law-grid">
+        <article class="alignment-law alignment-law--featured"><div class="alignment-law__tag"><span>Anatel</span><strong>Art. 20</strong></div><h5>Atendimento qualificado</h5><p>A loja exclusiva Vivo deve atender presencialmente e tratar demandas de todos os serviços do grupo.</p><a href="https://informacoes.anatel.gov.br/legislacao/resolucoes/2023/1900-resolucao-765" target="_blank" rel="noopener noreferrer">Resolução Anatel nº 765/2023 · art. 20 ${uiIcon('chevron')}</a></article>
+        <article class="alignment-law"><div class="alignment-law__tag"><span>Anatel</span><strong>Arts. 9º, 10 e 60–65</strong></div><h5>Protocolo e faturas</h5><p>Atendimentos geram protocolo; solicitações e contestações devem ser registradas e acompanhadas nos prazos aplicáveis.</p><a href="https://informacoes.anatel.gov.br/legislacao/resolucoes/2023/1900-resolucao-765" target="_blank" rel="noopener noreferrer">Consultar o RGC da Anatel ${uiIcon('chevron')}</a></article>
+        <article class="alignment-law"><div class="alignment-law__tag"><span>Anatel + CDC</span><strong>Anatel 21, 36 e 40–42 · CDC 30, 31 e 37</strong></div><h5>Oferta clara</h5><p>Preço, fidelidade, multa e serviços devem ser explicados com clareza e corresponder ao contrato.</p><div class="alignment-law__links"><a href="https://informacoes.anatel.gov.br/legislacao/resolucoes/2023/1900-resolucao-765" target="_blank" rel="noopener noreferrer">Anatel ${uiIcon('chevron')}</a><a href="https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm" target="_blank" rel="noopener noreferrer">CDC ${uiIcon('chevron')}</a></div></article>
+        <article class="alignment-law"><div class="alignment-law__tag"><span>CDC</span><strong>Arts. 34 e 39</strong></div><h5>Sem venda forçada</h5><p>A empresa responde pelo atendimento. Soluções não dependem de nova compra e nada pode ser incluído sem solicitação.</p><a href="https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm" target="_blank" rel="noopener noreferrer">Código de Defesa do Consumidor ${uiIcon('chevron')}</a></article>
+        <article class="alignment-law"><div class="alignment-law__tag"><span>LGPD</span><strong>Arts. 6º, 39, 46 e 47</strong></div><h5>Proteção de dados</h5><p>Acesse somente os dados necessários, com login próprio, sigilo e segurança.</p><a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm" target="_blank" rel="noopener noreferrer">Lei Geral de Proteção de Dados ${uiIcon('chevron')}</a></article>
+      </div>
+      <div class="alignment-employment-limit"><div><span class="alignment-panel__label">Responsabilidade pessoal</span><h5>Erro, fraude e dolo são situações diferentes.</h5></div><p>Desconto salarial por dano exige as condições do art. 462 da CLT e análise do caso concreto.</p><a href="https://www.planalto.gov.br/ccivil_03/decreto-lei/del5452compilado.htm" target="_blank" rel="noopener noreferrer">CLT · art. 462 ${uiIcon('chevron')}</a></div>
+    </section>
+    <div class="alignment-commitment-grid"><section><span class="alignment-panel__label">Compromisso com horários</span><h4>Pontualidade protege a operação.</h4><ul class="alignment-checklist"><li>Esteja pronto para iniciar o trabalho no horário combinado.</li><li>Cumpra corretamente os horários de intervalo e retorno.</li><li>Avise com antecedência sempre que houver atraso, ausência ou imprevisto.</li><li>Não deixe a equipe descobrir o problema apenas no início do turno.</li></ul></section><section><span class="alignment-panel__label">Quando houver dúvida</span><h4>Pedir apoio faz parte. Abandonar a demanda, não.</h4><p>Consulte o procedimento, envolva o gerente e continue acompanhando o caso. O cliente deve saber quem está cuidando da solicitação e qual será o próximo passo.</p><div class="alignment-note">Sinal de profissionalismo: reconhecer o limite, buscar ajuda e permanecer responsável pelo acompanhamento.</div></section></div>
+    ${teamBreakSchedule('alignment')}
+  </div>`;
+}
+
+function conductAlignment() {
+  return `<div class="alignment-detail__body">
+    <div class="alignment-principle"><span>Postura profissional</span><strong>A forma como a equipe se apresenta também comunica a qualidade da loja.</strong><p>Presença, educação e respeito são visíveis antes mesmo de qualquer venda.</p></div>
+    <section class="alignment-hierarchy" aria-label="Hierarquia da loja"><span class="alignment-panel__label">Estrutura de orientação e decisão</span><div><strong>Gerente geral</strong><span>${uiIcon('chevron')}</span><strong>Gerente de operações</strong><span>${uiIcon('chevron')}</span><strong>Consultores</strong></div><p>A hierarquia organiza responsabilidades e decisões. Ela deve ser respeitada sem retirar o dever de respeito entre todas as pessoas.</p></section>
+    <div class="alignment-conduct-grid">
+      <article><span class="alignment-conduct-icon">${uiIcon('conduct')}</span><h4>Postura na cadeira</h4><p>Mantenha-se disponível e atento. Evite permanecer reclinado, deitado na cadeira ou demonstrar desinteresse enquanto houver clientes ou tarefas.</p></article>
+      <article><span class="alignment-conduct-icon">${uiIcon('service')}</span><h4>Atendimento ao cliente</h4><p>Cumprimente, escute sem interromper, fale com clareza, mantenha atenção visual e termine explicando a solução ou o próximo passo.</p></article>
+      <article><span class="alignment-conduct-icon">${uiIcon('users')}</span><h4>Conversa entre colegas</h4><p>Sem gritos, ironias, exposição ou correções públicas. Divergências são tratadas com respeito, em particular e no canal correto.</p></article>
+      <article><span class="alignment-conduct-icon">${uiIcon('tasks')}</span><h4>Orientações da liderança</h4><p>Demandas operacionais seguem a estrutura da loja. Dúvidas podem ser apresentadas; decisões devem ser cumpridas e desacordos tratados profissionalmente.</p></article>
+    </div>
+    <section class="alignment-attitudes"><figure><img src="/alignment/atitudes-profissionais.webp" alt="Quadro com atitudes profissionais como pontualidade, ética, educação e cumprimento de compromissos" loading="lazy"><figcaption>Imagem utilizada no material-base da reunião.</figcaption></figure><div><span class="alignment-panel__label">Atitudes que sustentam o padrão</span><h4>Profissionalismo aparece nas pequenas escolhas.</h4><ul class="alignment-checklist"><li>Ser pontual e avisar com antecedência.</li><li>Cumprir o que foi combinado.</li><li>Responder com educação e falar a verdade.</li><li>Agir com ética, agradecer e reconhecer o esforço dos colegas.</li><li>Usar o celular pessoal somente nos momentos permitidos ou em necessidade comunicada à liderança.</li></ul></div></section>
+  </div>`;
+}
+
+function organizationAlignment() {
+  return `<div class="alignment-detail__body">
+    <div class="alignment-principle"><span>Responsabilidade compartilhada</span><strong>Quem usa, organiza. Quem identifica, corrige ou comunica.</strong><p>Cozinha e sala de estoque não pertencem a uma única pessoa: são ambientes de trabalho e responsabilidade de toda a equipe.</p></div>
+    <div class="alignment-photo-grid"><figure><img src="/alignment/organizacao-pia.webp" alt="Pia da cozinha com utensílios deixados após o uso" loading="lazy"><figcaption>Pia: utensílios não devem permanecer acumulados.</figcaption></figure><figure><img src="/alignment/organizacao-mesa.webp" alt="Mesa da cozinha com embalagens e objetos espalhados" loading="lazy"><figcaption>Mesa: cada pessoa deve liberar e limpar o espaço após usar.</figcaption></figure><figure><img src="/alignment/organizacao-lixeira.webp" alt="Lixeira da cozinha cheia além da capacidade" loading="lazy"><figcaption>Lixeira: não espere transbordar para tomar providência.</figcaption></figure></div>
+    <p class="alignment-photo-note">Registros do material-base usados como exemplos objetivos de situações que precisam ser corrigidas — o foco é o padrão do ambiente, não a exposição de pessoas.</p>
+    <div class="alignment-commitment-grid"><section><span class="alignment-panel__label">Cozinha</span><h4>Deixe pronta para a próxima pessoa.</h4><ul class="alignment-checklist"><li>Lave, seque e guarde os utensílios usados.</li><li>Limpe pia, bancada e mesa depois da refeição.</li><li>Descarte embalagens e restos no local correto.</li><li>Ao perceber a lixeira cheia, feche o saco e providencie a troca.</li></ul></section><section><span class="alignment-panel__label">Sala de estoque</span><h4>Organização também protege o inventário.</h4><ul class="alignment-checklist"><li>Devolva cada item ao espaço identificado.</li><li>Mantenha corredores, mesas e acessos livres.</li><li>Não deixe caixas, embalagens ou produtos soltos.</li><li>Comunique imediatamente divergências, danos ou itens fora do lugar.</li></ul></section></div>
+  </div>`;
+}
+
+function alignmentDetail() {
+  const topic = alignmentTopics.find((item) => item.id === state.alignmentTopic);
+  if (!topic) return '';
+  const topicIndex = alignmentTopics.findIndex((item) => item.id === topic.id);
+  const previousTopic = alignmentTopics[topicIndex - 1] || null;
+  const nextTopic = alignmentTopics[topicIndex + 1] || null;
+  const bodies = {
+    'customer-care': customerCareAlignment,
+    responsibilities: responsibilitiesAlignment,
+    conduct: conductAlignment,
+    organization: organizationAlignment,
+  };
+  const stepButton = (target, direction, compact = false) => `<button type="button" class="alignment-step alignment-step--${direction} ${compact ? 'alignment-step--compact' : ''}" ${target ? `data-action="open-alignment" data-topic="${escapeHtml(target.id)}"` : 'disabled'} aria-label="${target ? `${direction === 'previous' ? 'Tema anterior' : 'Próximo tema'}: ${escapeHtml(target.title)}` : direction === 'previous' ? 'Este é o primeiro tema' : 'Este é o último tema'}">
+    ${direction === 'previous' ? uiIcon('chevron', 'alignment-icon--back') : ''}<span>${direction === 'previous' ? 'Anterior' : 'Próximo'}</span>${direction === 'next' ? uiIcon('chevron') : ''}
+  </button>`;
+  return `<section class="alignment-detail" id="alignment-detail" role="tabpanel" tabindex="-1" aria-labelledby="alignment-tab-${escapeHtml(topic.id)}" aria-live="polite">
+    <header class="alignment-detail__head">
+      <div class="alignment-detail__identity"><span>${escapeHtml(topic.number)} · ${escapeHtml(topic.eyebrow)}</span><h3>${escapeHtml(topic.title)}</h3></div>
+      <div class="alignment-detail__tools"><span class="alignment-detail__progress">Tema ${topicIndex + 1} de ${alignmentTopics.length} · ${Number(topic.minutes)} min</span><div class="alignment-detail__stepper">${stepButton(previousTopic, 'previous', true)}${stepButton(nextTopic, 'next', true)}</div></div>
+    </header>
+    ${bodies[topic.id]()}
+    <footer class="alignment-detail__pager">
+      <div><span>${nextTopic ? 'Continue o alinhamento' : 'Edição concluída'}</span><strong>${nextTopic ? escapeHtml(nextTopic.title) : 'Todos os temas foram apresentados.'}</strong></div>
+      <div>${stepButton(previousTopic, 'previous')}${stepButton(nextTopic, 'next')}</div>
+    </footer>
+  </section>`;
+}
+
+function renderAlignment() {
+  const content = document.querySelector('#view-content');
+  if (state.user.role !== 'manager') {
+    content.innerHTML = emptyState('Acesso restrito', 'Esta área está disponível somente para gerentes.');
+    return;
+  }
+  if (!alignmentTopics.some((topic) => topic.id === state.alignmentTopic)) state.alignmentTopic = alignmentTopics[0].id;
+  content.innerHTML = `<section class="alignment-hero"><div class="alignment-hero__content"><div class="alignment-hero__meta"><div class="alignment-edition">${uiIcon('briefing')}<span>Edição 01 · Agosto 2026</span></div><div class="alignment-duration">${uiIcon('history')}<span>Roteiro · até 20 min</span></div></div><p class="alignment-hero__eyebrow">Central de Alinhamento · SJDR Centro</p><h2>O padrão da loja começa nas pequenas atitudes.</h2><p>Um espaço para transformar orientações em atitudes claras, consistentes e observáveis no dia a dia.</p><div class="alignment-values"><span>Resolver</span><span>Respeitar</span><span>Organizar</span></div></div><div class="alignment-hero__mark" aria-hidden="true"><span>01</span><small>matinal</small></div></section>
+    <div class="alignment-section-heading"><div><span>Navegação da edição</span><h3>Todos os temas ficam ao alcance durante a apresentação</h3></div><p>Troque de assunto sem fechar o conteúdo ou retornar ao início.</p></div>
+    <div class="alignment-workspace">
+      <aside class="alignment-navigator" aria-label="Temas desta edição">
+        <div class="alignment-navigator__head"><div><span>Índice</span><strong>Escolha um assunto</strong></div><small>${alignmentTopics.length} temas</small></div>
+        <nav class="alignment-nav__list" role="tablist" aria-label="Conteúdos do alinhamento">${alignmentTopics.map(alignmentNavigationItem).join('')}</nav>
+        <p class="alignment-navigator__hint">O assunto selecionado aparece ao lado. Use também os botões Anterior e Próximo para conduzir a reunião em sequência.</p>
+      </aside>
+      ${alignmentDetail()}
+    </div>
+    <section class="alignment-footer"><span>${uiIcon('check')}</span><div><strong>O combinado precisa aparecer na rotina.</strong><p>Use o índice como guia da conversa e transforme cada orientação em um padrão acompanhado pela gestão.</p></div></section>`;
+}
+
+const actionLabels = {
+  'manager.initial_created': 'criou o primeiro acesso gerencial', 'auth.login': 'entrou no sistema',
+  'user.created': 'criou um usuário', 'user.updated': 'atualizou um usuário', 'user.deleted': 'excluiu um usuário',
+  'user.password_reset': 'redefiniu uma senha', 'user.password_changed': 'alterou a própria senha',
+  'inventory.quantity_adjusted': 'movimentou o estoque', 'request.created': 'criou um pedido',
+  'request.auto_approved': 'liberou automaticamente um pedido',
+  'request.auto_rejected': 'recusou automaticamente um pedido sem estoque',
+  'request.approved': 'aprovou um pedido', 'request.rejected': 'recusou um pedido',
+  'request.cancelled': 'cancelou um pedido',
+};
+
+function auditDetails(log) {
+  const details = log.details || {};
+  const parts = [];
+  if (Array.isArray(details.products) && details.products.length) {
+    parts.push(`<div class="audit-detail-block"><span>Produtos escolhidos</span><ul>${details.products.map((product) => `<li><strong>${escapeHtml(product.productName || 'Produto')}</strong><code class="mono">${escapeHtml(product.materialCode || '—')}</code><b>${Number(product.quantity || 0)} un.</b></li>`).join('')}</ul></div>`);
+  }
+  if (Array.isArray(details.serials) && details.serials.length) {
+    parts.push(`<div class="audit-detail-block"><span>Números de série definidos</span><ul>${details.serials.map((item) => `<li><code class="mono">${escapeHtml(item.materialCode || '—')}</code><div class="audit-serials">${(item.serialNumbers || []).map((serial) => `<code class="mono">${escapeHtml(serial)}</code>`).join('')}</div></li>`).join('')}</ul></div>`);
+  }
+  if (details.email) parts.push(`<span class="audit-detail-inline">E-mail: ${escapeHtml(details.email)}</span>`);
+  if (details.role) parts.push(`<span class="audit-detail-inline">Perfil: ${escapeHtml(roleLabel(details.role))}</span>`);
+  if (details.selectedSerialCount !== undefined) parts.push(`<span class="audit-detail-inline">${Number(details.selectedSerialCount)} número(s) de série definido(s)</span>`);
+  if (details.materialCode) parts.push(`<span class="audit-detail-inline">Material: ${escapeHtml(details.materialCode)}</span>`);
+  return parts.length ? `<div class="audit-details">${parts.join('')}</div>` : '';
+}
+
+async function renderAudit() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/audit');
+  state.logs = data.logs;
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Rastreabilidade</p><h2>Histórico detalhado</h2><p>Acessos, produtos escolhidos, pedidos automáticos e alterações administrativas.</p></div></div><section class="card"><div class="timeline">${state.logs.length ? state.logs.map((log) => `<article class="timeline-item"><div class="timeline-dot"></div><div><strong>${escapeHtml(log.actorName)} ${escapeHtml(actionLabels[log.action] || log.action)}</strong><span>${formatDate(log.createdAt)}${log.entityType === 'request' && log.entityId ? ` · Pedido #${escapeHtml(requestCode(log.entityId))}` : ''}</span>${auditDetails(log)}</div></article>`).join('') : emptyState('Histórico vazio', 'As novas ações realizadas no sistema aparecerão aqui.')}</div></section>`;
+}
+
+async function navigate(view) {
+  if (!viewTitles[view]) return;
+  if (state.user.role !== 'manager' && ['alignment', 'users', 'audit'].includes(view)) return;
+  if (state.user.role === 'stocker' && view !== 'requests') return;
+  state.view = view;
+  updateShellNavigation();
+  const content = document.querySelector('#view-content');
+  content.innerHTML = '<div class="loading-block"><span class="loading-inline">Carregando</span></div>';
+  try {
+    if (view === 'dashboard') await renderDashboard();
+    if (view === 'stock') await renderStock();
+    if (view === 'new-request') await renderNewRequest();
+    if (view === 'requests') await renderRequests();
+    if (view === 'alignment') renderAlignment();
+    if (view === 'users') await renderUsers();
+    if (view === 'audit') await renderAudit();
+  } catch (error) {
+    if (error.status !== 401) content.innerHTML = emptyState('Não foi possível carregar', error.message, '<button class="btn" data-action="reload-view">Tentar novamente</button>');
+  }
+}
+
+function showModal(content, { required = false, small = false, wide = false } = {}) {
+  modalRoot.innerHTML = `<div class="modal-backdrop" data-action="${required ? '' : 'backdrop-close'}"><section class="modal ${small ? 'modal--small' : ''} ${wide ? 'modal--wide' : ''}" role="dialog" aria-modal="true">${content}</section></div>`;
+  modalRoot.dataset.required = required ? 'true' : 'false';
+  document.body.classList.add('modal-open');
+  window.setTimeout(() => modalRoot.querySelector('input, select, textarea, button')?.focus(), 0);
+}
+
+function closeModal(force = false) {
+  if (modalRoot.dataset.required === 'true' && !force) return;
+  modalRoot.innerHTML = '';
+  modalRoot.dataset.required = '';
+  document.body.classList.remove('modal-open');
+}
+
+function modalCloseButton() {
+  return `<button type="button" class="close-modal" data-action="close-modal" aria-label="Fechar">${uiIcon('close')}</button>`;
+}
+
+function quantityModal(preferredVariantId = null) {
+  const rows = state.catalog.flatMap((product) => product.variants.map((variant) => ({ product, variant }))).filter(({ variant }) => !variant.serialTracked);
+  if (!rows.length) return showToast('O estoque atual é controlado por número de série e deve ser atualizado pela planilha.', 'error');
+  const selected = Number(preferredVariantId || rows[0].variant.id);
+  showModal(`<form data-form="quantity-stock" novalidate>
+    <div class="modal__head"><div><h2>Movimentar estoque</h2><p>Escolha o código material e registre a quantidade.</p></div>${modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid">
+      <div class="field field--full"><label for="quantity-variant">Produto e código material</label><select class="select" id="quantity-variant" name="variantId" required>${rows.map(({ product, variant }) => `<option value="${variant.id}" ${variant.id === selected ? 'selected' : ''}>${escapeHtml(product.name)} · ${escapeHtml(variant.materialCode)}</option>`).join('')}</select></div>
+      <div class="field"><label for="quantity-operation">Movimentação</label><select class="select" id="quantity-operation" name="operation"><option value="entry">Entrada no estoque</option><option value="exit">Correção / saída manual</option></select></div>
+      <div class="field"><label for="quantity-value">Quantidade</label><input class="input" id="quantity-value" name="quantity" type="number" min="1" max="100000" step="1" value="1" required></div>
+    </div></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Salvar movimentação</button></div>
+  </form>`);
+}
+
+function pickerModal(productId) {
+  const product = state.catalog.find((item) => item.id === productId);
+  const variant = product?.variants[0];
+  if (!product || !variant) return showToast('Este produto não está mais disponível.', 'error');
+  const unitPrice = selectedProductPrice(product, variant);
+  const priceSummary = unitPrice == null
+    ? '<div class="picker-price picker-price--muted"><span>Preço</span><strong>Não disponível</strong></div>'
+    : `<div class="picker-price"><span>Preço por unidade</span><strong>${productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(unitPrice)}</strong></div>`;
+  showModal(`<form data-form="pick-product" data-variant-id="${variant.id}" novalidate>
+    <div class="modal__head"><div><h2>${escapeHtml(product.name)}</h2>${materialCodeBox(variant.materialCode)}</div>${modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div>${priceSummary}<p><strong>${variant.available}</strong> unidades disponíveis.</p><div class="field"><label for="picker-quantity">Quantidade</label><input class="input" id="picker-quantity" name="quantity" type="number" value="1" min="1" max="${variant.available}" step="1" required></div></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Adicionar ao pedido</button></div>
+  </form>`, { small: true });
+}
+
+function userModal(user = null) {
+  showModal(`<form data-form="${user ? 'edit-user' : 'create-user'}" data-id="${user?.id || ''}" novalidate>
+    <div class="modal__head"><div><h2>${user ? 'Editar usuário' : 'Novo usuário'}</h2><p>${user ? 'Altere nome, e-mail, perfil, acesso ou senha.' : 'Crie um login individual.'}</p></div>${modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid">
+      <div class="field"><label for="user-name">Nome completo</label><input class="input" id="user-name" name="name" maxlength="100" required value="${escapeHtml(user?.name || '')}"></div>
+      <div class="field"><label for="user-email">E-mail</label><input class="input" id="user-email" name="email" type="email" autocomplete="email" maxlength="160" required value="${escapeHtml(user?.email || '')}"></div>
+      <div class="field"><label for="user-role">Perfil</label><select class="select" id="user-role" name="role"><option value="seller" ${!user || user.role === 'seller' ? 'selected' : ''}>Vendedor</option><option value="stocker" ${user?.role === 'stocker' ? 'selected' : ''}>Estoquista</option><option value="manager" ${user?.role === 'manager' ? 'selected' : ''}>Gerente</option></select><p class="field-hint">O estoquista vê somente os pedidos liberados.</p></div>
+      ${user ? `<div class="field"><label for="user-active">Acesso</label><select class="select" id="user-active" name="active"><option value="true" ${user.active ? 'selected' : ''}>Ativo</option><option value="false" ${!user.active ? 'selected' : ''}>Inativo</option></select></div>` : '<div class="field"><label for="user-password">Senha provisória</label><input class="input" id="user-password" name="password" type="password" minlength="8" maxlength="128" required></div>'}
+      ${user ? '<div class="field"><label for="user-password">Nova senha <span class="request-meta">(opcional)</span></label><input class="input" id="user-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128"><p class="field-hint">Deixe em branco para manter a senha atual.</p></div><div class="field"><label for="user-confirm-password">Confirmar nova senha</label><input class="input" id="user-confirm-password" name="confirmUserPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128"><p class="field-hint">Não é necessário informar a senha antiga.</p></div>' : ''}
+    </div></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">${user ? 'Salvar alterações' : 'Criar usuário'}</button></div>
+  </form>`);
+}
+
+function passwordModal(required = false) {
+  const needsCurrentPassword = state.user?.role !== 'manager';
+  const description = required
+    ? (needsCurrentPassword ? 'Por segurança, substitua a senha provisória.' : 'Defina sua nova senha para continuar.')
+    : (needsCurrentPassword ? 'Confirme sua senha atual antes de alterá-la.' : 'A senha atual não será solicitada.');
+  showModal(`<form data-form="password" novalidate>
+    <div class="modal__head"><div><h2>${required ? 'Crie uma nova senha' : 'Alterar senha'}</h2><p>${description}</p></div>${required ? '' : modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid form-grid--single">${needsCurrentPassword ? '<div class="field"><label for="current-password">Senha atual</label><input class="input" id="current-password" name="currentPassword" type="password" autocomplete="current-password" required></div>' : ''}<div class="field"><label for="new-password">Nova senha</label><input class="input" id="new-password" name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></div><div class="field"><label for="confirm-new-password">Confirme a nova senha</label><input class="input" id="confirm-new-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></div></div></div>
+    <div class="modal__footer">${required ? '' : '<button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button>'}<button type="submit" class="btn">Salvar nova senha</button></div>
+  </form>`, { required, small: true });
+}
+
+function deleteUserModal(user) {
+  if (!user) return;
+  showModal(`<form data-form="delete-user" data-id="${user.id}">
+    <div class="modal__head"><div><h2>Excluir usuário?</h2><p>O acesso será removido imediatamente.</p></div>${modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div>
+      <div class="delete-user-summary"><strong>${escapeHtml(user.name)}</strong><span>${escapeHtml(user.email)} · ${escapeHtml(roleLabel(user.role))}</span></div>
+      <p class="delete-user-warning">As sessões serão encerradas e o cadastro não aparecerá mais na lista. Pedidos e histórico antigos serão preservados com os dados pessoais anonimizados.</p>
+    </div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn--danger">Excluir definitivamente</button></div>
+  </form>`, { small: true });
+}
+
+function requestReviewModal() {
+  const selected = [...state.cart].map(([variantId, quantity]) => {
+    const found = findCatalogVariant(variantId);
+    return found ? { ...found, quantity, unitPriceCents: selectedProductPrice(found.product, found.variant) } : null;
+  }).filter(Boolean);
+  if (!selected.length) return;
+  const units = selected.reduce((sum, item) => sum + item.quantity, 0);
+  const pricedItems = selected.filter((item) => item.unitPriceCents != null);
+  if (selected.some((item) => item.product.pricing) && !state.priceCategory) {
+    throw new ApiError('Escolha a categoria do plano antes de revisar o pedido.', 400);
+  }
+  const subtotalCents = pricedItems.reduce((sum, item) => sum + item.unitPriceCents * item.quantity, 0);
+  const deviceUnits = selected.filter((item) => item.product.cluster === 'devices').reduce((sum, item) => sum + item.quantity, 0);
+  if (state.renova.enabled && deviceUnits !== 1) {
+    throw new ApiError('O Vivo Renova deve ser usado com exatamente um aparelho novo por pedido.', 400);
+  }
+  if (state.renova.enabled && !selectedRenovaTradeIn()) {
+    throw new ApiError('Selecione o aparelho usado na tabela ASSURANT.', 400);
+  }
+  const renova = renovaDiscountFor(selected);
+  const orderTotalCents = Math.max(0, subtotalCents - renova.discountCents);
+  const installments = installmentCount(orderTotalCents);
+  const priceSummary = pricedItems.length
+    ? `<div class="cart-pricing-summary">${state.priceCategory ? `<div><span>Categoria do plano</span><strong>${escapeHtml(state.priceCategory)}</strong></div>` : ''}${state.renova.enabled ? `<div><span>Preço normal dos produtos</span><strong>${formatMoney(subtotalCents)}</strong></div><div class="renova-summary-line"><span>Bônus do fabricante</span><strong>− ${formatMoney(renova.bonusCents)}</strong></div><div class="renova-summary-line"><span>Voucher ASSURANT</span><strong>− ${formatMoney(renova.voucherCents)}</strong></div><p>Renova: ${escapeHtml(selectedRenovaTradeIn()?.name || 'aparelho usado não informado')} · ${state.renova.condition === 'defeituoso' ? 'Defeituoso' : 'Bom'}. Os abatimentos foram limitados ao valor dos aparelhos.</p>` : ''}<div><span>Total do pedido</span><strong>${formatMoney(orderTotalCents)}</strong></div><p>${orderTotalCents > 0 && installments > 1 ? `${installments}x de ${formatMoney(Math.round(orderTotalCents / installments))} sem juros` : orderTotalCents > 0 ? 'Pagamento à vista' : 'Sem cobrança para os itens selecionados'} · todos os produtos estão incluídos; capa e película permanecem no valor normal.</p></div>`
+    : '';
+  showModal(`<form data-form="create-request" novalidate>
+    <div class="modal__head"><div><h2>Revisar pedido</h2><p>${units} ${units === 1 ? 'item selecionado' : 'itens selecionados'} · o IMEI será definido automaticamente</p></div>${modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><ul class="request-items cart-review">${selected.map(({ product, variant, quantity, unitPriceCents }) => `<li><div><strong>${escapeHtml(product.name)}</strong>${materialInline(variant.materialCode)}${unitPriceCents == null ? '' : productPriceKind(product, variant) === 'no_charge' ? '<div class="cart-line-price"><span>Sem cobrança</span><strong>R$ 0,00</strong></div>' : `<div class="cart-line-price"><span>${formatMoney(unitPriceCents)} por unidade</span><strong>${formatMoney(unitPriceCents * quantity)}</strong></div>`}</div><span class="item-quantity">${quantity} un.</span><button type="button" class="btn btn--ghost btn--small" data-action="remove-cart-item" data-variant-id="${variant.id}">Remover</button></li>`).join('')}</ul>${priceSummary}<div class="field"><label for="request-notes">Observação <span class="request-meta">(opcional)</span></label><textarea class="textarea" id="request-notes" name="notes" maxlength="500"></textarea></div></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Voltar</button><button type="submit" class="btn">Confirmar e liberar pedido</button></div>
+  </form>`);
+}
+
+function cancelModal(requestId) {
+  const isManager = state.user.role === 'manager';
+  const description = isManager
+    ? 'As quantidades e os IMEIs deste pedido voltarão automaticamente ao estoque.'
+    : 'Os itens voltarão a ficar disponíveis.';
+  showModal(`<form data-form="cancel-request" data-id="${escapeHtml(requestId)}"><div class="modal__head"><div><h2>Cancelar pedido?</h2><p>${description}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><p>O cancelamento ficará registrado no histórico e não poderá ser desfeito.</p></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Voltar</button><button type="submit" class="btn btn--danger">${isManager ? 'Cancelar e devolver itens' : 'Cancelar pedido'}</button></div></form>`, { small: true });
+}
+
+async function enterApp(user) {
+  state.user = user;
+  state.view = user.role === 'stocker' ? 'requests' : 'dashboard';
+  state.catalog = [];
+  state.pricing = { categories: [], tableDate: '', source: '' };
+  state.renovaCatalog = { tableDate: '', devices: [], boosts: [] };
+  state.priceCategory = '';
+  state.renova = { enabled: false, deviceId: 0, condition: 'bom' };
+  state.cart.clear();
+  state.deviceSelections.clear();
+  state.expandedDeviceFamily = '';
+  state.catalogSearch = '';
+  state.catalogCategory = '';
+  state.stockSearch = '';
+  state.stockCluster = '';
+  state.requestFilter = user.role === 'stocker' ? 'approved' : '';
+  state.alignmentTopic = '';
+  renderShell();
+  if (user.mustChangePassword) return passwordModal(true);
+  await navigate(user.role === 'stocker' ? 'requests' : 'dashboard');
+}
+
+root.addEventListener('click', async (event) => {
+  const button = event.target.closest('[data-action]');
+  if (!button) return;
+  const action = button.dataset.action;
+  try {
+    if (action === 'navigate') {
+      if (state.user.role === 'manager' && button.dataset.view === 'stock') {
+        state.stockSearch = '';
+        state.stockCluster = '';
+      }
+      if (state.user.role === 'seller' && ['stock', 'new-request'].includes(button.dataset.view)) {
+        state.catalogSearch = '';
+        state.catalogCategory = '';
+      }
+      await navigate(button.dataset.view);
+    }
+    if (action === 'reload-view') await navigate(state.view);
+    if (action === 'open-menu') document.body.classList.add('menu-open');
+    if (action === 'close-menu') document.body.classList.remove('menu-open');
+    if (action === 'logout') await withBusy(button, async () => { await api('/api/auth/logout', { method: 'POST' }); state.user = null; closeModal(true); renderLogin(); });
+    if (action === 'password') passwordModal(false);
+    if (action === 'open-quantity') { if (!state.catalog.length) await loadCatalog(); quantityModal(); }
+    if (action === 'adjust-quantity') quantityModal(Number(button.dataset.variantId));
+    if (action === 'choose-product') pickerModal(Number(button.dataset.productId));
+    if (action === 'toggle-device-family') {
+      state.expandedDeviceFamily = state.expandedDeviceFamily === button.dataset.familyKey ? '' : button.dataset.familyKey;
+      renderCatalogGrid();
+      if (state.expandedDeviceFamily) {
+        window.requestAnimationFrame(() => document.querySelector(`.device-family-card[data-family-key="${CSS.escape(state.expandedDeviceFamily)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+      }
+    }
+    if (action === 'add-device-bundle') addDeviceBundle(button.dataset.familyKey);
+    if (action === 'copy-material') { await copyText(button.dataset.code); showToast('Código material copiado.'); }
+    if (action === 'filter-category') { state.catalogCategory = button.dataset.category; renderCatalogGrid(); }
+    if (action === 'filter-stock-category') { state.stockCluster = button.dataset.category; renderStockTable(); }
+    if (action === 'open-stock-group') {
+      state.stockSearch = '';
+      state.stockCluster = button.dataset.cluster;
+      await navigate('stock');
+    }
+    if (action === 'open-store-group') {
+      state.catalogSearch = '';
+      state.catalogCategory = button.dataset.cluster;
+      await navigate('new-request');
+    }
+    if (action === 'open-alignment') {
+      if (state.user.role !== 'manager') return;
+      if (!alignmentTopics.some((topic) => topic.id === button.dataset.topic)) return;
+      state.alignmentTopic = button.dataset.topic;
+      renderAlignment();
+      window.requestAnimationFrame(() => {
+        document.querySelector('.alignment-nav__item.is-selected')?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        const detail = document.querySelector('#alignment-detail');
+        detail?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        detail?.focus({ preventScroll: true });
+      });
+    }
+    if (action === 'open-user') userModal();
+    if (action === 'edit-user') userModal(state.users.find((user) => user.id === Number(button.dataset.id)));
+    if (action === 'delete-user') deleteUserModal(state.users.find((user) => user.id === Number(button.dataset.id)));
+    if (action === 'filter-requests') { state.requestFilter = button.dataset.status; await renderRequests(); }
+    if (action === 'review-request') requestReviewModal();
+    if (action === 'cancel-request') cancelModal(button.dataset.id);
+  } catch (error) {
+    if (error.status !== 401) showToast(error.message, 'error');
+  }
+});
+
+modalRoot.addEventListener('click', (event) => {
+  const target = event.target.closest('[data-action]');
+  if (!target) return;
+  if (target.dataset.action === 'close-modal') closeModal();
+  if (target.dataset.action === 'backdrop-close' && event.target === target) closeModal();
+  if (target.dataset.action === 'remove-cart-item') {
+    state.cart.delete(Number(target.dataset.variantId));
+    if (state.cart.size) requestReviewModal();
+    else closeModal(true);
+    renderCartBar();
+  }
+});
+
+root.addEventListener('change', (event) => {
+  const action = event.target.dataset.action;
+  if (action === 'renova-enabled') {
+    state.renova.enabled = event.target.checked;
+    if (!state.renova.enabled) state.renova = { enabled: false, deviceId: 0, condition: 'bom' };
+    renderCatalogGrid(); renderCartBar(); return;
+  }
+  if (action === 'renova-used-device-search') { state.renova.deviceId = Number(renovaTradeInByName(event.target.value)?.id || 0); renderCatalogGrid(); renderCartBar(); return; }
+  if (action === 'renova-condition') { state.renova.condition = event.target.value; renderCatalogGrid(); renderCartBar(); return; }
+  if (action === 'pricing-category') {
+    state.priceCategory = event.target.value;
+    renderCatalogGrid();
+    renderCartBar();
+    return;
+  }
+  if (!['device-memory', 'device-color', 'device-case', 'device-film'].includes(action)) return;
+  const group = deviceGroupByKey(event.target.dataset.familyKey);
+  if (!group) return;
+  const { selection, option } = selectionForDeviceGroup(group);
+  if (action === 'device-memory') {
+    const selectedOption = group.options.find((item) => item.memory === event.target.value && variantRemaining(item.variant) > 0)
+      || group.options.find((item) => item.memory === event.target.value);
+    if (selectedOption) selection.variantId = selectedOption.variant.id;
+  }
+  if (action === 'device-color') {
+    const selectedOption = group.options.find((item) => item.memory === option?.memory && item.color === event.target.value);
+    if (selectedOption) selection.variantId = selectedOption.variant.id;
+  }
+  if (action === 'device-case') selection.caseKey = event.target.value;
+  if (action === 'device-film') selection.filmKey = event.target.value;
+  state.deviceSelections.set(group.key, selection);
+  renderCatalogGrid();
+});
+
+root.addEventListener('input', (event) => {
+  if (event.target.dataset.action === 'stock-search') { state.stockSearch = event.target.value; renderStockTable(); }
+  if (event.target.dataset.action === 'catalog-search') { state.catalogSearch = event.target.value; renderCatalogGrid(); }
+  if (event.target.dataset.action === 'renova-used-device-search') {
+    state.renova.deviceId = Number(renovaTradeInByName(event.target.value)?.id || 0);
+    renderCartBar();
+  }
+  if (event.target.dataset.action === 'device-quantity') {
+    const group = deviceGroupByKey(event.target.dataset.familyKey);
+    if (!group) return;
+    const { selection } = selectionForDeviceGroup(group);
+    selection.quantity = Math.max(1, Number(event.target.value) || 1);
+    state.deviceSelections.set(group.key, selection);
+  }
+});
+
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
+
+document.addEventListener('submit', async (event) => {
+  const form = event.target.closest('form[data-form]');
+  if (!form) return;
+  event.preventDefault();
+  setFormError(form);
+  const submit = form.querySelector('button[type="submit"]');
+  const data = Object.fromEntries(new FormData(form));
+  await withBusy(submit, async () => {
+    try {
+      if (form.dataset.form === 'setup') {
+        if (data.password !== data.confirmPassword) throw new ApiError('As senhas não coincidem.', 400);
+        const result = await api('/api/setup', { method: 'POST', body: { name: data.name, email: data.email, password: data.password } });
+        showToast('Acesso gerencial criado com sucesso.');
+        await enterApp(result.user);
+      }
+      if (form.dataset.form === 'login') {
+        const result = await api('/api/auth/login', { method: 'POST', body: { email: data.email, password: data.password }, keepSession: true });
+        await enterApp(result.user);
+      }
+      if (form.dataset.form === 'quantity-stock') {
+        const quantity = Number(data.quantity);
+        if (!Number.isInteger(quantity) || quantity <= 0) throw new ApiError('Informe uma quantidade válida.', 400);
+        await api('/api/inventory/quantity', { method: 'POST', body: { variantId: Number(data.variantId), quantityDelta: data.operation === 'exit' ? -quantity : quantity } });
+        closeModal(true);
+        showToast(data.operation === 'exit' ? 'Saída registrada no estoque.' : 'Entrada adicionada ao estoque.');
+        await navigate('stock');
+      }
+      if (form.dataset.form === 'pick-product') {
+        const variantId = Number(form.dataset.variantId);
+        const quantity = Number(data.quantity);
+        const found = findCatalogVariant(variantId);
+        if (!found) throw new ApiError('Este produto não está mais disponível.', 404);
+        if (!Number.isInteger(quantity) || quantity <= 0) throw new ApiError('Informe uma quantidade válida.', 400);
+        const newQuantity = (state.cart.get(variantId) || 0) + quantity;
+        if (newQuantity > found.variant.available) throw new ApiError(`Há somente ${found.variant.available} unidades disponíveis.`, 409);
+        state.cart.set(variantId, newQuantity);
+        closeModal(true);
+        showToast(`${found.product.name} adicionado ao pedido.`);
+        renderCartBar();
+      }
+      if (form.dataset.form === 'create-request') {
+        const lines = [...state.cart].map(([variantId, quantity]) => ({ variantId, quantity }));
+        const tradeIn = selectedRenovaTradeIn();
+        await api('/api/requests', { method: 'POST', body: { lines, notes: data.notes, priceCategory: state.priceCategory, renova: state.renova.enabled ? { deviceId: tradeIn?.id, usedDevice: tradeIn?.name, condition: state.renova.condition } : null } });
+        state.cart.clear();
+        state.priceCategory = '';
+        state.renova = { enabled: false, deviceId: 0, condition: 'bom' };
+        closeModal(true);
+        showToast('Pedido liberado com o preço registrado. O IMEI já está disponível.');
+        state.requestFilter = '';
+        await navigate('requests');
+      }
+      if (form.dataset.form === 'cancel-request') {
+        await api(`/api/requests/${encodeURIComponent(form.dataset.id)}/cancel`, { method: 'POST', body: {} });
+        closeModal(true);
+        showToast(state.user.role === 'manager'
+          ? 'Pedido cancelado. Quantidades e IMEIs devolvidos ao estoque.'
+          : 'Pedido cancelado.');
+        await renderRequests();
+      }
+      if (form.dataset.form === 'create-user') {
+        await api('/api/users', { method: 'POST', body: { name: data.name, email: data.email, password: data.password, role: data.role } });
+        closeModal(true);
+        showToast('Usuário criado. Envie a senha provisória para a pessoa.');
+        if (state.view === 'users') await renderUsers(); else await navigate('users');
+      }
+      if (form.dataset.form === 'edit-user') {
+        if (data.password !== data.confirmUserPassword) throw new ApiError('As novas senhas não coincidem.', 400);
+        const userId = Number(form.dataset.id);
+        const result = await api(`/api/users/${userId}`, {
+          method: 'PUT',
+          body: { name: data.name, email: data.email, role: data.role, active: data.active === 'true', password: data.password },
+        });
+        closeModal(true);
+        showToast('Usuário atualizado.');
+        if (userId === state.user.id) {
+          if (data.password) {
+            state.user = null;
+            renderLogin('Sua senha foi alterada. Entre novamente com a nova senha.');
+            return;
+          }
+          state.user = result.user;
+          renderShell();
+          await navigate('users');
+        } else {
+          await renderUsers();
+        }
+      }
+      if (form.dataset.form === 'delete-user') {
+        await api(`/api/users/${Number(form.dataset.id)}`, { method: 'DELETE' });
+        closeModal(true);
+        showToast('Usuário excluído e acesso encerrado.');
+        await renderUsers();
+      }
+      if (form.dataset.form === 'password') {
+        if (data.newPassword !== data.confirmPassword) throw new ApiError('As novas senhas não coincidem.', 400);
+        await api('/api/auth/password', { method: 'PATCH', body: { currentPassword: data.currentPassword, newPassword: data.newPassword } });
+        state.user.mustChangePassword = false;
+        closeModal(true);
+        showToast('Senha alterada com sucesso.');
+        await navigate(state.user.role === 'stocker' ? 'requests' : 'dashboard');
+      }
+    } catch (error) {
+      setFormError(form, error.message || 'Não foi possível concluir a ação.');
+      const firstField = error.fields && Object.keys(error.fields)[0];
+      if (firstField) form.elements[firstField]?.focus();
+    }
+  });
+});
+
+async function boot() {
+  try {
+    const setup = await api('/api/setup');
+    if (setup.needsSetup) return renderSetup();
+    try {
+      const result = await api('/api/auth/me', { keepSession: true });
+      await enterApp(result.user);
+    } catch {
+      renderLogin();
+    }
+  } catch {
+    root.innerHTML = `<div class="boot-screen">${emptyState('Não foi possível iniciar o sistema', 'Verifique a conexão e tente novamente.', '<button class="btn" data-action="boot-retry">Tentar novamente</button>')}</div>`;
+  }
+}
+
+root.addEventListener('click', (event) => { if (event.target.closest('[data-action="boot-retry"]')) boot(); });
+
+boot();

@@ -2,6 +2,18 @@
 
 Sistema online para controlar produtos por código material e número de série, montar pedidos e acompanhar a operação da loja.
 
+## Versão 6.6
+
+Atualiza o estoque com a planilha de 07/08/2026 e cria a aba **Chips** para Gerente e Vendedores. Cada vendedor pode manter até 10 chips disponíveis, registrar venda com data e número cadastrado e consultar material e ICCID. O Gerente cadastra pelo código de barras, transfere, retira, restaura e corrige vendas; chips vinculados à planilha ficam reservados e a baixa é conciliada automaticamente com o estoque. O Moto G67 5G 128GB foi reconferido no Simulador Produtos; os três acessórios novos ausentes na busca permanecem sem preço presumido. Consulte `LEIA-ME-ATUALIZACAO-V6.6.md`.
+
+## Versão 6.5
+
+Adiciona a aba **Notícias** para Gerente, Vendedor e Estoquista. O Gerente publica, edita, oculta e republica conteúdos sem apagar o histórico. A versão já leva cinco campanhas extraídas das artes comerciais de agosto: Bundle Apple, alças e capas, Semana Gamer, Bundle Samsung e Bundle Motorola, com preços, elegibilidade, vigência e arte ampliável. Consulte `LEIA-ME-ATUALIZACAO-V6.5.md`.
+
+## Versão 6.4
+
+Amplia a área operacional do Estoquista: painel por grupo, consulta completa de preços e disponibilidade e cancelamento de pedidos com devolução automática dos itens. Vendedores e estoquistas também passam a ter um Alinhamento rápido de 5 minutos, enquanto o gerente mantém a edição completa. Consulte `LEIA-ME-ATUALIZACAO-V6.4.md`.
+
 ## Versão 6.3
 
 Atualiza o estoque com o relatório de 05/08/2026: 293 códigos materiais e 1.073 unidades disponíveis após excluir RPAR. Inclui seis novos materiais, confere os novos produtos no Simulador Produtos e bloqueia pedidos sem preço verificado. Consulte `LEIA-ME-ATUALIZACAO-V6.3.md`.
@@ -121,7 +133,7 @@ Inclui o Vivo Renova no configurador, com bônus do fabricante e voucher ASSURAN
 
 ## Atualizar o sistema online
 
-Leia primeiro `LEIA-ME-ATUALIZACAO-V6.3.md`.
+Leia primeiro `LEIA-ME-ATUALIZACAO-V6.6.md`.
 
 Não apague a pasta atual e não substitua o `wrangler.jsonc`. Esse arquivo mantém a ligação com o banco correto da sua conta Cloudflare.
 
@@ -135,7 +147,7 @@ npm run deploy
 
 Quando a migração perguntar se deseja continuar, confirme com `y`.
 
-A atualização preserva usuários, sessões, pedidos, números de série já retirados e histórico. Ao cancelar um pedido liberado, o gerente devolve as quantidades e os números de série daquele pedido ao estoque, mantendo a rastreabilidade do cancelamento.
+A atualização preserva usuários, sessões, pedidos, números de série já retirados e histórico. As migrações pendentes criam Notícias (`0021`), Chips (`0022`) e aplicam o retrato de estoque de 07/08 (`0023`). O novo retrato contém 295 códigos materiais e 1.074 unidades disponíveis, sem as 110 unidades de RPAR.
 
 Depois da publicação, abra `https://controleestoque.app.br` e pressione `Ctrl + F5`.
 
@@ -153,9 +165,9 @@ Depois, acesse `https://controleestoque.app.br` e cadastre o primeiro gerente. N
 
 ## Perfis
 
-- Gerente: painel administrativo, estoque, todos os pedidos, cancelamento com devolução de itens, usuários e histórico.
-- Vendedor: catálogo, montagem de pedido e consulta dos próprios pedidos.
-- Estoquista: somente pedidos liberados para separação.
+- Gerente: painel administrativo, gestão completa de chips, notícias com gestão de publicação, estoque, todos os pedidos, cancelamento com devolução de itens, usuários e histórico.
+- Vendedor: carteira de até 10 chips disponíveis, registro de venda, notícias, catálogo, montagem de pedido, consulta dos próprios pedidos e Alinhamento rápido.
+- Estoquista: notícias, painel operacional, conferência de preços e disponibilidade, pedidos liberados, cancelamento com devolução de itens e Alinhamento rápido.
 
 O gerente pode criar um Estoquista em `Usuários > Novo usuário`.
 
@@ -180,7 +192,11 @@ Guarde o arquivo exportado em local seguro.
 - senhas derivadas com PBKDF2-SHA256 e salt exclusivo;
 - sessões aleatórias em cookie `HttpOnly`, `Secure` e `SameSite`;
 - permissões verificadas no servidor;
-- perfil Estoquista bloqueado no servidor fora da rota de pedidos;
+- perfil Estoquista limitado no servidor às consultas operacionais, aos pedidos e ao cancelamento; criação de pedidos, ajustes manuais, usuários e auditoria permanecem bloqueados;
+- criação, edição e visibilidade das notícias limitadas ao Gerente no servidor;
+- cadastro, transferência, retirada, restauração e correção de chips limitados ao Gerente; o Vendedor só registra a venda de chips da própria carteira;
+- ICCID único, limite de 10 chips disponíveis por vendedor e conciliação com o número de série protegidos também no banco;
+- vendedores com chips disponíveis não podem ser desativados, excluídos ou ter o perfil alterado antes da transferência ou retirada da carteira;
 - proteção contra requisições externas e excesso de tentativas de login;
 - reserva, escolha de série e baixa executadas numa única operação transacional;
 - nenhuma credencial ou senha gravada no código.
@@ -193,4 +209,4 @@ npm run check
 npx wrangler deploy --dry-run
 ```
 
-Os testes cobrem a migração do relatório de 05/08, os 293 materiais, exclusão de RPAR, estrutura DEPS/NREM, preservação de dados, preços por categoria e preços fixos, bloqueio de produtos sem preço verificado, total completo do pedido, nove grupos, agrupamento de aparelhos, compatibilidade de capas, liberação automática, escolha de IMEI, baixa de acessórios, permissões do Estoquista, painel administrativo, Vivo Renova e gestão completa de usuários.
+Os 18 testes cobrem a migração do relatório de 07/08, os 295 materiais da planilha, 1.074 unidades, exclusão de RPAR, estrutura DEPS/NREM, preservação de dados, preços, pedidos, Estoquista, Vivo Renova, usuários, Notícias e todo o ciclo de Chips: limite por vendedor, leitura de ICCID, duplicidade, transferência, venda, correção, retirada, restauração e conciliação com o estoque.

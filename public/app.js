@@ -7,6 +7,7 @@ import {
 const root = document.querySelector('#root');
 const modalRoot = document.querySelector('#modal-root');
 const toastRoot = document.querySelector('#toast-root');
+let chipCameraSession = null;
 
 const state = {
   user: null,
@@ -14,6 +15,13 @@ const state = {
   requests: [],
   users: [],
   logs: [],
+  news: [],
+  chips: [],
+  chipSellers: [],
+  chipLimit: 10,
+  chipSearch: '',
+  chipStatus: 'available',
+  chipSellerId: 0,
   catalog: [],
   pricing: { categories: [], tableDate: '', source: '' },
   renovaCatalog: { tableDate: '', devices: [], boosts: [] },
@@ -33,6 +41,8 @@ const state = {
 
 const viewTitles = {
   dashboard: 'Visão geral',
+  news: 'Notícias',
+  chips: 'Chips',
   stock: 'Loja e estoque',
   'new-request': 'Novo pedido',
   requests: 'Pedidos de retirada',
@@ -46,6 +56,12 @@ const statusInfo = {
   approved: ['Liberado', 'approved'],
   rejected: ['Recusado', 'rejected'],
   cancelled: ['Cancelado', 'cancelled'],
+};
+
+const newsCategoryInfo = {
+  promotion: { label: 'Promoção', icon: 'sparkles' },
+  notice: { label: 'Comunicado', icon: 'news' },
+  update: { label: 'Novidade', icon: 'briefing' },
 };
 
 const clusterLabels = {
@@ -136,6 +152,27 @@ function formatDate(value, withTime = true) {
 function formatMoney(cents) {
   if (cents === null || cents === undefined || !Number.isFinite(Number(cents))) return '—';
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(cents) / 100);
+}
+
+function formatDateOnly(value) {
+  const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : '—';
+}
+
+function localDateValue() {
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function formatPhoneNumber(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  const local = digits.startsWith('55') && digits.length === 13 ? digits.slice(2) : digits;
+  if (local.length === 11) return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
+  if (local.length === 10) return `(${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`;
+  return digits || '—';
 }
 
 function installmentCount(totalCents) {
@@ -245,11 +282,15 @@ function uiIcon(name, className = '') {
     check: '<path d="m5 12 4 4L19 6"/>',
     warning: '<path d="M12 8v5M12 17h.01"/><path d="M10.3 4.2 2.7 18a2 2 0 0 0 1.8 3h15a2 2 0 0 0 1.8-3L13.7 4.2a2 2 0 0 0-3.4 0Z"/>',
     briefing: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h10M7 13h6M7 17h4"/>',
+    news: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M4 7H2v11.5A2.5 2.5 0 0 0 4.5 21M8 8h8M8 12h8M8 16h5"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/>',
+    sparkles: '<path d="m12 3 1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2L12 3ZM5 14l.8 2.2L8 17l-2.2.8L5 20l-.8-2.2L2 17l2.2-.8L5 14ZM19 13l.7 2.3L22 16l-2.3.7L19 19l-.7-2.3L16 16l2.3-.7L19 13Z"/>',
     service: '<path d="M4 13v-2a8 8 0 0 1 16 0v2"/><path d="M4 13h3v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 1-2ZM20 13h-3v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-1-2ZM17 19c-1 2-3 2-5 2"/>',
     tasks: '<path d="M9 5h6M10 3h4a2 2 0 0 1 2 2v1H8V5a2 2 0 0 1 2-2Z"/><rect x="5" y="5" width="14" height="16" rx="2.5"/><path d="m8.5 11 1.5 1.5 2.5-3M8.5 17h7"/>',
     conduct: '<circle cx="9" cy="8" r="3.5"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20M16 5.5a3.5 3.5 0 0 1 0 6.5M18 14a4.5 4.5 0 0 1 3 4.2V20"/>',
     clean: '<path d="m12 3 1.1 3.2L16 8l-2.9 1.8L12 13l-1.1-3.2L8 8l2.9-1.8L12 3ZM5.5 13l.8 2.2 2.2.8-2.2.8L5.5 19l-.8-2.2-2.2-.8 2.2-.8.8-2.2ZM18.5 13l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/>',
     chevron: '<path d="m9 18 6-6-6-6"/>',
+    sim: '<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 3v5h6V3M9 13h6M9 17h2M15 17h.01"/>',
   };
   return `<svg class="ui-icon ${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${icons[name] || icons.box}</svg>`;
 }
@@ -435,16 +476,20 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['stock', 'stock', 'Estoque'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
-    return [['requests', 'orders', 'Pedidos para separar']];
+    return [
+      ['dashboard', 'home', 'Visão do estoque'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'],
+      ['requests', 'orders', 'Pedidos para separar'], ['alignment', 'briefing', 'Alinhamento rápido'],
+    ];
   }
   return [
-    ['dashboard', 'home', 'Visão geral'], ['stock', 'stock', 'Loja / estoque'],
-    ['new-request', 'plus', 'Novo pedido'], ['requests', 'orders', 'Meus pedidos'],
+    ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Loja / estoque'],
+    ['new-request', 'plus', 'Novo pedido'], ['chips', 'sim', 'Meus chips'], ['requests', 'orders', 'Meus pedidos'],
+    ['alignment', 'briefing', 'Alinhamento rápido'],
   ];
 }
 
@@ -604,6 +649,19 @@ function sellerInventoryOverview(groups = [], totalAvailable = 0) {
   </section>`;
 }
 
+function stockerInventoryOverview(groups = [], totalAvailable = 0) {
+  const groupsByCluster = new Map(groups.map((group) => [group.cluster, group]));
+  const orderedGroups = clusterOrder.map((cluster) => groupsByCluster.get(cluster)).filter(Boolean);
+  if (!orderedGroups.length) return '';
+  return `<section class="manager-inventory stocker-inventory">
+    <div class="manager-inventory__head">
+      <div><p class="page-eyebrow">Mapa operacional</p><h3>Disponibilidade por grupo</h3><p>Confira saldos, reservas e materiais críticos antes de separar qualquer pedido.</p></div>
+      <button class="btn btn--secondary" data-action="navigate" data-view="stock">Abrir conferência completa</button>
+    </div>
+    <div class="inventory-group-grid">${orderedGroups.map((group) => managerInventoryGroupCard(group, totalAvailable)).join('')}</div>
+  </section>`;
+}
+
 function serialRelease(serialNumbers = [], requestStatus = '') {
   if (!serialNumbers.length) return '';
   const label = requestStatus === 'cancelled' ? 'Números de série preservados no histórico' : 'Números de série liberados';
@@ -620,7 +678,7 @@ function automaticSerialRelease(item, requestStatus = '') {
 
 function requestCard(request, compact = false) {
   const totalUnits = request.items.reduce((sum, item) => sum + Number(item.quantity), 0);
-  const showPrices = state.user.role !== 'stocker';
+  const showPrices = true;
   const items = request.items.map((item) => {
     const price = showPrices && item.unitPriceCents != null
       ? item.priceType === 'no_charge'
@@ -636,7 +694,10 @@ function requestCard(request, compact = false) {
   const managerAction = state.user.role === 'manager' && ['pending', 'approved'].includes(request.status) && !compact
     ? `<div class="request-card__actions"><button class="btn btn--danger btn--small" data-action="cancel-request" data-id="${escapeHtml(request.id)}">Cancelar e devolver ao estoque</button></div>`
     : '';
-  return `<article class="request-card ${compact ? 'request-card--compact' : ''} ${state.user.role === 'stocker' ? 'request-card--stocker' : ''}"><div class="request-card__head"><div><span class="request-code">Pedido #${escapeHtml(requestCode(request.id))}</span><strong>${escapeHtml(request.seller.name)}</strong><span class="request-meta">${formatDate(request.createdAt)} · ${totalUnits} ${totalUnits === 1 ? 'unidade' : 'unidades'}</span></div>${statusBadge(request.status)}</div><ul class="request-items">${items}</ul>${pricing}${request.notes ? `<p class="request-note"><strong>Observação:</strong> ${escapeHtml(request.notes)}</p>` : ''}${request.decisionNote ? `<p class="request-note"><strong>Processamento:</strong> ${escapeHtml(request.decisionNote)}</p>` : ''}${sellerAction}${managerAction}</article>`;
+  const stockerAction = state.user.role === 'stocker' && ['pending', 'approved'].includes(request.status) && !compact
+    ? `<div class="request-card__actions"><button class="btn btn--danger btn--small" data-action="cancel-request" data-id="${escapeHtml(request.id)}">Cancelar e devolver ao estoque</button></div>`
+    : '';
+  return `<article class="request-card ${compact ? 'request-card--compact' : ''} ${state.user.role === 'stocker' ? 'request-card--stocker' : ''}"><div class="request-card__head"><div><span class="request-code">Pedido #${escapeHtml(requestCode(request.id))}</span><strong>${escapeHtml(request.seller.name)}</strong><span class="request-meta">${formatDate(request.createdAt)} · ${totalUnits} ${totalUnits === 1 ? 'unidade' : 'unidades'}</span></div>${statusBadge(request.status)}</div><ul class="request-items">${items}</ul>${pricing}${request.notes ? `<p class="request-note"><strong>Observação:</strong> ${escapeHtml(request.notes)}</p>` : ''}${request.decisionNote ? `<p class="request-note"><strong>Processamento:</strong> ${escapeHtml(request.decisionNote)}</p>` : ''}${sellerAction}${managerAction}${stockerAction}</article>`;
 }
 
 function managementClusterChart(groups = []) {
@@ -676,7 +737,11 @@ function recentAccessList(accesses = []) {
 async function renderDashboard() {
   const content = document.querySelector('#view-content');
   const data = await api('/api/dashboard');
-  state.pendingCount = state.user.role === 'manager' ? data.pendingRequests : data.requests.pending;
+  state.pendingCount = state.user.role === 'manager'
+    ? data.pendingRequests
+    : state.user.role === 'stocker'
+      ? data.readyRequests
+      : data.requests.pending;
   renderShellBadge();
   if (state.user.role === 'manager') {
     const management = data.management || {};
@@ -696,6 +761,14 @@ async function renderDashboard() {
       </div>
       ${managerInventoryOverview(data.inventoryGroups, data.stock.available)}
       <div class="dashboard-grid"><section class="card"><div class="card__head"><div><h3>Acessos recentes</h3><span>Login da equipe</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="audit">Histórico completo</button></div><div class="card__body">${recentAccessList(management.recentAccesses)}</div></section><section class="card"><div class="card__head"><h3>Pedidos recentes</h3><button class="btn btn--ghost btn--small" data-action="navigate" data-view="requests">Ver todos</button></div><div class="card-list">${data.recentRequests.length ? data.recentRequests.map((item) => requestCard(item, true)).join('') : emptyState('Nenhum pedido', 'As solicitações aparecerão aqui.')}</div></section></div>`;
+  } else if (state.user.role === 'stocker') {
+    const outOfStock = (data.inventoryGroups || []).reduce((sum, group) => sum + Number(group.outOfStockCount || 0), 0);
+    content.innerHTML = `
+      <div class="page-heading"><div><p class="page-eyebrow">Central operacional</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>Confira disponibilidade, preços e pedidos antes de movimentar qualquer item.</p></div><div class="page-actions"><button class="btn" data-action="navigate" data-view="stock">Conferir estoque</button><button class="btn btn--secondary" data-action="navigate" data-view="requests">Ver pedidos</button></div></div>
+      ${teamBreakSchedule('dashboard')}
+      <div class="metrics-grid">${metric('Disponíveis agora', data.stock.available, `${data.modelsAvailable} materiais com saldo`, 'metric-card--success')}${metric('Pedidos para separar', data.readyRequests || 0, 'Podem ser cancelados com devolução automática', 'metric-card--info')}${metric('Unidades reservadas', data.stock.reserved || 0, 'Saldo comprometido em pedidos')}${metric('Materiais sem saldo', outOfStock, 'Confira antes de atender', 'metric-card--warning')}</div>
+      ${stockerInventoryOverview(data.inventoryGroups, data.stock.available)}
+      <section class="card"><div class="card__head"><div><h3>Próximos pedidos para separar</h3><span>IMEIs, códigos materiais e valores registrados</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="requests">Ver todos</button></div><div class="card-list">${data.recentRequests.length ? data.recentRequests.map((item) => requestCard(item, true)).join('') : emptyState('Nenhum pedido para separar', 'Os próximos pedidos liberados aparecerão aqui.')}</div></section>`;
   } else {
     content.innerHTML = `
       <div class="page-heading"><div><p class="page-eyebrow">Sua área</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>Escolha os produtos disponíveis e envie seu pedido.</p></div><button class="btn" data-action="navigate" data-view="new-request">+ Novo pedido</button></div>
@@ -707,8 +780,19 @@ async function renderDashboard() {
 }
 
 function renderShellBadge() {
-  const badge = document.querySelector('.nav-link[data-view="requests"] .nav-badge');
-  if (badge) badge.textContent = state.pendingCount;
+  const link = document.querySelector('.nav-link[data-view="requests"]');
+  if (!link) return;
+  let badge = link.querySelector('.nav-badge');
+  if (!state.pendingCount) {
+    badge?.remove();
+    return;
+  }
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.className = 'nav-badge';
+    link.append(badge);
+  }
+  badge.textContent = state.pendingCount;
 }
 
 function productVisual(product) {
@@ -1045,29 +1129,54 @@ function renderStockTable() {
   }
   const groups = clusterOrder.map((cluster) => ({ cluster, rows: rows.filter(({ product }) => product.cluster === cluster) })).filter((group) => group.rows.length);
   const body = groups.map((group) => {
-    const groupHeader = `<tr class="stock-cluster-row"><td colspan="9"><div><strong>${escapeHtml(clusterLabels[group.cluster])}</strong><span>${group.rows.length} ${group.rows.length === 1 ? 'material' : 'materiais'}</span></div></td></tr>`;
+    const groupHeader = `<tr class="stock-cluster-row"><td colspan="10"><div><strong>${escapeHtml(clusterLabels[group.cluster])}</strong><span>${group.rows.length} ${group.rows.length === 1 ? 'material' : 'materiais'}</span></div></td></tr>`;
     const groupRows = group.rows.map(({ product, variant }) => {
       const planPrices = product.pricing ? Object.values(product.pricing.prices || {}).map(Number) : [];
       const minimumPlanPrice = planPrices.length ? Math.min(...planPrices) : null;
-      const retailPrice = selectedProductPrice(product, variant);
-      const shownPrice = minimumPlanPrice ?? retailPrice;
-      const priceCaption = minimumPlanPrice != null ? 'a partir de · por plano' : productPriceKind(product, variant) === 'no_charge' ? 'sem cobrança' : 'preço fixo';
-      return `<tr><td data-label="Produto"><div class="cell-main">${escapeHtml(product.name)}</div><div class="cell-sub">${escapeHtml(product.brand || 'Sem marca')}</div></td><td data-label="Código material"><code class="material-pill mono">${escapeHtml(variant.materialCode)}</code></td><td data-label="Grupo">${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</td><td data-label="Preço">${shownPrice == null ? '<span class="price-unavailable">—</span>' : `<div class="stock-price"><strong>${productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(shownPrice)}</strong><span>${priceCaption}</span></div>`}</td><td data-label="Saldo físico"><strong>${variant.onHand}</strong></td><td data-label="Reservado">${variant.reserved}</td><td data-label="Disponível"><strong>${variant.available}</strong></td><td data-label="Em entrega"><strong class="${Number(variant.incoming || 0) ? 'incoming-value' : ''}">${Number(variant.incoming || 0)}</strong></td><td data-label="Controle">${variant.serialTracked ? `<span class="serial-tracked-badge">${uiIcon('check')} Serializado</span>` : `<button class="btn btn--secondary btn--small" data-action="adjust-quantity" data-variant-id="${variant.id}">Ajustar</button>`}</td></tr>`;
+      const exactPlanPrice = product.pricing && state.priceCategory ? selectedProductPrice(product, variant) : null;
+      const retailPrice = product.pricing ? null : selectedProductPrice(product, variant);
+      const shownPrice = exactPlanPrice ?? minimumPlanPrice ?? retailPrice;
+      const priceCaption = exactPlanPrice != null
+        ? state.priceCategory
+        : minimumPlanPrice != null
+          ? 'a partir de · escolha o plano acima'
+          : productPriceKind(product, variant) === 'no_charge'
+            ? 'sem cobrança'
+            : 'preço fixo';
+      const stockControl = variant.serialTracked
+        ? `<span class="serial-tracked-badge">${uiIcon('check')} Serializado</span>`
+        : state.user.role === 'manager'
+          ? `<button class="btn btn--secondary btn--small" data-action="adjust-quantity" data-variant-id="${variant.id}">Ajustar</button>`
+          : `<span class="balance-tracked-badge">${uiIcon('box')} Controle por saldo</span>`;
+      return `<tr><td data-label="Produto"><div class="cell-main">${escapeHtml(product.name)}</div><div class="cell-sub">${escapeHtml(product.brand || 'Sem marca')}</div></td><td data-label="Código material"><code class="material-pill mono">${escapeHtml(variant.materialCode)}</code></td><td data-label="Grupo">${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</td><td data-label="Preço">${shownPrice == null ? '<span class="price-unavailable">—</span>' : `<div class="stock-price"><strong>${productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(shownPrice)}</strong><span>${escapeHtml(priceCaption)}</span></div>`}</td><td data-label="Saldo físico"><strong>${variant.onHand}</strong></td><td data-label="Reservado">${variant.reserved}</td><td data-label="Com vendedores">${Number(variant.allocatedToSellers || 0)}</td><td data-label="Disponível"><strong class="${Number(variant.available) > 0 ? 'available-value' : 'unavailable-value'}">${variant.available}</strong></td><td data-label="Em entrega"><strong class="${Number(variant.incoming || 0) ? 'incoming-value' : ''}">${Number(variant.incoming || 0)}</strong></td><td data-label="Controle">${stockControl}</td></tr>`;
     }).join('');
     return groupHeader + groupRows;
   }).join('');
-  target.innerHTML = `<div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Produto</th><th>Código material</th><th>Grupo</th><th>Preço</th><th>Saldo físico</th><th>Reservado</th><th>Disponível</th><th>Em entrega</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`;
+  target.innerHTML = `<div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Produto</th><th>Código material</th><th>Grupo</th><th>Preço</th><th>Saldo físico</th><th>Reservado</th><th>Com vendedores</th><th>Disponível</th><th>Em entrega</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
 async function renderStock() {
   const content = document.querySelector('#view-content');
   if (state.user.role === 'seller') return renderSellerStore('Produtos disponíveis', 'Consulte o saldo e adicione itens ao seu próximo pedido.');
   await loadCatalog();
-  const total = state.catalog.reduce((sum, product) => sum + product.onHand, 0);
+  const totals = state.catalog.reduce((summary, product) => ({
+    onHand: summary.onHand + Number(product.onHand || 0),
+    reserved: summary.reserved + Number(product.reserved || 0),
+    allocated: summary.allocated + Number(product.allocatedToSellers || 0),
+    available: summary.available + Number(product.available || 0),
+    incoming: summary.incoming + Number(product.incoming || 0),
+  }), { onHand: 0, reserved: 0, allocated: 0, available: 0, incoming: 0 });
+  const unavailableMaterials = state.catalog.filter((product) => Number(product.available || 0) === 0).length;
   const hasQuantityOnly = state.catalog.some((product) => product.variants.some((variant) => !variant.serialTracked));
-  const movementButton = hasQuantityOnly ? '<button class="btn" data-action="open-quantity">+ Nova movimentação</button>' : '';
+  const movementButton = state.user.role === 'manager' && hasQuantityOnly ? '<button class="btn" data-action="open-quantity">+ Nova movimentação</button>' : '';
   const clusters = [['', 'Todos'], ...clusterOrder.map((value) => [value, clusterLabels[value]])];
-  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Inventário serializado</p><h2>Estoque por código material</h2><p>${state.catalog.length} materiais cadastrados · ${total} unidades com número de série.</p></div>${movementButton}</div><section class="card stock-section"><div class="card__head"><h3>Produtos</h3></div><div class="stock-toolbar"><div class="search-box"><input class="input" data-action="stock-search" value="${escapeHtml(state.stockSearch)}" placeholder="Buscar nome ou código material..."></div><div class="category-chips">${clusters.map(([value, label]) => `<button class="chip ${state.stockCluster === value ? 'is-active' : ''}" data-action="filter-stock-category" data-category="${value}">${label}</button>`).join('')}</div></div><div class="card__body--flush" data-stock-table></div></section>`;
+  const heading = state.user.role === 'stocker'
+    ? ['Conferência operacional', 'Estoque completo', 'Consulte preços, códigos materiais e disponibilidade antes de separar os pedidos.']
+    : ['Inventário serializado', 'Estoque por código material', `${state.catalog.length} materiais cadastrados e rastreados pelo sistema.`];
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">${heading[0]}</p><h2>${heading[1]}</h2><p>${heading[2]}</p></div>${movementButton}</div>
+    <div class="metrics-grid stock-metrics">${metric('Saldo físico', totals.onHand, `${state.catalog.length} materiais cadastrados`, 'metric-card--info')}${metric('Disponível', totals.available, 'Pronto para pedidos', 'metric-card--success')}${metric('Reservado', totals.reserved, `${totals.allocated} chip(s) com vendedores`)}${metric('Sem disponibilidade', unavailableMaterials, `${totals.incoming} unidade(s) em entrega`, 'metric-card--warning')}</div>
+    ${pricingSelector()}
+    <section class="card stock-section"><div class="card__head"><div><h3>Produtos</h3><span>Preço, saldo físico, reservado, disponível e em entrega</span></div></div><div class="stock-toolbar"><div class="search-box"><input class="input" data-action="stock-search" value="${escapeHtml(state.stockSearch)}" placeholder="Buscar nome ou código material..."></div><div class="category-chips">${clusters.map(([value, label]) => `<button class="chip ${state.stockCluster === value ? 'is-active' : ''}" data-action="filter-stock-category" data-category="${value}">${label}</button>`).join('')}</div></div><div class="card__body--flush" data-stock-table></div></section>`;
   renderStockTable();
 }
 
@@ -1103,15 +1212,212 @@ async function renderRequests() {
   const data = await api(`/api/requests${query}`);
   state.requests = data.requests;
   const filters = state.user.role === 'stocker'
-    ? [['approved', 'Prontos para separar'], ['', 'Todos']]
+    ? [['approved', 'Prontos para separar'], ['', 'Todos'], ['cancelled', 'Cancelados']]
     : [['', 'Todos'], ['approved', 'Liberados'], ['rejected', 'Recusados'], ['cancelled', 'Cancelados']];
   const heading = state.user.role === 'manager'
     ? ['Monitoramento', 'Pedidos de retirada', 'Acompanhe produtos, vendedor, horário e números de série liberados automaticamente.']
     : state.user.role === 'stocker'
-      ? ['Separação', 'Pedidos para separar', 'Veja somente o que precisa ser separado, com os códigos e IMEIs já definidos.']
+      ? ['Separação e conferência', 'Pedidos para separar', 'Confira códigos, IMEIs e valores. Se houver divergência, cancele e devolva os itens ao estoque.']
       : ['Seus pedidos', 'Meus pedidos', 'Os pedidos são liberados automaticamente e o IMEI aparece logo após o envio.'];
   const stockerSchedule = state.user.role === 'stocker' ? teamBreakSchedule('dashboard') : '';
   content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">${heading[0]}</p><h2>${heading[1]}</h2><p>${heading[2]}</p></div>${state.user.role === 'seller' ? '<button class="btn" data-action="navigate" data-view="new-request">+ Novo pedido</button>' : ''}</div>${stockerSchedule}<div class="filter-tabs">${filters.map(([value, label]) => `<button class="chip ${state.requestFilter === value ? 'is-active' : ''}" data-action="filter-requests" data-status="${value}">${label}</button>`).join('')}</div><div class="requests-list ${state.user.role === 'stocker' ? 'requests-list--stocker' : ''}">${state.requests.length ? state.requests.map((item) => requestCard(item)).join('') : emptyState('Nenhum pedido encontrado', 'Não há solicitações com este status.')}</div>`;
+}
+
+function chipStatusBadge(chip) {
+  if (!chip.active) return '<span class="chip-state chip-state--removed">Retirado</span>';
+  if (chip.status === 'sold') return '<span class="chip-state chip-state--sold">Vendido</span>';
+  return '<span class="chip-state chip-state--available">Disponível</span>';
+}
+
+function filteredChips() {
+  const query = state.chipSearch.trim().toLocaleUpperCase('pt-BR');
+  return state.chips.filter((chip) => {
+    const statusMatches = state.chipStatus === 'all'
+      || (state.chipStatus === 'removed' ? !chip.active : chip.active && chip.status === state.chipStatus);
+    const sellerMatches = !state.chipSellerId || chip.sellerId === state.chipSellerId;
+    const haystack = [chip.materialCode, chip.iccid, chip.sellerName, chip.sellerEmail, chip.registeredPhone]
+      .join(' ').toLocaleUpperCase('pt-BR');
+    return statusMatches && sellerMatches && (!query || haystack.includes(query));
+  });
+}
+
+function chipActionButtons(chip) {
+  const copy = `<button class="btn btn--ghost btn--small" data-action="copy-chip-iccid" data-id="${escapeHtml(chip.id)}">${uiIcon('copy')} Copiar ICCID</button>`;
+  if (state.user.role === 'seller') {
+    return chip.active && chip.status === 'available'
+      ? `${copy}<button class="btn btn--small" data-action="sell-chip" data-id="${escapeHtml(chip.id)}">Registrar venda</button>`
+      : copy;
+  }
+  if (!chip.active) {
+    return `${copy}<button class="btn btn--secondary btn--small" data-action="restore-chip" data-id="${escapeHtml(chip.id)}">Restaurar</button>`;
+  }
+  if (chip.status === 'sold') {
+    return `${copy}<button class="btn btn--secondary btn--small" data-action="reopen-chip" data-id="${escapeHtml(chip.id)}">Corrigir venda</button><button class="btn btn--danger btn--small" data-action="remove-chip" data-id="${escapeHtml(chip.id)}">Retirar</button>`;
+  }
+  return `${copy}<button class="btn btn--secondary btn--small" data-action="edit-chip" data-id="${escapeHtml(chip.id)}">Editar / transferir</button><button class="btn btn--small" data-action="sell-chip" data-id="${escapeHtml(chip.id)}">Registrar venda</button><button class="btn btn--danger btn--small" data-action="remove-chip" data-id="${escapeHtml(chip.id)}">Retirar</button>`;
+}
+
+function chipRow(chip) {
+  const sale = chip.status === 'sold'
+    ? `<div class="chip-sale"><strong>${escapeHtml(formatPhoneNumber(chip.registeredPhone))}</strong><span>Venda em ${escapeHtml(formatDateOnly(chip.soldOn))}</span></div>`
+    : '<span class="chip-table__muted">Aguardando venda</span>';
+  return `<tr class="${chip.active ? '' : 'is-removed'}">
+    ${state.user.role === 'manager' ? `<td><div class="chip-seller-cell"><span>${escapeHtml(initials(chip.sellerName))}</span><div><strong>${escapeHtml(chip.sellerName)}</strong><small>${escapeHtml(chip.sellerEmail)}</small></div></div></td>` : ''}
+    <td><code class="chip-material mono">${escapeHtml(chip.materialCode)}</code></td>
+    <td><div class="chip-iccid"><code class="mono">${escapeHtml(chip.iccid)}</code><small>${chip.iccid.length} dígitos · ${chip.stockLinked ? 'conciliado com o estoque' : 'cadastro manual'}</small></div></td>
+    <td>${chipStatusBadge(chip)}</td>
+    <td>${sale}</td>
+    <td><div class="chip-actions">${chipActionButtons(chip)}</div></td>
+  </tr>`;
+}
+
+function renderChipResults() {
+  document.querySelectorAll('[data-action="filter-chips"]').forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.status === state.chipStatus);
+  });
+  const sellerSelect = document.querySelector('[data-action="filter-chip-seller"]');
+  if (sellerSelect) sellerSelect.value = String(state.chipSellerId || '');
+  const target = document.querySelector('[data-chip-results]');
+  if (!target) return;
+  const chips = filteredChips();
+  const columns = state.user.role === 'manager' ? 6 : 5;
+  target.innerHTML = `<div class="chip-table-scroll"><table class="chip-table"><thead><tr>${state.user.role === 'manager' ? '<th>Vendedor</th>' : ''}<th>Material</th><th>ICCID</th><th>Situação</th><th>Cadastro da linha</th><th>Ações</th></tr></thead><tbody>${chips.length ? chips.map(chipRow).join('') : `<tr><td colspan="${columns}">${emptyState('Nenhum chip encontrado', 'Ajuste os filtros ou cadastre um novo chip.')}</td></tr>`}</tbody></table></div><p class="chip-result-count">${chips.length} ${chips.length === 1 ? 'chip encontrado' : 'chips encontrados'}</p>`;
+}
+
+function chipSellerRoster() {
+  if (state.user.role !== 'manager') return '';
+  if (!state.chipSellers.length) return `<section class="chip-roster chip-roster--empty"><div><p class="page-eyebrow">Distribuição</p><h3>Nenhum vendedor ativo</h3><p>Crie um usuário vendedor antes de distribuir chips.</p></div><button class="btn btn--secondary" data-action="navigate" data-view="users">Abrir usuários</button></section>`;
+  return `<section class="chip-roster"><div class="chip-roster__head"><div><p class="page-eyebrow">Carteiras da equipe</p><h3>Até ${Number(state.chipLimit)} chips disponíveis por vendedor</h3><p>Chips vendidos permanecem no histórico e liberam espaço para reposição.</p></div><button class="btn btn--secondary" data-action="clear-chip-seller">Ver todos</button></div><div class="chip-roster__grid">${state.chipSellers.map((seller) => {
+    const percentage = Math.min(100, Math.round((seller.availableCount / state.chipLimit) * 100));
+    return `<button class="chip-owner-card ${state.chipSellerId === seller.id ? 'is-selected' : ''}" data-action="select-chip-seller" data-seller-id="${seller.id}"><span class="chip-owner-card__avatar">${escapeHtml(initials(seller.name))}</span><div><strong>${escapeHtml(seller.name)}</strong><small>${seller.availableCount} disponíveis · ${seller.soldCount} vendidos</small><span class="chip-owner-card__bar"><i style="width:${percentage}%"></i></span></div><b>${seller.availableCount}/${state.chipLimit}</b></button>`;
+  }).join('')}</div></section>`;
+}
+
+async function renderChips() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/chips');
+  state.chips = data.chips || [];
+  state.chipSellers = data.sellers || [];
+  state.chipLimit = Number(data.limit || 10);
+  const available = Number(data.summary?.available || 0);
+  const sold = Number(data.summary?.sold || 0);
+  const removed = Number(data.summary?.removed || 0);
+  const sellerFree = Math.max(0, state.chipLimit - available);
+  const manager = state.user.role === 'manager';
+  const intro = manager
+    ? ['Gestão de SIM cards', 'Controle todos os chips da equipe.', 'Cadastre pelo leitor de código de barras, distribua, transfira e preserve cada venda no histórico.']
+    : ['Sua carteira', 'Seus chips em um só lugar.', 'Confira material e ICCID. Quando vender, registre a data e o número ativado.'];
+  const addButton = manager && state.chipSellers.length
+    ? `<button class="btn" data-action="open-chip">${uiIcon('sim')} Cadastrar chip</button>`
+    : '';
+  const thirdMetric = manager
+    ? `<article><span>Retirados</span><strong>${removed}</strong><small>preservados no histórico</small></article>`
+    : `<article><span>Vagas livres</span><strong>${sellerFree}</strong><small>limite de ${state.chipLimit}</small></article>`;
+  const sellerOptions = manager
+    ? `<div class="field chip-filter-owner"><label for="chip-seller-filter">Vendedor</label><select class="select" id="chip-seller-filter" data-action="filter-chip-seller"><option value="">Todos os vendedores</option>${state.chipSellers.map((seller) => `<option value="${seller.id}" ${state.chipSellerId === seller.id ? 'selected' : ''}>${escapeHtml(seller.name)} · ${seller.availableCount}/${state.chipLimit}</option>`).join('')}</select></div>`
+    : '';
+  const filters = manager
+    ? [['all', 'Todos'], ['available', 'Disponíveis'], ['sold', 'Vendidos'], ['removed', 'Retirados']]
+    : [['available', 'Disponíveis'], ['sold', 'Vendidos'], ['all', 'Todos']];
+  content.innerHTML = `<section class="chips-hero"><div><p class="page-eyebrow">${intro[0]}</p><h2>${intro[1]}</h2><p>${intro[2]}</p></div>${addButton}</section>
+    <section class="chip-metrics"><article><span>Disponíveis</span><strong>${available}</strong><small>${manager ? 'nas carteiras ativas' : `de ${state.chipLimit} sob sua responsabilidade`}</small></article><article><span>Vendidos</span><strong>${sold}</strong><small>com data e linha registradas</small></article>${thirdMetric}</section>
+    ${chipSellerRoster()}
+    <section class="chip-control"><div class="chip-control__head"><div><p class="page-eyebrow">Conferência</p><h3>${manager ? 'Todos os chips' : 'Material, ICCID e vendas'}</h3></div><div class="chip-control__scan-note">${uiIcon('sim')}<span><strong>Leitor pronto</strong>O código também pode ser digitado manualmente.</span></div></div>
+      <div class="chip-toolbar"><div class="field chip-search"><label for="chip-search">Buscar chip</label><input class="input" id="chip-search" data-action="chip-search" value="${escapeHtml(state.chipSearch)}" placeholder="Material, ICCID, vendedor ou linha"></div>${sellerOptions}<div class="chip-filter-tabs" aria-label="Filtrar situação">${filters.map(([value, label]) => `<button class="chip ${state.chipStatus === value ? 'is-active' : ''}" data-action="filter-chips" data-status="${value}">${label}</button>`).join('')}</div></div>
+      <div data-chip-results></div>
+    </section>`;
+  renderChipResults();
+}
+
+function newsCategory(item) {
+  return newsCategoryInfo[item?.category] || newsCategoryInfo.notice;
+}
+
+function safeNewsImagePath(value = '') {
+  const path = String(value || '');
+  return /^\/news\/[a-z0-9][a-z0-9._-]*\.(?:jpe?g|png|webp)$/i.test(path) ? path : '';
+}
+
+function newsBody(value = '') {
+  const lines = String(value || '').replace(/\r/g, '').split('\n');
+  let html = '';
+  let listOpen = false;
+  const closeList = () => {
+    if (!listOpen) return;
+    html += '</ul>';
+    listOpen = false;
+  };
+  for (const sourceLine of lines) {
+    const line = sourceLine.trim();
+    if (!line) {
+      closeList();
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      closeList();
+      html += `<h4>${escapeHtml(line.slice(3))}</h4>`;
+      continue;
+    }
+    if (line.startsWith('• ')) {
+      if (!listOpen) {
+        html += '<ul>';
+        listOpen = true;
+      }
+      const parts = line.slice(2).split(' — ');
+      const label = parts.shift() || '';
+      const detail = parts.join(' — ');
+      html += `<li><span>${escapeHtml(label)}</span>${detail ? `<strong>${escapeHtml(detail)}</strong>` : ''}</li>`;
+      continue;
+    }
+    if (line.startsWith('! ')) {
+      closeList();
+      html += `<aside>${escapeHtml(line.slice(2))}</aside>`;
+      continue;
+    }
+    closeList();
+    html += `<p>${escapeHtml(line)}</p>`;
+  }
+  closeList();
+  return html;
+}
+
+function newsCard(item) {
+  const category = newsCategory(item);
+  const imagePath = safeNewsImagePath(item.imagePath);
+  const managerControls = state.user.role === 'manager'
+    ? `<div class="news-card__actions"><button class="btn btn--secondary btn--small" data-action="edit-news" data-id="${escapeHtml(item.id)}">Editar</button><button class="btn ${item.active ? 'btn--danger' : ''} btn--small" data-action="toggle-news" data-id="${escapeHtml(item.id)}" data-active="${item.active ? 'false' : 'true'}">${item.active ? 'Ocultar da aba' : 'Publicar novamente'}</button></div>`
+    : '';
+  return `<article class="news-card news-card--${escapeHtml(item.category)} ${imagePath ? 'news-card--media' : ''} ${item.active ? '' : 'is-hidden'}">
+    <div class="news-card__accent"><span>${uiIcon(category.icon)}</span><small>${escapeHtml(category.label)}</small></div>
+    ${imagePath ? `<button type="button" class="news-card__media" data-action="view-news-art" data-id="${escapeHtml(item.id)}" aria-label="Ampliar arte: ${escapeHtml(item.title)}"><img src="${escapeHtml(imagePath)}" alt="${escapeHtml(item.imageAlt || item.title)}" loading="lazy" decoding="async"><span>${uiIcon('search')} Ver arte completa</span></button>` : ''}
+    <div class="news-card__content">
+      <div class="news-card__heading"><div><span class="news-category news-category--${escapeHtml(item.category)}">${escapeHtml(category.label)}</span>${item.validityLabel ? `<span class="news-validity">${escapeHtml(item.validityLabel)}</span>` : ''}${item.active ? '' : '<span class="news-hidden-label">Oculta</span>'}</div><time>${formatDate(item.updatedAt)}</time></div>
+      <h3>${escapeHtml(item.title)}</h3>
+      <div class="news-card__body">${newsBody(item.body)}</div>
+      <div class="news-card__meta"><span>Publicado por ${escapeHtml(item.authorName)}</span>${item.updatedAt !== item.createdAt ? '<span>Conteúdo atualizado</span>' : ''}</div>
+      ${managerControls}
+    </div>
+  </article>`;
+}
+
+async function renderNews() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/news');
+  state.news = data.news || [];
+  const visibleCount = state.news.filter((item) => item.active).length;
+  const hiddenCount = state.news.length - visibleCount;
+  const managerSummary = state.user.role === 'manager'
+    ? `<div class="news-manager-summary"><span><strong>${visibleCount}</strong> publicadas</span><span><strong>${hiddenCount}</strong> ocultas</span><p>Itens ocultos continuam disponíveis somente aqui para edição ou republicação.</p></div>`
+    : '';
+  const emptyAction = state.user.role === 'manager'
+    ? '<button class="btn" data-action="open-news">Publicar a primeira notícia</button>'
+    : '';
+  content.innerHTML = `<section class="news-hero">
+      <div><span>Informações da loja</span><h2>Notícias, promoções e comunicados.</h2><p>Acompanhe aqui o que está acontecendo e as orientações que precisam chegar a toda a equipe.</p></div>
+      ${state.user.role === 'manager' ? '<button class="btn" data-action="open-news">+ Publicar notícia</button>' : `<div class="news-hero__mark">${uiIcon('news')}<span>${visibleCount} ${visibleCount === 1 ? 'publicação' : 'publicações'}</span></div>`}
+    </section>
+    ${managerSummary}
+    <section class="news-feed" aria-label="Publicações da loja">${state.news.length ? state.news.map(newsCard).join('') : emptyState('Nenhuma notícia publicada', state.user.role === 'manager' ? 'Crie uma promoção, comunicado ou novidade para a equipe.' : 'As próximas promoções e informações da loja aparecerão aqui.', emptyAction)}</section>`;
 }
 
 async function renderUsers() {
@@ -1271,7 +1577,7 @@ function alignmentDetail() {
 function renderAlignment() {
   const content = document.querySelector('#view-content');
   if (state.user.role !== 'manager') {
-    content.innerHTML = emptyState('Acesso restrito', 'Esta área está disponível somente para gerentes.');
+    renderSimpleAlignment();
     return;
   }
   if (!alignmentTopics.some((topic) => topic.id === state.alignmentTopic)) state.alignmentTopic = alignmentTopics[0].id;
@@ -1288,6 +1594,27 @@ function renderAlignment() {
     <section class="alignment-footer"><span>${uiIcon('check')}</span><div><strong>O combinado precisa aparecer na rotina.</strong><p>Use o índice como guia da conversa e transforme cada orientação em um padrão acompanhado pela gestão.</p></div></section>`;
 }
 
+function renderSimpleAlignment() {
+  const content = document.querySelector('#view-content');
+  const roleGuidance = state.user.role === 'stocker'
+    ? '<strong>Estoquista:</strong> confira produto, código, IMEI, preço e quantidade. Se houver divergência, cancele pelo sistema para devolver tudo ao estoque.'
+    : '<strong>Vendedor:</strong> confirme preço, plano e disponibilidade no sistema antes de concluir o pedido com o cliente.';
+  const topics = [
+    ['service', 'Cliente acompanhado', 'Acolha a solicitação, explique o próximo passo e continue responsável até resolver ou encaminhar corretamente.'],
+    ['orders', 'Pedido conferido', 'Valide modelo, código material, quantidade, preço e status. Não retire nem entregue item fora do pedido registrado.'],
+    ['stock', 'Estoque organizado', 'Devolva cada produto ao local identificado e comunique imediatamente qualquer falta, dano ou divergência.'],
+    ['users', 'Equipe alinhada', 'Respeite horários, intervalos e colegas. Dúvidas operacionais devem ser levadas ao gerente com clareza.'],
+  ];
+  content.innerHTML = `<section class="simple-alignment-hero">
+      <div><span>Alinhamento rápido · Agosto 2026</span><h2>Quatro combinados para o dia funcionar bem.</h2><p>Uma leitura direta, feita em cerca de 5 minutos, para vendedores e estoquistas.</p></div>
+      <div class="simple-alignment-hero__time">${uiIcon('history')}<strong>5 min</strong><span>leitura rápida</span></div>
+    </section>
+    <section class="simple-alignment-role">${uiIcon('check')}<p>${roleGuidance}</p></section>
+    <div class="simple-alignment-grid">${topics.map(([icon, title, text], index) => `<article class="simple-alignment-card"><div><span>${String(index + 1).padStart(2, '0')}</span>${uiIcon(icon)}</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></article>`).join('')}</div>
+    <section class="simple-alignment-check"><div><span>Antes de encerrar o turno</span><h3>Checklist de 30 segundos</h3></div><ul><li>Pedidos e cancelamentos estão registrados no sistema.</li><li>Produtos e espaços de trabalho ficaram organizados.</li><li>Divergências foram comunicadas ao gerente.</li><li>O próximo responsável recebeu as informações importantes.</li></ul></section>
+    <section class="alignment-footer"><span>${uiIcon('check')}</span><div><strong>Simples, conferido e registrado.</strong><p>Esse é o padrão comum para vendedores e estoquistas.</p></div></section>`;
+}
+
 const actionLabels = {
   'manager.initial_created': 'criou o primeiro acesso gerencial', 'auth.login': 'entrou no sistema',
   'user.created': 'criou um usuário', 'user.updated': 'atualizou um usuário', 'user.deleted': 'excluiu um usuário',
@@ -1297,6 +1624,12 @@ const actionLabels = {
   'request.auto_rejected': 'recusou automaticamente um pedido sem estoque',
   'request.approved': 'aprovou um pedido', 'request.rejected': 'recusou um pedido',
   'request.cancelled': 'cancelou um pedido',
+  'news.created': 'publicou uma notícia', 'news.updated': 'editou uma notícia',
+  'news.hidden': 'ocultou uma notícia', 'news.published': 'publicou novamente uma notícia',
+  'chip.created': 'cadastrou um chip', 'chip.updated': 'editou um chip',
+  'chip.transferred': 'transferiu um chip', 'chip.sold': 'registrou a venda de um chip',
+  'chip.sale_reopened': 'corrigiu a venda de um chip', 'chip.removed': 'retirou um chip da carteira',
+  'chip.restored': 'restaurou um chip',
 };
 
 function auditDetails(log) {
@@ -1312,6 +1645,11 @@ function auditDetails(log) {
   if (details.role) parts.push(`<span class="audit-detail-inline">Perfil: ${escapeHtml(roleLabel(details.role))}</span>`);
   if (details.selectedSerialCount !== undefined) parts.push(`<span class="audit-detail-inline">${Number(details.selectedSerialCount)} número(s) de série definido(s)</span>`);
   if (details.materialCode) parts.push(`<span class="audit-detail-inline">Material: ${escapeHtml(details.materialCode)}</span>`);
+  if (details.iccidLast4) parts.push(`<span class="audit-detail-inline">ICCID final: ${escapeHtml(details.iccidLast4)}</span>`);
+  if (details.registeredPhone) parts.push(`<span class="audit-detail-inline">Linha: ${escapeHtml(formatPhoneNumber(details.registeredPhone))}</span>`);
+  if (details.soldOn) parts.push(`<span class="audit-detail-inline">Venda: ${escapeHtml(formatDateOnly(details.soldOn))}</span>`);
+  if (details.title) parts.push(`<span class="audit-detail-inline">Notícia: ${escapeHtml(details.title)}</span>`);
+  if (details.category) parts.push(`<span class="audit-detail-inline">Tipo: ${escapeHtml(newsCategoryInfo[details.category]?.label || details.category)}</span>`);
   return parts.length ? `<div class="audit-details">${parts.join('')}</div>` : '';
 }
 
@@ -1324,14 +1662,16 @@ async function renderAudit() {
 
 async function navigate(view) {
   if (!viewTitles[view]) return;
-  if (state.user.role !== 'manager' && ['alignment', 'users', 'audit'].includes(view)) return;
-  if (state.user.role === 'stocker' && view !== 'requests') return;
+  if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
+  if (state.user.role === 'stocker' && ['new-request', 'chips'].includes(view)) return;
   state.view = view;
   updateShellNavigation();
   const content = document.querySelector('#view-content');
   content.innerHTML = '<div class="loading-block"><span class="loading-inline">Carregando</span></div>';
   try {
     if (view === 'dashboard') await renderDashboard();
+    if (view === 'news') await renderNews();
+    if (view === 'chips') await renderChips();
     if (view === 'stock') await renderStock();
     if (view === 'new-request') await renderNewRequest();
     if (view === 'requests') await renderRequests();
@@ -1344,6 +1684,7 @@ async function navigate(view) {
 }
 
 function showModal(content, { required = false, small = false, wide = false } = {}) {
+  stopChipCamera();
   modalRoot.innerHTML = `<div class="modal-backdrop" data-action="${required ? '' : 'backdrop-close'}"><section class="modal ${small ? 'modal--small' : ''} ${wide ? 'modal--wide' : ''}" role="dialog" aria-modal="true">${content}</section></div>`;
   modalRoot.dataset.required = required ? 'true' : 'false';
   document.body.classList.add('modal-open');
@@ -1352,6 +1693,7 @@ function showModal(content, { required = false, small = false, wide = false } = 
 
 function closeModal(force = false) {
   if (modalRoot.dataset.required === 'true' && !force) return;
+  stopChipCamera();
   modalRoot.innerHTML = '';
   modalRoot.dataset.required = '';
   document.body.classList.remove('modal-open');
@@ -1389,6 +1731,138 @@ function pickerModal(productId) {
     <div class="modal__body"><div class="form-error" data-form-error hidden></div>${priceSummary}<p><strong>${variant.available}</strong> unidades disponíveis.</p><div class="field"><label for="picker-quantity">Quantidade</label><input class="input" id="picker-quantity" name="quantity" type="number" value="1" min="1" max="${variant.available}" step="1" required></div></div>
     <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Adicionar ao pedido</button></div>
   </form>`, { small: true });
+}
+
+function newsArtModal(item) {
+  const imagePath = safeNewsImagePath(item?.imagePath);
+  if (!item || !imagePath) return;
+  showModal(`<section class="news-art-modal" aria-label="Arte completa da campanha">
+    <div class="modal__head"><div><span class="modal-eyebrow">Arte original</span><h2>${escapeHtml(item.title)}</h2>${item.validityLabel ? `<p>${escapeHtml(item.validityLabel)}</p>` : ''}</div>${modalCloseButton()}</div>
+    <div class="news-art-modal__image"><img src="${escapeHtml(imagePath)}" alt="${escapeHtml(item.imageAlt || item.title)}"></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Fechar</button></div>
+  </section>`, { wide: true });
+}
+
+function newsModal(item = null) {
+  showModal(`<form data-form="${item ? 'edit-news' : 'create-news'}" data-id="${escapeHtml(item?.id || '')}" novalidate>
+    <div class="modal__head"><div><h2>${item ? 'Editar notícia' : 'Publicar notícia'}</h2><p>${item ? 'As alterações aparecem imediatamente para a equipe se a notícia estiver publicada.' : 'Crie uma informação visível para vendedores e estoquistas.'}</p></div>${modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid">
+      <div class="field field--full"><label for="news-title">Título</label><input class="input" id="news-title" name="title" maxlength="120" minlength="3" required value="${escapeHtml(item?.title || '')}" placeholder="Ex.: Oferta especial deste fim de semana"></div>
+      <div class="field field--full"><label for="news-category">Tipo</label><select class="select" id="news-category" name="category" required><option value="promotion" ${item?.category === 'promotion' ? 'selected' : ''}>Promoção</option><option value="notice" ${!item || item.category === 'notice' ? 'selected' : ''}>Comunicado</option><option value="update" ${item?.category === 'update' ? 'selected' : ''}>Novidade</option></select></div>
+      <div class="field field--full"><label for="news-validity">Vigência <span class="request-meta">(opcional)</span></label><input class="input" id="news-validity" name="validityLabel" maxlength="80" value="${escapeHtml(item?.validityLabel || '')}" placeholder="Ex.: Até 10/08/2026"></div>
+      <div class="field field--full"><label for="news-body">Conteúdo</label><textarea class="textarea news-editor" id="news-body" name="body" maxlength="2500" minlength="3" required placeholder="Escreva as condições, datas ou orientações importantes...">${escapeHtml(item?.body || '')}</textarea><p class="field-hint">Até 2.500 caracteres. Você pode separar o texto em parágrafos.</p></div>
+      <div class="news-format-help field--full"><strong>Formatação rápida</strong><span><code>## Título da seção</code> cria uma seção</span><span><code>• Produto — R$ 99</code> cria uma linha com preço</span><span><code>! Observação</code> cria um aviso</span></div>
+    </div></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">${item ? 'Salvar alterações' : 'Publicar agora'}</button></div>
+  </form>`, { wide: true });
+}
+
+function stopChipCamera(message = '') {
+  if (chipCameraSession?.frame) window.cancelAnimationFrame(chipCameraSession.frame);
+  for (const track of chipCameraSession?.stream?.getTracks?.() || []) track.stop();
+  const video = document.querySelector('#chip-camera-preview');
+  if (video) {
+    video.pause();
+    video.srcObject = null;
+    video.hidden = true;
+  }
+  chipCameraSession = null;
+  const status = document.querySelector('[data-chip-camera-status]');
+  if (status && message) status.textContent = message;
+}
+
+async function startChipCamera() {
+  const status = document.querySelector('[data-chip-camera-status]');
+  const video = document.querySelector('#chip-camera-preview');
+  const input = document.querySelector('#chip-iccid');
+  if (!status || !video || !input) return;
+  stopChipCamera();
+  if (!('BarcodeDetector' in window) || !navigator.mediaDevices?.getUserMedia) {
+    status.textContent = 'A câmera não é compatível com este navegador. Use o leitor conectado ou digite o ICCID.';
+    return;
+  }
+  status.textContent = 'Abrindo a câmera… aponte para o código de barras do chip.';
+  try {
+    const supported = typeof BarcodeDetector.getSupportedFormats === 'function'
+      ? await BarcodeDetector.getSupportedFormats()
+      : [];
+    const requested = ['code_128', 'ean_13', 'ean_8', 'itf'].filter((format) => !supported.length || supported.includes(format));
+    const detector = requested.length ? new BarcodeDetector({ formats: requested }) : new BarcodeDetector();
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false,
+    });
+    video.srcObject = stream;
+    video.hidden = false;
+    await video.play();
+    const session = { stream, detector, frame: 0 };
+    chipCameraSession = session;
+    const scan = async () => {
+      if (chipCameraSession !== session) return;
+      try {
+        const codes = await detector.detect(video);
+        const rawValue = String(codes[0]?.rawValue || '');
+        const iccid = rawValue.replace(/\D/g, '');
+        if (iccid.length >= 18 && iccid.length <= 32) {
+          input.value = iccid;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          stopChipCamera(`ICCID lido com sucesso · final ${iccid.slice(-4)}`);
+          input.focus();
+          showToast('Código de barras lido. Confira os últimos dígitos.');
+          return;
+        }
+      } catch {
+        status.textContent = 'Não foi possível ler este quadro. Mantenha o código centralizado.';
+      }
+      session.frame = window.requestAnimationFrame(scan);
+    };
+    status.textContent = 'Câmera ativa. Centralize o código de barras e mantenha o chip firme.';
+    session.frame = window.requestAnimationFrame(scan);
+  } catch (error) {
+    stopChipCamera();
+    status.textContent = error?.name === 'NotAllowedError'
+      ? 'A câmera não foi autorizada. Use o leitor conectado ou digite o ICCID.'
+      : 'Não foi possível abrir a câmera. Use o leitor conectado ou digite o ICCID.';
+  }
+}
+
+function chipModal(chip = null) {
+  if (state.user.role !== 'manager' || !state.chipSellers.length) return;
+  const selectedSellerId = chip?.sellerId || state.chipSellerId || state.chipSellers[0].id;
+  const selectedSeller = state.chipSellers.find((seller) => seller.id === selectedSellerId);
+  showModal(`<form data-form="${chip ? 'edit-chip' : 'create-chip'}" data-id="${escapeHtml(chip?.id || '')}" novalidate>
+    <div class="modal__head"><div><span class="modal-eyebrow">Carteira de chips</span><h2>${chip ? 'Editar ou transferir chip' : 'Cadastrar pelo código de barras'}</h2><p>${chip ? 'Corrija o material, o ICCID ou mova o chip para outra carteira.' : 'Selecione o vendedor e leia o código pelo leitor conectado ou pela câmera.'}</p></div>${modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid">
+      <div class="field field--full"><label for="chip-seller">Vendedor responsável</label><select class="select" id="chip-seller" name="sellerId" required>${state.chipSellers.map((seller) => `<option value="${seller.id}" ${seller.id === selectedSellerId ? 'selected' : ''}>${escapeHtml(seller.name)} · ${seller.availableCount}/${state.chipLimit} disponíveis</option>`).join('')}</select><p class="field-hint">Cada vendedor pode manter até ${state.chipLimit} chips disponíveis. ${selectedSeller ? `${escapeHtml(selectedSeller.name)} está com ${selectedSeller.availableCount}.` : ''}</p></div>
+      <div class="field"><label for="chip-material">Código material</label><input class="input mono" id="chip-material" name="materialCode" maxlength="40" required value="${escapeHtml(chip?.materialCode || '')}" placeholder="Ex.: YBSC001A4000" autocapitalize="characters"></div>
+      <div class="field"><label for="chip-iccid">ICCID</label><input class="input mono" id="chip-iccid" name="iccid" inputmode="numeric" autocomplete="off" minlength="18" maxlength="40" required value="${escapeHtml(chip?.iccid || '')}" placeholder="Leia ou digite o código grande"></div>
+      <section class="chip-scanner field--full"><div class="chip-scanner__copy">${uiIcon('sim')}<div><strong>Leitura do código de barras</strong><p>Com leitor USB/Bluetooth, deixe o campo ICCID selecionado e faça a leitura. Também é possível usar a câmera.</p></div></div><div class="chip-scanner__actions"><button type="button" class="btn btn--secondary btn--small" data-action="start-chip-camera">Usar câmera</button><button type="button" class="btn btn--ghost btn--small" data-action="stop-chip-camera">Fechar câmera</button></div><video id="chip-camera-preview" class="chip-camera" playsinline muted hidden></video><p class="chip-camera-status" data-chip-camera-status aria-live="polite">Confira os últimos quatro dígitos antes de salvar.</p></section>
+    </div></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">${chip ? 'Salvar alterações' : 'Cadastrar chip'}</button></div>
+  </form>`, { wide: true });
+}
+
+function chipSaleModal(chip) {
+  if (!chip) return;
+  showModal(`<form data-form="sell-chip" data-id="${escapeHtml(chip.id)}" novalidate>
+    <div class="modal__head"><div><span class="modal-eyebrow">Baixa de chip</span><h2>Registrar venda</h2><p>Informe a data e a linha que recebeu este ICCID.</p></div>${modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="chip-sale-summary"><code class="mono">${escapeHtml(chip.materialCode)}</code><strong class="mono">${escapeHtml(chip.iccid)}</strong>${state.user.role === 'manager' ? `<span>Responsável: ${escapeHtml(chip.sellerName)}</span>` : ''}</div><div class="form-grid">
+      <div class="field"><label for="chip-sold-on">Data da venda</label><input class="input" id="chip-sold-on" name="soldOn" type="date" max="${localDateValue()}" value="${localDateValue()}" required></div>
+      <div class="field"><label for="chip-phone">Número cadastrado</label><input class="input" id="chip-phone" name="registeredPhone" type="tel" inputmode="tel" autocomplete="off" maxlength="20" required placeholder="(00) 00000-0000"></div>
+    </div><p class="chip-sale-warning">Confirme o número antes de salvar. O gerente poderá corrigir a venda se necessário.</p></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Confirmar venda</button></div>
+  </form>`, { small: true });
+}
+
+function chipConfirmationModal(chip, action) {
+  if (!chip) return;
+  const options = {
+    remove: ['Retirar chip da carteira?', 'O registro e o histórico de venda serão preservados. O vendedor deixará de ver este chip.', 'Retirar chip', 'btn btn--danger'],
+    reopen: ['Corrigir esta venda?', 'A data e o número cadastrado serão apagados, e o chip voltará a ocupar uma vaga disponível.', 'Voltar para disponível', 'btn'],
+    restore: ['Restaurar este chip?', 'O chip voltará para a carteira do vendedor com a situação anterior.', 'Restaurar chip', 'btn'],
+  };
+  const [title, description, submitLabel, buttonClass] = options[action];
+  showModal(`<form data-form="${action}-chip" data-id="${escapeHtml(chip.id)}"><div class="modal__head"><div><h2>${title}</h2><p>${description}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="chip-confirmation"><span>${escapeHtml(chip.sellerName)}</span><code class="mono">${escapeHtml(chip.materialCode)}</code><strong class="mono">${escapeHtml(chip.iccid)}</strong></div></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="${buttonClass}">${submitLabel}</button></div></form>`, { small: true });
 }
 
 function userModal(user = null) {
@@ -1462,17 +1936,24 @@ function requestReviewModal() {
 }
 
 function cancelModal(requestId) {
-  const isManager = state.user.role === 'manager';
-  const description = isManager
+  const restoresStock = ['manager', 'stocker'].includes(state.user.role);
+  const description = restoresStock
     ? 'As quantidades e os IMEIs deste pedido voltarão automaticamente ao estoque.'
     : 'Os itens voltarão a ficar disponíveis.';
-  showModal(`<form data-form="cancel-request" data-id="${escapeHtml(requestId)}"><div class="modal__head"><div><h2>Cancelar pedido?</h2><p>${description}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><p>O cancelamento ficará registrado no histórico e não poderá ser desfeito.</p></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Voltar</button><button type="submit" class="btn btn--danger">${isManager ? 'Cancelar e devolver itens' : 'Cancelar pedido'}</button></div></form>`, { small: true });
+  showModal(`<form data-form="cancel-request" data-id="${escapeHtml(requestId)}"><div class="modal__head"><div><h2>Cancelar pedido?</h2><p>${description}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><p>O cancelamento ficará registrado no histórico e não poderá ser desfeito.</p></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Voltar</button><button type="submit" class="btn btn--danger">${restoresStock ? 'Cancelar e devolver itens' : 'Cancelar pedido'}</button></div></form>`, { small: true });
 }
 
 async function enterApp(user) {
   state.user = user;
-  state.view = user.role === 'stocker' ? 'requests' : 'dashboard';
+  state.view = 'dashboard';
   state.catalog = [];
+  state.news = [];
+  state.chips = [];
+  state.chipSellers = [];
+  state.chipLimit = 10;
+  state.chipSearch = '';
+  state.chipStatus = user.role === 'manager' ? 'all' : 'available';
+  state.chipSellerId = 0;
   state.pricing = { categories: [], tableDate: '', source: '' };
   state.renovaCatalog = { tableDate: '', devices: [], boosts: [] };
   state.priceCategory = '';
@@ -1486,9 +1967,10 @@ async function enterApp(user) {
   state.stockCluster = '';
   state.requestFilter = user.role === 'stocker' ? 'approved' : '';
   state.alignmentTopic = '';
+  state.pendingCount = 0;
   renderShell();
   if (user.mustChangePassword) return passwordModal(true);
-  await navigate(user.role === 'stocker' ? 'requests' : 'dashboard');
+  await navigate('dashboard');
 }
 
 root.addEventListener('click', async (event) => {
@@ -1497,7 +1979,7 @@ root.addEventListener('click', async (event) => {
   const action = button.dataset.action;
   try {
     if (action === 'navigate') {
-      if (state.user.role === 'manager' && button.dataset.view === 'stock') {
+      if (['manager', 'stocker'].includes(state.user.role) && button.dataset.view === 'stock') {
         state.stockSearch = '';
         state.stockCluster = '';
       }
@@ -1537,7 +2019,6 @@ root.addEventListener('click', async (event) => {
       await navigate('new-request');
     }
     if (action === 'open-alignment') {
-      if (state.user.role !== 'manager') return;
       if (!alignmentTopics.some((topic) => topic.id === button.dataset.topic)) return;
       state.alignmentTopic = button.dataset.topic;
       renderAlignment();
@@ -1548,6 +2029,30 @@ root.addEventListener('click', async (event) => {
         detail?.focus({ preventScroll: true });
       });
     }
+    if (action === 'view-news-art') newsArtModal(state.news.find((item) => item.id === button.dataset.id));
+    if (action === 'open-news') newsModal();
+    if (action === 'edit-news') newsModal(state.news.find((item) => item.id === button.dataset.id));
+    if (action === 'toggle-news') {
+      await withBusy(button, async () => {
+        const active = button.dataset.active === 'true';
+        await api(`/api/news/${encodeURIComponent(button.dataset.id)}/visibility`, { method: 'PATCH', body: { active } });
+        showToast(active ? 'Notícia publicada novamente.' : 'Notícia ocultada da aba da equipe.');
+        await renderNews();
+      });
+    }
+    if (action === 'open-chip') chipModal();
+    if (action === 'edit-chip') chipModal(state.chips.find((chip) => chip.id === button.dataset.id));
+    if (action === 'sell-chip') chipSaleModal(state.chips.find((chip) => chip.id === button.dataset.id));
+    if (action === 'remove-chip') chipConfirmationModal(state.chips.find((chip) => chip.id === button.dataset.id), 'remove');
+    if (action === 'reopen-chip') chipConfirmationModal(state.chips.find((chip) => chip.id === button.dataset.id), 'reopen');
+    if (action === 'restore-chip') chipConfirmationModal(state.chips.find((chip) => chip.id === button.dataset.id), 'restore');
+    if (action === 'copy-chip-iccid') {
+      const chip = state.chips.find((item) => item.id === button.dataset.id);
+      if (chip) { await copyText(chip.iccid); showToast('ICCID copiado.'); }
+    }
+    if (action === 'filter-chips') { state.chipStatus = button.dataset.status; renderChipResults(); }
+    if (action === 'select-chip-seller') { state.chipSellerId = Number(button.dataset.sellerId); renderChips(); }
+    if (action === 'clear-chip-seller') { state.chipSellerId = 0; renderChips(); }
     if (action === 'open-user') userModal();
     if (action === 'edit-user') userModal(state.users.find((user) => user.id === Number(button.dataset.id)));
     if (action === 'delete-user') deleteUserModal(state.users.find((user) => user.id === Number(button.dataset.id)));
@@ -1559,11 +2064,13 @@ root.addEventListener('click', async (event) => {
   }
 });
 
-modalRoot.addEventListener('click', (event) => {
+modalRoot.addEventListener('click', async (event) => {
   const target = event.target.closest('[data-action]');
   if (!target) return;
   if (target.dataset.action === 'close-modal') closeModal();
   if (target.dataset.action === 'backdrop-close' && event.target === target) closeModal();
+  if (target.dataset.action === 'start-chip-camera') await withBusy(target, startChipCamera);
+  if (target.dataset.action === 'stop-chip-camera') stopChipCamera('Câmera fechada. Use o leitor conectado ou digite o ICCID.');
   if (target.dataset.action === 'remove-cart-item') {
     state.cart.delete(Number(target.dataset.variantId));
     if (state.cart.size) requestReviewModal();
@@ -1574,6 +2081,7 @@ modalRoot.addEventListener('click', (event) => {
 
 root.addEventListener('change', (event) => {
   const action = event.target.dataset.action;
+  if (action === 'filter-chip-seller') { state.chipSellerId = Number(event.target.value || 0); renderChipResults(); return; }
   if (action === 'renova-enabled') {
     state.renova.enabled = event.target.checked;
     if (!state.renova.enabled) state.renova = { enabled: false, deviceId: 0, condition: 'bom' };
@@ -1584,6 +2092,7 @@ root.addEventListener('change', (event) => {
   if (action === 'pricing-category') {
     state.priceCategory = event.target.value;
     renderCatalogGrid();
+    renderStockTable();
     renderCartBar();
     return;
   }
@@ -1607,6 +2116,7 @@ root.addEventListener('change', (event) => {
 });
 
 root.addEventListener('input', (event) => {
+  if (event.target.dataset.action === 'chip-search') { state.chipSearch = event.target.value; renderChipResults(); }
   if (event.target.dataset.action === 'stock-search') { state.stockSearch = event.target.value; renderStockTable(); }
   if (event.target.dataset.action === 'catalog-search') { state.catalogSearch = event.target.value; renderCatalogGrid(); }
   if (event.target.dataset.action === 'renova-used-device-search') {
@@ -1679,10 +2189,58 @@ document.addEventListener('submit', async (event) => {
       if (form.dataset.form === 'cancel-request') {
         await api(`/api/requests/${encodeURIComponent(form.dataset.id)}/cancel`, { method: 'POST', body: {} });
         closeModal(true);
-        showToast(state.user.role === 'manager'
+        showToast(['manager', 'stocker'].includes(state.user.role)
           ? 'Pedido cancelado. Quantidades e IMEIs devolvidos ao estoque.'
           : 'Pedido cancelado.');
         await renderRequests();
+      }
+      if (form.dataset.form === 'create-news') {
+        await api('/api/news', { method: 'POST', body: { title: data.title, body: data.body, category: data.category, validityLabel: data.validityLabel } });
+        closeModal(true);
+        showToast('Notícia publicada para toda a equipe.');
+        await renderNews();
+      }
+      if (form.dataset.form === 'edit-news') {
+        await api(`/api/news/${encodeURIComponent(form.dataset.id)}`, { method: 'PUT', body: { title: data.title, body: data.body, category: data.category, validityLabel: data.validityLabel } });
+        closeModal(true);
+        showToast('Notícia atualizada.');
+        await renderNews();
+      }
+      if (form.dataset.form === 'create-chip') {
+        await api('/api/chips', { method: 'POST', body: { sellerId: Number(data.sellerId), materialCode: data.materialCode, iccid: data.iccid } });
+        closeModal(true);
+        showToast('Chip cadastrado e atribuído ao vendedor.');
+        await renderChips();
+      }
+      if (form.dataset.form === 'edit-chip') {
+        await api(`/api/chips/${encodeURIComponent(form.dataset.id)}`, { method: 'PUT', body: { sellerId: Number(data.sellerId), materialCode: data.materialCode, iccid: data.iccid } });
+        closeModal(true);
+        showToast('Chip atualizado.');
+        await renderChips();
+      }
+      if (form.dataset.form === 'sell-chip') {
+        await api(`/api/chips/${encodeURIComponent(form.dataset.id)}/sale`, { method: 'POST', body: { soldOn: data.soldOn, registeredPhone: data.registeredPhone } });
+        closeModal(true);
+        showToast('Venda registrada com data e número da linha.');
+        await renderChips();
+      }
+      if (form.dataset.form === 'remove-chip') {
+        await api(`/api/chips/${encodeURIComponent(form.dataset.id)}`, { method: 'DELETE' });
+        closeModal(true);
+        showToast('Chip retirado da carteira e preservado no histórico.');
+        await renderChips();
+      }
+      if (form.dataset.form === 'reopen-chip') {
+        await api(`/api/chips/${encodeURIComponent(form.dataset.id)}/reopen`, { method: 'POST', body: {} });
+        closeModal(true);
+        showToast('Venda corrigida. O chip voltou a ficar disponível.');
+        await renderChips();
+      }
+      if (form.dataset.form === 'restore-chip') {
+        await api(`/api/chips/${encodeURIComponent(form.dataset.id)}/restore`, { method: 'POST', body: {} });
+        closeModal(true);
+        showToast('Chip restaurado para a carteira do vendedor.');
+        await renderChips();
       }
       if (form.dataset.form === 'create-user') {
         await api('/api/users', { method: 'POST', body: { name: data.name, email: data.email, password: data.password, role: data.role } });
@@ -1724,7 +2282,7 @@ document.addEventListener('submit', async (event) => {
         state.user.mustChangePassword = false;
         closeModal(true);
         showToast('Senha alterada com sucesso.');
-        await navigate(state.user.role === 'stocker' ? 'requests' : 'dashboard');
+        await navigate('dashboard');
       }
     } catch (error) {
       setFormError(form, error.message || 'Não foi possível concluir a ação.');

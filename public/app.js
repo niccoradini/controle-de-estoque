@@ -7,7 +7,8 @@ import {
 const root = document.querySelector('#root');
 const modalRoot = document.querySelector('#modal-root');
 const toastRoot = document.querySelector('#toast-root');
-let chipCameraSession = null;
+let chipCandidateRequest = 0;
+let chipCandidateTimer = 0;
 
 const state = {
   user: null,
@@ -18,6 +19,7 @@ const state = {
   news: [],
   chips: [],
   chipSellers: [],
+  chipMaterials: [],
   chipLimit: 10,
   chipSearch: '',
   chipStatus: 'available',
@@ -1254,7 +1256,7 @@ function chipActionButtons(chip) {
   if (chip.status === 'sold') {
     return `${copy}<button class="btn btn--secondary btn--small" data-action="reopen-chip" data-id="${escapeHtml(chip.id)}">Corrigir venda</button><button class="btn btn--danger btn--small" data-action="remove-chip" data-id="${escapeHtml(chip.id)}">Retirar</button>`;
   }
-  return `${copy}<button class="btn btn--secondary btn--small" data-action="edit-chip" data-id="${escapeHtml(chip.id)}">Editar / transferir</button><button class="btn btn--small" data-action="sell-chip" data-id="${escapeHtml(chip.id)}">Registrar venda</button><button class="btn btn--danger btn--small" data-action="remove-chip" data-id="${escapeHtml(chip.id)}">Retirar</button>`;
+  return `${copy}<button class="btn btn--secondary btn--small" data-action="edit-chip" data-id="${escapeHtml(chip.id)}">Transferir</button><button class="btn btn--small" data-action="sell-chip" data-id="${escapeHtml(chip.id)}">Registrar venda</button><button class="btn btn--danger btn--small" data-action="remove-chip" data-id="${escapeHtml(chip.id)}">Retirar</button>`;
 }
 
 function chipRow(chip) {
@@ -1264,7 +1266,7 @@ function chipRow(chip) {
   return `<tr class="${chip.active ? '' : 'is-removed'}">
     ${state.user.role === 'manager' ? `<td><div class="chip-seller-cell"><span>${escapeHtml(initials(chip.sellerName))}</span><div><strong>${escapeHtml(chip.sellerName)}</strong><small>${escapeHtml(chip.sellerEmail)}</small></div></div></td>` : ''}
     <td><code class="chip-material mono">${escapeHtml(chip.materialCode)}</code></td>
-    <td><div class="chip-iccid"><code class="mono">${escapeHtml(chip.iccid)}</code><small>${chip.iccid.length} dígitos · ${chip.stockLinked ? 'conciliado com o estoque' : 'cadastro manual'}</small></div></td>
+    <td><div class="chip-iccid"><code class="mono">${escapeHtml(chip.iccid)}</code><small>${chip.iccid.length} dígitos · ${chip.stockLinked ? 'identificado no estoque' : 'cadastro histórico'}</small></div></td>
     <td>${chipStatusBadge(chip)}</td>
     <td>${sale}</td>
     <td><div class="chip-actions">${chipActionButtons(chip)}</div></td>
@@ -1298,6 +1300,7 @@ async function renderChips() {
   const data = await api('/api/chips');
   state.chips = data.chips || [];
   state.chipSellers = data.sellers || [];
+  state.chipMaterials = data.materials || [];
   state.chipLimit = Number(data.limit || 10);
   const available = Number(data.summary?.available || 0);
   const sold = Number(data.summary?.sold || 0);
@@ -1305,7 +1308,7 @@ async function renderChips() {
   const sellerFree = Math.max(0, state.chipLimit - available);
   const manager = state.user.role === 'manager';
   const intro = manager
-    ? ['Gestão de SIM cards', 'Controle todos os chips da equipe.', 'Cadastre pelo leitor de código de barras, distribua, transfira e preserve cada venda no histórico.']
+    ? ['Gestão de SIM cards', 'Controle todos os chips da equipe.', 'Escolha um material disponível, informe os 6 últimos dígitos do ICCID e distribua a unidade identificada.']
     : ['Sua carteira', 'Seus chips em um só lugar.', 'Confira material e ICCID. Quando vender, registre a data e o número ativado.'];
   const addButton = manager && state.chipSellers.length
     ? `<button class="btn" data-action="open-chip">${uiIcon('sim')} Cadastrar chip</button>`
@@ -1322,7 +1325,7 @@ async function renderChips() {
   content.innerHTML = `<section class="chips-hero"><div><p class="page-eyebrow">${intro[0]}</p><h2>${intro[1]}</h2><p>${intro[2]}</p></div>${addButton}</section>
     <section class="chip-metrics"><article><span>Disponíveis</span><strong>${available}</strong><small>${manager ? 'nas carteiras ativas' : `de ${state.chipLimit} sob sua responsabilidade`}</small></article><article><span>Vendidos</span><strong>${sold}</strong><small>com data e linha registradas</small></article>${thirdMetric}</section>
     ${chipSellerRoster()}
-    <section class="chip-control"><div class="chip-control__head"><div><p class="page-eyebrow">Conferência</p><h3>${manager ? 'Todos os chips' : 'Material, ICCID e vendas'}</h3></div><div class="chip-control__scan-note">${uiIcon('sim')}<span><strong>Leitor pronto</strong>O código também pode ser digitado manualmente.</span></div></div>
+    <section class="chip-control"><div class="chip-control__head"><div><p class="page-eyebrow">Conferência</p><h3>${manager ? 'Todos os chips' : 'Material, ICCID e vendas'}</h3></div><div class="chip-control__scan-note">${uiIcon('sim')}<span><strong>Busca inteligente</strong>Identificação pelos 6 últimos dígitos.</span></div></div>
       <div class="chip-toolbar"><div class="field chip-search"><label for="chip-search">Buscar chip</label><input class="input" id="chip-search" data-action="chip-search" value="${escapeHtml(state.chipSearch)}" placeholder="Material, ICCID, vendedor ou linha"></div>${sellerOptions}<div class="chip-filter-tabs" aria-label="Filtrar situação">${filters.map(([value, label]) => `<button class="chip ${state.chipStatus === value ? 'is-active' : ''}" data-action="filter-chips" data-status="${value}">${label}</button>`).join('')}</div></div>
       <div data-chip-results></div>
     </section>`;
@@ -1684,7 +1687,7 @@ async function navigate(view) {
 }
 
 function showModal(content, { required = false, small = false, wide = false } = {}) {
-  stopChipCamera();
+  cancelChipCandidateLookup();
   modalRoot.innerHTML = `<div class="modal-backdrop" data-action="${required ? '' : 'backdrop-close'}"><section class="modal ${small ? 'modal--small' : ''} ${wide ? 'modal--wide' : ''}" role="dialog" aria-modal="true">${content}</section></div>`;
   modalRoot.dataset.required = required ? 'true' : 'false';
   document.body.classList.add('modal-open');
@@ -1693,7 +1696,7 @@ function showModal(content, { required = false, small = false, wide = false } = 
 
 function closeModal(force = false) {
   if (modalRoot.dataset.required === 'true' && !force) return;
-  stopChipCamera();
+  cancelChipCandidateLookup();
   modalRoot.innerHTML = '';
   modalRoot.dataset.required = '';
   document.body.classList.remove('modal-open');
@@ -1757,72 +1760,110 @@ function newsModal(item = null) {
   </form>`, { wide: true });
 }
 
-function stopChipCamera(message = '') {
-  if (chipCameraSession?.frame) window.cancelAnimationFrame(chipCameraSession.frame);
-  for (const track of chipCameraSession?.stream?.getTracks?.() || []) track.stop();
-  const video = document.querySelector('#chip-camera-preview');
-  if (video) {
-    video.pause();
-    video.srcObject = null;
-    video.hidden = true;
-  }
-  chipCameraSession = null;
-  const status = document.querySelector('[data-chip-camera-status]');
-  if (status && message) status.textContent = message;
+function cancelChipCandidateLookup() {
+  chipCandidateRequest += 1;
+  window.clearTimeout(chipCandidateTimer);
+  chipCandidateTimer = 0;
 }
 
-async function startChipCamera() {
-  const status = document.querySelector('[data-chip-camera-status]');
-  const video = document.querySelector('#chip-camera-preview');
-  const input = document.querySelector('#chip-iccid');
-  if (!status || !video || !input) return;
-  stopChipCamera();
-  if (!('BarcodeDetector' in window) || !navigator.mediaDevices?.getUserMedia) {
-    status.textContent = 'A câmera não é compatível com este navegador. Use o leitor conectado ou digite o ICCID.';
-    return;
-  }
-  status.textContent = 'Abrindo a câmera… aponte para o código de barras do chip.';
+function renderChipMaterialOptions() {
+  const form = modalRoot.querySelector('form[data-form="create-chip"]');
+  const target = form?.querySelector('[data-chip-materials]');
+  if (!form || !target) return;
+  const selectedCode = String(form.elements.materialCode?.value || '');
+  const search = String(form.querySelector('[data-action="chip-material-search"]')?.value || '')
+    .trim().toLocaleUpperCase('pt-BR');
+  const materials = state.chipMaterials.filter((material) => !search || [material.name, material.materialCode, material.brand]
+    .some((value) => String(value || '').toLocaleUpperCase('pt-BR').includes(search)));
+  target.innerHTML = materials.length ? materials.map((material) => `
+    <button type="button" class="chip-material-option ${selectedCode === material.materialCode ? 'is-selected' : ''}" data-action="select-chip-material" data-material-code="${escapeHtml(material.materialCode)}" aria-pressed="${selectedCode === material.materialCode}">
+      <span><strong>${escapeHtml(material.name)}</strong><code class="mono">${escapeHtml(material.materialCode)}</code></span>
+      <b>${Number(material.availableCount)}<small>livres</small></b>
+    </button>`).join('') : '<div class="chip-picker-empty"><strong>Nenhum material encontrado</strong><span>Limpe a busca ou atualize o estoque.</span></div>';
+}
+
+function resetChipCandidateResults(message = 'Escolha o material e informe os 6 últimos dígitos.') {
+  chipCandidateRequest += 1;
+  const form = modalRoot.querySelector('form[data-form="create-chip"]');
+  if (!form) return;
+  form.elements.inventorySerialId.value = '';
+  form.querySelector('button[type="submit"]').disabled = true;
+  const target = form.querySelector('[data-chip-candidates]');
+  if (target) target.innerHTML = `<div class="chip-candidate-message">${uiIcon('sim')}<span>${escapeHtml(message)}</span></div>`;
+}
+
+function selectChipMaterial(materialCode) {
+  const form = modalRoot.querySelector('form[data-form="create-chip"]');
+  const material = state.chipMaterials.find((item) => item.materialCode === materialCode);
+  if (!form || !material) return;
+  form.elements.materialCode.value = material.materialCode;
+  renderChipMaterialOptions();
+  resetChipCandidateResults(`${material.name} selecionado. Agora informe o final do ICCID.`);
+  form.elements.iccidSuffix.focus();
+}
+
+function selectChipCandidate(inventorySerialId) {
+  const form = modalRoot.querySelector('form[data-form="create-chip"]');
+  if (!form) return;
+  const selected = form.querySelector(`[data-chip-candidate-id="${CSS.escape(String(inventorySerialId))}"]`);
+  if (!selected) return;
+  form.elements.inventorySerialId.value = String(inventorySerialId);
+  form.querySelectorAll('[data-chip-candidate-id]').forEach((option) => {
+    const active = option === selected;
+    option.classList.toggle('is-selected', active);
+    option.setAttribute('aria-pressed', String(active));
+  });
+  form.querySelector('button[type="submit"]').disabled = false;
+  const summary = form.querySelector('[data-chip-candidate-summary]');
+  if (summary) summary.textContent = `ICCID final ${selected.dataset.iccidSuffix} selecionado e pronto para cadastrar.`;
+}
+
+async function searchChipCandidates() {
+  const form = modalRoot.querySelector('form[data-form="create-chip"]');
+  if (!form) return;
+  const materialCode = String(form.elements.materialCode.value || '');
+  const suffix = String(form.elements.iccidSuffix.value || '').replace(/\D/g, '').slice(0, 6);
+  form.elements.iccidSuffix.value = suffix;
+  if (!materialCode) return resetChipCandidateResults('Selecione primeiro um dos materiais disponíveis.');
+  if (suffix.length !== 6) return resetChipCandidateResults('Digite exatamente os 6 últimos números do ICCID.');
+  const target = form.querySelector('[data-chip-candidates]');
+  form.elements.inventorySerialId.value = '';
+  form.querySelector('button[type="submit"]').disabled = true;
+  const requestId = ++chipCandidateRequest;
+  target.innerHTML = '<div class="chip-candidate-message"><span class="loading-inline">Buscando no estoque</span></div>';
   try {
-    const supported = typeof BarcodeDetector.getSupportedFormats === 'function'
-      ? await BarcodeDetector.getSupportedFormats()
-      : [];
-    const requested = ['code_128', 'ean_13', 'ean_8', 'itf'].filter((format) => !supported.length || supported.includes(format));
-    const detector = requested.length ? new BarcodeDetector({ formats: requested }) : new BarcodeDetector();
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
-      audio: false,
-    });
-    video.srcObject = stream;
-    video.hidden = false;
-    await video.play();
-    const session = { stream, detector, frame: 0 };
-    chipCameraSession = session;
-    const scan = async () => {
-      if (chipCameraSession !== session) return;
-      try {
-        const codes = await detector.detect(video);
-        const rawValue = String(codes[0]?.rawValue || '');
-        const iccid = rawValue.replace(/\D/g, '');
-        if (iccid.length >= 18 && iccid.length <= 32) {
-          input.value = iccid;
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          stopChipCamera(`ICCID lido com sucesso · final ${iccid.slice(-4)}`);
-          input.focus();
-          showToast('Código de barras lido. Confira os últimos dígitos.');
-          return;
-        }
-      } catch {
-        status.textContent = 'Não foi possível ler este quadro. Mantenha o código centralizado.';
-      }
-      session.frame = window.requestAnimationFrame(scan);
-    };
-    status.textContent = 'Câmera ativa. Centralize o código de barras e mantenha o chip firme.';
-    session.frame = window.requestAnimationFrame(scan);
+    const data = await api(`/api/chips/candidates?materialCode=${encodeURIComponent(materialCode)}&suffix=${encodeURIComponent(suffix)}`);
+    if (requestId !== chipCandidateRequest || !modalRoot.contains(form)) return;
+    const candidates = data.candidates || [];
+    if (!candidates.length) {
+      target.innerHTML = `<div class="chip-candidate-message chip-candidate-message--empty">${uiIcon('warning')}<span><strong>Nenhuma correspondência livre</strong>Não há ICCID deste material terminando em ${escapeHtml(suffix)}. Confira os números ou escolha outro material.</span></div>`;
+      return;
+    }
+    const heading = candidates.length === 1
+      ? 'Correspondência identificada automaticamente'
+      : `${candidates.length} correspondências encontradas · selecione a correta`;
+    target.innerHTML = `<div class="chip-candidate-heading"><strong>${escapeHtml(heading)}</strong><span data-chip-candidate-summary>${candidates.length === 1 ? 'Confira o ICCID completo antes de cadastrar.' : 'Compare o código do chip com as opções abaixo.'}</span></div><div class="chip-candidate-list">${candidates.map((candidate) => {
+      const prefix = candidate.iccid.slice(0, -6);
+      return `<button type="button" class="chip-candidate-option" data-action="select-chip-candidate" data-chip-candidate-id="${candidate.inventorySerialId}" data-iccid-suffix="${escapeHtml(candidate.suffix)}" aria-pressed="false"><span><small>ICCID disponível</small><code class="mono">${escapeHtml(prefix)}<mark>${escapeHtml(candidate.suffix)}</mark></code></span><b>Selecionar</b></button>`;
+    }).join('')}</div>`;
+    if (candidates.length === 1) selectChipCandidate(candidates[0].inventorySerialId);
   } catch (error) {
-    stopChipCamera();
-    status.textContent = error?.name === 'NotAllowedError'
-      ? 'A câmera não foi autorizada. Use o leitor conectado ou digite o ICCID.'
-      : 'Não foi possível abrir a câmera. Use o leitor conectado ou digite o ICCID.';
+    if (requestId !== chipCandidateRequest || !modalRoot.contains(form)) return;
+    target.innerHTML = `<div class="chip-candidate-message chip-candidate-message--empty">${uiIcon('warning')}<span><strong>Não foi possível buscar</strong>${escapeHtml(error.message || 'Tente novamente.')}</span></div>`;
+  }
+}
+
+function queueChipCandidateSearch() {
+  window.clearTimeout(chipCandidateTimer);
+  const form = modalRoot.querySelector('form[data-form="create-chip"]');
+  if (!form) return;
+  const suffix = String(form.elements.iccidSuffix.value || '').replace(/\D/g, '').slice(0, 6);
+  form.elements.iccidSuffix.value = suffix;
+  resetChipCandidateResults(suffix.length
+    ? `Continue digitando: ${suffix.length} de 6 números informados.`
+    : 'Informe os 6 últimos números impressos no chip.');
+  if (suffix.length === 6 && form.elements.materialCode.value) {
+    chipCandidateTimer = window.setTimeout(searchChipCandidates, 280);
   }
 }
 
@@ -1830,16 +1871,25 @@ function chipModal(chip = null) {
   if (state.user.role !== 'manager' || !state.chipSellers.length) return;
   const selectedSellerId = chip?.sellerId || state.chipSellerId || state.chipSellers[0].id;
   const selectedSeller = state.chipSellers.find((seller) => seller.id === selectedSellerId);
-  showModal(`<form data-form="${chip ? 'edit-chip' : 'create-chip'}" data-id="${escapeHtml(chip?.id || '')}" novalidate>
-    <div class="modal__head"><div><span class="modal-eyebrow">Carteira de chips</span><h2>${chip ? 'Editar ou transferir chip' : 'Cadastrar pelo código de barras'}</h2><p>${chip ? 'Corrija o material, o ICCID ou mova o chip para outra carteira.' : 'Selecione o vendedor e leia o código pelo leitor conectado ou pela câmera.'}</p></div>${modalCloseButton()}</div>
-    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid">
+  if (chip) {
+    showModal(`<form data-form="edit-chip" data-id="${escapeHtml(chip.id)}" novalidate>
+      <div class="modal__head"><div><span class="modal-eyebrow">Carteira de chips</span><h2>Transferir chip</h2><p>O material e o ICCID identificados no estoque permanecem protegidos.</p></div>${modalCloseButton()}</div>
+      <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="chip-transfer-summary"><span>Chip selecionado</span><strong>${escapeHtml(chip.materialCode)}</strong><code class="mono">${escapeHtml(chip.iccid)}</code></div><div class="field"><label for="chip-seller">Novo vendedor responsável</label><select class="select" id="chip-seller" name="sellerId" required>${state.chipSellers.map((seller) => `<option value="${seller.id}" ${seller.id === selectedSellerId ? 'selected' : ''}>${escapeHtml(seller.name)} · ${seller.availableCount}/${state.chipLimit} disponíveis</option>`).join('')}</select><p class="field-hint">Cada vendedor pode manter até ${state.chipLimit} chips disponíveis.</p></div></div>
+      <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Confirmar transferência</button></div>
+    </form>`, { small: true });
+    return;
+  }
+  if (!state.chipMaterials.length) return showToast('Não há materiais de chip livres no estoque atual.', 'error');
+  showModal(`<form data-form="create-chip" novalidate>
+    <div class="modal__head"><div><span class="modal-eyebrow">Cadastro assistido</span><h2>Identificar e distribuir chip</h2><p>Escolha o material e digite somente os 6 últimos números do ICCID.</p></div>${modalCloseButton()}</div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid chip-registration-grid">
       <div class="field field--full"><label for="chip-seller">Vendedor responsável</label><select class="select" id="chip-seller" name="sellerId" required>${state.chipSellers.map((seller) => `<option value="${seller.id}" ${seller.id === selectedSellerId ? 'selected' : ''}>${escapeHtml(seller.name)} · ${seller.availableCount}/${state.chipLimit} disponíveis</option>`).join('')}</select><p class="field-hint">Cada vendedor pode manter até ${state.chipLimit} chips disponíveis. ${selectedSeller ? `${escapeHtml(selectedSeller.name)} está com ${selectedSeller.availableCount}.` : ''}</p></div>
-      <div class="field"><label for="chip-material">Código material</label><input class="input mono" id="chip-material" name="materialCode" maxlength="40" required value="${escapeHtml(chip?.materialCode || '')}" placeholder="Ex.: YBSC001A4000" autocapitalize="characters"></div>
-      <div class="field"><label for="chip-iccid">ICCID</label><input class="input mono" id="chip-iccid" name="iccid" inputmode="numeric" autocomplete="off" minlength="18" maxlength="40" required value="${escapeHtml(chip?.iccid || '')}" placeholder="Leia ou digite o código grande"></div>
-      <section class="chip-scanner field--full"><div class="chip-scanner__copy">${uiIcon('sim')}<div><strong>Leitura do código de barras</strong><p>Com leitor USB/Bluetooth, deixe o campo ICCID selecionado e faça a leitura. Também é possível usar a câmera.</p></div></div><div class="chip-scanner__actions"><button type="button" class="btn btn--secondary btn--small" data-action="start-chip-camera">Usar câmera</button><button type="button" class="btn btn--ghost btn--small" data-action="stop-chip-camera">Fechar câmera</button></div><video id="chip-camera-preview" class="chip-camera" playsinline muted hidden></video><p class="chip-camera-status" data-chip-camera-status aria-live="polite">Confira os últimos quatro dígitos antes de salvar.</p></section>
+      <section class="chip-registration-step field--full"><header><span>1</span><div><strong>Escolha o material disponível</strong><small>A lista mostra somente SIM cards livres no estoque.</small></div></header><div class="chip-material-search"><input class="input" type="search" data-action="chip-material-search" placeholder="Buscar nome ou código material" autocomplete="off"></div><input type="hidden" name="materialCode"><div class="chip-material-options" data-chip-materials></div></section>
+      <section class="chip-registration-step field--full"><header><span>2</span><div><strong>Informe o final do ICCID</strong><small>Use os 6 últimos números do código grande impresso no chip.</small></div></header><div class="chip-suffix-search"><div class="field"><label for="chip-iccid-suffix">Últimos 6 dígitos</label><input class="input mono" id="chip-iccid-suffix" name="iccidSuffix" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9]{6}" required placeholder="000000" data-action="chip-iccid-suffix"></div><button type="button" class="btn btn--secondary" data-action="search-chip-candidates">Buscar ICCID</button></div><input type="hidden" name="inventorySerialId"><div class="chip-candidate-results" data-chip-candidates aria-live="polite"><div class="chip-candidate-message">${uiIcon('sim')}<span>Escolha o material e informe os 6 últimos dígitos.</span></div></div></section>
     </div></div>
-    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">${chip ? 'Salvar alterações' : 'Cadastrar chip'}</button></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn" disabled>Cadastrar chip selecionado</button></div>
   </form>`, { wide: true });
+  renderChipMaterialOptions();
 }
 
 function chipSaleModal(chip) {
@@ -2069,14 +2119,24 @@ modalRoot.addEventListener('click', async (event) => {
   if (!target) return;
   if (target.dataset.action === 'close-modal') closeModal();
   if (target.dataset.action === 'backdrop-close' && event.target === target) closeModal();
-  if (target.dataset.action === 'start-chip-camera') await withBusy(target, startChipCamera);
-  if (target.dataset.action === 'stop-chip-camera') stopChipCamera('Câmera fechada. Use o leitor conectado ou digite o ICCID.');
+  if (target.dataset.action === 'select-chip-material') {
+    selectChipMaterial(target.dataset.materialCode);
+    const form = target.closest('form');
+    if (String(form?.elements.iccidSuffix?.value || '').length === 6) await searchChipCandidates();
+  }
+  if (target.dataset.action === 'select-chip-candidate') selectChipCandidate(target.dataset.chipCandidateId);
+  if (target.dataset.action === 'search-chip-candidates') await searchChipCandidates();
   if (target.dataset.action === 'remove-cart-item') {
     state.cart.delete(Number(target.dataset.variantId));
     if (state.cart.size) requestReviewModal();
     else closeModal(true);
     renderCartBar();
   }
+});
+
+modalRoot.addEventListener('input', (event) => {
+  if (event.target.dataset.action === 'chip-material-search') renderChipMaterialOptions();
+  if (event.target.dataset.action === 'chip-iccid-suffix') queueChipCandidateSearch();
 });
 
 root.addEventListener('change', (event) => {
@@ -2207,15 +2267,19 @@ document.addEventListener('submit', async (event) => {
         await renderNews();
       }
       if (form.dataset.form === 'create-chip') {
-        await api('/api/chips', { method: 'POST', body: { sellerId: Number(data.sellerId), materialCode: data.materialCode, iccid: data.iccid } });
+        const inventorySerialId = Number(data.inventorySerialId);
+        if (!Number.isInteger(inventorySerialId) || inventorySerialId <= 0) {
+          throw new ApiError('Busque o ICCID e selecione uma das correspondências disponíveis.', 400);
+        }
+        await api('/api/chips', { method: 'POST', body: { sellerId: Number(data.sellerId), inventorySerialId } });
         closeModal(true);
-        showToast('Chip cadastrado e atribuído ao vendedor.');
+        showToast('Chip identificado no estoque e atribuído ao vendedor.');
         await renderChips();
       }
       if (form.dataset.form === 'edit-chip') {
-        await api(`/api/chips/${encodeURIComponent(form.dataset.id)}`, { method: 'PUT', body: { sellerId: Number(data.sellerId), materialCode: data.materialCode, iccid: data.iccid } });
+        await api(`/api/chips/${encodeURIComponent(form.dataset.id)}`, { method: 'PUT', body: { sellerId: Number(data.sellerId) } });
         closeModal(true);
-        showToast('Chip atualizado.');
+        showToast('Chip transferido para a carteira selecionada.');
         await renderChips();
       }
       if (form.dataset.form === 'sell-chip') {

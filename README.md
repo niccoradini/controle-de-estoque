@@ -2,6 +2,10 @@
 
 Sistema online para controlar produtos por código material e número de série, montar pedidos e acompanhar a operação da loja.
 
+## Versão 6.6.1
+
+Substitui o leitor de código de barras pelo cadastro assistido de chips. O Gerente escolhe um dos materiais de SIM card realmente disponíveis, informa somente os 6 últimos dígitos do ICCID e o sistema identifica a série completa no estoque. Uma correspondência é selecionada automaticamente; quando há mais de uma, as opções são mostradas para conferência. Material e ICCID ficam protegidos depois do cadastro, e a transferência altera somente o vendedor responsável. Consulte `LEIA-ME-ATUALIZACAO-V6.6.1.md`.
+
 ## Versão 6.6
 
 Atualiza o estoque com a planilha de 07/08/2026 e cria a aba **Chips** para Gerente e Vendedores. Cada vendedor pode manter até 10 chips disponíveis, registrar venda com data e número cadastrado e consultar material e ICCID. O Gerente cadastra pelo código de barras, transfere, retira, restaura e corrige vendas; chips vinculados à planilha ficam reservados e a baixa é conciliada automaticamente com o estoque. O Moto G67 5G 128GB foi reconferido no Simulador Produtos; os três acessórios novos ausentes na busca permanecem sem preço presumido. Consulte `LEIA-ME-ATUALIZACAO-V6.6.md`.
@@ -133,7 +137,7 @@ Inclui o Vivo Renova no configurador, com bônus do fabricante e voucher ASSURAN
 
 ## Atualizar o sistema online
 
-Leia primeiro `LEIA-ME-ATUALIZACAO-V6.6.md`.
+Leia primeiro `LEIA-ME-ATUALIZACAO-V6.6.1.md`.
 
 Não apague a pasta atual e não substitua o `wrangler.jsonc`. Esse arquivo mantém a ligação com o banco correto da sua conta Cloudflare.
 
@@ -147,7 +151,7 @@ npm run deploy
 
 Quando a migração perguntar se deseja continuar, confirme com `y`.
 
-A atualização preserva usuários, sessões, pedidos, números de série já retirados e histórico. As migrações pendentes criam Notícias (`0021`), Chips (`0022`) e aplicam o retrato de estoque de 07/08 (`0023`). O novo retrato contém 295 códigos materiais e 1.074 unidades disponíveis, sem as 110 unidades de RPAR.
+A atualização preserva usuários, sessões, pedidos, números de série já retirados e histórico. A migração `0025` protege a busca pelos 6 últimos dígitos e impede que um pedido comum e uma carteira reservem o mesmo chip. Instalações que ainda não receberam as versões anteriores também aplicarão Notícias (`0021`), Chips (`0022`) e o retrato de estoque de 07/08 (`0023`).
 
 Depois da publicação, abra `https://controleestoque.app.br` e pressione `Ctrl + F5`.
 
@@ -195,7 +199,7 @@ Guarde o arquivo exportado em local seguro.
 - perfil Estoquista limitado no servidor às consultas operacionais, aos pedidos e ao cancelamento; criação de pedidos, ajustes manuais, usuários e auditoria permanecem bloqueados;
 - criação, edição e visibilidade das notícias limitadas ao Gerente no servidor;
 - cadastro, transferência, retirada, restauração e correção de chips limitados ao Gerente; o Vendedor só registra a venda de chips da própria carteira;
-- ICCID único, limite de 10 chips disponíveis por vendedor e conciliação com o número de série protegidos também no banco;
+- ICCID único, limite de 10 chips disponíveis por vendedor, seleção obrigatória de uma série livre e conciliação com o estoque protegidos também no banco;
 - vendedores com chips disponíveis não podem ser desativados, excluídos ou ter o perfil alterado antes da transferência ou retirada da carteira;
 - proteção contra requisições externas e excesso de tentativas de login;
 - reserva, escolha de série e baixa executadas numa única operação transacional;
@@ -209,4 +213,4 @@ npm run check
 npx wrangler deploy --dry-run
 ```
 
-Os 18 testes cobrem a migração do relatório de 07/08, os 295 materiais da planilha, 1.074 unidades, exclusão de RPAR, estrutura DEPS/NREM, preservação de dados, preços, pedidos, Estoquista, Vivo Renova, usuários, Notícias e todo o ciclo de Chips: limite por vendedor, leitura de ICCID, duplicidade, transferência, venda, correção, retirada, restauração e conciliação com o estoque.
+Os 18 testes cobrem a migração do relatório de 07/08, os 295 materiais da planilha, 1.074 unidades, exclusão de RPAR, estrutura DEPS/NREM, preservação de dados, preços, pedidos, Estoquista, Vivo Renova, usuários, Notícias e todo o ciclo de Chips: materiais disponíveis, busca pelos 6 últimos dígitos, múltiplas correspondências, limite por vendedor, transferência, venda, correção, retirada, restauração e conciliação com o estoque.

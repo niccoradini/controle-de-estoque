@@ -74,7 +74,7 @@ function securityHeaders(headers = {}) {
     'Content-Security-Policy': "default-src 'self'; base-uri 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
     'Cross-Origin-Opener-Policy': 'same-origin',
     'Cross-Origin-Resource-Policy': 'same-origin',
-    'Permissions-Policy': 'camera=(self), microphone=(), geolocation=()',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
@@ -191,12 +191,10 @@ function materialCodeRule(value) {
   return { value: materialCode };
 }
 
-function iccidRule(value) {
-  const source = typeof value === 'string' ? value.trim() : '';
-  if (!source || /[^0-9\s-]/.test(source)) return { error: 'Informe um ICCID numérico válido.' };
-  const iccid = source.replace(/\D/g, '');
-  if (iccid.length < 18 || iccid.length > 32) return { error: 'O ICCID deve ter entre 18 e 32 dígitos.' };
-  return { value: iccid };
+function iccidSuffixRule(value) {
+  const suffix = typeof value === 'string' ? value.trim() : '';
+  if (!/^\d{6}$/.test(suffix)) return { error: 'Informe exatamente os 6 últimos dígitos do ICCID.' };
+  return { value: suffix };
 }
 
 function phoneNumberRule(value) {
@@ -1265,6 +1263,7 @@ async function createWithdrawal(request, env, user) {
     const message = String(error.message);
     if (message.includes('QUANTITY_NOT_AVAILABLE')
         || message.includes('SERIAL_NOT_AVAILABLE')
+        || message.includes('SERIAL_ALLOCATED_TO_CHIP')
         || message.includes('SERIAL_SELECTION_MISMATCH')
         || message.includes('request_serial_assignments.serial_id')
         || message.includes('active_quantity_reservations')) {
@@ -1508,48 +1507,92 @@ async function chipById(env, id) {
   `).bind(id).first();
 }
 
-async function resolveChipInventorySerial(env, materialCode, iccid) {
-  const rows = (await env.DB.prepare(`
-    SELECT inventory.id, inventory.status, inventory.variant_id,
-           variant.sku AS material_code
-    FROM inventory_serials inventory
-    JOIN product_variants variant ON variant.id = inventory.variant_id
-    WHERE inventory.serial_number = ? COLLATE NOCASE
-       OR ? LIKE '%' || inventory.serial_number
-    ORDER BY CASE WHEN inventory.serial_number = ? COLLATE NOCASE THEN 0 ELSE 1 END,
-             length(inventory.serial_number) DESC
-    LIMIT 2
-  `).bind(iccid, iccid, iccid).all()).results || [];
-  if (!rows.length) return null;
-  const serial = rows[0];
-  if (String(serial.material_code || '').toUpperCase() !== materialCode.toUpperCase()) {
-    throw new HttpError(409, 'O ICCID pertence a outro código material no estoque.', {
-      materialCode: `Código esperado: ${serial.material_code}.`,
-      iccid: 'Confira se o chip e o material correspondem.',
-    });
-  }
-  return serial;
+function fullChipIccid(serialNumber = '') {
+  const serial = String(serialNumber).trim();
+  return serial.length === 18 && !serial.startsWith('89') ? `89${serial}` : serial;
 }
 
-async function ensureChipIsUnique(env, iccid, inventorySerialId = null, excludedId = '') {
-  const conflict = await env.DB.prepare(`
-    SELECT id, iccid, inventory_serial_id
-    FROM chips
-    WHERE id <> ?
+function publicChipCandidate(row) {
+  const iccid = fullChipIccid(row.serial_number);
+  return {
+    inventorySerialId: Number(row.id),
+    materialCode: row.material_code,
+    materialName: row.material_name,
+    iccid,
+    suffix: iccid.slice(-6),
+  };
+}
+
+async function chipInventorySerialById(env, inventorySerialId) {
+  const row = await env.DB.prepare(`
+    SELECT inventory.id, inventory.serial_number, inventory.status, inventory.variant_id,
+           variant.sku AS material_code,
+           COALESCE(product.display_name, product.name) AS material_name
+    FROM inventory_serials inventory
+    JOIN product_variants variant ON variant.id = inventory.variant_id
+    JOIN products product ON product.id = variant.product_id
+    WHERE inventory.id = ?
+      AND inventory.status = 'available'
+      AND variant.active = 1
+      AND product.active = 1
+      AND variant.serial_tracking = 1
       AND (
-        iccid = ? COLLATE NOCASE
-        OR (? IS NOT NULL AND inventory_serial_id = ?)
+        UPPER(COALESCE(product.display_name, product.name, '')) LIKE '%SIM CARD%'
+        OR UPPER(COALESCE(product.technical_name, '')) LIKE '%SIM CARD%'
       )
-    LIMIT 1
-  `).bind(excludedId, iccid, inventorySerialId, inventorySerialId).first();
-  if (!conflict) return;
-  if (conflict.iccid === iccid) {
-    throw new HttpError(409, 'Este ICCID já está cadastrado no sistema.', {
-      iccid: 'ICCID já cadastrado.',
-    });
-  }
-  throw new HttpError(409, 'Este chip já está atribuído a uma carteira.', {
-    iccid: 'O código de barras corresponde a outro cadastro.',
+      AND NOT EXISTS (
+        SELECT 1 FROM chips registered
+        WHERE registered.inventory_serial_id = inventory.id
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM request_serial_assignments assignment
+        WHERE assignment.serial_id = inventory.id
+      )
+  `).bind(inventorySerialId).first();
+  return row ? { ...row, iccid: fullChipIccid(row.serial_number) } : null;
+}
+
+async function listChipCandidates(env, user, url) {
+  requireRole(user, 'manager');
+  const data = validateFields({
+    materialCode: url.searchParams.get('materialCode'),
+    suffix: url.searchParams.get('suffix'),
+  }, {
+    materialCode: materialCodeRule,
+    suffix: iccidSuffixRule,
+  });
+  const rows = (await env.DB.prepare(`
+    SELECT inventory.id, inventory.serial_number,
+           variant.sku AS material_code,
+           COALESCE(product.display_name, product.name) AS material_name
+    FROM inventory_serials inventory
+    JOIN product_variants variant ON variant.id = inventory.variant_id
+    JOIN products product ON product.id = variant.product_id
+    WHERE variant.sku = ? COLLATE NOCASE
+      AND substr(inventory.serial_number, -6) = ?
+      AND inventory.status = 'available'
+      AND variant.active = 1
+      AND product.active = 1
+      AND variant.serial_tracking = 1
+      AND (
+        UPPER(COALESCE(product.display_name, product.name, '')) LIKE '%SIM CARD%'
+        OR UPPER(COALESCE(product.technical_name, '')) LIKE '%SIM CARD%'
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM chips registered
+        WHERE registered.inventory_serial_id = inventory.id
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM request_serial_assignments assignment
+        WHERE assignment.serial_id = inventory.id
+      )
+    ORDER BY inventory.serial_number COLLATE NOCASE
+    LIMIT 25
+  `).bind(data.materialCode, data.suffix).all()).results || [];
+  return json({
+    materialCode: data.materialCode,
+    suffix: data.suffix,
+    candidates: rows.map(publicChipCandidate),
   });
 }
 
@@ -1561,6 +1604,11 @@ function mapChipDatabaseError(error) {
   if (message.includes('INVALID_CHIP_SELLER')) {
     return new HttpError(400, 'Selecione um vendedor ativo para receber o chip.', {
       sellerId: 'Vendedor inválido ou sem acesso ativo.',
+    });
+  }
+  if (message.includes('CHIP_SERIAL_NOT_AVAILABLE') || message.includes('SERIAL_ALLOCATED_TO_CHIP')) {
+    return new HttpError(409, 'Este ICCID não está mais disponível. Faça a busca novamente.', {
+      inventorySerialId: 'A unidade foi reservada ou retirada do estoque.',
     });
   }
   if (message.includes('chips.iccid') || message.includes('UNIQUE constraint failed: chips.iccid')) {
@@ -1594,20 +1642,53 @@ async function listChips(env, user) {
   const rows = (await chipsStatement.all()).results || [];
   const chips = rows.map(publicChip);
   let sellers = [];
+  let materials = [];
   if (manager) {
-    const sellerRows = (await env.DB.prepare(`
-      SELECT u.id, u.name, u.email,
-             SUM(CASE WHEN c.active = 1 AND c.status = 'available' THEN 1 ELSE 0 END) AS available_count,
-             SUM(CASE WHEN c.active = 1 AND c.status = 'sold' THEN 1 ELSE 0 END) AS sold_count
-      FROM users u
-      LEFT JOIN chips c ON c.assigned_seller_id = u.id
-      WHERE u.role = 'seller'
-        AND u.access_profile = 'default'
-        AND u.active = 1
-        AND u.deleted_at IS NULL
-      GROUP BY u.id, u.name, u.email
-      ORDER BY u.name COLLATE NOCASE
-    `).all()).results || [];
+    const [sellerResult, materialResult] = await env.DB.batch([
+      env.DB.prepare(`
+        SELECT u.id, u.name, u.email,
+               SUM(CASE WHEN c.active = 1 AND c.status = 'available' THEN 1 ELSE 0 END) AS available_count,
+               SUM(CASE WHEN c.active = 1 AND c.status = 'sold' THEN 1 ELSE 0 END) AS sold_count
+        FROM users u
+        LEFT JOIN chips c ON c.assigned_seller_id = u.id
+        WHERE u.role = 'seller'
+          AND u.access_profile = 'default'
+          AND u.active = 1
+          AND u.deleted_at IS NULL
+        GROUP BY u.id, u.name, u.email
+        ORDER BY u.name COLLATE NOCASE
+      `),
+      env.DB.prepare(`
+        SELECT variant.id AS variant_id,
+               variant.sku AS material_code,
+               COALESCE(product.display_name, product.name) AS material_name,
+               product.brand,
+               COUNT(inventory.id) AS available_count
+        FROM product_variants variant
+        JOIN products product ON product.id = variant.product_id
+        JOIN inventory_serials inventory ON inventory.variant_id = variant.id
+        WHERE inventory.status = 'available'
+          AND variant.active = 1
+          AND product.active = 1
+          AND variant.serial_tracking = 1
+          AND (
+            UPPER(COALESCE(product.display_name, product.name, '')) LIKE '%SIM CARD%'
+            OR UPPER(COALESCE(product.technical_name, '')) LIKE '%SIM CARD%'
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM chips registered
+            WHERE registered.inventory_serial_id = inventory.id
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM request_serial_assignments assignment
+            WHERE assignment.serial_id = inventory.id
+          )
+        GROUP BY variant.id, variant.sku, product.display_name, product.name, product.brand
+        HAVING COUNT(inventory.id) > 0
+        ORDER BY product.display_name COLLATE NOCASE, variant.sku COLLATE NOCASE
+      `),
+    ]);
+    const sellerRows = sellerResult.results || [];
     sellers = sellerRows.map((seller) => ({
       id: Number(seller.id),
       name: seller.name,
@@ -1616,10 +1697,18 @@ async function listChips(env, user) {
       soldCount: Number(seller.sold_count || 0),
       limit: CHIP_LIMIT_PER_SELLER,
     }));
+    materials = (materialResult.results || []).map((material) => ({
+      variantId: Number(material.variant_id),
+      materialCode: material.material_code,
+      name: material.material_name,
+      brand: material.brand || '',
+      availableCount: Number(material.available_count || 0),
+    }));
   }
   return json({
     chips,
     sellers,
+    ...(manager ? { materials } : {}),
     limit: CHIP_LIMIT_PER_SELLER,
     summary: {
       available: chips.filter((chip) => chip.active && chip.status === 'available').length,
@@ -1631,36 +1720,70 @@ async function listChips(env, user) {
 
 async function createChip(request, env, manager) {
   const data = validateFields(await readJson(request), {
-    materialCode: materialCodeRule,
-    iccid: iccidRule,
+    inventorySerialId: positiveIdRule('um ICCID disponível'),
     sellerId: positiveIdRule('um vendedor'),
   });
   const id = crypto.randomUUID();
   const timestamp = nowIso();
-  const inventorySerial = await resolveChipInventorySerial(env, data.materialCode, data.iccid);
-  await ensureChipIsUnique(env, data.iccid, inventorySerial?.id || null);
-  if (inventorySerial && inventorySerial.status !== 'available') {
-    throw new HttpError(409, 'Este ICCID já consta como retirado no estoque.', {
-      iccid: 'Escolha um chip disponível no relatório atual.',
+  const inventorySerial = await chipInventorySerialById(env, data.inventorySerialId);
+  if (!inventorySerial) {
+    throw new HttpError(409, 'Este ICCID não está mais disponível. Faça a busca novamente.', {
+      inventorySerialId: 'Escolha uma das correspondências disponíveis.',
     });
   }
   try {
-    await env.DB.batch([
+    const results = await env.DB.batch([
       env.DB.prepare(`
         INSERT INTO chips
           (id, material_code, iccid, inventory_serial_id, assigned_seller_id,
            created_by, updated_by, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(id, data.materialCode, data.iccid, inventorySerial?.id || null, data.sellerId,
-        manager.id, manager.id, timestamp, timestamp),
-      auditStatement(env, manager.id, 'chip.created', 'chip', id, {
-        materialCode: data.materialCode,
-        iccidLast4: data.iccid.slice(-4),
+        SELECT ?, variant.sku,
+               CASE
+                 WHEN length(inventory.serial_number) = 18
+                      AND substr(inventory.serial_number, 1, 2) <> '89'
+                   THEN '89' || inventory.serial_number
+                 ELSE inventory.serial_number
+               END,
+               inventory.id, ?, ?, ?, ?, ?
+        FROM inventory_serials inventory
+        JOIN product_variants variant ON variant.id = inventory.variant_id
+        JOIN products product ON product.id = variant.product_id
+        WHERE inventory.id = ?
+          AND inventory.status = 'available'
+          AND variant.active = 1
+          AND product.active = 1
+          AND variant.serial_tracking = 1
+          AND (
+            UPPER(COALESCE(product.display_name, product.name, '')) LIKE '%SIM CARD%'
+            OR UPPER(COALESCE(product.technical_name, '')) LIKE '%SIM CARD%'
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM chips registered
+            WHERE registered.inventory_serial_id = inventory.id
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM request_serial_assignments assignment
+            WHERE assignment.serial_id = inventory.id
+          )
+      `).bind(id, data.sellerId, manager.id, manager.id, timestamp, timestamp, data.inventorySerialId),
+      env.DB.prepare(`
+        INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, details_json)
+        SELECT ?, 'chip.created', 'chip', ?, ?
+        WHERE EXISTS (SELECT 1 FROM chips WHERE id = ?)
+      `).bind(manager.id, id, JSON.stringify({
+        materialCode: inventorySerial.material_code,
+        iccidLast4: inventorySerial.iccid.slice(-4),
         sellerId: data.sellerId,
-        stockLinked: Boolean(inventorySerial),
-      }),
+        stockLinked: true,
+      }), id),
     ]);
+    if (!results[0].meta.changes) {
+      throw new HttpError(409, 'Este ICCID não está mais disponível. Faça a busca novamente.', {
+        inventorySerialId: 'A unidade foi reservada ou retirada do estoque.',
+      });
+    }
   } catch (error) {
+    if (error instanceof HttpError) throw error;
     throw mapChipDatabaseError(error);
   }
   return json({ chip: publicChip(await chipById(env, id)) }, 201);
@@ -1671,43 +1794,26 @@ async function updateChip(request, env, manager, id) {
   if (!existing) throw new HttpError(404, 'Chip não encontrado.');
   if (!existing.active) throw new HttpError(409, 'Restaure este chip antes de editá-lo.');
   const data = validateFields(await readJson(request), {
-    materialCode: materialCodeRule,
-    iccid: iccidRule,
     sellerId: positiveIdRule('um vendedor'),
   });
   if (existing.status === 'sold' && Number(existing.assigned_seller_id) !== data.sellerId) {
     throw new HttpError(409, 'Um chip vendido não pode ser transferido para outro vendedor.');
   }
-  if (existing.status === 'sold'
-      && (existing.material_code !== data.materialCode || existing.iccid !== data.iccid)) {
-    throw new HttpError(409, 'Reabra a venda antes de alterar o material ou o ICCID deste chip.');
-  }
   const timestamp = nowIso();
   const transferred = Number(existing.assigned_seller_id) !== data.sellerId;
-  const inventorySerial = await resolveChipInventorySerial(env, data.materialCode, data.iccid);
-  await ensureChipIsUnique(env, data.iccid, inventorySerial?.id || null, id);
-  const keepingSoldSerial = existing.status === 'sold'
-    && Number(existing.inventory_serial_id || 0) === Number(inventorySerial?.id || 0);
-  if (inventorySerial && inventorySerial.status !== 'available' && !keepingSoldSerial) {
-    throw new HttpError(409, 'Este ICCID já consta como retirado no estoque.', {
-      iccid: 'Escolha um chip disponível no relatório atual.',
-    });
-  }
   try {
     await env.DB.batch([
       env.DB.prepare(`
         UPDATE chips
-        SET material_code = ?, iccid = ?, inventory_serial_id = ?, assigned_seller_id = ?,
-            updated_by = ?, updated_at = ?
+        SET assigned_seller_id = ?, updated_by = ?, updated_at = ?
         WHERE id = ? AND active = 1
-      `).bind(data.materialCode, data.iccid, inventorySerial?.id || null, data.sellerId,
-        manager.id, timestamp, id),
+      `).bind(data.sellerId, manager.id, timestamp, id),
       auditStatement(env, manager.id, transferred ? 'chip.transferred' : 'chip.updated', 'chip', id, {
-        materialCode: data.materialCode,
-        iccidLast4: data.iccid.slice(-4),
+        materialCode: existing.material_code,
+        iccidLast4: existing.iccid.slice(-4),
         previousSellerId: Number(existing.assigned_seller_id),
         sellerId: data.sellerId,
-        stockLinked: Boolean(inventorySerial),
+        stockLinked: Boolean(existing.inventory_serial_id),
       }),
     ]);
   } catch (error) {
@@ -1795,14 +1901,7 @@ async function reopenChip(env, manager, id) {
   }
   const timestamp = nowIso();
   try {
-    const statements = [
-      env.DB.prepare(`
-        UPDATE chips
-        SET status = 'available', sold_on = NULL, registered_phone = NULL,
-            updated_by = ?, updated_at = ?
-        WHERE id = ? AND active = 1 AND status = 'sold'
-      `).bind(manager.id, timestamp, id),
-    ];
+    const statements = [];
     if (existing.inventory_serial_id) {
       statements.push(
         env.DB.prepare(`
@@ -1821,6 +1920,15 @@ async function reopenChip(env, manager, id) {
         `).bind(timestamp, existing.inventory_variant_id),
       );
     }
+    const chipStatementIndex = statements.length;
+    statements.push(
+      env.DB.prepare(`
+        UPDATE chips
+        SET status = 'available', sold_on = NULL, registered_phone = NULL,
+            updated_by = ?, updated_at = ?
+        WHERE id = ? AND active = 1 AND status = 'sold'
+      `).bind(manager.id, timestamp, id),
+    );
     statements.push(
       env.DB.prepare(`
         INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, details_json)
@@ -1834,7 +1942,9 @@ async function reopenChip(env, manager, id) {
       }), id, timestamp),
     );
     const results = await env.DB.batch(statements);
-    if (!results[0].meta.changes) throw new HttpError(409, 'A situação deste chip foi alterada. Atualize a página.');
+    if (!results[chipStatementIndex].meta.changes) {
+      throw new HttpError(409, 'A situação deste chip foi alterada. Atualize a página.');
+    }
   } catch (error) {
     if (error instanceof HttpError) throw error;
     throw mapChipDatabaseError(error);
@@ -2133,6 +2243,7 @@ async function routeApi(request, env) {
     requireRole(user, 'manager');
     return updateNews(request, env, user, decodeURIComponent(newsMatch[1]));
   }
+  if (method === 'GET' && path === '/api/chips/candidates') return listChipCandidates(env, user, url);
   if (method === 'GET' && path === '/api/chips') return listChips(env, user);
   if (method === 'POST' && path === '/api/chips') {
     requireRole(user, 'manager');
@@ -2207,7 +2318,10 @@ async function routeApi(request, env) {
 
 function mapUnexpectedError(error) {
   if (error instanceof HttpError) return json({ error: error.message, ...(error.fields ? { fields: error.fields } : {}) }, error.status);
-  console.error('Worker error', error);
+  console.error(JSON.stringify({
+    message: 'Unhandled Worker error',
+    error: error instanceof Error ? error.message : String(error),
+  }));
   return json({ error: 'Ocorreu um erro inesperado. Tente novamente.' }, 500);
 }
 

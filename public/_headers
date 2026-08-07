@@ -2,7 +2,7 @@
   Content-Security-Policy: default-src 'self'; base-uri 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
-  Permissions-Policy: camera=(self), microphone=(), geolocation=()
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

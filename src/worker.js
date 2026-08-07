@@ -25,6 +25,8 @@ const PRICE_CATEGORIES = [
   'VIVO V',
 ];
 const PRICE_CATEGORY_SET = new Set(PRICE_CATEGORIES);
+const NEWS_CATEGORIES = new Set(['promotion', 'notice', 'update']);
+const CHIP_LIMIT_PER_SELLER = 10;
 const DASHBOARD_CLUSTER_ORDER = [
   'devices',
   'cases',
@@ -72,7 +74,7 @@ function securityHeaders(headers = {}) {
     'Content-Security-Policy': "default-src 'self'; base-uri 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
     'Cross-Origin-Opener-Policy': 'same-origin',
     'Cross-Origin-Resource-Policy': 'same-origin',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Permissions-Policy': 'camera=(self), microphone=(), geolocation=()',
     'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
@@ -95,12 +97,21 @@ function noContent(headers = {}) {
   return new Response(null, { status: 204, headers: securityHeaders({ 'Cache-Control': 'no-store', ...headers }) });
 }
 
-function secureAssetResponse(response) {
+function secureAssetResponse(response, request) {
   const headers = new Headers(response.headers);
   for (const [name, value] of Object.entries(securityHeaders())) headers.set(name, value);
   const contentType = headers.get('Content-Type') || '';
-  if (contentType.includes('text/html')) headers.set('Cache-Control', 'no-store');
-  else if (contentType.includes('text/css') || contentType.includes('javascript')) headers.set('Cache-Control', 'no-cache');
+  const pathname = new URL(request.url).pathname.toLowerCase();
+  const filename = pathname.split('/').pop() || '';
+  const isHtml = contentType.includes('text/html')
+    || pathname.endsWith('/')
+    || pathname.endsWith('.html')
+    || !filename.includes('.');
+  const isCode = contentType.includes('text/css')
+    || contentType.includes('javascript')
+    || /\.(?:css|m?js)$/.test(pathname);
+  if (isHtml) headers.set('Cache-Control', 'no-store');
+  else if (isCode) headers.set('Cache-Control', 'no-cache');
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -164,6 +175,57 @@ function roleRule(value) {
 function booleanRule(value) {
   if (typeof value !== 'boolean') return { error: 'Informe um status válido.' };
   return { value };
+}
+
+function newsCategoryRule(value) {
+  const category = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (!NEWS_CATEGORIES.has(category)) return { error: 'Selecione um tipo de notícia válido.' };
+  return { value: category };
+}
+
+function materialCodeRule(value) {
+  const materialCode = typeof value === 'string' ? value.trim().toUpperCase() : '';
+  if (!materialCode || materialCode.length > 40 || !/^[A-Z0-9._/-]+$/.test(materialCode)) {
+    return { error: 'Informe um código material válido.' };
+  }
+  return { value: materialCode };
+}
+
+function iccidRule(value) {
+  const source = typeof value === 'string' ? value.trim() : '';
+  if (!source || /[^0-9\s-]/.test(source)) return { error: 'Informe um ICCID numérico válido.' };
+  const iccid = source.replace(/\D/g, '');
+  if (iccid.length < 18 || iccid.length > 32) return { error: 'O ICCID deve ter entre 18 e 32 dígitos.' };
+  return { value: iccid };
+}
+
+function phoneNumberRule(value) {
+  const source = typeof value === 'string' ? value.trim() : '';
+  if (!source || /[^0-9()+\s-]/.test(source)) return { error: 'Informe o número cadastrado no chip.' };
+  const phoneNumber = source.replace(/\D/g, '');
+  if (phoneNumber.length < 10 || phoneNumber.length > 13) {
+    return { error: 'Informe um telefone com DDD válido.' };
+  }
+  return { value: phoneNumber };
+}
+
+function todayInSaoPaulo() {
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function saleDateRule(value) {
+  const soldOn = typeof value === 'string' ? value.trim() : '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(soldOn)) return { error: 'Informe a data da venda.' };
+  const parsed = new Date(`${soldOn}T12:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== soldOn) {
+    return { error: 'Informe uma data de venda válida.' };
+  }
+  if (soldOn > todayInSaoPaulo()) return { error: 'A data da venda não pode estar no futuro.' };
+  return { value: soldOn };
 }
 
 function positiveIdRule(label) {
@@ -528,6 +590,14 @@ async function catalogData(env, user) {
         retail.source_label AS retail_price_source,
         retail.reference_name AS retail_price_reference,
         COALESCE((SELECT SUM(r.quantity) FROM active_quantity_reservations r WHERE r.variant_id = v.id), 0) AS quantity_reserved,
+        COALESCE((
+          SELECT COUNT(*)
+          FROM chips chip
+          JOIN inventory_serials chip_serial ON chip_serial.id = chip.inventory_serial_id
+          WHERE chip_serial.variant_id = v.id
+            AND chip.active = 1
+            AND chip.status = 'available'
+        ), 0) AS quantity_chip_allocated,
         COALESCE((SELECT incoming.quantity FROM incoming_inventory incoming WHERE incoming.variant_id = v.id), 0) AS quantity_incoming,
         COALESCE((
           SELECT SUM(i.quantity)
@@ -564,7 +634,9 @@ async function catalogData(env, user) {
   }
   const variantsByProduct = new Map();
   for (const row of variantsResult.results || []) {
-    const available = Math.max(0, Number(row.quantity_on_hand) - Number(row.quantity_reserved));
+    const available = Math.max(0, Number(row.quantity_on_hand)
+      - Number(row.quantity_reserved)
+      - Number(row.quantity_chip_allocated));
     if (user.role === 'seller' && available <= 0) continue;
     const variant = {
       id: row.id,
@@ -578,6 +650,7 @@ async function catalogData(env, user) {
       option3Value: row.option3_value,
       available,
       reserved: Number(row.quantity_reserved),
+      allocatedToSellers: Number(row.quantity_chip_allocated),
       withdrawn: Number(row.quantity_withdrawn),
       onHand: Number(row.quantity_on_hand),
       incoming: Number(row.quantity_incoming),
@@ -615,6 +688,7 @@ async function catalogData(env, user) {
       variants,
       available: variants.reduce((sum, variant) => sum + variant.available, 0),
       reserved: variants.reduce((sum, variant) => sum + variant.reserved, 0),
+      allocatedToSellers: variants.reduce((sum, variant) => sum + variant.allocatedToSellers, 0),
       withdrawn: variants.reduce((sum, variant) => sum + variant.withdrawn, 0),
       onHand: variants.reduce((sum, variant) => sum + variant.onHand, 0),
       incoming: variants.reduce((sum, variant) => sum + variant.incoming, 0),
@@ -692,10 +766,11 @@ function managerInventoryGroups(products) {
     const groupProducts = grouped.get(cluster);
     const totals = groupProducts.reduce((summary, product) => ({
       onHand: summary.onHand + product.onHand,
-      available: summary.available + product.available,
-      reserved: summary.reserved + product.reserved,
-      incoming: summary.incoming + product.incoming,
-    }), { onHand: 0, available: 0, reserved: 0, incoming: 0 });
+    available: summary.available + product.available,
+    reserved: summary.reserved + product.reserved,
+    allocatedToSellers: summary.allocatedToSellers + product.allocatedToSellers,
+    incoming: summary.incoming + product.incoming,
+    }), { onHand: 0, available: 0, reserved: 0, allocatedToSellers: 0, incoming: 0 });
     const topProducts = [...groupProducts]
       .sort((left, right) => right.available - left.available
         || left.name.localeCompare(right.name, 'pt-BR'))
@@ -757,9 +832,10 @@ async function dashboard(env, user) {
   const stock = products.reduce((totals, product) => ({
     available: totals.available + product.available,
     reserved: totals.reserved + product.reserved,
+    allocatedToSellers: totals.allocatedToSellers + product.allocatedToSellers,
     withdrawn: totals.withdrawn + product.withdrawn,
     incoming: totals.incoming + product.incoming,
-  }), { available: 0, reserved: 0, withdrawn: 0, incoming: 0 });
+  }), { available: 0, reserved: 0, allocatedToSellers: 0, withdrawn: 0, incoming: 0 });
   const modelsAvailable = products.filter((product) => product.available > 0).length;
 
   if (user.role === 'manager') {
@@ -851,6 +927,25 @@ async function dashboard(env, user) {
     });
   }
 
+  if (user.role === 'stocker') {
+    const orderRows = (await env.DB.prepare(`
+      SELECT status, COUNT(*) AS count
+      FROM withdrawal_requests
+      GROUP BY status
+    `).all()).results || [];
+    const requests = { pending: 0, approved: 0, rejected: 0, cancelled: 0 };
+    for (const row of orderRows) requests[row.status] = Number(row.count);
+    return json({
+      role: 'stocker',
+      stock,
+      modelsAvailable,
+      requests,
+      readyRequests: requests.approved,
+      inventoryGroups: managerInventoryGroups(products),
+      recentRequests: await listRequests(env, user, 'approved', 6),
+    });
+  }
+
   const ownRows = (await env.DB.prepare(`
     SELECT status, COUNT(*) AS count FROM withdrawal_requests WHERE seller_id = ? GROUP BY status
   `).bind(user.id).all()).results || [];
@@ -870,6 +965,7 @@ async function stockSummary(env, user) {
     materialCode: product.variants[0]?.materialCode || '',
     available: product.available,
     reserved: user.role === 'manager' ? product.reserved : undefined,
+    allocatedToSellers: user.role === 'manager' ? product.allocatedToSellers : undefined,
     withdrawn: user.role === 'manager' ? product.withdrawn : undefined,
     incoming: user.role === 'manager' ? product.incoming : undefined,
     total: user.role === 'manager' ? product.onHand : product.available,
@@ -967,13 +1063,23 @@ async function createWithdrawal(request, env, user) {
                SELECT SUM(r.quantity)
                FROM active_quantity_reservations r
                WHERE r.variant_id = v.id
-             ), 0) AS quantity_reserved
+             ), 0) AS quantity_reserved,
+             COALESCE((
+               SELECT COUNT(*)
+               FROM chips chip
+               JOIN inventory_serials chip_serial ON chip_serial.id = chip.inventory_serial_id
+               WHERE chip_serial.variant_id = v.id
+                 AND chip.active = 1
+                 AND chip.status = 'available'
+             ), 0) AS quantity_chip_allocated
       FROM product_variants v
       JOIN products p ON p.id = v.product_id
       WHERE v.id = ? AND v.active = 1 AND p.active = 1 AND v.stock_mode = 'quantity'
     `).bind(line.variantId).first();
     if (!variant) throw new HttpError(404, 'Um dos produtos não foi encontrado. Atualize a loja e tente novamente.');
-    const available = Number(variant.quantity_on_hand) - Number(variant.quantity_reserved);
+    const available = Number(variant.quantity_on_hand)
+      - Number(variant.quantity_reserved)
+      - Number(variant.quantity_chip_allocated);
     if (available < line.quantity) {
       throw new HttpError(409, `${variant.product_name} não possui mais a quantidade solicitada.`);
     }
@@ -1017,6 +1123,12 @@ async function createWithdrawal(request, env, user) {
       WHERE variant_id = ? AND status = 'available'
         AND NOT EXISTS (
           SELECT 1 FROM request_serial_assignments a WHERE a.serial_id = inventory_serials.id
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM chips chip
+          WHERE chip.inventory_serial_id = inventory_serials.id
+            AND chip.active = 1
+            AND chip.status = 'available'
         )
       ORDER BY serial_number COLLATE NOCASE
       LIMIT ?
@@ -1169,16 +1281,16 @@ async function cancelWithdrawal(env, user, requestId) {
   const existing = await env.DB.prepare('SELECT * FROM withdrawal_requests WHERE id = ?').bind(requestId).first();
   if (!existing) throw new HttpError(404, 'Pedido não encontrado.');
 
-  const managerCancellation = user.role === 'manager';
-  if (!managerCancellation && (user.role !== 'seller' || existing.seller_id !== user.id)) {
+  const operationalCancellation = ['manager', 'stocker'].includes(user.role);
+  if (!operationalCancellation && (user.role !== 'seller' || existing.seller_id !== user.id)) {
     throw new HttpError(403, 'Você não pode cancelar este pedido.');
   }
-  if (managerCancellation) {
+  if (operationalCancellation) {
     if (!['pending', 'approved'].includes(existing.status)) {
       throw new HttpError(409, 'Este pedido já foi encerrado e não pode mais ser cancelado.');
     }
   } else if (existing.status !== 'pending') {
-    throw new HttpError(409, 'Este pedido já foi liberado e somente o gerente pode cancelá-lo.');
+    throw new HttpError(409, 'Este pedido já foi liberado e somente a equipe de estoque ou a gerência pode cancelá-lo.');
   }
 
   const [quantityResult, serialResult] = await env.DB.batch([
@@ -1225,7 +1337,11 @@ async function cancelWithdrawal(env, user, requestId) {
         WHERE id = ? AND status = ?
       `).bind(
         'cancelled',
-        managerCancellation ? 'Cancelado pelo gerente; itens devolvidos ao estoque' : 'Cancelado pelo vendedor',
+        user.role === 'manager'
+          ? 'Cancelado pelo gerente; itens devolvidos ao estoque'
+          : user.role === 'stocker'
+            ? 'Cancelado pelo estoquista; itens devolvidos ao estoque'
+            : 'Cancelado pelo vendedor',
         timestamp,
         user.id,
         requestId,
@@ -1254,6 +1370,539 @@ async function cancelWithdrawal(env, user, requestId) {
   return json({ request: updated });
 }
 
+function publicNewsItem(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    body: row.body,
+    category: row.category,
+    validityLabel: row.validity_label || '',
+    imagePath: row.image_path || '',
+    imageAlt: row.image_alt || '',
+    active: Boolean(row.active),
+    authorName: row.author_name || 'Equipe comercial',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function newsItemById(env, id) {
+  return env.DB.prepare(`
+    SELECT n.*, author.name AS author_name
+    FROM news_items n
+    LEFT JOIN users author ON author.id = n.created_by
+    WHERE n.id = ?
+  `).bind(id).first();
+}
+
+async function listNews(env, user) {
+  const visibility = user.role === 'manager' ? '' : 'WHERE n.active = 1';
+  const rows = (await env.DB.prepare(`
+    SELECT n.*, author.name AS author_name
+    FROM news_items n
+    LEFT JOIN users author ON author.id = n.created_by
+    ${visibility}
+    ORDER BY n.active DESC, n.updated_at DESC, n.id DESC
+  `).all()).results || [];
+  return json({ news: rows.map(publicNewsItem) });
+}
+
+async function createNews(request, env, manager) {
+  const data = validateFields(await readJson(request), {
+    title: textRule('o título da notícia', { min: 3, max: 120 }),
+    body: textRule('o conteúdo da notícia', { min: 3, max: 2500 }),
+    category: newsCategoryRule,
+    validityLabel: textRule('a vigência', { max: 80, optional: true }),
+  });
+  const id = crypto.randomUUID();
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO news_items
+        (id, title, body, category, validity_label, active, created_by, updated_by, created_at, updated_at)
+      VALUES (?, ?, ?, ?, NULLIF(?, ''), 1, ?, ?, ?, ?)
+    `).bind(id, data.title, data.body, data.category, data.validityLabel, manager.id, manager.id, timestamp, timestamp),
+    auditStatement(env, manager.id, 'news.created', 'news', id, {
+      title: data.title,
+      category: data.category,
+      validityLabel: data.validityLabel,
+    }),
+  ]);
+  return json({ news: publicNewsItem(await newsItemById(env, id)) }, 201);
+}
+
+async function updateNews(request, env, manager, id) {
+  const existing = await newsItemById(env, id);
+  if (!existing) throw new HttpError(404, 'Notícia não encontrada.');
+  const data = validateFields(await readJson(request), {
+    title: textRule('o título da notícia', { min: 3, max: 120 }),
+    body: textRule('o conteúdo da notícia', { min: 3, max: 2500 }),
+    category: newsCategoryRule,
+    validityLabel: textRule('a vigência', { max: 80, optional: true }),
+  });
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`
+      UPDATE news_items
+      SET title = ?, body = ?, category = ?, validity_label = NULLIF(?, ''), updated_by = ?, updated_at = ?
+      WHERE id = ?
+    `).bind(data.title, data.body, data.category, data.validityLabel, manager.id, timestamp, id),
+    auditStatement(env, manager.id, 'news.updated', 'news', id, {
+      title: data.title,
+      category: data.category,
+      validityLabel: data.validityLabel,
+      active: Boolean(existing.active),
+    }),
+  ]);
+  return json({ news: publicNewsItem(await newsItemById(env, id)) });
+}
+
+async function setNewsVisibility(request, env, manager, id) {
+  const existing = await newsItemById(env, id);
+  if (!existing) throw new HttpError(404, 'Notícia não encontrada.');
+  const data = validateFields(await readJson(request), { active: booleanRule });
+  if (Boolean(existing.active) === data.active) return json({ news: publicNewsItem(existing) });
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`
+      UPDATE news_items
+      SET active = ?, updated_by = ?, updated_at = ?
+      WHERE id = ?
+    `).bind(data.active ? 1 : 0, manager.id, timestamp, id),
+    auditStatement(env, manager.id, data.active ? 'news.published' : 'news.hidden', 'news', id, {
+      title: existing.title,
+      category: existing.category,
+    }),
+  ]);
+  return json({ news: publicNewsItem(await newsItemById(env, id)) });
+}
+
+function publicChip(row) {
+  return {
+    id: row.id,
+    materialCode: row.material_code,
+    iccid: row.iccid,
+    sellerId: Number(row.assigned_seller_id),
+    sellerName: row.seller_name || '',
+    sellerEmail: row.seller_email || '',
+    stockLinked: Boolean(row.inventory_serial_id),
+    status: row.status,
+    soldOn: row.sold_on || '',
+    registeredPhone: row.registered_phone || '',
+    active: Boolean(row.active),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    removedAt: row.removed_at || '',
+  };
+}
+
+async function chipById(env, id) {
+  return env.DB.prepare(`
+    SELECT c.*, seller.name AS seller_name, seller.email AS seller_email,
+           inventory.status AS inventory_status,
+           inventory.variant_id AS inventory_variant_id
+    FROM chips c
+    JOIN users seller ON seller.id = c.assigned_seller_id
+    LEFT JOIN inventory_serials inventory ON inventory.id = c.inventory_serial_id
+    WHERE c.id = ?
+  `).bind(id).first();
+}
+
+async function resolveChipInventorySerial(env, materialCode, iccid) {
+  const rows = (await env.DB.prepare(`
+    SELECT inventory.id, inventory.status, inventory.variant_id,
+           variant.sku AS material_code
+    FROM inventory_serials inventory
+    JOIN product_variants variant ON variant.id = inventory.variant_id
+    WHERE inventory.serial_number = ? COLLATE NOCASE
+       OR ? LIKE '%' || inventory.serial_number
+    ORDER BY CASE WHEN inventory.serial_number = ? COLLATE NOCASE THEN 0 ELSE 1 END,
+             length(inventory.serial_number) DESC
+    LIMIT 2
+  `).bind(iccid, iccid, iccid).all()).results || [];
+  if (!rows.length) return null;
+  const serial = rows[0];
+  if (String(serial.material_code || '').toUpperCase() !== materialCode.toUpperCase()) {
+    throw new HttpError(409, 'O ICCID pertence a outro código material no estoque.', {
+      materialCode: `Código esperado: ${serial.material_code}.`,
+      iccid: 'Confira se o chip e o material correspondem.',
+    });
+  }
+  return serial;
+}
+
+async function ensureChipIsUnique(env, iccid, inventorySerialId = null, excludedId = '') {
+  const conflict = await env.DB.prepare(`
+    SELECT id, iccid, inventory_serial_id
+    FROM chips
+    WHERE id <> ?
+      AND (
+        iccid = ? COLLATE NOCASE
+        OR (? IS NOT NULL AND inventory_serial_id = ?)
+      )
+    LIMIT 1
+  `).bind(excludedId, iccid, inventorySerialId, inventorySerialId).first();
+  if (!conflict) return;
+  if (conflict.iccid === iccid) {
+    throw new HttpError(409, 'Este ICCID já está cadastrado no sistema.', {
+      iccid: 'ICCID já cadastrado.',
+    });
+  }
+  throw new HttpError(409, 'Este chip já está atribuído a uma carteira.', {
+    iccid: 'O código de barras corresponde a outro cadastro.',
+  });
+}
+
+function mapChipDatabaseError(error) {
+  const message = String(error?.message || error);
+  if (message.includes('CHIP_CAPACITY_EXCEEDED')) {
+    return new HttpError(409, `Este vendedor já possui ${CHIP_LIMIT_PER_SELLER} chips disponíveis.`);
+  }
+  if (message.includes('INVALID_CHIP_SELLER')) {
+    return new HttpError(400, 'Selecione um vendedor ativo para receber o chip.', {
+      sellerId: 'Vendedor inválido ou sem acesso ativo.',
+    });
+  }
+  if (message.includes('chips.iccid') || message.includes('UNIQUE constraint failed: chips.iccid')) {
+    return new HttpError(409, 'Este ICCID já está cadastrado no sistema.', {
+      iccid: 'ICCID já cadastrado.',
+    });
+  }
+  if (message.includes('chips.inventory_serial_id') || message.includes('UNIQUE constraint failed: chips.inventory_serial_id')) {
+    return new HttpError(409, 'Este chip já está atribuído a uma carteira.', {
+      iccid: 'ICCID já atribuído a outro vendedor.',
+    });
+  }
+  return error;
+}
+
+async function listChips(env, user) {
+  requireRole(user, ['manager', 'seller']);
+  const manager = user.role === 'manager';
+  let chipsStatement = env.DB.prepare(`
+    SELECT c.*, seller.name AS seller_name, seller.email AS seller_email
+    FROM chips c
+    JOIN users seller ON seller.id = c.assigned_seller_id
+    ${manager ? '' : 'WHERE c.assigned_seller_id = ? AND c.active = 1'}
+    ORDER BY c.active DESC,
+             CASE c.status WHEN 'available' THEN 0 ELSE 1 END,
+             seller.name COLLATE NOCASE,
+             c.updated_at DESC,
+             c.id
+  `);
+  if (!manager) chipsStatement = chipsStatement.bind(user.id);
+  const rows = (await chipsStatement.all()).results || [];
+  const chips = rows.map(publicChip);
+  let sellers = [];
+  if (manager) {
+    const sellerRows = (await env.DB.prepare(`
+      SELECT u.id, u.name, u.email,
+             SUM(CASE WHEN c.active = 1 AND c.status = 'available' THEN 1 ELSE 0 END) AS available_count,
+             SUM(CASE WHEN c.active = 1 AND c.status = 'sold' THEN 1 ELSE 0 END) AS sold_count
+      FROM users u
+      LEFT JOIN chips c ON c.assigned_seller_id = u.id
+      WHERE u.role = 'seller'
+        AND u.access_profile = 'default'
+        AND u.active = 1
+        AND u.deleted_at IS NULL
+      GROUP BY u.id, u.name, u.email
+      ORDER BY u.name COLLATE NOCASE
+    `).all()).results || [];
+    sellers = sellerRows.map((seller) => ({
+      id: Number(seller.id),
+      name: seller.name,
+      email: seller.email,
+      availableCount: Number(seller.available_count || 0),
+      soldCount: Number(seller.sold_count || 0),
+      limit: CHIP_LIMIT_PER_SELLER,
+    }));
+  }
+  return json({
+    chips,
+    sellers,
+    limit: CHIP_LIMIT_PER_SELLER,
+    summary: {
+      available: chips.filter((chip) => chip.active && chip.status === 'available').length,
+      sold: chips.filter((chip) => chip.active && chip.status === 'sold').length,
+      removed: chips.filter((chip) => !chip.active).length,
+    },
+  });
+}
+
+async function createChip(request, env, manager) {
+  const data = validateFields(await readJson(request), {
+    materialCode: materialCodeRule,
+    iccid: iccidRule,
+    sellerId: positiveIdRule('um vendedor'),
+  });
+  const id = crypto.randomUUID();
+  const timestamp = nowIso();
+  const inventorySerial = await resolveChipInventorySerial(env, data.materialCode, data.iccid);
+  await ensureChipIsUnique(env, data.iccid, inventorySerial?.id || null);
+  if (inventorySerial && inventorySerial.status !== 'available') {
+    throw new HttpError(409, 'Este ICCID já consta como retirado no estoque.', {
+      iccid: 'Escolha um chip disponível no relatório atual.',
+    });
+  }
+  try {
+    await env.DB.batch([
+      env.DB.prepare(`
+        INSERT INTO chips
+          (id, material_code, iccid, inventory_serial_id, assigned_seller_id,
+           created_by, updated_by, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(id, data.materialCode, data.iccid, inventorySerial?.id || null, data.sellerId,
+        manager.id, manager.id, timestamp, timestamp),
+      auditStatement(env, manager.id, 'chip.created', 'chip', id, {
+        materialCode: data.materialCode,
+        iccidLast4: data.iccid.slice(-4),
+        sellerId: data.sellerId,
+        stockLinked: Boolean(inventorySerial),
+      }),
+    ]);
+  } catch (error) {
+    throw mapChipDatabaseError(error);
+  }
+  return json({ chip: publicChip(await chipById(env, id)) }, 201);
+}
+
+async function updateChip(request, env, manager, id) {
+  const existing = await chipById(env, id);
+  if (!existing) throw new HttpError(404, 'Chip não encontrado.');
+  if (!existing.active) throw new HttpError(409, 'Restaure este chip antes de editá-lo.');
+  const data = validateFields(await readJson(request), {
+    materialCode: materialCodeRule,
+    iccid: iccidRule,
+    sellerId: positiveIdRule('um vendedor'),
+  });
+  if (existing.status === 'sold' && Number(existing.assigned_seller_id) !== data.sellerId) {
+    throw new HttpError(409, 'Um chip vendido não pode ser transferido para outro vendedor.');
+  }
+  if (existing.status === 'sold'
+      && (existing.material_code !== data.materialCode || existing.iccid !== data.iccid)) {
+    throw new HttpError(409, 'Reabra a venda antes de alterar o material ou o ICCID deste chip.');
+  }
+  const timestamp = nowIso();
+  const transferred = Number(existing.assigned_seller_id) !== data.sellerId;
+  const inventorySerial = await resolveChipInventorySerial(env, data.materialCode, data.iccid);
+  await ensureChipIsUnique(env, data.iccid, inventorySerial?.id || null, id);
+  const keepingSoldSerial = existing.status === 'sold'
+    && Number(existing.inventory_serial_id || 0) === Number(inventorySerial?.id || 0);
+  if (inventorySerial && inventorySerial.status !== 'available' && !keepingSoldSerial) {
+    throw new HttpError(409, 'Este ICCID já consta como retirado no estoque.', {
+      iccid: 'Escolha um chip disponível no relatório atual.',
+    });
+  }
+  try {
+    await env.DB.batch([
+      env.DB.prepare(`
+        UPDATE chips
+        SET material_code = ?, iccid = ?, inventory_serial_id = ?, assigned_seller_id = ?,
+            updated_by = ?, updated_at = ?
+        WHERE id = ? AND active = 1
+      `).bind(data.materialCode, data.iccid, inventorySerial?.id || null, data.sellerId,
+        manager.id, timestamp, id),
+      auditStatement(env, manager.id, transferred ? 'chip.transferred' : 'chip.updated', 'chip', id, {
+        materialCode: data.materialCode,
+        iccidLast4: data.iccid.slice(-4),
+        previousSellerId: Number(existing.assigned_seller_id),
+        sellerId: data.sellerId,
+        stockLinked: Boolean(inventorySerial),
+      }),
+    ]);
+  } catch (error) {
+    throw mapChipDatabaseError(error);
+  }
+  return json({ chip: publicChip(await chipById(env, id)) });
+}
+
+async function sellChip(request, env, user, id) {
+  requireRole(user, ['manager', 'seller']);
+  const existing = await chipById(env, id);
+  if (!existing) throw new HttpError(404, 'Chip não encontrado.');
+  if (user.role === 'seller' && Number(existing.assigned_seller_id) !== user.id) {
+    throw new HttpError(403, 'Você só pode registrar a venda dos seus próprios chips.');
+  }
+  if (!existing.active) throw new HttpError(409, 'Este chip foi retirado da carteira.');
+  if (existing.status !== 'available') throw new HttpError(409, 'A venda deste chip já foi registrada.');
+  const data = validateFields(await readJson(request), {
+    soldOn: saleDateRule,
+    registeredPhone: phoneNumberRule,
+  });
+  if (existing.inventory_serial_id && existing.inventory_status !== 'available') {
+    throw new HttpError(409, 'Este chip não está mais disponível no estoque. Atualize a página e procure o gerente.');
+  }
+  const timestamp = nowIso();
+  const statements = [
+    env.DB.prepare(`
+      UPDATE chips
+      SET status = 'sold', sold_on = ?, registered_phone = ?, updated_by = ?, updated_at = ?
+      WHERE id = ? AND active = 1 AND status = 'available'
+        AND (? IS NULL OR EXISTS (
+          SELECT 1 FROM inventory_serials inventory
+          WHERE inventory.id = ? AND inventory.status = 'available'
+        ))
+    `).bind(data.soldOn, data.registeredPhone, user.id, timestamp, id,
+      existing.inventory_serial_id || null, existing.inventory_serial_id || null),
+  ];
+  if (existing.inventory_serial_id) {
+    statements.push(
+      env.DB.prepare(`
+        UPDATE inventory_serials
+        SET status = 'withdrawn', updated_at = ?
+        WHERE id = ? AND status = 'available'
+      `).bind(timestamp, existing.inventory_serial_id),
+      env.DB.prepare(`
+        UPDATE product_variants
+        SET quantity_on_hand = (
+              SELECT COUNT(*) FROM inventory_serials inventory
+              WHERE inventory.variant_id = product_variants.id AND inventory.status = 'available'
+            ),
+            updated_at = ?
+        WHERE id = ?
+      `).bind(timestamp, existing.inventory_variant_id),
+    );
+  }
+  statements.push(
+    env.DB.prepare(`
+      INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, details_json)
+      SELECT ?, 'chip.sold', 'chip', ?, ?
+      WHERE EXISTS (SELECT 1 FROM chips WHERE id = ? AND status = 'sold' AND updated_at = ?)
+    `).bind(user.id, id, JSON.stringify({
+      materialCode: existing.material_code,
+      iccidLast4: existing.iccid.slice(-4),
+      sellerId: Number(existing.assigned_seller_id),
+      soldOn: data.soldOn,
+      registeredPhone: data.registeredPhone,
+      stockLinked: Boolean(existing.inventory_serial_id),
+    }), id, timestamp),
+  );
+  const results = await env.DB.batch(statements);
+  if (!results[0].meta.changes) throw new HttpError(409, 'A situação deste chip foi alterada. Atualize a página.');
+  return json({ chip: publicChip(await chipById(env, id)) });
+}
+
+async function reopenChip(env, manager, id) {
+  const existing = await chipById(env, id);
+  if (!existing) throw new HttpError(404, 'Chip não encontrado.');
+  if (!existing.active) throw new HttpError(409, 'Restaure este chip antes de corrigir a venda.');
+  if (existing.status !== 'sold') throw new HttpError(409, 'Este chip já está disponível.');
+  if (existing.inventory_serial_id) {
+    const assignment = await env.DB.prepare(`
+      SELECT 1 AS found FROM request_serial_assignments WHERE serial_id = ? LIMIT 1
+    `).bind(existing.inventory_serial_id).first();
+    if (assignment) throw new HttpError(409, 'Este ICCID já está vinculado a um pedido e não pode ser reaberto.');
+  }
+  const timestamp = nowIso();
+  try {
+    const statements = [
+      env.DB.prepare(`
+        UPDATE chips
+        SET status = 'available', sold_on = NULL, registered_phone = NULL,
+            updated_by = ?, updated_at = ?
+        WHERE id = ? AND active = 1 AND status = 'sold'
+      `).bind(manager.id, timestamp, id),
+    ];
+    if (existing.inventory_serial_id) {
+      statements.push(
+        env.DB.prepare(`
+          UPDATE inventory_serials
+          SET status = 'available', updated_at = ?
+          WHERE id = ? AND status = 'withdrawn'
+        `).bind(timestamp, existing.inventory_serial_id),
+        env.DB.prepare(`
+          UPDATE product_variants
+          SET quantity_on_hand = (
+                SELECT COUNT(*) FROM inventory_serials inventory
+                WHERE inventory.variant_id = product_variants.id AND inventory.status = 'available'
+              ),
+              updated_at = ?
+          WHERE id = ?
+        `).bind(timestamp, existing.inventory_variant_id),
+      );
+    }
+    statements.push(
+      env.DB.prepare(`
+        INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, details_json)
+        SELECT ?, 'chip.sale_reopened', 'chip', ?, ?
+        WHERE EXISTS (SELECT 1 FROM chips WHERE id = ? AND status = 'available' AND updated_at = ?)
+      `).bind(manager.id, id, JSON.stringify({
+        materialCode: existing.material_code,
+        iccidLast4: existing.iccid.slice(-4),
+        sellerId: Number(existing.assigned_seller_id),
+        stockLinked: Boolean(existing.inventory_serial_id),
+      }), id, timestamp),
+    );
+    const results = await env.DB.batch(statements);
+    if (!results[0].meta.changes) throw new HttpError(409, 'A situação deste chip foi alterada. Atualize a página.');
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    throw mapChipDatabaseError(error);
+  }
+  return json({ chip: publicChip(await chipById(env, id)) });
+}
+
+async function removeChip(env, manager, id) {
+  const existing = await chipById(env, id);
+  if (!existing) throw new HttpError(404, 'Chip não encontrado.');
+  if (!existing.active) return noContent();
+  const timestamp = nowIso();
+  const results = await env.DB.batch([
+    env.DB.prepare(`
+      UPDATE chips
+      SET active = 0, removed_at = ?, updated_by = ?, updated_at = ?
+      WHERE id = ? AND active = 1
+    `).bind(timestamp, manager.id, timestamp, id),
+    env.DB.prepare(`
+      INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, details_json)
+      SELECT ?, 'chip.removed', 'chip', ?, ?
+      WHERE EXISTS (SELECT 1 FROM chips WHERE id = ? AND active = 0 AND updated_at = ?)
+    `).bind(manager.id, id, JSON.stringify({
+      materialCode: existing.material_code,
+      iccidLast4: existing.iccid.slice(-4),
+      sellerId: Number(existing.assigned_seller_id),
+      previousStatus: existing.status,
+    }), id, timestamp),
+  ]);
+  if (!results[0].meta.changes) throw new HttpError(409, 'A situação deste chip foi alterada. Atualize a página.');
+  return noContent();
+}
+
+async function restoreChip(env, manager, id) {
+  const existing = await chipById(env, id);
+  if (!existing) throw new HttpError(404, 'Chip não encontrado.');
+  if (existing.active) return json({ chip: publicChip(existing) });
+  if (existing.status === 'available' && existing.inventory_serial_id
+      && existing.inventory_status !== 'available') {
+    throw new HttpError(409, 'Este ICCID já foi retirado do estoque e não pode ser restaurado.');
+  }
+  const timestamp = nowIso();
+  try {
+    const results = await env.DB.batch([
+      env.DB.prepare(`
+        UPDATE chips
+        SET active = 1, removed_at = NULL, updated_by = ?, updated_at = ?
+        WHERE id = ? AND active = 0
+      `).bind(manager.id, timestamp, id),
+      env.DB.prepare(`
+        INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, details_json)
+        SELECT ?, 'chip.restored', 'chip', ?, ?
+        WHERE EXISTS (SELECT 1 FROM chips WHERE id = ? AND active = 1 AND updated_at = ?)
+      `).bind(manager.id, id, JSON.stringify({
+        materialCode: existing.material_code,
+        iccidLast4: existing.iccid.slice(-4),
+        sellerId: Number(existing.assigned_seller_id),
+        status: existing.status,
+      }), id, timestamp),
+    ]);
+    if (!results[0].meta.changes) throw new HttpError(409, 'A situação deste chip foi alterada. Atualize a página.');
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    throw mapChipDatabaseError(error);
+  }
+  return json({ chip: publicChip(await chipById(env, id)) });
+}
+
 async function listUsers(env) {
   const rows = (await env.DB.prepare(`
     SELECT id, name, email, role, access_profile, active, must_change_password, created_at
@@ -1262,6 +1911,18 @@ async function listUsers(env) {
     ORDER BY active DESC, access_profile, role, name COLLATE NOCASE
   `).all()).results || [];
   return json({ users: rows.map(publicUser) });
+}
+
+async function requireClearedChipWallet(env, user, { active, role }) {
+  if (effectiveRole(user) !== 'seller' || (active && role === 'seller')) return;
+  const count = Number((await env.DB.prepare(`
+    SELECT COUNT(*) AS count
+    FROM chips
+    WHERE assigned_seller_id = ? AND active = 1 AND status = 'available'
+  `).bind(user.id).first()).count || 0);
+  if (!count) return;
+  throw new HttpError(409,
+    `Este vendedor ainda possui ${count} ${count === 1 ? 'chip disponível' : 'chips disponíveis'}. Transfira ou retire os chips antes de alterar o acesso.`);
 }
 
 async function createUser(request, env, manager) {
@@ -1309,6 +1970,7 @@ async function updateUser(request, env, manager, id) {
     `).first()).count);
     if (count <= 1) throw new HttpError(400, 'O sistema precisa manter pelo menos um gerente ativo.');
   }
+  await requireClearedChipWallet(env, existing, { active: data.active, role: data.role });
   const passwordHash = data.password ? await hashPassword(data.password) : '';
   const timestamp = nowIso();
   const statements = [
@@ -1341,6 +2003,9 @@ async function updateUser(request, env, manager, id) {
     const message = String(error.message);
     if (message.includes('users.email')) throw new HttpError(409, 'Este e-mail já está em uso.');
     if (message.includes('LAST_ACTIVE_MANAGER')) throw new HttpError(400, 'O sistema precisa manter pelo menos um gerente ativo.');
+    if (message.includes('CHIP_WALLET_NOT_EMPTY')) {
+      throw new HttpError(409, 'Transfira ou retire os chips disponíveis antes de alterar o acesso deste vendedor.');
+    }
     throw error;
   }
   return json({ user: publicUser(await env.DB.prepare('SELECT * FROM users WHERE id = ? AND deleted_at IS NULL').bind(id).first()) });
@@ -1372,6 +2037,7 @@ async function deleteUser(env, manager, id) {
     `).first()).count);
     if (count <= 1) throw new HttpError(400, 'O sistema precisa manter pelo menos um gerente ativo.');
   }
+  await requireClearedChipWallet(env, existing, { active: false, role: effectiveRole(existing) });
 
   const timestamp = nowIso();
   const anonymizedEmail = `excluido+${id}-${Date.now()}@local.invalid`;
@@ -1398,6 +2064,9 @@ async function deleteUser(env, manager, id) {
   } catch (error) {
     if (String(error.message).includes('LAST_ACTIVE_MANAGER')) {
       throw new HttpError(400, 'O sistema precisa manter pelo menos um gerente ativo.');
+    }
+    if (String(error.message).includes('CHIP_WALLET_NOT_EMPTY')) {
+      throw new HttpError(409, 'Transfira ou retire os chips disponíveis antes de excluir este vendedor.');
     }
     throw error;
   }
@@ -1446,12 +2115,52 @@ async function routeApi(request, env) {
   if (method === 'GET' && path === '/api/auth/me') return json({ user: publicUser(user) });
   if (method === 'PATCH' && path === '/api/auth/password') return changePassword(request, env, user);
   if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
-  if (user.role === 'stocker' && !(method === 'GET' && path === '/api/requests')) {
-    throw new HttpError(403, 'O perfil de estoquista possui acesso somente aos pedidos.');
-  }
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
   if (method === 'GET' && path === '/api/catalog') return listCatalog(env, user);
   if (method === 'GET' && path === '/api/stock/summary') return stockSummary(env, user);
+  if (method === 'GET' && path === '/api/news') return listNews(env, user);
+  if (method === 'POST' && path === '/api/news') {
+    requireRole(user, 'manager');
+    return createNews(request, env, user);
+  }
+  const newsVisibilityMatch = path.match(/^\/api\/news\/([^/]+)\/visibility$/);
+  if (method === 'PATCH' && newsVisibilityMatch) {
+    requireRole(user, 'manager');
+    return setNewsVisibility(request, env, user, decodeURIComponent(newsVisibilityMatch[1]));
+  }
+  const newsMatch = path.match(/^\/api\/news\/([^/]+)$/);
+  if (method === 'PUT' && newsMatch) {
+    requireRole(user, 'manager');
+    return updateNews(request, env, user, decodeURIComponent(newsMatch[1]));
+  }
+  if (method === 'GET' && path === '/api/chips') return listChips(env, user);
+  if (method === 'POST' && path === '/api/chips') {
+    requireRole(user, 'manager');
+    return createChip(request, env, user);
+  }
+  const chipSaleMatch = path.match(/^\/api\/chips\/([^/]+)\/sale$/);
+  if (method === 'POST' && chipSaleMatch) {
+    return sellChip(request, env, user, decodeURIComponent(chipSaleMatch[1]));
+  }
+  const chipReopenMatch = path.match(/^\/api\/chips\/([^/]+)\/reopen$/);
+  if (method === 'POST' && chipReopenMatch) {
+    requireRole(user, 'manager');
+    return reopenChip(env, user, decodeURIComponent(chipReopenMatch[1]));
+  }
+  const chipRestoreMatch = path.match(/^\/api\/chips\/([^/]+)\/restore$/);
+  if (method === 'POST' && chipRestoreMatch) {
+    requireRole(user, 'manager');
+    return restoreChip(env, user, decodeURIComponent(chipRestoreMatch[1]));
+  }
+  const chipMatch = path.match(/^\/api\/chips\/([^/]+)$/);
+  if (method === 'PUT' && chipMatch) {
+    requireRole(user, 'manager');
+    return updateChip(request, env, user, decodeURIComponent(chipMatch[1]));
+  }
+  if (method === 'DELETE' && chipMatch) {
+    requireRole(user, 'manager');
+    return removeChip(env, user, decodeURIComponent(chipMatch[1]));
+  }
   if (method === 'POST' && path === '/api/inventory/quantity') {
     requireRole(user, 'manager');
     return adjustQuantityStock(request, env, user);
@@ -1505,7 +2214,7 @@ function mapUnexpectedError(error) {
 export default {
   async fetch(request, env) {
     const path = new URL(request.url).pathname;
-    if (!path.startsWith('/api/')) return secureAssetResponse(await env.ASSETS.fetch(request));
+    if (!path.startsWith('/api/')) return secureAssetResponse(await env.ASSETS.fetch(request), request);
     try {
       return await routeApi(request, env);
     } catch (error) {

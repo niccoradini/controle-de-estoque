@@ -30,6 +30,7 @@ const state = {
   renovaCatalog: { tableDate: '', devices: [], boosts: [] },
   priceCategory: '',
   cart: new Map(),
+  cartDrawerOpen: false,
   renova: { enabled: false, deviceId: 0, condition: 'bom' },
   deviceSelections: new Map(),
   expandedDeviceFamily: '',
@@ -1197,13 +1198,56 @@ function renderCartBar() {
   const hasUnpricedItem = pricedSelection.some((item) => item.unitPriceCents == null);
   const subtotalLabel = hasUnpricedItem ? 'Subtotal dos itens com preço' : 'Subtotal ao vivo';
   const renovaSummary = renova.discountCents > 0
-    ? `<span class="cart-bar__discount">Após Renova: <strong>${formatMoney(orderTotal)}</strong></span>`
+    ? `<div class="cart-drawer__renova"><span>Desconto Renova</span><strong>− ${formatMoney(renova.discountCents)}</strong></div><div class="cart-drawer__total"><span>Total após Renova</span><strong>${formatMoney(orderTotal)}</strong></div>`
     : '';
-  target.innerHTML = units ? `<div class="cart-bar-spacer" aria-hidden="true"></div><aside class="cart-bar" aria-label="Resumo atualizado do pedido">
-    <div class="cart-bar__order"><span class="cart-bar__eyebrow">Seu pedido</span><strong>${units} ${units === 1 ? 'item selecionado' : 'itens selecionados'}</strong><span>${state.cart.size} ${state.cart.size === 1 ? 'material' : 'materiais'} no carrinho</span></div>
-    <div class="cart-bar__pricing" aria-live="polite"><span>${subtotalLabel}</span><strong>${formatMoney(subtotal)}</strong>${renovaSummary}</div>
-    <button class="btn cart-bar__finish" data-action="review-request" aria-label="Finalizar e revisar pedido">${uiIcon('orders')}<span>Finalizar pedido</span></button>
-  </aside>` : '';
+  const cartItems = pricedSelection.map(({ product, variant, quantity, unitPriceCents }) => {
+    const lineTotal = unitPriceCents == null ? null : unitPriceCents * quantity;
+    const price = unitPriceCents == null
+      ? 'Preço pendente'
+      : productPriceKind(product, variant) === 'no_charge'
+        ? 'Sem cobrança'
+        : `${formatMoney(unitPriceCents)} por unidade`;
+    return `<article class="cart-drawer-item">
+      <div class="cart-drawer-item__thumb" aria-hidden="true">${productVisual(product)}</div>
+      <div class="cart-drawer-item__content"><strong>${escapeHtml(product.name)}</strong><span class="mono">${escapeHtml(variant.materialCode)}</span><small>${price}</small></div>
+      <div class="cart-drawer-item__line-total">${lineTotal == null ? '—' : formatMoney(lineTotal)}</div>
+      <div class="cart-drawer-item__quantity" aria-label="Quantidade de ${escapeHtml(product.name)}">
+        <button type="button" data-action="decrease-cart-item" data-variant-id="${variant.id}" aria-label="Diminuir quantidade">−</button>
+        <strong>${quantity}</strong>
+        <button type="button" data-action="increase-cart-item" data-variant-id="${variant.id}" aria-label="Aumentar quantidade">+</button>
+      </div>
+      <button type="button" class="cart-drawer-item__remove" data-action="remove-cart-drawer-item" data-variant-id="${variant.id}" aria-label="Remover ${escapeHtml(product.name)} do pedido">${uiIcon('close')}</button>
+    </article>`;
+  }).join('');
+  const drawerClass = state.cartDrawerOpen ? ' is-open' : '';
+  const drawerHidden = state.cartDrawerOpen ? 'false' : 'true';
+  target.innerHTML = `<button class="cart-fab${units ? ' has-items' : ''}" type="button" data-action="open-cart-drawer" aria-controls="cart-drawer" aria-expanded="${state.cartDrawerOpen ? 'true' : 'false'}" aria-label="Abrir carrinho com ${units} ${units === 1 ? 'item' : 'itens'}">
+      ${uiIcon('orders')}<span class="cart-fab__label">${units ? 'Seu pedido' : 'Carrinho'}</span><strong class="cart-fab__total">${formatMoney(orderTotal)}</strong><span class="cart-fab__count">${units}</span>
+    </button>
+    <button class="cart-drawer-overlay${drawerClass}" type="button" data-action="close-cart-drawer" aria-label="Fechar carrinho" tabindex="-1"></button>
+    <aside id="cart-drawer" class="cart-drawer${drawerClass}" aria-hidden="${drawerHidden}" aria-labelledby="cart-drawer-title">
+      <header class="cart-drawer__header"><div><span>Resumo do pedido</span><h2 id="cart-drawer-title">Seu carrinho</h2><p>${units} ${units === 1 ? 'item selecionado' : 'itens selecionados'} · ${state.cart.size} ${state.cart.size === 1 ? 'material' : 'materiais'}</p></div><button type="button" class="cart-drawer__close" data-action="close-cart-drawer" aria-label="Fechar carrinho">${uiIcon('close')}</button></header>
+      <div class="cart-drawer__items">${cartItems || `<div class="cart-drawer__empty">${uiIcon('orders')}<strong>Seu carrinho está vazio</strong><span>Adicione produtos para montar um pedido.</span></div>`}</div>
+      <footer class="cart-drawer__footer">
+        <div class="cart-drawer__subtotal" aria-live="polite"><span>${subtotalLabel}</span><strong>${formatMoney(subtotal)}</strong></div>${renovaSummary}
+        <button type="button" class="btn cart-drawer__finish" data-action="review-request" ${units ? '' : 'disabled'}>${uiIcon('check')}<span>Revisar e finalizar pedido</span></button>
+      </footer>
+    </aside>`;
+  document.body.classList.toggle('cart-drawer-open', state.cartDrawerOpen);
+}
+
+function setCartDrawer(open, restoreFocus = true) {
+  state.cartDrawerOpen = Boolean(open);
+  const drawer = document.querySelector('.cart-drawer');
+  const overlay = document.querySelector('.cart-drawer-overlay');
+  const fab = document.querySelector('.cart-fab');
+  drawer?.classList.toggle('is-open', state.cartDrawerOpen);
+  overlay?.classList.toggle('is-open', state.cartDrawerOpen);
+  drawer?.setAttribute('aria-hidden', state.cartDrawerOpen ? 'false' : 'true');
+  fab?.setAttribute('aria-expanded', state.cartDrawerOpen ? 'true' : 'false');
+  document.body.classList.toggle('cart-drawer-open', state.cartDrawerOpen);
+  if (state.cartDrawerOpen) window.setTimeout(() => drawer?.querySelector('[data-action="close-cart-drawer"]')?.focus(), 0);
+  else if (restoreFocus) fab?.focus();
 }
 
 async function renderSellerStore(title = 'Monte seu pedido', description = 'Escolha os produtos e informe as quantidades.') {
@@ -1677,6 +1721,8 @@ async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
   if (state.user.role === 'stocker' && ['new-request', 'chips'].includes(view)) return;
+  state.cartDrawerOpen = false;
+  document.body.classList.remove('cart-drawer-open');
   state.view = view;
   updateShellNavigation();
   const content = document.querySelector('#view-content');
@@ -2192,7 +2238,34 @@ root.addEventListener('click', async (event) => {
     if (action === 'edit-user') userModal(state.users.find((user) => user.id === Number(button.dataset.id)));
     if (action === 'delete-user') deleteUserModal(state.users.find((user) => user.id === Number(button.dataset.id)));
     if (action === 'filter-requests') { state.requestFilter = button.dataset.status; await renderRequests(); }
-    if (action === 'review-request') requestReviewModal();
+    if (action === 'open-cart-drawer') setCartDrawer(true);
+    if (action === 'close-cart-drawer') setCartDrawer(false);
+    if (action === 'remove-cart-drawer-item') {
+      state.cart.delete(Number(button.dataset.variantId));
+      renderCatalogGrid();
+      renderCartBar();
+    }
+    if (action === 'decrease-cart-item') {
+      const variantId = Number(button.dataset.variantId);
+      const nextQuantity = Number(state.cart.get(variantId) || 0) - 1;
+      if (nextQuantity > 0) state.cart.set(variantId, nextQuantity);
+      else state.cart.delete(variantId);
+      renderCatalogGrid();
+      renderCartBar();
+    }
+    if (action === 'increase-cart-item') {
+      const variantId = Number(button.dataset.variantId);
+      const found = findCatalogVariant(variantId);
+      const nextQuantity = Number(state.cart.get(variantId) || 0) + 1;
+      if (!found || nextQuantity > Number(found.variant.available)) throw new ApiError('Não há mais unidades disponíveis deste produto.', 409);
+      state.cart.set(variantId, nextQuantity);
+      renderCatalogGrid();
+      renderCartBar();
+    }
+    if (action === 'review-request') {
+      setCartDrawer(false, false);
+      requestReviewModal();
+    }
     if (action === 'cancel-request') cancelModal(button.dataset.id);
   } catch (error) {
     if (error.status !== 401) showToast(error.message, 'error');
@@ -2280,7 +2353,11 @@ root.addEventListener('input', (event) => {
   }
 });
 
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  if (state.cartDrawerOpen) setCartDrawer(false);
+  else closeModal();
+});
 
 document.addEventListener('submit', async (event) => {
   const form = event.target.closest('form[data-form]');
@@ -2327,6 +2404,7 @@ document.addEventListener('submit', async (event) => {
         const tradeIn = selectedRenovaTradeIn();
         await api('/api/requests', { method: 'POST', body: { lines, notes: data.notes, priceCategory: state.priceCategory, renova: state.renova.enabled ? { deviceId: tradeIn?.id, usedDevice: tradeIn?.name, condition: state.renova.condition } : null } });
         state.cart.clear();
+        state.cartDrawerOpen = false;
         state.priceCategory = '';
         state.renova = { enabled: false, deviceId: 0, condition: 'bom' };
         closeModal(true);

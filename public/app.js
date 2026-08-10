@@ -804,6 +804,23 @@ function productVisual(product) {
   return `<div class="product-visual product-visual--${cluster}">${clusterGraphic(cluster)}<span class="product-visual__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
 }
 
+function productImageSource(product) {
+  const configuredImage = String(product.image || product.imageUrl || product.image_url || product.thumbnail || '').trim();
+  if (configuredImage.startsWith('/') || configuredImage.startsWith('data:image/')) return configuredImage;
+  const cluster = clusterLabels[product.cluster] ? product.cluster : 'misc';
+  const label = String(product.name || clusterLabels[cluster] || 'Produto').trim();
+  const initials = label.split(/\s+/).slice(0, 2).map((word) => word.charAt(0)).join('').toUpperCase() || 'P';
+  const palette = {
+    devices: ['#503578', '#cbb2ff'], cases: ['#433353', '#c9b1e6'], screen_protectors: ['#2f4656', '#afd8ef'],
+    speakers: ['#57412f', '#f1c79e'], notebooks: ['#2f4059', '#adc7ed'], televisions: ['#353a4f', '#c3caed'],
+    chargers: ['#3f4634', '#d1dda9'], cables: ['#45404c', '#d4c8dd'], accessories: ['#49394d', '#dfb9e2'],
+    sims: ['#24503e', '#9ce6c2'], misc: ['#3d3945', '#d4cce0'],
+  };
+  const [background, foreground] = palette[cluster] || palette.misc;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="22" fill="${background}"/><circle cx="60" cy="54" r="31" fill="none" stroke="${foreground}" stroke-width="3" opacity=".36"/><text x="60" y="64" text-anchor="middle" font-family="Arial,sans-serif" font-size="29" font-weight="700" fill="${foreground}">${initials}</text><rect x="36" y="94" width="48" height="4" rx="2" fill="${foreground}" opacity=".28"/></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
 function materialCode(product) {
   return product.variants[0]?.materialCode || product.variants[0]?.sku || '';
 }
@@ -1187,6 +1204,12 @@ async function renderStock() {
 function renderCartBar() {
   const target = document.querySelector('[data-cart-bar]');
   if (!target) return;
+  const cartAvailable = state.user?.role === 'seller' && ['new-request', 'stock'].includes(state.view);
+  if (!cartAvailable) {
+    target.replaceChildren();
+    document.body.classList.remove('cart-drawer-open');
+    return;
+  }
   const units = [...state.cart.values()].reduce((sum, quantity) => sum + quantity, 0);
   const pricedSelection = [...state.cart].map(([variantId, quantity]) => {
     const found = findCatalogVariant(variantId);
@@ -1208,7 +1231,7 @@ function renderCartBar() {
         ? 'Sem cobrança'
         : `${formatMoney(unitPriceCents)} por unidade`;
     return `<article class="cart-drawer-item">
-      <div class="cart-drawer-item__thumb" aria-hidden="true">${productVisual(product)}</div>
+      <div class="cart-drawer-item__thumb"><img class="cart-drawer-item__image" src="${escapeHtml(productImageSource(product))}" alt="${escapeHtml(product.name)}" width="64" height="64" loading="lazy" decoding="async"></div>
       <div class="cart-drawer-item__content"><strong>${escapeHtml(product.name)}</strong><span class="mono">${escapeHtml(variant.materialCode)}</span><small>${price}</small></div>
       <div class="cart-drawer-item__line-total">${lineTotal == null ? '—' : formatMoney(lineTotal)}</div>
       <div class="cart-drawer-item__quantity" aria-label="Quantidade de ${escapeHtml(product.name)}">
@@ -1253,7 +1276,7 @@ function setCartDrawer(open, restoreFocus = true) {
 async function renderSellerStore(title = 'Monte seu pedido', description = 'Escolha os produtos e informe as quantidades.') {
   const content = document.querySelector('#view-content');
   await loadCatalog();
-  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Loja interna</p><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div></div>${pricingSelector()}${catalogToolbar()}<div data-catalog-grid></div><div data-cart-bar></div>`;
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Loja interna</p><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div></div>${pricingSelector()}${catalogToolbar()}<div data-catalog-grid></div>`;
   renderCatalogGrid();
   renderCartBar();
 }
@@ -1724,6 +1747,7 @@ async function navigate(view) {
   state.cartDrawerOpen = false;
   document.body.classList.remove('cart-drawer-open');
   state.view = view;
+  renderCartBar();
   updateShellNavigation();
   const content = document.querySelector('#view-content');
   content.innerHTML = '<div class="loading-block"><span class="loading-inline">Carregando</span></div>';

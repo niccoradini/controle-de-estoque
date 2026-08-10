@@ -2,6 +2,10 @@
 
 Sistema online para controlar produtos por código material e número de série, montar pedidos e acompanhar a operação da loja.
 
+## Versão 6.6.2
+
+Permite cadastrar vários chips de uma só vez. O Gerente identifica cada ICCID pelos 6 últimos dígitos, adiciona chips de qualquer material à fila, revisa o lote e confirma todos para o mesmo vendedor. O lote é protegido: se faltar vaga ou algum ICCID deixar de estar disponível, nenhum item é cadastrado parcialmente. O pacote inclui `ATUALIZAR-SISTEMA.bat` para atualizar o Cloudflare com dois cliques. Consulte `LEIA-ME-ATUALIZACAO-V6.6.2.md`.
+
 ## Versão 6.6.1
 
 Substitui o leitor de código de barras pelo cadastro assistido de chips. O Gerente escolhe um dos materiais de SIM card realmente disponíveis, informa somente os 6 últimos dígitos do ICCID e o sistema identifica a série completa no estoque. Uma correspondência é selecionada automaticamente; quando há mais de uma, as opções são mostradas para conferência. Material e ICCID ficam protegidos depois do cadastro, e a transferência altera somente o vendedor responsável. Consulte `LEIA-ME-ATUALIZACAO-V6.6.1.md`.
@@ -135,11 +139,30 @@ Inclui o Vivo Renova no configurador, com bônus do fabricante e voucher ASSURAN
 - criação, edição completa, redefinição de senha e exclusão segura de usuários;
 - tema Ônix em preto, grafite e lavanda pastel, responsivo e sem bibliotecas visuais externas.
 
-## Atualizar o sistema online
+## Publicação automática pelo GitHub
 
-Leia primeiro `LEIA-ME-ATUALIZACAO-V6.6.1.md`.
+O arquivo `.github/workflows/deploy-cloudflare.yml` transforma a branch `main` na fonte oficial da produção:
 
-Não apague a pasta atual e não substitua o `wrangler.jsonc`. Esse arquivo mantém a ligação com o banco correto da sua conta Cloudflare.
+1. todo pull request executa a conferência do código e os testes;
+2. todo commit publicado na `main` executa novamente essas validações;
+3. somente depois da aprovação dos testes, o GitHub aplica as migrações pendentes do D1;
+4. o Worker e os arquivos do site são publicados no Cloudflare;
+5. o endereço `https://controleestoque.app.br` é conferido automaticamente.
+
+Cadastre estes dois segredos no ambiente GitHub chamado `production`:
+
+- `CLOUDFLARE_ACCOUNT_ID`: ID da conta Cloudflare;
+- `CLOUDFLARE_API_TOKEN`: token restrito à conta e à zona do sistema, com permissão para editar Workers, rotas do Worker e D1.
+
+O token nunca deve ser colocado em arquivos, commits ou mensagens. Depois que os segredos forem cadastrados, não é necessário executar PowerShell, enviar ZIP ou publicar manualmente pelo Wrangler.
+
+## Atualização manual de emergência
+
+Leia primeiro `LEIA-ME-ATUALIZACAO-V6.6.2.md`.
+
+Se a automação do GitHub estiver temporariamente indisponível, extraia o ZIP em uma pasta nova e dê dois cliques em `ATUALIZAR-SISTEMA.bat`. O atualizador instala o necessário, testa o sistema, cria um backup do banco, aplica migrações pendentes e publica a nova versão.
+
+Se preferir executar manualmente, use:
 
 Dentro da pasta do projeto, execute:
 

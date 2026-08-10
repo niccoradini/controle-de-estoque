@@ -942,6 +942,14 @@ describe('Controle de estoque por código material', () => {
       method: 'POST',
       body: { inventorySerialId: 1, sellerId: 1 },
     })).status, 403);
+    assert.equal((await seller.request('/api/chips/bulk', {
+      method: 'POST',
+      body: { inventorySerialIds: [1, 2], sellerId: 1 },
+    })).status, 403);
+    assert.equal((await stocker.request('/api/chips/bulk', {
+      method: 'POST',
+      body: { inventorySerialIds: [1, 2], sellerId: 1 },
+    })).status, 403);
     assert.equal((await seller.request('/api/chips/candidates?materialCode=YBSC001A4000&suffix=123456')).status, 403);
     assert.equal((await stocker.request('/api/chips/candidates?materialCode=YBSC001A4000&suffix=123456')).status, 403);
 
@@ -1008,11 +1016,35 @@ describe('Controle de estoque por código material', () => {
     const duplicate = await manager.request('/api/chips', { method: 'POST', body: chipBody(0) });
     assert.equal(duplicate.status, 409);
     assert.match(duplicate.payload.error, /não está mais disponível/i);
+    assert.equal((await manager.request('/api/chips/bulk', {
+      method: 'POST', body: { sellerId: Number(sellerUser.id), inventorySerialIds: [] },
+    })).status, 400);
+    assert.equal((await manager.request('/api/chips/bulk', {
+      method: 'POST', body: { sellerId: Number(sellerUser.id), inventorySerialIds: [serials[1].id, serials[1].id] },
+    })).status, 400);
+    const atomicUnavailable = await manager.request('/api/chips/bulk', {
+      method: 'POST',
+      body: { sellerId: Number(sellerUser.id), inventorySerialIds: [serials[1].id, serials[0].id] },
+    });
+    assert.equal(atomicUnavailable.status, 409);
+    assert.equal(await row('SELECT id FROM chips WHERE inventory_serial_id = ?', serials[1].id), null);
     const candidatesAfterAllocation = await manager.request(`/api/chips/candidates?materialCode=YBSC001A4000&suffix=${collisionSuffix}`);
     assert.equal(candidatesAfterAllocation.status, 200);
     assert.equal(candidatesAfterAllocation.payload.candidates.some((candidate) => candidate.inventorySerialId === Number(serials[0].id)), false);
 
-    for (let index = 1; index < 10; index += 1) {
+    const bulkCreated = await manager.request('/api/chips/bulk', {
+      method: 'POST',
+      body: {
+        sellerId: Number(sellerUser.id),
+        inventorySerialIds: [serials[1].id, serials[2].id, serials[3].id],
+      },
+    });
+    assert.equal(bulkCreated.status, 201);
+    assert.equal(bulkCreated.payload.count, 3);
+    assert.equal(bulkCreated.payload.chips.length, 3);
+    assert.ok(bulkCreated.payload.chips.every((chip) => chip.sellerId === Number(sellerUser.id) && chip.stockLinked));
+
+    for (let index = 4; index < 10; index += 1) {
       const created = await manager.request('/api/chips', { method: 'POST', body: chipBody(index) });
       assert.equal(created.status, 201);
       assert.equal(created.payload.chip.stockLinked, true);
@@ -1044,6 +1076,17 @@ describe('Controle de estoque por código material', () => {
     const afterSale = (await seller.request('/api/catalog')).payload.products
       .find((product) => product.variants[0].materialCode === 'YBSC001A4000').variants[0];
     assert.equal(afterSale.available, simBefore.available - 10);
+
+    const capacityRollback = await manager.request('/api/chips/bulk', {
+      method: 'POST',
+      body: {
+        sellerId: Number(sellerUser.id),
+        inventorySerialIds: [serials[10].id, serials[11].id],
+      },
+    });
+    assert.equal(capacityRollback.status, 409);
+    assert.match(capacityRollback.payload.error, /somente 1 vaga disponível/i);
+    assert.equal(await row('SELECT id FROM chips WHERE inventory_serial_id IN (?, ?) LIMIT 1', serials[10].id, serials[11].id), null);
 
     const replacement = await manager.request('/api/chips', { method: 'POST', body: chipBody(10) });
     assert.equal(replacement.status, 201);
@@ -1262,12 +1305,14 @@ describe('Controle de estoque por código material', () => {
   });
 
   test('entrega o configurador por modelo sem dependências externas', async () => {
-    const [appSource, groupsSource, indexSource, packageSource, stylesSource] = await Promise.all([
+    const [appSource, groupsSource, indexSource, packageSource, stylesSource, updaterSource, deploymentWorkflow] = await Promise.all([
       readFile(new URL('../public/app.js', import.meta.url), 'utf8'),
       readFile(new URL('../public/catalog-groups.js', import.meta.url), 'utf8'),
       readFile(new URL('../public/index.html', import.meta.url), 'utf8'),
       readFile(new URL('../package.json', import.meta.url), 'utf8'),
       readFile(new URL('../public/styles.css', import.meta.url), 'utf8'),
+      readFile(new URL('../ATUALIZAR-SISTEMA.bat', import.meta.url), 'utf8'),
+      readFile(new URL('../.github/workflows/deploy-cloudflare.yml', import.meta.url), 'utf8'),
     ]);
     assert.doesNotMatch(appSource, /ZXing|scan-device|\/api\/devices/i);
     assert.doesNotMatch(appSource, /BarcodeDetector|getUserMedia|start-chip-camera/i);
@@ -1275,7 +1320,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.6.1');
+    assert.equal(JSON.parse(packageSource).version, '6.6.2');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1377,9 +1422,12 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /\.news-card/);
     assert.match(appSource, /function renderChips/);
     assert.match(appSource, /Meus chips/);
-    assert.match(appSource, /Escolha o material e digite somente os 6 últimos números do ICCID/);
+    assert.match(appSource, /Adicione vários ICCIDs à fila e confirme todos de uma vez/);
     assert.match(appSource, /data-action="select-chip-material"/);
     assert.match(appSource, /data-action="select-chip-candidate"/);
+    assert.match(appSource, /data-action="add-chip-to-batch"/);
+    assert.match(appSource, /data-action="remove-chip-batch-item"/);
+    assert.match(appSource, /\/api\/chips\/bulk/);
     assert.match(appSource, /\/api\/chips\/candidates/);
     assert.match(appSource, /Correspondência identificada automaticamente/);
     assert.match(appSource, /correspondências encontradas · selecione a correta/);
@@ -1387,8 +1435,26 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /allocatedToSellers/);
     assert.match(stylesSource, /\.chips-hero/);
     assert.match(stylesSource, /\.chip-owner-card/);
+    assert.match(updaterSource, /npm run check/);
+    assert.match(updaterSource, /npm test/);
+    assert.match(updaterSource, /wrangler d1 export controle-estoque-db --remote/);
+    assert.match(updaterSource, /wrangler d1 migrations apply controle-estoque-db --remote/);
+    assert.match(updaterSource, /wrangler deploy --dry-run --keep-vars/);
+    assert.match(updaterSource, /wrangler deploy --keep-vars/);
+    assert.match(updaterSource, /if errorlevel 1 goto :failed/);
+    assert.match(deploymentWorkflow, /push:[\s\S]*branches:[\s\S]*- main/);
+    assert.match(deploymentWorkflow, /pull_request:[\s\S]*branches:[\s\S]*- main/);
+    assert.match(deploymentWorkflow, /permissions:[\s\S]*contents: read/);
+    assert.match(deploymentWorkflow, /needs: test/);
+    assert.match(deploymentWorkflow, /CLOUDFLARE_API_TOKEN: \$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/);
+    assert.match(deploymentWorkflow, /CLOUDFLARE_ACCOUNT_ID: \$\{\{ secrets\.CLOUDFLARE_ACCOUNT_ID \}\}/);
+    assert.match(deploymentWorkflow, /wrangler deploy --dry-run --keep-vars/);
+    assert.match(deploymentWorkflow, /wrangler d1 migrations apply controle-estoque-db --remote/);
+    assert.match(deploymentWorkflow, /wrangler deploy --keep-vars/);
+    assert.match(deploymentWorkflow, /https:\/\/controleestoque\.app\.br\//);
     assert.match(stylesSource, /\.chip-material-option/);
     assert.match(stylesSource, /\.chip-candidate-option/);
+    assert.match(stylesSource, /\.chip-batch-item/);
     assert.doesNotMatch(stylesSource, /\.chip-camera|\.chip-scanner/);
     assert.match(appSource, /class="alignment-workspace"/);
     assert.match(appSource, /role="tablist"/);
@@ -1416,14 +1482,14 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /Tema Lavanda Pastel/i);
     assert.match(stylesSource, /\.product-visual--cases[\s\S]*#70588f/i);
     assert.match(indexSource, /name="theme-color" content="#0b0b0d"/i);
-    assert.match(indexSource, /styles\.css\?v=6\.6\.1/);
-    assert.match(indexSource, /app\.js\?v=6\.6\.1/);
+    assert.match(indexSource, /styles\.css\?v=6\.6\.2/);
+    assert.match(indexSource, /app\.js\?v=6\.6\.2/);
     for (const label of ['Aparelhos', 'Capas', 'Películas', 'Caixas de som', 'Notebooks', 'TVs', 'Carregadores', 'Cabos', 'Acessórios diversos']) {
       assert.match(appSource, new RegExp(label, 'i'));
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.1');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.2');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');

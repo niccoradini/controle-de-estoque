@@ -2,6 +2,10 @@
 
 Sistema online para controlar produtos por código material e número de série, montar pedidos e acompanhar a operação da loja.
 
+## Versão 6.6.5
+
+Atualiza o estoque com a planilha de 10/08/2026: 291 códigos materiais e 1.061 unidades disponíveis após excluir 110 linhas do depósito RPAR. A migração preserva usuários, pedidos, baixas históricas e chips já distribuídos aos vendedores. Foram incluídos seis materiais novos, entre eles o Motorola Moto G56 256GB; produtos novos sem valor confirmado continuam bloqueados para pedidos até a inclusão do preço oficial. Consulte `LEIA-ME-ATUALIZACAO-V6.6.5.md`.
+
 ## Versão 6.6.2
 
 Permite cadastrar vários chips de uma só vez. O Gerente identifica cada ICCID pelos 6 últimos dígitos, adiciona chips de qualquer material à fila, revisa o lote e confirma todos para o mesmo vendedor. O lote é protegido: se faltar vaga ou algum ICCID deixar de estar disponível, nenhum item é cadastrado parcialmente. O pacote inclui `ATUALIZAR-SISTEMA.bat` para atualizar o Cloudflare com dois cliques. Consulte `LEIA-ME-ATUALIZACAO-V6.6.2.md`.
@@ -182,7 +186,7 @@ npm run deploy
 
 Quando a migração perguntar se deseja continuar, confirme com `y`.
 
-A atualização preserva usuários, sessões, pedidos, números de série já retirados e histórico. A migração `0025` protege a busca pelos 6 últimos dígitos e impede que um pedido comum e uma carteira reservem o mesmo chip. Instalações que ainda não receberam as versões anteriores também aplicarão Notícias (`0021`), Chips (`0022`) e o retrato de estoque de 07/08 (`0023`).
+A atualização preserva usuários, sessões, pedidos, números de série já retirados e histórico. A migração `0026` atualiza o retrato de 10/08 e preserva chips já distribuídos, enquanto a `0025` protege a busca pelos 6 últimos dígitos e impede que um pedido comum e uma carteira reservem o mesmo chip. Instalações que ainda não receberam as versões anteriores também aplicarão Notícias (`0021`) e Chips (`0022`).
 
 Depois da publicação, abra `https://controleestoque.app.br` e pressione `Ctrl + F5`.
 
@@ -244,4 +248,4 @@ npm run check
 npx wrangler deploy --dry-run
 ```
 
-Os 18 testes cobrem a migração do relatório de 07/08, os 295 materiais da planilha, 1.074 unidades, exclusão de RPAR, estrutura DEPS/NREM, preservação de dados, preços, pedidos, Estoquista, Vivo Renova, usuários, Notícias e todo o ciclo de Chips: materiais disponíveis, busca pelos 6 últimos dígitos, múltiplas correspondências, limite por vendedor, transferência, venda, correção, retirada, restauração e conciliação com o estoque.
+Os 18 testes cobrem a migração do relatório de 10/08, os 291 materiais da planilha, 1.061 unidades, exclusão de RPAR, estrutura DEPS/NREM, preservação de pedidos e chips distribuídos, preços, Estoquista, Vivo Renova, usuários, Notícias e todo o ciclo de Chips: materiais disponíveis, busca pelos 6 últimos dígitos, múltiplas correspondências, limite por vendedor, transferência, venda, correção, retirada, restauração e conciliação com o estoque.

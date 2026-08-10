@@ -31,6 +31,7 @@ const motorolaModels = new Map([
   ['XT2503-1', 'EDGE 60 FUSION'],
   ['XT2507-1', 'EDGE 60 PRO'],
   ['XT2527-1', 'MOTO G86'],
+  ['XT2529-1', 'MOTO G56'],
   ['XT2601-3', 'EDGE 70'],
   ['XT2603-2', 'SIGNATURE'],
   ['XT2605-3', 'EDGE 70 FUSION'],
@@ -107,6 +108,10 @@ export function simplifyName(technicalName) {
     .replace(/\b3EM1\b/gi, '3 EM 1')
     .replace(/\b4EM1\b/gi, '4 EM 1')
     .replace(/\bFONE OUVIDO\b/g, 'FONE DE OUVIDO')
+    .replace(/^SAMSUNG FONE DE OUVIDO GALAXY\b/g, 'SAMSUNG GALAXY')
+    .replace(/\bRELOGIO\b/g, 'RELÓGIO')
+    .replace(/\bTEXTU\./g, 'TEXTURIZADA')
+    .replace(/\bC\/\s+/g, 'COM ')
     .replace(/\bCANCEL\. DE RUIDO\b/g, 'CANCELAMENTO DE RUÍDO')
     .replace(/\bPROTECAO\b/g, 'PROTEÇÃO')
     .replace(/\bCONECT\./g, 'CONECTOR')
@@ -148,7 +153,7 @@ export function clusterFor(name, category) {
   if (category === 'screen_protector') return 'screen_protectors';
   if (/\bNOTEBOOK\b/.test(name)) return 'notebooks';
   if (/^SAMSUNG SMART TV\b/.test(name)) return 'tvs';
-  if (/\b(?:CAIXA SOM|CAIXA AMPLIF|SPEAKER)\b/.test(name)) return 'speakers';
+  if (/\b(?:CAIXA SOM|CAIXA AMPLIF|SPEAKER|ECHO SPOT)\b/.test(name)) return 'speakers';
   if (/\b(?:CARREGADOR|POWERBANK|POWER BANK)\b/.test(name)) return 'chargers';
   if (/\bCABO\b/.test(name)) return 'cables';
   if (category === 'phone' || /\b(?:SMARTWATCH|WATCH)\b/.test(name)) return 'devices';

@@ -314,6 +314,12 @@ WHERE status = 'available'
   AND NOT EXISTS (
     SELECT 1 FROM _migration_0010_serials s
     WHERE s.serial_number = inventory_serials.serial_number COLLATE NOCASE
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM chips chip
+    WHERE chip.inventory_serial_id = inventory_serials.id
+      AND chip.active = 1
+      AND chip.status = 'available'
   );
 
 UPDATE inventory_serials
@@ -332,6 +338,11 @@ WHERE EXISTS (
   AND NOT EXISTS (
     SELECT 1 FROM request_serial_assignments a
     WHERE a.serial_id = inventory_serials.id
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM chips chip
+    WHERE chip.inventory_serial_id = inventory_serials.id
+      AND chip.status = 'sold'
   );
 
 INSERT INTO inventory_serials (variant_id, serial_number, status)
@@ -389,6 +400,12 @@ FROM inventory_serials s
 WHERE s.status = 'available'
   AND NOT EXISTS (
     SELECT 1 FROM request_serial_assignments a WHERE a.serial_id = s.id
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM chips chip
+    WHERE chip.inventory_serial_id = s.id
+      AND chip.active = 1
+      AND chip.status = 'available'
   );
 
 CREATE TABLE _migration_0010_fulfillable_requests (

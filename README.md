@@ -6,6 +6,10 @@ Sistema online para controlar produtos por código material e número de série,
 
 Permite cadastrar vários chips de uma só vez. O Gerente identifica cada ICCID pelos 6 últimos dígitos, adiciona chips de qualquer material à fila, revisa o lote e confirma todos para o mesmo vendedor. O lote é protegido: se faltar vaga ou algum ICCID deixar de estar disponível, nenhum item é cadastrado parcialmente. O pacote inclui `ATUALIZAR-SISTEMA.bat` para atualizar o Cloudflare com dois cliques. Consulte `LEIA-ME-ATUALIZACAO-V6.6.2.md`.
 
+## Versão 6.6.3
+
+Mantém o resumo do pedido sempre acessível enquanto o vendedor escolhe os produtos. A barra fixa mostra quantidade, subtotal atualizado ao vivo, valor após o Vivo Renova quando houver desconto e um botão destacado para finalizar. Na revisão, a confirmação permanece visível mesmo em pedidos longos.
+
 ## Versão 6.6.1
 
 Substitui o leitor de código de barras pelo cadastro assistido de chips. O Gerente escolhe um dos materiais de SIM card realmente disponíveis, informa somente os 6 últimos dígitos do ICCID e o sistema identifica a série completa no estoque. Uma correspondência é selecionada automaticamente; quando há mais de uma, as opções são mostradas para conferência. Material e ICCID ficam protegidos depois do cadastro, e a transferência altera somente o vendedor responsável. Consulte `LEIA-ME-ATUALIZACAO-V6.6.1.md`.

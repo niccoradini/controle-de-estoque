@@ -1192,9 +1192,18 @@ function renderCartBar() {
     return found ? { ...found, quantity, unitPriceCents: selectedProductPrice(found.product, found.variant) } : null;
   }).filter(Boolean);
   const subtotal = pricedSelection.reduce((sum, item) => sum + (item.unitPriceCents == null ? 0 : item.unitPriceCents * item.quantity), 0);
-  const orderTotal = Math.max(0, subtotal - renovaDiscountFor(pricedSelection).discountCents);
-  const orderPriceText = state.cart.size ? ` · total: ${formatMoney(orderTotal)}` : '';
-  target.innerHTML = units ? `<div class="cart-bar"><div><strong>${units} ${units === 1 ? 'item' : 'itens'} no pedido</strong><span>${state.cart.size} ${state.cart.size === 1 ? 'material selecionado' : 'materiais selecionados'}${orderPriceText}</span></div><button class="btn" data-action="review-request">Revisar pedido</button></div>` : '';
+  const renova = renovaDiscountFor(pricedSelection);
+  const orderTotal = Math.max(0, subtotal - renova.discountCents);
+  const hasUnpricedItem = pricedSelection.some((item) => item.unitPriceCents == null);
+  const subtotalLabel = hasUnpricedItem ? 'Subtotal dos itens com preço' : 'Subtotal ao vivo';
+  const renovaSummary = renova.discountCents > 0
+    ? `<span class="cart-bar__discount">Após Renova: <strong>${formatMoney(orderTotal)}</strong></span>`
+    : '';
+  target.innerHTML = units ? `<div class="cart-bar-spacer" aria-hidden="true"></div><aside class="cart-bar" aria-label="Resumo atualizado do pedido">
+    <div class="cart-bar__order"><span class="cart-bar__eyebrow">Seu pedido</span><strong>${units} ${units === 1 ? 'item selecionado' : 'itens selecionados'}</strong><span>${state.cart.size} ${state.cart.size === 1 ? 'material' : 'materiais'} no carrinho</span></div>
+    <div class="cart-bar__pricing" aria-live="polite"><span>${subtotalLabel}</span><strong>${formatMoney(subtotal)}</strong>${renovaSummary}</div>
+    <button class="btn cart-bar__finish" data-action="review-request" aria-label="Finalizar e revisar pedido">${uiIcon('orders')}<span>Finalizar pedido</span></button>
+  </aside>` : '';
 }
 
 async function renderSellerStore(title = 'Monte seu pedido', description = 'Escolha os produtos e informe as quantidades.') {
@@ -2054,7 +2063,7 @@ function requestReviewModal() {
   const priceSummary = pricedItems.length
     ? `<div class="cart-pricing-summary">${state.priceCategory ? `<div><span>Categoria do plano</span><strong>${escapeHtml(state.priceCategory)}</strong></div>` : ''}${state.renova.enabled ? `<div><span>Preço normal dos produtos</span><strong>${formatMoney(subtotalCents)}</strong></div><div class="renova-summary-line"><span>Bônus do fabricante</span><strong>− ${formatMoney(renova.bonusCents)}</strong></div><div class="renova-summary-line"><span>Voucher ASSURANT</span><strong>− ${formatMoney(renova.voucherCents)}</strong></div><p>Renova: ${escapeHtml(selectedRenovaTradeIn()?.name || 'aparelho usado não informado')} · ${state.renova.condition === 'defeituoso' ? 'Defeituoso' : 'Bom'}. Os abatimentos foram limitados ao valor dos aparelhos.</p>` : ''}<div><span>Total do pedido</span><strong>${formatMoney(orderTotalCents)}</strong></div><p>${orderTotalCents > 0 && installments > 1 ? `${installments}x de ${formatMoney(Math.round(orderTotalCents / installments))} sem juros` : orderTotalCents > 0 ? 'Pagamento à vista' : 'Sem cobrança para os itens selecionados'} · todos os produtos estão incluídos; capa e película permanecem no valor normal.</p></div>`
     : '';
-  showModal(`<form data-form="create-request" novalidate>
+  showModal(`<form class="request-review-form" data-form="create-request" novalidate>
     <div class="modal__head"><div><h2>Revisar pedido</h2><p>${units} ${units === 1 ? 'item selecionado' : 'itens selecionados'} · o IMEI será definido automaticamente</p></div>${modalCloseButton()}</div>
     <div class="modal__body"><div class="form-error" data-form-error hidden></div><ul class="request-items cart-review">${selected.map(({ product, variant, quantity, unitPriceCents }) => `<li><div><strong>${escapeHtml(product.name)}</strong>${materialInline(variant.materialCode)}${unitPriceCents == null ? '' : productPriceKind(product, variant) === 'no_charge' ? '<div class="cart-line-price"><span>Sem cobrança</span><strong>R$ 0,00</strong></div>' : `<div class="cart-line-price"><span>${formatMoney(unitPriceCents)} por unidade</span><strong>${formatMoney(unitPriceCents * quantity)}</strong></div>`}</div><span class="item-quantity">${quantity} un.</span><button type="button" class="btn btn--ghost btn--small" data-action="remove-cart-item" data-variant-id="${variant.id}">Remover</button></li>`).join('')}</ul>${priceSummary}<div class="field"><label for="request-notes">Observação <span class="request-meta">(opcional)</span></label><textarea class="textarea" id="request-notes" name="notes" maxlength="500"></textarea></div></div>
     <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Voltar</button><button type="submit" class="btn">Confirmar e liberar pedido</button></div>

@@ -9,6 +9,7 @@ const modalRoot = document.querySelector('#modal-root');
 const toastRoot = document.querySelector('#toast-root');
 let chipCandidateRequest = 0;
 let chipCandidateTimer = 0;
+let chipBatchItems = [];
 
 const state = {
   user: null,
@@ -1787,7 +1788,8 @@ function resetChipCandidateResults(message = 'Escolha o material e informe os 6 
   const form = modalRoot.querySelector('form[data-form="create-chip"]');
   if (!form) return;
   form.elements.inventorySerialId.value = '';
-  form.querySelector('button[type="submit"]').disabled = true;
+  const addButton = form.querySelector('[data-action="add-chip-to-batch"]');
+  if (addButton) addButton.disabled = true;
   const target = form.querySelector('[data-chip-candidates]');
   if (target) target.innerHTML = `<div class="chip-candidate-message">${uiIcon('sim')}<span>${escapeHtml(message)}</span></div>`;
 }
@@ -1813,9 +1815,10 @@ function selectChipCandidate(inventorySerialId) {
     option.classList.toggle('is-selected', active);
     option.setAttribute('aria-pressed', String(active));
   });
-  form.querySelector('button[type="submit"]').disabled = false;
+  const addButton = form.querySelector('[data-action="add-chip-to-batch"]');
+  if (addButton) addButton.disabled = false;
   const summary = form.querySelector('[data-chip-candidate-summary]');
-  if (summary) summary.textContent = `ICCID final ${selected.dataset.iccidSuffix} selecionado e pronto para cadastrar.`;
+  if (summary) summary.textContent = `ICCID final ${selected.dataset.iccidSuffix} selecionado. Adicione-o à fila.`;
 }
 
 async function searchChipCandidates() {
@@ -1828,13 +1831,15 @@ async function searchChipCandidates() {
   if (suffix.length !== 6) return resetChipCandidateResults('Digite exatamente os 6 últimos números do ICCID.');
   const target = form.querySelector('[data-chip-candidates]');
   form.elements.inventorySerialId.value = '';
-  form.querySelector('button[type="submit"]').disabled = true;
+  const addButton = form.querySelector('[data-action="add-chip-to-batch"]');
+  if (addButton) addButton.disabled = true;
   const requestId = ++chipCandidateRequest;
   target.innerHTML = '<div class="chip-candidate-message"><span class="loading-inline">Buscando no estoque</span></div>';
   try {
     const data = await api(`/api/chips/candidates?materialCode=${encodeURIComponent(materialCode)}&suffix=${encodeURIComponent(suffix)}`);
     if (requestId !== chipCandidateRequest || !modalRoot.contains(form)) return;
-    const candidates = data.candidates || [];
+    const candidates = (data.candidates || []).filter((candidate) => !chipBatchItems
+      .some((item) => item.inventorySerialId === Number(candidate.inventorySerialId)));
     if (!candidates.length) {
       target.innerHTML = `<div class="chip-candidate-message chip-candidate-message--empty">${uiIcon('warning')}<span><strong>Nenhuma correspondência livre</strong>Não há ICCID deste material terminando em ${escapeHtml(suffix)}. Confira os números ou escolha outro material.</span></div>`;
       return;
@@ -1844,7 +1849,7 @@ async function searchChipCandidates() {
       : `${candidates.length} correspondências encontradas · selecione a correta`;
     target.innerHTML = `<div class="chip-candidate-heading"><strong>${escapeHtml(heading)}</strong><span data-chip-candidate-summary>${candidates.length === 1 ? 'Confira o ICCID completo antes de cadastrar.' : 'Compare o código do chip com as opções abaixo.'}</span></div><div class="chip-candidate-list">${candidates.map((candidate) => {
       const prefix = candidate.iccid.slice(0, -6);
-      return `<button type="button" class="chip-candidate-option" data-action="select-chip-candidate" data-chip-candidate-id="${candidate.inventorySerialId}" data-iccid-suffix="${escapeHtml(candidate.suffix)}" aria-pressed="false"><span><small>ICCID disponível</small><code class="mono">${escapeHtml(prefix)}<mark>${escapeHtml(candidate.suffix)}</mark></code></span><b>Selecionar</b></button>`;
+      return `<button type="button" class="chip-candidate-option" data-action="select-chip-candidate" data-chip-candidate-id="${candidate.inventorySerialId}" data-iccid-suffix="${escapeHtml(candidate.suffix)}" data-chip-iccid="${escapeHtml(candidate.iccid)}" data-material-code="${escapeHtml(candidate.materialCode)}" data-material-name="${escapeHtml(candidate.materialName)}" aria-pressed="false"><span><small>ICCID disponível</small><code class="mono">${escapeHtml(prefix)}<mark>${escapeHtml(candidate.suffix)}</mark></code></span><b>Selecionar</b></button>`;
     }).join('')}</div>`;
     if (candidates.length === 1) selectChipCandidate(candidates[0].inventorySerialId);
   } catch (error) {
@@ -1867,6 +1872,74 @@ function queueChipCandidateSearch() {
   }
 }
 
+function renderChipBatchQueue() {
+  const form = modalRoot.querySelector('form[data-form="create-chip"]');
+  const target = form?.querySelector('[data-chip-batch]');
+  if (!form || !target) return;
+  const sellerSelect = form.elements.sellerId;
+  const batchSellerId = Number(form.dataset.batchSellerId || sellerSelect.value || 0);
+  const seller = state.chipSellers.find((item) => item.id === batchSellerId);
+  sellerSelect.disabled = chipBatchItems.length > 0;
+  const submit = form.querySelector('button[type="submit"]');
+  submit.disabled = !chipBatchItems.length;
+  submit.textContent = chipBatchItems.length
+    ? `Cadastrar ${chipBatchItems.length} ${chipBatchItems.length === 1 ? 'chip' : 'chips'}`
+    : 'Cadastre chips na fila';
+  if (!chipBatchItems.length) {
+    delete form.dataset.batchSellerId;
+    target.innerHTML = `<div class="chip-batch-empty">${uiIcon('sim')}<span><strong>A fila está vazia</strong>Identifique um ICCID e use “Adicionar à fila”.</span></div>`;
+    return;
+  }
+  const remaining = Math.max(0, state.chipLimit - Number(seller?.availableCount || 0) - chipBatchItems.length);
+  target.innerHTML = `<div class="chip-batch-head"><div><span>Fila para ${escapeHtml(seller?.name || 'vendedor selecionado')}</span><strong>${chipBatchItems.length} de ${Math.max(0, state.chipLimit - Number(seller?.availableCount || 0))} vagas sendo usadas</strong></div><div><b>${remaining}</b><small>${remaining === 1 ? 'vaga restante' : 'vagas restantes'}</small><button type="button" data-action="clear-chip-batch">Limpar fila</button></div></div><div class="chip-batch-list">${chipBatchItems.map((item, index) => `
+    <article class="chip-batch-item">
+      <span>${index + 1}</span>
+      <div><strong>${escapeHtml(item.materialName)}</strong><code class="mono">${escapeHtml(item.materialCode)}</code></div>
+      <code class="mono">${escapeHtml(item.iccid.slice(0, -6))}<mark>${escapeHtml(item.suffix)}</mark></code>
+      <button type="button" class="btn btn--ghost" data-action="remove-chip-batch-item" data-chip-candidate-id="${item.inventorySerialId}">Remover</button>
+    </article>`).join('')}</div>`;
+}
+
+function addSelectedChipToBatch() {
+  const form = modalRoot.querySelector('form[data-form="create-chip"]');
+  if (!form) return;
+  const inventorySerialId = Number(form.elements.inventorySerialId.value || 0);
+  const selected = form.querySelector(`[data-chip-candidate-id="${CSS.escape(String(inventorySerialId))}"]`);
+  if (!selected || !inventorySerialId) return showToast('Selecione uma correspondência antes de adicionar.', 'error');
+  if (chipBatchItems.some((item) => item.inventorySerialId === inventorySerialId)) {
+    return showToast('Este ICCID já está na fila.', 'error');
+  }
+  const sellerId = Number(form.dataset.batchSellerId || form.elements.sellerId.value || 0);
+  const seller = state.chipSellers.find((item) => item.id === sellerId);
+  const capacity = Math.max(0, state.chipLimit - Number(seller?.availableCount || 0));
+  if (!seller || chipBatchItems.length >= capacity) {
+    return showToast('A carteira deste vendedor não possui mais vagas para este lote.', 'error');
+  }
+  form.dataset.batchSellerId = String(sellerId);
+  chipBatchItems.push({
+    inventorySerialId,
+    materialCode: selected.dataset.materialCode,
+    materialName: selected.dataset.materialName,
+    iccid: selected.dataset.chipIccid,
+    suffix: selected.dataset.iccidSuffix,
+  });
+  renderChipBatchQueue();
+  form.elements.iccidSuffix.value = '';
+  resetChipCandidateResults('Chip adicionado. Informe o próximo final de ICCID ou conclua o lote.');
+  form.elements.iccidSuffix.focus();
+}
+
+function removeChipFromBatch(inventorySerialId) {
+  chipBatchItems = chipBatchItems.filter((item) => item.inventorySerialId !== Number(inventorySerialId));
+  renderChipBatchQueue();
+}
+
+function clearChipBatch() {
+  chipBatchItems = [];
+  renderChipBatchQueue();
+  resetChipCandidateResults('Fila limpa. Escolha o material e informe o próximo ICCID.');
+}
+
 function chipModal(chip = null) {
   if (state.user.role !== 'manager' || !state.chipSellers.length) return;
   const selectedSellerId = chip?.sellerId || state.chipSellerId || state.chipSellers[0].id;
@@ -1880,16 +1953,19 @@ function chipModal(chip = null) {
     return;
   }
   if (!state.chipMaterials.length) return showToast('Não há materiais de chip livres no estoque atual.', 'error');
+  chipBatchItems = [];
   showModal(`<form data-form="create-chip" novalidate>
-    <div class="modal__head"><div><span class="modal-eyebrow">Cadastro assistido</span><h2>Identificar e distribuir chip</h2><p>Escolha o material e digite somente os 6 últimos números do ICCID.</p></div>${modalCloseButton()}</div>
+    <div class="modal__head"><div><span class="modal-eyebrow">Cadastro em lote</span><h2>Identificar e distribuir chips</h2><p>Adicione vários ICCIDs à fila e confirme todos de uma vez.</p></div>${modalCloseButton()}</div>
     <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid chip-registration-grid">
-      <div class="field field--full"><label for="chip-seller">Vendedor responsável</label><select class="select" id="chip-seller" name="sellerId" required>${state.chipSellers.map((seller) => `<option value="${seller.id}" ${seller.id === selectedSellerId ? 'selected' : ''}>${escapeHtml(seller.name)} · ${seller.availableCount}/${state.chipLimit} disponíveis</option>`).join('')}</select><p class="field-hint">Cada vendedor pode manter até ${state.chipLimit} chips disponíveis. ${selectedSeller ? `${escapeHtml(selectedSeller.name)} está com ${selectedSeller.availableCount}.` : ''}</p></div>
+      <div class="field field--full"><label for="chip-seller">Vendedor responsável pelo lote</label><select class="select" id="chip-seller" name="sellerId" required>${state.chipSellers.map((seller) => `<option value="${seller.id}" ${seller.id === selectedSellerId ? 'selected' : ''}>${escapeHtml(seller.name)} · ${seller.availableCount}/${state.chipLimit} disponíveis</option>`).join('')}</select><p class="field-hint">O vendedor fica fixo depois que o primeiro chip entra na fila. ${selectedSeller ? `${escapeHtml(selectedSeller.name)} está com ${selectedSeller.availableCount}.` : ''}</p></div>
       <section class="chip-registration-step field--full"><header><span>1</span><div><strong>Escolha o material disponível</strong><small>A lista mostra somente SIM cards livres no estoque.</small></div></header><div class="chip-material-search"><input class="input" type="search" data-action="chip-material-search" placeholder="Buscar nome ou código material" autocomplete="off"></div><input type="hidden" name="materialCode"><div class="chip-material-options" data-chip-materials></div></section>
-      <section class="chip-registration-step field--full"><header><span>2</span><div><strong>Informe o final do ICCID</strong><small>Use os 6 últimos números do código grande impresso no chip.</small></div></header><div class="chip-suffix-search"><div class="field"><label for="chip-iccid-suffix">Últimos 6 dígitos</label><input class="input mono" id="chip-iccid-suffix" name="iccidSuffix" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9]{6}" required placeholder="000000" data-action="chip-iccid-suffix"></div><button type="button" class="btn btn--secondary" data-action="search-chip-candidates">Buscar ICCID</button></div><input type="hidden" name="inventorySerialId"><div class="chip-candidate-results" data-chip-candidates aria-live="polite"><div class="chip-candidate-message">${uiIcon('sim')}<span>Escolha o material e informe os 6 últimos dígitos.</span></div></div></section>
+      <section class="chip-registration-step field--full"><header><span>2</span><div><strong>Identifique e adicione cada ICCID</strong><small>Use os 6 últimos números do código grande impresso no chip.</small></div></header><div class="chip-suffix-search"><div class="field"><label for="chip-iccid-suffix">Últimos 6 dígitos</label><input class="input mono" id="chip-iccid-suffix" name="iccidSuffix" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9]{6}" placeholder="000000" data-action="chip-iccid-suffix"></div><button type="button" class="btn btn--secondary" data-action="search-chip-candidates">Buscar ICCID</button></div><input type="hidden" name="inventorySerialId"><div class="chip-candidate-results" data-chip-candidates aria-live="polite"><div class="chip-candidate-message">${uiIcon('sim')}<span>Escolha o material e informe os 6 últimos dígitos.</span></div></div><div class="chip-candidate-actions"><span>Confira o ICCID completo antes de colocá-lo no lote.</span><button type="button" class="btn" data-action="add-chip-to-batch" disabled>Adicionar à fila</button></div></section>
+      <section class="chip-registration-step chip-batch-panel field--full"><header><span>3</span><div><strong>Revise a fila de cadastro</strong><small>Você pode misturar materiais e remover itens antes de confirmar.</small></div></header><div class="chip-batch" data-chip-batch></div></section>
     </div></div>
-    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn" disabled>Cadastrar chip selecionado</button></div>
+    <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn" disabled>Cadastre chips na fila</button></div>
   </form>`, { wide: true });
   renderChipMaterialOptions();
+  renderChipBatchQueue();
 }
 
 function chipSaleModal(chip) {
@@ -2126,6 +2202,9 @@ modalRoot.addEventListener('click', async (event) => {
   }
   if (target.dataset.action === 'select-chip-candidate') selectChipCandidate(target.dataset.chipCandidateId);
   if (target.dataset.action === 'search-chip-candidates') await searchChipCandidates();
+  if (target.dataset.action === 'add-chip-to-batch') addSelectedChipToBatch();
+  if (target.dataset.action === 'remove-chip-batch-item') removeChipFromBatch(target.dataset.chipCandidateId);
+  if (target.dataset.action === 'clear-chip-batch') clearChipBatch();
   if (target.dataset.action === 'remove-cart-item') {
     state.cart.delete(Number(target.dataset.variantId));
     if (state.cart.size) requestReviewModal();
@@ -2267,13 +2346,12 @@ document.addEventListener('submit', async (event) => {
         await renderNews();
       }
       if (form.dataset.form === 'create-chip') {
-        const inventorySerialId = Number(data.inventorySerialId);
-        if (!Number.isInteger(inventorySerialId) || inventorySerialId <= 0) {
-          throw new ApiError('Busque o ICCID e selecione uma das correspondências disponíveis.', 400);
-        }
-        await api('/api/chips', { method: 'POST', body: { sellerId: Number(data.sellerId), inventorySerialId } });
+        if (!chipBatchItems.length) throw new ApiError('Adicione pelo menos um chip à fila.', 400);
+        const sellerId = Number(form.dataset.batchSellerId || data.sellerId || 0);
+        const inventorySerialIds = chipBatchItems.map((item) => item.inventorySerialId);
+        const result = await api('/api/chips/bulk', { method: 'POST', body: { sellerId, inventorySerialIds } });
         closeModal(true);
-        showToast('Chip identificado no estoque e atribuído ao vendedor.');
+        showToast(`${result.count} ${result.count === 1 ? 'chip cadastrado' : 'chips cadastrados'} para o vendedor.`);
         await renderChips();
       }
       if (form.dataset.form === 'edit-chip') {

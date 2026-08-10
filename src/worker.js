@@ -234,6 +234,20 @@ function positiveIdRule(label) {
   };
 }
 
+function chipInventorySerialIdsRule(value) {
+  if (!Array.isArray(value) || !value.length || value.length > CHIP_LIMIT_PER_SELLER) {
+    return { error: `Adicione de 1 a ${CHIP_LIMIT_PER_SELLER} chips ao lote.` };
+  }
+  const inventorySerialIds = value.map(Number);
+  if (inventorySerialIds.some((id) => !Number.isInteger(id) || id <= 0)) {
+    return { error: 'Revise os ICCIDs selecionados para o lote.' };
+  }
+  if (new Set(inventorySerialIds).size !== inventorySerialIds.length) {
+    return { error: 'O mesmo ICCID não pode aparecer duas vezes no lote.' };
+  }
+  return { value: inventorySerialIds };
+}
+
 function quantityDeltaRule(value) {
   const quantity = Number(value);
   if (!Number.isInteger(quantity) || quantity === 0 || Math.abs(quantity) > 100000) {
@@ -1552,6 +1566,88 @@ async function chipInventorySerialById(env, inventorySerialId) {
   return row ? { ...row, iccid: fullChipIccid(row.serial_number) } : null;
 }
 
+async function chipInventorySerialsByIds(env, inventorySerialIds) {
+  const placeholders = inventorySerialIds.map(() => '?').join(', ');
+  const rows = (await env.DB.prepare(`
+    SELECT inventory.id, inventory.serial_number, inventory.status, inventory.variant_id,
+           variant.sku AS material_code,
+           COALESCE(product.display_name, product.name) AS material_name
+    FROM inventory_serials inventory
+    JOIN product_variants variant ON variant.id = inventory.variant_id
+    JOIN products product ON product.id = variant.product_id
+    WHERE inventory.id IN (${placeholders})
+      AND inventory.status = 'available'
+      AND variant.active = 1
+      AND product.active = 1
+      AND variant.serial_tracking = 1
+      AND (
+        UPPER(COALESCE(product.display_name, product.name, '')) LIKE '%SIM CARD%'
+        OR UPPER(COALESCE(product.technical_name, '')) LIKE '%SIM CARD%'
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM chips registered
+        WHERE registered.inventory_serial_id = inventory.id
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM request_serial_assignments assignment
+        WHERE assignment.serial_id = inventory.id
+      )
+  `).bind(...inventorySerialIds).all()).results || [];
+  return rows.map((row) => ({ ...row, iccid: fullChipIccid(row.serial_number) }));
+}
+
+function chipInsertStatement(env, { id, sellerId, managerId, timestamp, inventorySerialId }) {
+  return env.DB.prepare(`
+    WITH requested (chip_id, seller_id, manager_id, created_at, inventory_id) AS (
+      VALUES (?, ?, ?, ?, ?)
+    ),
+    eligible AS (
+      SELECT requested.chip_id, requested.seller_id, requested.manager_id,
+             requested.created_at, inventory.id AS inventory_id,
+             inventory.serial_number, variant.sku AS material_code
+      FROM requested
+      JOIN inventory_serials inventory ON inventory.id = requested.inventory_id
+      JOIN product_variants variant ON variant.id = inventory.variant_id
+      JOIN products product ON product.id = variant.product_id
+      WHERE inventory.status = 'available'
+        AND variant.active = 1
+        AND product.active = 1
+        AND variant.serial_tracking = 1
+        AND (
+          UPPER(COALESCE(product.display_name, product.name, '')) LIKE '%SIM CARD%'
+          OR UPPER(COALESCE(product.technical_name, '')) LIKE '%SIM CARD%'
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM chips registered
+          WHERE registered.inventory_serial_id = inventory.id
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM request_serial_assignments assignment
+          WHERE assignment.serial_id = inventory.id
+        )
+    )
+    INSERT INTO chips
+      (id, material_code, iccid, inventory_serial_id, assigned_seller_id,
+       created_by, updated_by, created_at, updated_at)
+    SELECT eligible.chip_id, eligible.material_code,
+           CASE
+             WHEN length(eligible.serial_number) = 18
+                  AND substr(eligible.serial_number, 1, 2) <> '89'
+               THEN '89' || eligible.serial_number
+             ELSE eligible.serial_number
+           END,
+           eligible.inventory_id, eligible.seller_id, eligible.manager_id,
+           eligible.manager_id, eligible.created_at, eligible.created_at
+    FROM eligible
+    UNION ALL
+    SELECT requested.chip_id, 'INVALID', '000000000000000000',
+           requested.inventory_id, requested.seller_id, requested.manager_id,
+           requested.manager_id, requested.created_at, requested.created_at
+    FROM requested
+    WHERE NOT EXISTS (SELECT 1 FROM eligible)
+  `).bind(id, sellerId, managerId, timestamp, inventorySerialId);
+}
+
 async function listChipCandidates(env, user, url) {
   requireRole(user, 'manager');
   const data = validateFields({
@@ -1787,6 +1883,78 @@ async function createChip(request, env, manager) {
     throw mapChipDatabaseError(error);
   }
   return json({ chip: publicChip(await chipById(env, id)) }, 201);
+}
+
+async function createChipsBulk(request, env, manager) {
+  const data = validateFields(await readJson(request), {
+    inventorySerialIds: chipInventorySerialIdsRule,
+    sellerId: positiveIdRule('um vendedor'),
+  });
+  const seller = await env.DB.prepare(`
+    SELECT u.id, u.name,
+           COUNT(c.id) AS available_count
+    FROM users u
+    LEFT JOIN chips c
+      ON c.assigned_seller_id = u.id
+     AND c.active = 1
+     AND c.status = 'available'
+    WHERE u.id = ?
+      AND u.role = 'seller'
+      AND u.access_profile = 'default'
+      AND u.active = 1
+      AND u.deleted_at IS NULL
+    GROUP BY u.id, u.name
+  `).bind(data.sellerId).first();
+  if (!seller) {
+    throw new HttpError(400, 'Selecione um vendedor ativo para receber os chips.', {
+      sellerId: 'Vendedor inválido ou sem acesso ativo.',
+    });
+  }
+  const availableCount = Number(seller.available_count || 0);
+  const remainingCapacity = Math.max(0, CHIP_LIMIT_PER_SELLER - availableCount);
+  if (data.inventorySerialIds.length > remainingCapacity) {
+    throw new HttpError(409, `${seller.name} possui somente ${remainingCapacity} ${remainingCapacity === 1 ? 'vaga disponível' : 'vagas disponíveis'} para chips.`, {
+      inventorySerialIds: `Retire ${data.inventorySerialIds.length - remainingCapacity} ${data.inventorySerialIds.length - remainingCapacity === 1 ? 'chip' : 'chips'} do lote.`,
+    });
+  }
+
+  const inventorySerials = await chipInventorySerialsByIds(env, data.inventorySerialIds);
+  if (inventorySerials.length !== data.inventorySerialIds.length) {
+    throw new HttpError(409, 'Um ou mais ICCIDs não estão mais disponíveis. Revise o lote.', {
+      inventorySerialIds: 'Atualize as correspondências antes de cadastrar novamente.',
+    });
+  }
+  const inventoryById = new Map(inventorySerials.map((serial) => [Number(serial.id), serial]));
+  const timestamp = nowIso();
+  const entries = data.inventorySerialIds.map((inventorySerialId) => ({
+    id: crypto.randomUUID(),
+    inventorySerialId,
+    inventorySerial: inventoryById.get(inventorySerialId),
+  }));
+  const statements = entries.flatMap((entry) => [
+    chipInsertStatement(env, {
+      id: entry.id,
+      sellerId: data.sellerId,
+      managerId: manager.id,
+      timestamp,
+      inventorySerialId: entry.inventorySerialId,
+    }),
+    auditStatement(env, manager.id, 'chip.created', 'chip', entry.id, {
+      materialCode: entry.inventorySerial.material_code,
+      iccidLast4: entry.inventorySerial.iccid.slice(-4),
+      sellerId: data.sellerId,
+      inventorySerialId: entry.inventorySerialId,
+      stockLinked: true,
+      batch: true,
+    }),
+  ]);
+  try {
+    await env.DB.batch(statements);
+  } catch (error) {
+    throw mapChipDatabaseError(error);
+  }
+  const chips = await Promise.all(entries.map(async (entry) => publicChip(await chipById(env, entry.id))));
+  return json({ chips, count: chips.length }, 201);
 }
 
 async function updateChip(request, env, manager, id) {
@@ -2245,6 +2413,10 @@ async function routeApi(request, env) {
   }
   if (method === 'GET' && path === '/api/chips/candidates') return listChipCandidates(env, user, url);
   if (method === 'GET' && path === '/api/chips') return listChips(env, user);
+  if (method === 'POST' && path === '/api/chips/bulk') {
+    requireRole(user, 'manager');
+    return createChipsBulk(request, env, user);
+  }
   if (method === 'POST' && path === '/api/chips') {
     requireRole(user, 'manager');
     return createChip(request, env, user);

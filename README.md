@@ -2,6 +2,10 @@
 
 Sistema online para controlar produtos por código material e número de série, montar pedidos e acompanhar a operação da loja.
 
+## Versão 6.6.6
+
+Mantém o botão do carrinho sempre visível na tela e exibe uma imagem para cada produto na lateral do pedido, com imagem cadastrada ou placeholder interno automático.
+
 ## Versão 6.6.5
 
 Atualiza o estoque com a planilha de 10/08/2026: 291 códigos materiais e 1.061 unidades disponíveis após excluir 110 linhas do depósito RPAR. A migração preserva usuários, pedidos, baixas históricas e chips já distribuídos aos vendedores. Foram incluídos seis materiais novos, entre eles o Motorola Moto G56 256GB; produtos novos sem valor confirmado continuam bloqueados para pedidos até a inclusão do preço oficial. Consulte `LEIA-ME-ATUALIZACAO-V6.6.5.md`.

@@ -6,6 +6,10 @@ Sistema online para controlar produtos por código material e número de série,
 
 Permite cadastrar vários chips de uma só vez. O Gerente identifica cada ICCID pelos 6 últimos dígitos, adiciona chips de qualquer material à fila, revisa o lote e confirma todos para o mesmo vendedor. O lote é protegido: se faltar vaga ou algum ICCID deixar de estar disponível, nenhum item é cadastrado parcialmente. O pacote inclui `ATUALIZAR-SISTEMA.bat` para atualizar o Cloudflare com dois cliques. Consulte `LEIA-ME-ATUALIZACAO-V6.6.2.md`.
 
+## Versão 6.6.4
+
+Substitui a barra fixa de finalização por um botão flutuante sempre disponível. O botão abre um carrinho lateral com visual de cada produto, código material, preço, subtotal ao vivo, ajuste de quantidade e remoção rápida. O painel preserva o cálculo do Vivo Renova e leva à revisão final já existente.
+
 ## Versão 6.6.3
 
 Mantém o resumo do pedido sempre acessível enquanto o vendedor escolhe os produtos. A barra fixa mostra quantidade, subtotal atualizado ao vivo, valor após o Vivo Renova quando houver desconto e um botão destacado para finalizar. Na revisão, a confirmação permanece visível mesmo em pedidos longos.

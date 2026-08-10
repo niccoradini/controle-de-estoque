@@ -2,6 +2,10 @@
 
 Sistema online para controlar produtos por código material e número de série, montar pedidos e acompanhar a operação da loja.
 
+## Versão 6.6.7
+
+Corrige a abertura da lateral do carrinho por meio do controle global de eventos e passa a usar exclusivamente a URL real da imagem fornecida pelo cadastro do produto, sem geração de placeholders.
+
 ## Versão 6.6.6
 
 Mantém o botão do carrinho sempre visível na tela e exibe uma imagem para cada produto na lateral do pedido, com imagem cadastrada ou placeholder interno automático.

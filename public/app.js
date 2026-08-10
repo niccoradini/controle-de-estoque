@@ -805,20 +805,7 @@ function productVisual(product) {
 }
 
 function productImageSource(product) {
-  const configuredImage = String(product.image || product.imageUrl || product.image_url || product.thumbnail || '').trim();
-  if (configuredImage.startsWith('/') || configuredImage.startsWith('data:image/')) return configuredImage;
-  const cluster = clusterLabels[product.cluster] ? product.cluster : 'misc';
-  const label = String(product.name || clusterLabels[cluster] || 'Produto').trim();
-  const initials = label.split(/\s+/).slice(0, 2).map((word) => word.charAt(0)).join('').toUpperCase() || 'P';
-  const palette = {
-    devices: ['#503578', '#cbb2ff'], cases: ['#433353', '#c9b1e6'], screen_protectors: ['#2f4656', '#afd8ef'],
-    speakers: ['#57412f', '#f1c79e'], notebooks: ['#2f4059', '#adc7ed'], televisions: ['#353a4f', '#c3caed'],
-    chargers: ['#3f4634', '#d1dda9'], cables: ['#45404c', '#d4c8dd'], accessories: ['#49394d', '#dfb9e2'],
-    sims: ['#24503e', '#9ce6c2'], misc: ['#3d3945', '#d4cce0'],
-  };
-  const [background, foreground] = palette[cluster] || palette.misc;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" rx="22" fill="${background}"/><circle cx="60" cy="54" r="31" fill="none" stroke="${foreground}" stroke-width="3" opacity=".36"/><text x="60" y="64" text-anchor="middle" font-family="Arial,sans-serif" font-size="29" font-weight="700" fill="${foreground}">${initials}</text><rect x="36" y="94" width="48" height="4" rx="2" fill="${foreground}" opacity=".28"/></svg>`;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+  return String(product.imageUrl || product.image_url || product.imagem || product.image || '').trim();
 }
 
 function materialCode(product) {
@@ -1230,8 +1217,9 @@ function renderCartBar() {
       : productPriceKind(product, variant) === 'no_charge'
         ? 'Sem cobrança'
         : `${formatMoney(unitPriceCents)} por unidade`;
+    const imageUrl = productImageSource(product);
     return `<article class="cart-drawer-item">
-      <div class="cart-drawer-item__thumb"><img class="cart-drawer-item__image" src="${escapeHtml(productImageSource(product))}" alt="${escapeHtml(product.name)}" width="64" height="64" loading="lazy" decoding="async"></div>
+      <div class="cart-drawer-item__thumb"><img class="cart-drawer-item__image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" width="64" height="64" loading="lazy" decoding="async"></div>
       <div class="cart-drawer-item__content"><strong>${escapeHtml(product.name)}</strong><span class="mono">${escapeHtml(variant.materialCode)}</span><small>${price}</small></div>
       <div class="cart-drawer-item__line-total">${lineTotal == null ? '—' : formatMoney(lineTotal)}</div>
       <div class="cart-drawer-item__quantity" aria-label="Quantidade de ${escapeHtml(product.name)}">
@@ -1244,7 +1232,7 @@ function renderCartBar() {
   }).join('');
   const drawerClass = state.cartDrawerOpen ? ' is-open' : '';
   const drawerHidden = state.cartDrawerOpen ? 'false' : 'true';
-  target.innerHTML = `<button class="cart-fab${units ? ' has-items' : ''}" type="button" data-action="open-cart-drawer" aria-controls="cart-drawer" aria-expanded="${state.cartDrawerOpen ? 'true' : 'false'}" aria-label="Abrir carrinho com ${units} ${units === 1 ? 'item' : 'itens'}">
+  target.innerHTML = `<button id="cart-fab" class="cart-fab${units ? ' has-items' : ''}" type="button" aria-controls="cart-drawer" aria-expanded="${state.cartDrawerOpen ? 'true' : 'false'}" aria-label="Abrir carrinho com ${units} ${units === 1 ? 'item' : 'itens'}">
       ${uiIcon('orders')}<span class="cart-fab__label">${units ? 'Seu pedido' : 'Carrinho'}</span><strong class="cart-fab__total">${formatMoney(orderTotal)}</strong><span class="cart-fab__count">${units}</span>
     </button>
     <button class="cart-drawer-overlay${drawerClass}" type="button" data-action="close-cart-drawer" aria-label="Fechar carrinho" tabindex="-1"></button>
@@ -1272,6 +1260,51 @@ function setCartDrawer(open, restoreFocus = true) {
   if (state.cartDrawerOpen) window.setTimeout(() => drawer?.querySelector('[data-action="close-cart-drawer"]')?.focus(), 0);
   else if (restoreFocus) fab?.focus();
 }
+
+async function handleCartRootClick(event) {
+  const button = event.target.closest('button');
+  if (!button || !event.currentTarget.contains(button)) return;
+  try {
+    if (button.id === 'cart-fab') {
+      setCartDrawer(true);
+      return;
+    }
+    const action = button.dataset.action;
+    if (action === 'close-cart-drawer') setCartDrawer(false);
+    if (action === 'remove-cart-drawer-item') {
+      state.cart.delete(Number(button.dataset.variantId));
+      renderCatalogGrid();
+      renderCartBar();
+    }
+    if (action === 'decrease-cart-item') {
+      const variantId = Number(button.dataset.variantId);
+      const nextQuantity = Number(state.cart.get(variantId) || 0) - 1;
+      if (nextQuantity > 0) state.cart.set(variantId, nextQuantity);
+      else state.cart.delete(variantId);
+      renderCatalogGrid();
+      renderCartBar();
+    }
+    if (action === 'increase-cart-item') {
+      const variantId = Number(button.dataset.variantId);
+      const found = findCatalogVariant(variantId);
+      const nextQuantity = Number(state.cart.get(variantId) || 0) + 1;
+      if (!found || nextQuantity > Number(found.variant.available)) throw new ApiError('Não há mais unidades disponíveis deste produto.', 409);
+      state.cart.set(variantId, nextQuantity);
+      renderCatalogGrid();
+      renderCartBar();
+    }
+    if (action === 'review-request') {
+      setCartDrawer(false, false);
+      requestReviewModal();
+    }
+  } catch (error) {
+    if (error.status !== 401) showToast(error.message, 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('cart-root')?.addEventListener('click', handleCartRootClick);
+});
 
 async function renderSellerStore(title = 'Monte seu pedido', description = 'Escolha os produtos e informe as quantidades.') {
   const content = document.querySelector('#view-content');
@@ -2262,34 +2295,6 @@ root.addEventListener('click', async (event) => {
     if (action === 'edit-user') userModal(state.users.find((user) => user.id === Number(button.dataset.id)));
     if (action === 'delete-user') deleteUserModal(state.users.find((user) => user.id === Number(button.dataset.id)));
     if (action === 'filter-requests') { state.requestFilter = button.dataset.status; await renderRequests(); }
-    if (action === 'open-cart-drawer') setCartDrawer(true);
-    if (action === 'close-cart-drawer') setCartDrawer(false);
-    if (action === 'remove-cart-drawer-item') {
-      state.cart.delete(Number(button.dataset.variantId));
-      renderCatalogGrid();
-      renderCartBar();
-    }
-    if (action === 'decrease-cart-item') {
-      const variantId = Number(button.dataset.variantId);
-      const nextQuantity = Number(state.cart.get(variantId) || 0) - 1;
-      if (nextQuantity > 0) state.cart.set(variantId, nextQuantity);
-      else state.cart.delete(variantId);
-      renderCatalogGrid();
-      renderCartBar();
-    }
-    if (action === 'increase-cart-item') {
-      const variantId = Number(button.dataset.variantId);
-      const found = findCatalogVariant(variantId);
-      const nextQuantity = Number(state.cart.get(variantId) || 0) + 1;
-      if (!found || nextQuantity > Number(found.variant.available)) throw new ApiError('Não há mais unidades disponíveis deste produto.', 409);
-      state.cart.set(variantId, nextQuantity);
-      renderCatalogGrid();
-      renderCartBar();
-    }
-    if (action === 'review-request') {
-      setCartDrawer(false, false);
-      requestReviewModal();
-    }
     if (action === 'cancel-request') cancelModal(button.dataset.id);
   } catch (error) {
     if (error.status !== 401) showToast(error.message, 'error');

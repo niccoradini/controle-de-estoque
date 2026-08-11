@@ -7,6 +7,7 @@ import {
 const root = document.querySelector('#root');
 const modalRoot = document.querySelector('#modal-root');
 const toastRoot = document.querySelector('#toast-root');
+const DEFAULT_PRODUCT_IMAGE_URL = '/product-default.svg';
 let chipCandidateRequest = 0;
 let chipCandidateTimer = 0;
 let chipBatchItems = [];
@@ -805,7 +806,33 @@ function productVisual(product) {
 }
 
 function productImageSource(product) {
-  return String(product.imageUrl || product.image_url || product.imagem || product.image || '').trim();
+  const imageUrl = String(product?.imageUrl || '').trim();
+  if (!imageUrl || imageUrl === 'undefined' || imageUrl === 'null') return DEFAULT_PRODUCT_IMAGE_URL;
+  try {
+    const parsed = new URL(imageUrl, window.location.origin);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return DEFAULT_PRODUCT_IMAGE_URL;
+    return parsed.origin === window.location.origin
+      ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+      : parsed.href;
+  } catch {
+    return DEFAULT_PRODUCT_IMAGE_URL;
+  }
+}
+
+function productImageMarkup(product, className, width, height) {
+  return `<img class="${escapeHtml(className)}" data-product-image data-fallback-src="${DEFAULT_PRODUCT_IMAGE_URL}" src="${escapeHtml(productImageSource(product))}" alt="${escapeHtml(product?.name || 'Produto')}" width="${width}" height="${height}" loading="lazy" decoding="async">`;
+}
+
+function productImageMedia(product) {
+  const cluster = clusterLabels[product.cluster] ? product.cluster : 'misc';
+  return `<div class="product-image-media product-image-media--${cluster}">${productImageMarkup(product, 'product-image-media__image', 480, 316)}<span class="product-image-media__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
+}
+
+function handleProductImageError(event) {
+  const image = event.target.closest?.('img[data-product-image]');
+  if (!image || image.dataset.fallbackApplied === 'true') return;
+  image.dataset.fallbackApplied = 'true';
+  image.src = image.dataset.fallbackSrc || DEFAULT_PRODUCT_IMAGE_URL;
 }
 
 function materialCode(product) {
@@ -832,7 +859,7 @@ function productCard(product) {
     : productPriceKind(product, variant) === 'no_charge'
       ? '<strong>Sem cobrança</strong><span>ativação do chip</span>'
       : `<strong>${formatMoney(price)}</strong><span>${installments > 1 ? `${installments}x de ${formatMoney(Math.round(price / installments))} sem juros` : 'pagamento à vista'}</span>`;
-  return `<article class="store-card ${unavailable ? 'store-card--empty' : ''}">${productVisual(product)}<div class="store-card__body"><div class="store-card__meta"><span>${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</span><span>${escapeHtml(product.brand || 'Sem marca')}</span></div><h3>${escapeHtml(product.name)}</h3>${materialCodeBox(materialCode(product), true)}<div class="store-card__price">${priceDetail}</div><div class="store-card__stock"><strong>${product.available}</strong><span>${product.available === 1 ? 'unidade disponível' : 'unidades disponíveis'}</span></div><button class="btn store-card__button" data-action="choose-product" data-product-id="${product.id}" ${unavailable ? 'disabled' : ''}>${unavailable ? 'Sem estoque' : 'Adicionar ao pedido'}</button></div></article>`;
+  return `<article class="store-card ${unavailable ? 'store-card--empty' : ''}">${productImageMedia(product)}<div class="store-card__body"><div class="store-card__meta"><span>${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</span><span>${escapeHtml(product.brand || 'Sem marca')}</span></div><h3>${escapeHtml(product.name)}</h3>${materialCodeBox(materialCode(product), true)}<div class="store-card__price">${priceDetail}</div><div class="store-card__stock"><strong>${product.available}</strong><span>${product.available === 1 ? 'unidade disponível' : 'unidades disponíveis'}</span></div><button class="btn store-card__button" data-action="choose-product" data-product-id="${product.id}" ${unavailable ? 'disabled' : ''}>${unavailable ? 'Sem estoque' : 'Adicionar ao pedido'}</button></div></article>`;
 }
 
 function variantRemaining(variant) {
@@ -991,7 +1018,7 @@ function deviceFamilyCard(group) {
     </div>` : '';
 
   return `<article class="store-card device-family-card ${expanded ? 'is-expanded' : ''}" data-family-key="${escapeHtml(group.key)}">
-    <div class="device-family-card__visual">${productVisual(representative)}<span class="device-family-card__variants">${group.options.length} ${group.options.length === 1 ? 'variação' : 'variações'}</span></div>
+    <div class="device-family-card__visual">${productImageMedia(representative)}<span class="device-family-card__variants">${group.options.length} ${group.options.length === 1 ? 'variação' : 'variações'}</span></div>
     <div class="store-card__body"><div class="store-card__meta"><span>Modelo de aparelho</span><span>${escapeHtml(group.brand || 'Sem marca')}</span></div><h3>${escapeHtml(group.familyName)}</h3>${summary}${deviceGroupPrice(group)}<div class="store-card__stock"><strong>${group.available}</strong><span>${group.available === 1 ? 'unidade disponível' : 'unidades disponíveis'}</span></div><button class="btn ${expanded ? 'btn--secondary' : ''} store-card__button" data-action="toggle-device-family" data-family-key="${escapeHtml(group.key)}">${expanded ? 'Fechar opções' : 'Escolher memória, cor e acessórios'}</button>${configurator}</div>
   </article>`;
 }
@@ -1097,7 +1124,10 @@ function renderCatalogGrid() {
 
 async function loadCatalog() {
   const data = await api('/api/catalog');
-  state.catalog = data.products;
+  state.catalog = (data.products || []).map((product) => ({
+    ...product,
+    imageUrl: product.imageUrl || product.url_imagem || product.imagem || product.image || DEFAULT_PRODUCT_IMAGE_URL,
+  }));
   state.pricing = data.pricing || { categories: [], tableDate: '', source: '' };
   state.renovaCatalog = data.renova || { tableDate: '', devices: [], boosts: [] };
   if (state.priceCategory && !state.pricing.categories.includes(state.priceCategory)) state.priceCategory = '';
@@ -1156,7 +1186,7 @@ function renderStockTable() {
         : state.user.role === 'manager'
           ? `<button class="btn btn--secondary btn--small" data-action="adjust-quantity" data-variant-id="${variant.id}">Ajustar</button>`
           : `<span class="balance-tracked-badge">${uiIcon('box')} Controle por saldo</span>`;
-      return `<tr><td data-label="Produto"><div class="cell-main">${escapeHtml(product.name)}</div><div class="cell-sub">${escapeHtml(product.brand || 'Sem marca')}</div></td><td data-label="Código material"><code class="material-pill mono">${escapeHtml(variant.materialCode)}</code></td><td data-label="Grupo">${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</td><td data-label="Preço">${shownPrice == null ? '<span class="price-unavailable">—</span>' : `<div class="stock-price"><strong>${productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(shownPrice)}</strong><span>${escapeHtml(priceCaption)}</span></div>`}</td><td data-label="Saldo físico"><strong>${variant.onHand}</strong></td><td data-label="Reservado">${variant.reserved}</td><td data-label="Com vendedores">${Number(variant.allocatedToSellers || 0)}</td><td data-label="Disponível"><strong class="${Number(variant.available) > 0 ? 'available-value' : 'unavailable-value'}">${variant.available}</strong></td><td data-label="Em entrega"><strong class="${Number(variant.incoming || 0) ? 'incoming-value' : ''}">${Number(variant.incoming || 0)}</strong></td><td data-label="Controle">${stockControl}</td></tr>`;
+      return `<tr><td data-label="Produto"><div class="stock-product-cell">${productImageMarkup(product, 'stock-product-cell__image', 48, 48)}<div><div class="cell-main">${escapeHtml(product.name)}</div><div class="cell-sub">${escapeHtml(product.brand || 'Sem marca')}</div></div></div></td><td data-label="Código material"><code class="material-pill mono">${escapeHtml(variant.materialCode)}</code></td><td data-label="Grupo">${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</td><td data-label="Preço">${shownPrice == null ? '<span class="price-unavailable">—</span>' : `<div class="stock-price"><strong>${productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(shownPrice)}</strong><span>${escapeHtml(priceCaption)}</span></div>`}</td><td data-label="Saldo físico"><strong>${variant.onHand}</strong></td><td data-label="Reservado">${variant.reserved}</td><td data-label="Com vendedores">${Number(variant.allocatedToSellers || 0)}</td><td data-label="Disponível"><strong class="${Number(variant.available) > 0 ? 'available-value' : 'unavailable-value'}">${variant.available}</strong></td><td data-label="Em entrega"><strong class="${Number(variant.incoming || 0) ? 'incoming-value' : ''}">${Number(variant.incoming || 0)}</strong></td><td data-label="Controle">${stockControl}</td></tr>`;
     }).join('');
     return groupHeader + groupRows;
   }).join('');
@@ -1217,9 +1247,8 @@ function renderCartBar() {
       : productPriceKind(product, variant) === 'no_charge'
         ? 'Sem cobrança'
         : `${formatMoney(unitPriceCents)} por unidade`;
-    const imageUrl = productImageSource(product);
     return `<article class="cart-drawer-item">
-      <div class="cart-drawer-item__thumb"><img class="cart-drawer-item__image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name)}" width="64" height="64" loading="lazy" decoding="async"></div>
+      <div class="cart-drawer-item__thumb">${productImageMarkup(product, 'cart-drawer-item__image', 64, 64)}</div>
       <div class="cart-drawer-item__content"><strong>${escapeHtml(product.name)}</strong><span class="mono">${escapeHtml(variant.materialCode)}</span><small>${price}</small></div>
       <div class="cart-drawer-item__line-total">${lineTotal == null ? '—' : formatMoney(lineTotal)}</div>
       <div class="cart-drawer-item__quantity" aria-label="Quantidade de ${escapeHtml(product.name)}">
@@ -1844,7 +1873,7 @@ function pickerModal(productId) {
     : `<div class="picker-price"><span>Preço por unidade</span><strong>${productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(unitPrice)}</strong></div>`;
   showModal(`<form data-form="pick-product" data-variant-id="${variant.id}" novalidate>
     <div class="modal__head"><div><h2>${escapeHtml(product.name)}</h2>${materialCodeBox(variant.materialCode)}</div>${modalCloseButton()}</div>
-    <div class="modal__body"><div class="form-error" data-form-error hidden></div>${priceSummary}<p><strong>${variant.available}</strong> unidades disponíveis.</p><div class="field"><label for="picker-quantity">Quantidade</label><input class="input" id="picker-quantity" name="quantity" type="number" value="1" min="1" max="${variant.available}" step="1" required></div></div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="picker-product">${productImageMarkup(product, 'picker-product__image', 72, 72)}<div><strong>${escapeHtml(product.name)}</strong><span>${escapeHtml(product.brand || 'Sem marca')}</span></div></div>${priceSummary}<p><strong>${variant.available}</strong> unidades disponíveis.</p><div class="field"><label for="picker-quantity">Quantidade</label><input class="input" id="picker-quantity" name="quantity" type="number" value="1" min="1" max="${variant.available}" step="1" required></div></div>
     <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Adicionar ao pedido</button></div>
   </form>`, { small: true });
 }
@@ -2168,7 +2197,7 @@ function requestReviewModal() {
     : '';
   showModal(`<form class="request-review-form" data-form="create-request" novalidate>
     <div class="modal__head"><div><h2>Revisar pedido</h2><p>${units} ${units === 1 ? 'item selecionado' : 'itens selecionados'} · o IMEI será definido automaticamente</p></div>${modalCloseButton()}</div>
-    <div class="modal__body"><div class="form-error" data-form-error hidden></div><ul class="request-items cart-review">${selected.map(({ product, variant, quantity, unitPriceCents }) => `<li><div><strong>${escapeHtml(product.name)}</strong>${materialInline(variant.materialCode)}${unitPriceCents == null ? '' : productPriceKind(product, variant) === 'no_charge' ? '<div class="cart-line-price"><span>Sem cobrança</span><strong>R$ 0,00</strong></div>' : `<div class="cart-line-price"><span>${formatMoney(unitPriceCents)} por unidade</span><strong>${formatMoney(unitPriceCents * quantity)}</strong></div>`}</div><span class="item-quantity">${quantity} un.</span><button type="button" class="btn btn--ghost btn--small" data-action="remove-cart-item" data-variant-id="${variant.id}">Remover</button></li>`).join('')}</ul>${priceSummary}<div class="field"><label for="request-notes">Observação <span class="request-meta">(opcional)</span></label><textarea class="textarea" id="request-notes" name="notes" maxlength="500"></textarea></div></div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><ul class="request-items cart-review">${selected.map(({ product, variant, quantity, unitPriceCents }) => `<li>${productImageMarkup(product, 'cart-review__image', 52, 52)}<div><strong>${escapeHtml(product.name)}</strong>${materialInline(variant.materialCode)}${unitPriceCents == null ? '' : productPriceKind(product, variant) === 'no_charge' ? '<div class="cart-line-price"><span>Sem cobrança</span><strong>R$ 0,00</strong></div>' : `<div class="cart-line-price"><span>${formatMoney(unitPriceCents)} por unidade</span><strong>${formatMoney(unitPriceCents * quantity)}</strong></div>`}</div><span class="item-quantity">${quantity} un.</span><button type="button" class="btn btn--ghost btn--small" data-action="remove-cart-item" data-variant-id="${variant.id}">Remover</button></li>`).join('')}</ul>${priceSummary}<div class="field"><label for="request-notes">Observação <span class="request-meta">(opcional)</span></label><textarea class="textarea" id="request-notes" name="notes" maxlength="500"></textarea></div></div>
     <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Voltar</button><button type="submit" class="btn">Confirmar e liberar pedido</button></div>
   </form>`);
 }
@@ -2566,5 +2595,6 @@ async function boot() {
 }
 
 root.addEventListener('click', (event) => { if (event.target.closest('[data-action="boot-retry"]')) boot(); });
+document.addEventListener('error', handleProductImageError, true);
 
 boot();

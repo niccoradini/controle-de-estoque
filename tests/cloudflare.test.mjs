@@ -439,7 +439,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(catalog.status, 200);
     assert.equal(catalog.payload.products.length, 309);
     assert.equal(catalog.payload.products.reduce((sum, product) => sum + product.onHand, 0), 1061);
-    assert.ok(catalog.payload.products.every((product) => product.imageUrl === '/product-default.svg'));
+    assert.ok(catalog.payload.products.every((product) => /^\/product-images\/category-(devices|accessories|electronics)\.svg$/.test(product.imageUrl)));
     assert.ok(catalog.payload.products.every((product) => product.variants.length === 1
       && product.variants[0].stockMode === 'quantity' && product.variants[0].serialTracked === true));
     assert.deepEqual(new Set(catalog.payload.products.map((product) => product.cluster)), new Set([
@@ -1351,7 +1351,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.6.8');
+    assert.equal(JSON.parse(packageSource).version, '6.6.9');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1526,8 +1526,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /\.product-visual--cases[\s\S]*#70588f/i);
     assert.match(indexSource, /name="theme-color" content="#0b0b0d"/i);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.6\.8/);
-    assert.match(indexSource, /app\.js\?v=6\.6\.8/);
+    assert.match(indexSource, /styles\.css\?v=6\.6\.9/);
+    assert.match(indexSource, /app\.js\?v=6\.6\.9/);
     assert.match(stylesSource, /\.cart-fab\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?right:\s*20px;[\s\S]*?bottom:\s*20px;[\s\S]*?z-index:\s*9999;/);
     assert.match(appSource, /function productImageSource\(product\)[\s\S]*product\.imageUrl/);
     assert.match(appSource, /DEFAULT_PRODUCT_IMAGE_URL\s*=\s*'\/product-default\.svg'/);
@@ -1540,7 +1540,7 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /picker-product__image/);
     assert.match(appSource, /cart-review__image/);
     assert.match(stylesSource, /\.product-image-media__image[\s\S]*max-width:\s*100%/);
-    assert.match(stylesSource, /\.product-image-media__image[\s\S]*object-fit:\s*contain/);
+    assert.match(stylesSource, /\.product-image-media__image[\s\S]*object-fit:\s*cover/);
     assert.match(appSource, /document\.addEventListener\('DOMContentLoaded'/);
     assert.match(appSource, /getElementById\('cart-root'\)\?\.addEventListener\('click', handleCartRootClick\)/);
     assert.match(appSource, /button\.id === 'cart-fab'/);
@@ -1551,11 +1551,14 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.8');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.9');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');
     const productFallback = await mf.dispatchFetch('https://controleestoque.app.br/product-default.svg');
+    const deviceImage = await mf.dispatchFetch('https://controleestoque.app.br/product-images/category-devices.svg');
+    const accessoryImage = await mf.dispatchFetch('https://controleestoque.app.br/product-images/category-accessories.svg');
+    const electronicsImage = await mf.dispatchFetch('https://controleestoque.app.br/product-images/category-electronics.svg');
     assert.equal(page.headers.get('cache-control'), 'no-store');
     assert.equal(page.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=()');
     assert.equal(script.headers.get('cache-control'), 'no-cache');
@@ -1565,5 +1568,9 @@ describe('Controle de estoque por código material', () => {
     assert.match(newsImage.headers.get('content-type') || '', /image\/jpeg/i);
     assert.equal(productFallback.status, 200);
     assert.match(productFallback.headers.get('content-type') || '', /image\/svg\+xml/i);
+    for (const categoryImage of [deviceImage, accessoryImage, electronicsImage]) {
+      assert.equal(categoryImage.status, 200);
+      assert.match(categoryImage.headers.get('content-type') || '', /image\/svg\+xml/i);
+    }
   });
 });

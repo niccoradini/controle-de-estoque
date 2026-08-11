@@ -5100,11 +5100,11 @@ body.cart-drawer-open { overflow: hidden; }
   max-width: 100%;
   height: 100%;
   display: block;
-  padding: 12px;
+  padding: 0;
   overflow: hidden;
   color: transparent;
   background: transparent;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   font-size: 0;
 }
@@ -5154,7 +5154,7 @@ body.cart-drawer-open { overflow: hidden; }
   overflow: hidden;
   color: transparent;
   background: #242128;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   font-size: 0;
 }

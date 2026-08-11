@@ -820,7 +820,7 @@ function productImageSource(product) {
 }
 
 function productImageMarkup(product, className, width, height) {
-  return `<img class="${escapeHtml(className)}" data-product-image data-fallback-src="${DEFAULT_PRODUCT_IMAGE_URL}" src="${escapeHtml(productImageSource(product))}" alt="${escapeHtml(product?.name || 'Produto')}" width="${width}" height="${height}" loading="lazy" decoding="async">`;
+  return `<img class="${escapeHtml(className)}" data-product-image data-fallback-src="${DEFAULT_PRODUCT_IMAGE_URL}" src="${escapeHtml(productImageSource(product))}" alt="${escapeHtml(product?.name || 'Produto')}" width="${width}" height="${height}" loading="eager" decoding="async">`;
 }
 
 function productImageMedia(product) {

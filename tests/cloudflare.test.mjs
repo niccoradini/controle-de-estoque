@@ -1554,8 +1554,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.6\.10/);
-    assert.match(indexSource, /app\.js\?v=6\.6\.10/);
+    assert.match(indexSource, /styles\.css\?v=6\.6\.11/);
+    assert.match(indexSource, /app\.js\?v=6\.6\.11/);
     assert.match(stylesSource, /\.cart-fab\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?right:\s*20px;[\s\S]*?bottom:\s*20px;[\s\S]*?z-index:\s*9999;/);
     assert.match(appSource, /function productImageMarkup\(produto, className, width, height\)/);
     assert.match(appSource, /function productImageUrl\(produto\)[\s\S]*typeof produto\?\.imagem_url === 'string' \? produto\.imagem_url\.trim\(\)/);

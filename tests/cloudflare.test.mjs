@@ -1338,10 +1338,12 @@ describe('Controle de estoque por código material', () => {
   });
 
   test('entrega o configurador por modelo sem dependências externas', async () => {
-    const [appSource, groupsSource, indexSource, packageSource, stylesSource, updaterSource, deploymentWorkflow, workerSource] = await Promise.all([
+    const [appSource, groupsSource, indexSource, headersSource, symbolSource, packageSource, stylesSource, updaterSource, deploymentWorkflow, workerSource] = await Promise.all([
       readFile(new URL('../public/app.js', import.meta.url), 'utf8'),
       readFile(new URL('../public/catalog-groups.js', import.meta.url), 'utf8'),
       readFile(new URL('../public/index.html', import.meta.url), 'utf8'),
+      readFile(new URL('../public/_headers', import.meta.url), 'utf8'),
+      readFile(new URL('../public/estoque-symbol.svg', import.meta.url), 'utf8'),
       readFile(new URL('../package.json', import.meta.url), 'utf8'),
       readFile(new URL('../public/styles.css', import.meta.url), 'utf8'),
       readFile(new URL('../ATUALIZAR-SISTEMA.bat', import.meta.url), 'utf8'),
@@ -1528,6 +1530,10 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /Tema Lavanda Pastel/i);
     assert.match(stylesSource, /\.product-visual--cases[\s\S]*#70588f/i);
     assert.match(indexSource, /name="theme-color" content="#0b0b0d"/i);
+    assert.match(headersSource, /img-src 'self' data: https:/);
+    assert.match(indexSource, /rel="icon" type="image\/svg\+xml" href="\/estoque-symbol\.svg"/);
+    assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
+    assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
     assert.match(indexSource, /styles\.css\?v=6\.6\.9/);
     assert.match(indexSource, /app\.js\?v=6\.6\.9/);

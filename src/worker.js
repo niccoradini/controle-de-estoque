@@ -38,6 +38,17 @@ const DASHBOARD_CLUSTER_ORDER = [
   'cables',
   'misc',
 ];
+const PRODUCT_IMAGE_BY_CLUSTER = Object.freeze({
+  devices: '/product-images/category-devices.svg',
+  cases: '/product-images/category-accessories.svg',
+  screen_protectors: '/product-images/category-accessories.svg',
+  chargers: '/product-images/category-accessories.svg',
+  cables: '/product-images/category-accessories.svg',
+  misc: '/product-images/category-accessories.svg',
+  speakers: '/product-images/category-electronics.svg',
+  notebooks: '/product-images/category-electronics.svg',
+  tvs: '/product-images/category-electronics.svg',
+});
 
 function normalizeRenovaModelKey(value = '') {
   return String(value)
@@ -688,7 +699,7 @@ async function catalogData(env, user) {
     products.push({
       id: row.id,
       name: row.display_name || row.name,
-      imageUrl: '/product-default.svg',
+      imageUrl: PRODUCT_IMAGE_BY_CLUSTER[row.cluster] || '/product-default.svg',
       technicalName: row.technical_name || '',
       brand: row.brand,
       category: row.category,

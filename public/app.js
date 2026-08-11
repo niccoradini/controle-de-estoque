@@ -804,14 +804,16 @@ function productVisual(product) {
   return `<div class="product-visual product-visual--${cluster}">${clusterGraphic(cluster)}<span class="product-visual__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
 }
 
-/* Altere 'imagem_url' para a chave exata do seu JSON */
+/* ATENÇÃO DESENVOLVEDOR: Abra o console do navegador (F12), veja qual é o nome correto da chave que guarda a URL da imagem no JSON e substitua 'CHAVE_DA_IMAGEM_AQUI' no código acima. */
 function productImageMarkup(produto, className, width, height) {
-  return `<img src="${produto.imagem_url}" alt="${produto.nome}" class="${escapeHtml(className)}" width="${width}" height="${height}" loading="eager" decoding="async">`;
+  console.log('Inspecionando dados do produto:', produto);
+  return `<img src="${produto.CHAVE_DA_IMAGEM_AQUI}" alt="${produto.nome}" class="${escapeHtml(className)}" width="${width}" height="${height}" loading="eager" decoding="async" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Sem+Foto';">`;
 }
 
 function productImageMedia(produto) {
   const cluster = clusterLabels[produto.cluster] ? produto.cluster : 'misc';
-  const imagem = `<img src="${produto.imagem_url}" alt="${produto.nome}" class="product-image-media__image" width="480" height="316" loading="eager" decoding="async">`;
+  console.log('Inspecionando dados do produto:', produto);
+  const imagem = `<img src="${produto.CHAVE_DA_IMAGEM_AQUI}" alt="${produto.nome}" class="product-image-media__image" width="480" height="316" loading="eager" decoding="async" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Sem+Foto';">`;
   return `<div class="product-image-media product-image-media--${cluster}">${imagem}<span class="product-image-media__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
 }
 
@@ -1228,8 +1230,9 @@ function renderCartBar() {
       : productPriceKind(produto, variant) === 'no_charge'
         ? 'Sem cobrança'
         : `${formatMoney(unitPriceCents)} por unidade`;
+    console.log('Inspecionando dados do produto:', produto);
     return `<article class="cart-drawer-item">
-      <div class="cart-drawer-item__thumb"><img src="${produto.imagem_url}" alt="${produto.nome}" class="cart-drawer-item__image" width="64" height="64" loading="eager" decoding="async"></div>
+      <div class="cart-drawer-item__thumb"><img src="${produto.CHAVE_DA_IMAGEM_AQUI}" alt="${produto.nome}" class="cart-drawer-item__image" width="64" height="64" loading="eager" decoding="async" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Sem+Foto';"></div>
       <div class="cart-drawer-item__content"><strong>${escapeHtml(produto.name)}</strong><span class="mono">${escapeHtml(variant.materialCode)}</span><small>${price}</small></div>
       <div class="cart-drawer-item__line-total">${lineTotal == null ? '—' : formatMoney(lineTotal)}</div>
       <div class="cart-drawer-item__quantity" aria-label="Quantidade de ${escapeHtml(produto.name)}">

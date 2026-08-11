@@ -812,7 +812,20 @@ function productImageUrl(produto) {
 }
 
 function productImageMarkup(produto, className, width, height) {
-  return `<img src="${escapeHtml(productImageUrl(produto))}" alt="${escapeHtml(produto.nome || produto.name || 'Produto')}" class="${escapeHtml(className)}" width="${width}" height="${height}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${PRODUCT_IMAGE_FALLBACK}';">`;
+  return `<img src="${escapeHtml(productImageUrl(produto))}" alt="${escapeHtml(produto.nome || produto.name || 'Produto')}" class="${escapeHtml(className)}" width="${width}" height="${height}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-product-image="true">`;
+}
+
+function handleProductImageError(event) {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement) || image.dataset.productImage !== 'true') return;
+  if (image.dataset.fallbackApplied === 'true') {
+    image.hidden = true;
+    return;
+  }
+  image.dataset.fallbackApplied = 'true';
+  image.classList.add('is-fallback');
+  image.alt = '';
+  image.src = PRODUCT_IMAGE_FALLBACK;
 }
 
 function productImageMedia(produto) {
@@ -981,7 +994,13 @@ function deviceFamilyCard(group) {
   state.deviceSelections.set(group.key, selection);
   const selectedPriceAvailable = selectedProductPrice(option?.product, option?.variant) != null;
 
-  const representative = { ...group.products[0], name: group.familyName, cluster: 'devices' };
+  const representativeProduct = option?.product || group.products[0];
+  const representative = {
+    ...representativeProduct,
+    name: group.familyName,
+    nome: group.familyName,
+    cluster: 'devices',
+  };
   const summary = `<div class="device-family-summary"><span>${group.memories.join(' · ')}</span><span>${group.options.map((item) => item.color).filter((color, index, colors) => colors.indexOf(color) === index).join(' · ')}</span></div>`;
   const configurator = expanded ? `
     <div class="device-configurator">
@@ -1320,6 +1339,7 @@ async function handleCartRootClick(event) {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('cart-root')?.addEventListener('click', handleCartRootClick);
+  document.addEventListener('error', handleProductImageError, true);
 });
 
 async function renderSellerStore(title = 'Monte seu pedido', description = 'Escolha os produtos e informe as quantidades.') {

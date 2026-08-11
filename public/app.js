@@ -423,7 +423,7 @@ async function copyText(value) {
 function authVisual() {
   return `
     <section class="auth-visual">
-      <div class="auth-brand"><div class="brand-mark" aria-hidden="true"><span></span></div>Estoque</div>
+      <div class="auth-brand"><div class="brand-mark" aria-hidden="true"><img src="/estoque-symbol.svg" alt=""></div>Estoque</div>
       <div class="auth-copy">
         <h1>Estoque,<br>com clareza.</h1>
         <p>Produtos, pedidos e disponibilidade em uma experiência simples.</p>
@@ -507,7 +507,7 @@ function renderShell() {
     <div class="app-shell">
       <button class="sidebar-overlay" data-action="close-menu" aria-label="Fechar menu"></button>
       <aside class="sidebar">
-        <div class="sidebar__brand"><div class="brand-mark" aria-hidden="true"><span></span></div><div><strong>Estoque</strong><small>Loja interna</small></div></div>
+        <div class="sidebar__brand"><div class="brand-mark" aria-hidden="true"><img src="/estoque-symbol.svg" alt=""></div><div><strong>Estoque</strong><small>Loja interna</small></div></div>
         <div class="nav-label">Menu principal</div><nav class="nav-list" aria-label="Menu principal">${links}</nav>
         <div class="sidebar__spacer"></div>
         <div class="sidebar-user"><div class="avatar">${escapeHtml(initials(state.user.name))}</div><div class="sidebar-user__text"><strong>${escapeHtml(state.user.name)}</strong><span>${escapeHtml(roleLabel(state.user.role))}</span></div><button class="btn btn--ghost btn--icon btn--small" data-action="logout" title="Sair" aria-label="Sair">${uiIcon('logout')}</button></div>

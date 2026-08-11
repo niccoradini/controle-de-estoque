@@ -38,18 +38,6 @@ const DASHBOARD_CLUSTER_ORDER = [
   'cables',
   'misc',
 ];
-const PRODUCT_IMAGE_BY_CLUSTER = Object.freeze({
-  devices: '/product-images/category-devices.svg',
-  cases: '/product-images/category-accessories.svg',
-  screen_protectors: '/product-images/category-accessories.svg',
-  chargers: '/product-images/category-accessories.svg',
-  cables: '/product-images/category-accessories.svg',
-  misc: '/product-images/category-accessories.svg',
-  speakers: '/product-images/category-electronics.svg',
-  notebooks: '/product-images/category-electronics.svg',
-  tvs: '/product-images/category-electronics.svg',
-});
-
 function normalizeRenovaModelKey(value = '') {
   return String(value)
     .normalize('NFKD')
@@ -82,7 +70,7 @@ function nowIso() {
 
 function securityHeaders(headers = {}) {
   return {
-    'Content-Security-Policy': "default-src 'self'; base-uri 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
+    'Content-Security-Policy': "default-src 'self'; base-uri 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
     'Cross-Origin-Opener-Policy': 'same-origin',
     'Cross-Origin-Resource-Policy': 'same-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
@@ -699,7 +687,9 @@ async function catalogData(env, user) {
     products.push({
       id: row.id,
       name: row.display_name || row.name,
-      imageUrl: PRODUCT_IMAGE_BY_CLUSTER[row.cluster] || '/product-default.svg',
+      imagem_url: typeof row.imagem_url === 'string' && row.imagem_url.trim()
+        ? row.imagem_url.trim()
+        : null,
       technicalName: row.technical_name || '',
       brand: row.brand,
       category: row.category,

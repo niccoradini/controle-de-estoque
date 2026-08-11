@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title description">
+  <title id="title">Imagem padrão de produto</title>
+  <desc id="description">Ilustração neutra exibida quando o produto não possui foto cadastrada.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#28212f"/>
+      <stop offset="1" stop-color="#141317"/>
+    </linearGradient>
+    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#cdb7fa"/>
+      <stop offset="1" stop-color="#8061b8"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="420" rx="36" fill="url(#background)"/>
+  <circle cx="520" cy="60" r="150" fill="#b58cff" opacity=".11"/>
+  <circle cx="88" cy="382" r="110" fill="none" stroke="#b58cff" stroke-width="2" opacity=".16"/>
+  <rect x="236" y="88" width="168" height="244" rx="28" fill="url(#surface)" opacity=".94"/>
+  <rect x="250" y="104" width="140" height="212" rx="20" fill="#1a171e" opacity=".72"/>
+  <circle cx="274" cy="130" r="11" fill="#dcd0f7"/>
+  <circle cx="304" cy="130" r="11" fill="#dcd0f7" opacity=".74"/>
+  <path d="M291 250h58M320 221v58" stroke="#d9cbf8" stroke-width="12" stroke-linecap="round" opacity=".82"/>
+</svg>

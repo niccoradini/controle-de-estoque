@@ -688,6 +688,7 @@ async function catalogData(env, user) {
     products.push({
       id: row.id,
       name: row.display_name || row.name,
+      imageUrl: '/product-default.svg',
       technicalName: row.technical_name || '',
       brand: row.brand,
       category: row.category,

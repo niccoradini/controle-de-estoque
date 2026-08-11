@@ -7,7 +7,6 @@ import {
 const root = document.querySelector('#root');
 const modalRoot = document.querySelector('#modal-root');
 const toastRoot = document.querySelector('#toast-root');
-const DEFAULT_PRODUCT_IMAGE_URL = '/product-default.svg';
 let chipCandidateRequest = 0;
 let chipCandidateTimer = 0;
 let chipBatchItems = [];
@@ -805,34 +804,15 @@ function productVisual(product) {
   return `<div class="product-visual product-visual--${cluster}">${clusterGraphic(cluster)}<span class="product-visual__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
 }
 
-function productImageSource(product) {
-  const imagemUrl = String(product?.imagem_url || '').trim();
-  if (!imagemUrl || imagemUrl === 'undefined' || imagemUrl === 'null') return DEFAULT_PRODUCT_IMAGE_URL;
-  try {
-    const parsed = new URL(imagemUrl, window.location.origin);
-    if (!['http:', 'https:'].includes(parsed.protocol)) return DEFAULT_PRODUCT_IMAGE_URL;
-    return parsed.origin === window.location.origin
-      ? `${parsed.pathname}${parsed.search}${parsed.hash}`
-      : parsed.href;
-  } catch {
-    return DEFAULT_PRODUCT_IMAGE_URL;
-  }
+/* Altere 'imagem_url' para a chave exata do seu JSON */
+function productImageMarkup(produto, className, width, height) {
+  return `<img src="${produto.imagem_url}" alt="${produto.nome}" class="${escapeHtml(className)}" width="${width}" height="${height}" loading="eager" decoding="async">`;
 }
 
-function productImageMarkup(product, className, width, height) {
-  return `<img class="${escapeHtml(className)}" data-product-image data-fallback-src="${DEFAULT_PRODUCT_IMAGE_URL}" src="${escapeHtml(productImageSource(product))}" alt="${escapeHtml(product?.name || 'Produto')}" width="${width}" height="${height}" loading="eager" decoding="async">`;
-}
-
-function productImageMedia(product) {
-  const cluster = clusterLabels[product.cluster] ? product.cluster : 'misc';
-  return `<div class="product-image-media product-image-media--${cluster}">${productImageMarkup(product, 'product-image-media__image', 480, 316)}<span class="product-image-media__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
-}
-
-function handleProductImageError(event) {
-  const image = event.target.closest?.('img[data-product-image]');
-  if (!image || image.dataset.fallbackApplied === 'true') return;
-  image.dataset.fallbackApplied = 'true';
-  image.src = image.dataset.fallbackSrc || DEFAULT_PRODUCT_IMAGE_URL;
+function productImageMedia(produto) {
+  const cluster = clusterLabels[produto.cluster] ? produto.cluster : 'misc';
+  const imagem = `<img src="${produto.imagem_url}" alt="${produto.nome}" class="product-image-media__image" width="480" height="316" loading="eager" decoding="async">`;
+  return `<div class="product-image-media product-image-media--${cluster}">${imagem}<span class="product-image-media__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
 }
 
 function materialCode(product) {
@@ -1126,6 +1106,7 @@ async function loadCatalog() {
   const data = await api('/api/catalog');
   state.catalog = (data.products || []).map((product) => ({
     ...product,
+    nome: product.name,
     imagem_url: typeof product.imagem_url === 'string' ? product.imagem_url.trim() : '',
   }));
   state.pricing = data.pricing || { categories: [], tableDate: '', source: '' };
@@ -1240,23 +1221,23 @@ function renderCartBar() {
   const renovaSummary = renova.discountCents > 0
     ? `<div class="cart-drawer__renova"><span>Desconto Renova</span><strong>− ${formatMoney(renova.discountCents)}</strong></div><div class="cart-drawer__total"><span>Total após Renova</span><strong>${formatMoney(orderTotal)}</strong></div>`
     : '';
-  const cartItems = pricedSelection.map(({ product, variant, quantity, unitPriceCents }) => {
+  const cartItems = pricedSelection.map(({ product: produto, variant, quantity, unitPriceCents }) => {
     const lineTotal = unitPriceCents == null ? null : unitPriceCents * quantity;
     const price = unitPriceCents == null
       ? 'Preço pendente'
-      : productPriceKind(product, variant) === 'no_charge'
+      : productPriceKind(produto, variant) === 'no_charge'
         ? 'Sem cobrança'
         : `${formatMoney(unitPriceCents)} por unidade`;
     return `<article class="cart-drawer-item">
-      <div class="cart-drawer-item__thumb">${productImageMarkup(product, 'cart-drawer-item__image', 64, 64)}</div>
-      <div class="cart-drawer-item__content"><strong>${escapeHtml(product.name)}</strong><span class="mono">${escapeHtml(variant.materialCode)}</span><small>${price}</small></div>
+      <div class="cart-drawer-item__thumb"><img src="${produto.imagem_url}" alt="${produto.nome}" class="cart-drawer-item__image" width="64" height="64" loading="eager" decoding="async"></div>
+      <div class="cart-drawer-item__content"><strong>${escapeHtml(produto.name)}</strong><span class="mono">${escapeHtml(variant.materialCode)}</span><small>${price}</small></div>
       <div class="cart-drawer-item__line-total">${lineTotal == null ? '—' : formatMoney(lineTotal)}</div>
-      <div class="cart-drawer-item__quantity" aria-label="Quantidade de ${escapeHtml(product.name)}">
+      <div class="cart-drawer-item__quantity" aria-label="Quantidade de ${escapeHtml(produto.name)}">
         <button type="button" data-action="decrease-cart-item" data-variant-id="${variant.id}" aria-label="Diminuir quantidade">−</button>
         <strong>${quantity}</strong>
         <button type="button" data-action="increase-cart-item" data-variant-id="${variant.id}" aria-label="Aumentar quantidade">+</button>
       </div>
-      <button type="button" class="cart-drawer-item__remove" data-action="remove-cart-drawer-item" data-variant-id="${variant.id}" aria-label="Remover ${escapeHtml(product.name)} do pedido">${uiIcon('close')}</button>
+      <button type="button" class="cart-drawer-item__remove" data-action="remove-cart-drawer-item" data-variant-id="${variant.id}" aria-label="Remover ${escapeHtml(produto.name)} do pedido">${uiIcon('close')}</button>
     </article>`;
   }).join('');
   const drawerClass = state.cartDrawerOpen ? ' is-open' : '';
@@ -2595,6 +2576,5 @@ async function boot() {
 }
 
 root.addEventListener('click', (event) => { if (event.target.closest('[data-action="boot-retry"]')) boot(); });
-document.addEventListener('error', handleProductImageError, true);
 
 boot();

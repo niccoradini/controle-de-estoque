@@ -1532,13 +1532,12 @@ describe('Controle de estoque por código material', () => {
     assert.match(indexSource, /styles\.css\?v=6\.6\.9/);
     assert.match(indexSource, /app\.js\?v=6\.6\.9/);
     assert.match(stylesSource, /\.cart-fab\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?right:\s*20px;[\s\S]*?bottom:\s*20px;[\s\S]*?z-index:\s*9999;/);
-    assert.match(appSource, /\/\* ATENÇÃO DESENVOLVEDOR: Abra o console do navegador \(F12\), veja qual é o nome correto da chave que guarda a URL da imagem no JSON e substitua 'CHAVE_DA_IMAGEM_AQUI' no código acima\. \*\//);
     assert.match(appSource, /function productImageMarkup\(produto, className, width, height\)/);
-    assert.match(appSource, /console\.log\('Inspecionando dados do produto:', produto\)/);
-    assert.match(appSource, /<img src="\$\{produto\.CHAVE_DA_IMAGEM_AQUI\}" alt="\$\{produto\.nome\}"/);
-    assert.match(appSource, /function productImageMedia\(produto\)[\s\S]*<img src="\$\{produto\.CHAVE_DA_IMAGEM_AQUI\}" alt="\$\{produto\.nome\}"/);
-    assert.match(appSource, /pricedSelection\.map\(\(\{ product: produto,[\s\S]*console\.log\('Inspecionando dados do produto:', produto\)[\s\S]*cart-drawer-item__thumb[^\n]*<img src="\$\{produto\.CHAVE_DA_IMAGEM_AQUI\}" alt="\$\{produto\.nome\}"/);
-    assert.match(appSource, /onerror="this\.onerror=null; this\.src='https:\/\/via\.placeholder\.com\/150\?text=Sem\+Foto';"/);
+    assert.match(appSource, /<img src="\$\{produto\.imagem_url \? produto\.imagem_url : 'https:\/\/placehold\.co\/150x150\/2a2a2a\/ffffff\?text=Sem\+Foto'\}" alt="\$\{produto\.nome\}"/);
+    assert.match(appSource, /function productImageMedia\(produto\)[\s\S]*<img src="\$\{produto\.imagem_url \? produto\.imagem_url : 'https:\/\/placehold\.co\/150x150\/2a2a2a\/ffffff\?text=Sem\+Foto'\}" alt="\$\{produto\.nome\}"/);
+    assert.match(appSource, /pricedSelection\.map\(\(\{ product: produto,[\s\S]*cart-drawer-item__thumb[^\n]*<img src="\$\{produto\.imagem_url \? produto\.imagem_url : 'https:\/\/placehold\.co\/150x150\/2a2a2a\/ffffff\?text=Sem\+Foto'\}" alt="\$\{produto\.nome\}"/);
+    assert.match(appSource, /onerror="this\.onerror=null; this\.src='https:\/\/placehold\.co\/150x150\/2a2a2a\/ffffff\?text=Sem\+Foto';"/);
+    assert.doesNotMatch(appSource, /CHAVE_DA_IMAGEM_AQUI|Inspecionando dados do produto|via\.placeholder\.com/);
     assert.match(appSource, /stock-product-cell__image/);
     assert.match(appSource, /cart-drawer-item__image/);
     assert.match(appSource, /picker-product__image/);

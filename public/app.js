@@ -806,10 +806,10 @@ function productVisual(product) {
 }
 
 function productImageSource(product) {
-  const imageUrl = String(product?.imageUrl || '').trim();
-  if (!imageUrl || imageUrl === 'undefined' || imageUrl === 'null') return DEFAULT_PRODUCT_IMAGE_URL;
+  const imagemUrl = String(product?.imagem_url || '').trim();
+  if (!imagemUrl || imagemUrl === 'undefined' || imagemUrl === 'null') return DEFAULT_PRODUCT_IMAGE_URL;
   try {
-    const parsed = new URL(imageUrl, window.location.origin);
+    const parsed = new URL(imagemUrl, window.location.origin);
     if (!['http:', 'https:'].includes(parsed.protocol)) return DEFAULT_PRODUCT_IMAGE_URL;
     return parsed.origin === window.location.origin
       ? `${parsed.pathname}${parsed.search}${parsed.hash}`
@@ -1126,7 +1126,7 @@ async function loadCatalog() {
   const data = await api('/api/catalog');
   state.catalog = (data.products || []).map((product) => ({
     ...product,
-    imageUrl: product.imageUrl || product.url_imagem || product.imagem || product.image || DEFAULT_PRODUCT_IMAGE_URL,
+    imagem_url: typeof product.imagem_url === 'string' ? product.imagem_url.trim() : '',
   }));
   state.pricing = data.pricing || { categories: [], tableDate: '', source: '' };
   state.renovaCatalog = data.renova || { tableDate: '', devices: [], boosts: [] };

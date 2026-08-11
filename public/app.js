@@ -804,13 +804,20 @@ function productVisual(product) {
   return `<div class="product-visual product-visual--${cluster}">${clusterGraphic(cluster)}<span class="product-visual__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
 }
 
+const PRODUCT_IMAGE_FALLBACK = '/estoque-symbol.svg';
+
+function productImageUrl(produto) {
+  const imageUrl = typeof produto?.imagem_url === 'string' ? produto.imagem_url.trim() : '';
+  return imageUrl || PRODUCT_IMAGE_FALLBACK;
+}
+
 function productImageMarkup(produto, className, width, height) {
-  return `<img src="${produto.imagem_url ? produto.imagem_url : 'https://placehold.co/150x150/2a2a2a/ffffff?text=Sem+Foto'}" alt="${produto.nome}" class="${escapeHtml(className)}" width="${width}" height="${height}" loading="eager" decoding="async" onerror="this.onerror=null; this.src='https://placehold.co/150x150/2a2a2a/ffffff?text=Sem+Foto';">`;
+  return `<img src="${escapeHtml(productImageUrl(produto))}" alt="${escapeHtml(produto.nome || produto.name || 'Produto')}" class="${escapeHtml(className)}" width="${width}" height="${height}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src='${PRODUCT_IMAGE_FALLBACK}';">`;
 }
 
 function productImageMedia(produto) {
   const cluster = clusterLabels[produto.cluster] ? produto.cluster : 'misc';
-  const imagem = `<img src="${produto.imagem_url ? produto.imagem_url : 'https://placehold.co/150x150/2a2a2a/ffffff?text=Sem+Foto'}" alt="${produto.nome}" class="product-image-media__image" width="480" height="316" loading="eager" decoding="async" onerror="this.onerror=null; this.src='https://placehold.co/150x150/2a2a2a/ffffff?text=Sem+Foto';">`;
+  const imagem = productImageMarkup(produto, 'product-image-media__image', 480, 316);
   return `<div class="product-image-media product-image-media--${cluster}">${imagem}<span class="product-image-media__label">${escapeHtml(clusterLabels[cluster])}</span></div>`;
 }
 
@@ -1228,7 +1235,7 @@ function renderCartBar() {
         ? 'Sem cobrança'
         : `${formatMoney(unitPriceCents)} por unidade`;
     return `<article class="cart-drawer-item">
-      <div class="cart-drawer-item__thumb"><img src="${produto.imagem_url ? produto.imagem_url : 'https://placehold.co/150x150/2a2a2a/ffffff?text=Sem+Foto'}" alt="${produto.nome}" class="cart-drawer-item__image" width="64" height="64" loading="eager" decoding="async" onerror="this.onerror=null; this.src='https://placehold.co/150x150/2a2a2a/ffffff?text=Sem+Foto';"></div>
+      <div class="cart-drawer-item__thumb">${productImageMarkup(produto, 'cart-drawer-item__image', 64, 64)}</div>
       <div class="cart-drawer-item__content"><strong>${escapeHtml(produto.name)}</strong><span class="mono">${escapeHtml(variant.materialCode)}</span><small>${price}</small></div>
       <div class="cart-drawer-item__line-total">${lineTotal == null ? '—' : formatMoney(lineTotal)}</div>
       <div class="cart-drawer-item__quantity" aria-label="Quantidade de ${escapeHtml(produto.name)}">

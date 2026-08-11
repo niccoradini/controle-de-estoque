@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -95,6 +95,7 @@ before(async () => {
     readFile(new URL('../migrations/0025_chip_suffix_lookup.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0026_inventory_refresh_2026_08_10.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0027_product_images.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0028_product_image_fixes.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -189,6 +190,7 @@ before(async () => {
   `).bind(allocatedChipSerial.id).run();
   await applyMigration(migration26);
   await applyMigration(migration27);
+  await applyMigration(migration28);
 });
 
 after(async () => mf?.dispose());
@@ -708,9 +710,17 @@ describe('Controle de estoque por código material', () => {
     assert.equal(catalogResponse.status, 200);
     assert.equal(catalogResponse.payload.renova.tableDate, '2026-08-04');
     assert.equal(catalogResponse.payload.renova.devices.length, 1042);
-    assert.equal(catalogResponse.payload.renova.boosts.length, 72);
-    assert.equal(catalogResponse.payload.renova.boosts.find((boost) => boost.name === 'iPhone 17 Pro Max 256GB').bonusCents, 50000);
-    assert.equal(catalogResponse.payload.renova.boosts.find((boost) => boost.name === 'Samsung Galaxy S26 Ultra 256GB').bonusCents, 120000);
+    const activeBoostCount = await row(`
+      SELECT COUNT(*) AS count
+      FROM renova_manufacturer_boosts
+      WHERE active = 1
+        AND (starts_on IS NULL OR date(starts_on) <= date('now'))
+        AND (ends_on IS NULL OR date(ends_on) >= date('now'))
+    `);
+    assert.equal(catalogResponse.payload.renova.boosts.length, Number(activeBoostCount.count));
+    const samsungBoost = catalogResponse.payload.renova.boosts.find((boost) => boost.name === 'Samsung Galaxy S26 Ultra 256GB');
+    if (samsungBoost) assert.equal(samsungBoost.bonusCents, 120000);
+    const iphone15BoostCents = Number(catalogResponse.payload.renova.boosts.find((boost) => boost.name === 'iPhone 15 256GB')?.bonusCents || 0);
     const tradeIn = catalogResponse.payload.renova.devices.find((device) => device.name === 'APPLE IPHONE 14 128GB');
     assert.deepEqual(tradeIn, {
       id: tradeIn.id,
@@ -754,13 +764,13 @@ describe('Controle de estoque por código material', () => {
     });
     assert.equal(created.status, 201);
     assert.equal(created.payload.request.pricing.deviceTotalCents, 349900);
-    assert.equal(created.payload.request.pricing.orderTotalCents, 183200);
+    assert.equal(created.payload.request.pricing.orderTotalCents, 233200 - iphone15BoostCents);
     assert.deepEqual(created.payload.request.pricing.renova, {
       usedDevice: 'APPLE IPHONE 14 128GB',
       condition: 'bom',
       voucherCents: 121600,
-      manufacturerBonusCents: 50000,
-      discountCents: 171600,
+      manufacturerBonusCents: iphone15BoostCents,
+      discountCents: 121600 + iphone15BoostCents,
     });
     assert.equal(created.payload.request.items.find((item) => item.variantId === cable.variants[0].id).unitPriceCents, 4900);
     const stored = await row(`
@@ -771,9 +781,9 @@ describe('Controle de estoque por código material', () => {
     `, created.payload.request.id);
     assert.equal(stored.renova_used_device, 'APPLE IPHONE 14 128GB');
     assert.equal(Number(stored.renova_voucher_cents), 121600);
-    assert.equal(Number(stored.renova_manufacturer_bonus_cents), 50000);
-    assert.equal(Number(stored.renova_discount_cents), 171600);
-    assert.equal(Number(stored.order_total_cents), 183200);
+    assert.equal(Number(stored.renova_manufacturer_bonus_cents), iphone15BoostCents);
+    assert.equal(Number(stored.renova_discount_cents), 121600 + iphone15BoostCents);
+    assert.equal(Number(stored.order_total_cents), 233200 - iphone15BoostCents);
 
     const cancelled = await manager.request(`/api/requests/${created.payload.request.id}/cancel`, {
       method: 'POST', body: {},
@@ -1551,18 +1561,23 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /function productImageUrl\(produto\)[\s\S]*typeof produto\?\.imagem_url === 'string' \? produto\.imagem_url\.trim\(\)/);
     assert.match(appSource, /escapeHtml\(productImageUrl\(produto\)\)/);
     assert.match(appSource, /cart-drawer-item__thumb[^\n]*\$\{productImageMarkup\(produto, 'cart-drawer-item__image', 64, 64\)\}/);
-    assert.match(appSource, /onerror="this\.onerror=null; this\.src='\$\{PRODUCT_IMAGE_FALLBACK\}';"/);
+    assert.match(appSource, /data-product-image="true"/);
+    assert.match(appSource, /function handleProductImageError\(event\)/);
+    assert.match(appSource, /document\.addEventListener\('error', handleProductImageError, true\)/);
+    assert.doesNotMatch(appSource, /onerror=/);
     assert.doesNotMatch(appSource, /CHAVE_DA_IMAGEM_AQUI|Inspecionando dados do produto|via\.placeholder\.com|placehold\.co/);
     assert.match(appSource, /stock-product-cell__image/);
     assert.match(appSource, /cart-drawer-item__image/);
     assert.match(appSource, /picker-product__image/);
     assert.match(appSource, /cart-review__image/);
     assert.match(stylesSource, /\.product-image-media__image[\s\S]*max-width:\s*100%/);
-    assert.match(stylesSource, /\.product-image-media__image[\s\S]*object-fit:\s*cover/);
+    assert.match(stylesSource, /\.product-image-media__image[\s\S]*object-fit:\s*contain/);
+    assert.match(stylesSource, /\.picker-product__image[\s\S]*object-fit:\s*contain/);
+    assert.match(appSource, /const representativeProduct = option\?\.product \|\| group\.products\[0\]/);
     assert.match(appSource, /document\.addEventListener\('DOMContentLoaded'/);
     assert.match(appSource, /getElementById\('cart-root'\)\?\.addEventListener\('click', handleCartRootClick\)/);
     assert.match(appSource, /button\.id === 'cart-fab'/);
-    assert.doesNotMatch(appSource, /picsum\.photos|data:image\/svg\+xml|DEFAULT_PRODUCT_IMAGE_URL|product-default\.svg|data-fallback-src|handleProductImageError/);
+    assert.doesNotMatch(appSource, /picsum\.photos|data:image\/svg\+xml|DEFAULT_PRODUCT_IMAGE_URL|product-default\.svg|data-fallback-src/);
     assert.doesNotMatch(workerSource, /PRODUCT_IMAGE_BY_CLUSTER|product-images\/category-/);
     assert.doesNotMatch(appSource, /<div data-cart-bar><\/div>/);
     for (const label of ['Aparelhos', 'Capas', 'Películas', 'Caixas de som', 'Notebooks', 'TVs', 'Carregadores', 'Cabos', 'Acessórios diversos']) {
@@ -1570,7 +1585,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.10');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.11');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');

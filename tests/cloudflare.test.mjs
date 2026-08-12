@@ -1562,7 +1562,7 @@ describe('Controle de estoque por código material', () => {
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
     assert.match(indexSource, /styles\.css\?v=6\.6\.12/);
-    assert.match(indexSource, /app\.js\?v=6\.6\.12/);
+    assert.match(indexSource, /app\.js\?v=6\.6\.13/);
     assert.match(stylesSource, /\.cart-fab\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?right:\s*20px;[\s\S]*?bottom:\s*20px;[\s\S]*?z-index:\s*9999;/);
     assert.match(appSource, /function productImageMarkup\(produto, className, width, height\)/);
     assert.match(appSource, /function productImageUrl\(produto\)[\s\S]*typeof produto\?\.imagem_url === 'string' \? produto\.imagem_url\.trim\(\)/);
@@ -1592,7 +1592,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.12');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.13');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');
@@ -1600,6 +1600,13 @@ describe('Controle de estoque por código material', () => {
     const tvNewsImageCompact = await mf.dispatchFetch('https://controleestoque.app.br/news/tv-samsung-vivo-total-32-43-50-2026-08.jpg');
     const tvNewsCardImage = await mf.dispatchFetch('https://controleestoque.app.br/news/tv-samsung-vivo-total-55-98-2026-08-card.jpg');
     const tvNewsCardImageCompact = await mf.dispatchFetch('https://controleestoque.app.br/news/tv-samsung-vivo-total-32-43-50-2026-08-card.jpg');
+    const additionalNewsCardImages = await Promise.all([
+      'semana-gamer-2026-08-card.jpg',
+      'campanhas-acessorios-2026-08-card.jpg',
+      'bundle-samsung-2026-08-card.jpg',
+      'bundle-motorola-2026-08-card.jpg',
+      'bundle-apple-2026-08-card.jpg',
+    ].map((fileName) => mf.dispatchFetch(`https://controleestoque.app.br/news/${fileName}`)));
     assert.equal(page.headers.get('cache-control'), 'no-store');
     assert.equal(page.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=()');
     assert.match(page.headers.get('content-security-policy') || '', /img-src 'self' data: https:/);
@@ -1616,6 +1623,12 @@ describe('Controle de estoque por código material', () => {
     assert.match(tvNewsCardImage.headers.get('content-type') || '', /image\/jpeg/i);
     assert.equal(tvNewsCardImageCompact.status, 200);
     assert.match(tvNewsCardImageCompact.headers.get('content-type') || '', /image\/jpeg/i);
-    assert.match(await script.text(), /tv-samsung-vivo-total-55-98-2026-08-card\.jpg/);
+    for (const response of additionalNewsCardImages) {
+      assert.equal(response.status, 200);
+      assert.match(response.headers.get('content-type') || '', /image\/jpeg/i);
+    }
+    const renderedScript = await script.text();
+    assert.match(renderedScript, /tv-samsung-vivo-total-55-98-2026-08-card\.jpg/);
+    assert.match(renderedScript, /bundle-apple-2026-08-card\.jpg/);
   });
 });

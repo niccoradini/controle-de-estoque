@@ -69,6 +69,11 @@ const newsCategoryInfo = {
 };
 
 const newsCardArtwork = Object.freeze({
+  '/news/semana-gamer-2026-08.jpeg': '/news/semana-gamer-2026-08-card.jpg',
+  '/news/campanhas-acessorios-2026-08.jpeg': '/news/campanhas-acessorios-2026-08-card.jpg',
+  '/news/bundle-samsung-2026-08.jpeg': '/news/bundle-samsung-2026-08-card.jpg',
+  '/news/bundle-motorola-2026-08.jpeg': '/news/bundle-motorola-2026-08-card.jpg',
+  '/news/bundle-apple-2026-08.jpeg': '/news/bundle-apple-2026-08-card.jpg',
   '/news/tv-samsung-vivo-total-32-43-50-2026-08.jpg': '/news/tv-samsung-vivo-total-32-43-50-2026-08-card.jpg',
   '/news/tv-samsung-vivo-total-55-98-2026-08.jpg': '/news/tv-samsung-vivo-total-55-98-2026-08-card.jpg',
 });

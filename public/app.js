@@ -68,6 +68,11 @@ const newsCategoryInfo = {
   update: { label: 'Novidade', icon: 'briefing' },
 };
 
+const newsCardArtwork = Object.freeze({
+  '/news/tv-samsung-vivo-total-32-43-50-2026-08.jpg': '/news/tv-samsung-vivo-total-32-43-50-2026-08-card.jpg',
+  '/news/tv-samsung-vivo-total-55-98-2026-08.jpg': '/news/tv-samsung-vivo-total-55-98-2026-08-card.jpg',
+});
+
 const clusterLabels = {
   devices: 'Aparelhos',
   cases: 'Capas',
@@ -1533,12 +1538,14 @@ function newsBody(value = '') {
 function newsCard(item) {
   const category = newsCategory(item);
   const imagePath = safeNewsImagePath(item.imagePath);
+  const cardImagePath = safeNewsImagePath(newsCardArtwork[imagePath] || imagePath);
+  const hasCuratedArtwork = cardImagePath !== imagePath;
   const managerControls = state.user.role === 'manager'
     ? `<div class="news-card__actions"><button class="btn btn--secondary btn--small" data-action="edit-news" data-id="${escapeHtml(item.id)}">Editar</button><button class="btn ${item.active ? 'btn--danger' : ''} btn--small" data-action="toggle-news" data-id="${escapeHtml(item.id)}" data-active="${item.active ? 'false' : 'true'}">${item.active ? 'Ocultar da aba' : 'Publicar novamente'}</button></div>`
     : '';
   return `<article class="news-card news-card--${escapeHtml(item.category)} ${imagePath ? 'news-card--media' : ''} ${item.active ? '' : 'is-hidden'}">
     <div class="news-card__accent"><span>${uiIcon(category.icon)}</span><small>${escapeHtml(category.label)}</small></div>
-    ${imagePath ? `<button type="button" class="news-card__media" data-action="view-news-art" data-id="${escapeHtml(item.id)}" aria-label="Ampliar arte: ${escapeHtml(item.title)}"><img src="${escapeHtml(imagePath)}" alt="${escapeHtml(item.imageAlt || item.title)}" loading="lazy" decoding="async"><span>${uiIcon('search')} Ver arte completa</span></button>` : ''}
+    ${imagePath ? `<button type="button" class="news-card__media ${hasCuratedArtwork ? 'news-card__media--curated' : ''}" data-action="view-news-art" data-id="${escapeHtml(item.id)}" aria-label="Ampliar arte: ${escapeHtml(item.title)}"><img src="${escapeHtml(cardImagePath)}" alt="${escapeHtml(item.imageAlt || item.title)}" loading="lazy" decoding="async"><span>${uiIcon('search')} Ver arte completa</span></button>` : ''}
     <div class="news-card__content">
       <div class="news-card__heading"><div><span class="news-category news-category--${escapeHtml(item.category)}">${escapeHtml(category.label)}</span>${item.validityLabel ? `<span class="news-validity">${escapeHtml(item.validityLabel)}</span>` : ''}${item.active ? '' : '<span class="news-hidden-label">Oculta</span>'}</div><time>${formatDate(item.updatedAt)}</time></div>
       <h3>${escapeHtml(item.title)}</h3>

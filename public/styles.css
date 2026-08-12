@@ -4611,6 +4611,11 @@ a:focus-visible,
   object-position: center;
   transition: transform .28s ease;
 }
+.news-card__media--curated {
+  aspect-ratio: 3 / 2;
+  background: #4c006d;
+}
+.news-card__media--curated img { object-fit: contain; }
 .news-card__media > span {
   position: absolute;
   right: 10px;
@@ -4696,6 +4701,7 @@ a:focus-visible,
   .news-card--media .news-card__accent { grid-template-columns: auto 1fr; place-content: initial; align-items: center; justify-items: start; padding: 12px 15px; }
   .news-card--media .news-card__accent > span { width: 34px; height: 34px; border-radius: 11px; }
   .news-card--media .news-card__media { aspect-ratio: 16 / 8; margin: 14px 14px 0; }
+  .news-card--media .news-card__media--curated { aspect-ratio: 3 / 2; }
 }
 
 @media (max-width: 520px) {

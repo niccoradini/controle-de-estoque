@@ -310,6 +310,18 @@ function parsePresets(value) {
   }
 }
 
+function parseIncomingDeposits(value) {
+  try {
+    const parsed = JSON.parse(value || '{}');
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return Object.fromEntries(Object.entries(parsed)
+      .map(([deposit, quantity]) => [String(deposit).trim().toUpperCase(), Number(quantity)])
+      .filter(([deposit, quantity]) => deposit && Number.isInteger(quantity) && quantity > 0));
+  } catch {
+    return {};
+  }
+}
+
 function auditStatement(env, actorId, action, entityType, entityId, details = {}) {
   return env.DB.prepare(`
     INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, details_json)
@@ -609,7 +621,8 @@ async function catalogData(env, user) {
             AND chip.active = 1
             AND chip.status = 'available'
         ), 0) AS quantity_chip_allocated,
-        COALESCE((SELECT incoming.quantity FROM incoming_inventory incoming WHERE incoming.variant_id = v.id), 0) AS quantity_incoming,
+        COALESCE(incoming.quantity, 0) AS quantity_incoming,
+        incoming.deposits_json AS incoming_deposits_json,
         COALESCE((
           SELECT SUM(i.quantity)
           FROM withdrawal_quantity_items i
@@ -618,6 +631,7 @@ async function catalogData(env, user) {
         ), 0) AS quantity_withdrawn
       FROM product_variants v
       LEFT JOIN product_retail_prices retail ON retail.material_code = v.sku COLLATE NOCASE
+      LEFT JOIN incoming_inventory incoming ON incoming.variant_id = v.id
       WHERE v.active = 1
       ORDER BY v.product_id, v.option1_value COLLATE NOCASE,
                v.option2_value COLLATE NOCASE, v.option3_value COLLATE NOCASE
@@ -648,7 +662,7 @@ async function catalogData(env, user) {
     const available = Math.max(0, Number(row.quantity_on_hand)
       - Number(row.quantity_reserved)
       - Number(row.quantity_chip_allocated));
-    if (user.role === 'seller' && available <= 0) continue;
+    if (user.role === 'seller' && available <= 0 && Number(row.quantity_incoming) <= 0) continue;
     const variant = {
       id: row.id,
       productId: row.product_id,
@@ -665,6 +679,7 @@ async function catalogData(env, user) {
       withdrawn: Number(row.quantity_withdrawn),
       onHand: Number(row.quantity_on_hand),
       incoming: Number(row.quantity_incoming),
+      incomingDeposits: parseIncomingDeposits(row.incoming_deposits_json),
       retailPrice: row.retail_price_cents == null ? null : {
         priceCents: Number(row.retail_price_cents),
         kind: row.retail_price_kind,
@@ -706,6 +721,12 @@ async function catalogData(env, user) {
       withdrawn: variants.reduce((sum, variant) => sum + variant.withdrawn, 0),
       onHand: variants.reduce((sum, variant) => sum + variant.onHand, 0),
       incoming: variants.reduce((sum, variant) => sum + variant.incoming, 0),
+      incomingDeposits: variants.reduce((deposits, variant) => {
+        for (const [deposit, quantity] of Object.entries(variant.incomingDeposits)) {
+          deposits[deposit] = Number(deposits[deposit] || 0) + Number(quantity);
+        }
+        return deposits;
+      }, {}),
     });
   }
   return products;
@@ -815,7 +836,7 @@ function managerInventoryGroups(products) {
 function sellerInventoryGroups(products) {
   const grouped = new Map(DASHBOARD_CLUSTER_ORDER.map((cluster) => [cluster, []]));
   for (const product of products) {
-    if (product.available <= 0) continue;
+    if (product.available <= 0 && product.incoming <= 0) continue;
     const cluster = grouped.has(product.cluster) ? product.cluster : 'misc';
     grouped.get(cluster).push(product);
   }
@@ -824,9 +845,11 @@ function sellerInventoryGroups(products) {
     const groupProducts = grouped.get(cluster);
     return {
       cluster,
-      materialCount: groupProducts.length,
+      materialCount: groupProducts.filter((product) => product.available > 0).length,
       available: groupProducts.reduce((sum, product) => sum + product.available, 0),
-      topProducts: [...groupProducts]
+      incomingMaterialCount: groupProducts.filter((product) => product.incoming > 0).length,
+      incoming: groupProducts.reduce((sum, product) => sum + product.incoming, 0),
+      topProducts: [...groupProducts].filter((product) => product.available > 0)
         .sort((left, right) => right.available - left.available
           || left.name.localeCompare(right.name, 'pt-BR'))
         .slice(0, 3)
@@ -838,7 +861,22 @@ function sellerInventoryGroups(products) {
           available: product.available,
         })),
     };
-  }).filter((group) => group.materialCount > 0);
+  }).filter((group) => group.materialCount > 0 || group.incomingMaterialCount > 0);
+}
+
+function incomingProductSummaries(products) {
+  return products
+    .filter((product) => product.incoming > 0)
+    .sort((left, right) => right.incoming - left.incoming
+      || left.name.localeCompare(right.name, 'pt-BR'))
+    .map((product) => ({
+      id: product.id,
+      name: product.name,
+      materialCode: product.variants[0]?.materialCode || '',
+      cluster: product.cluster,
+      incoming: product.incoming,
+      incomingDeposits: product.incomingDeposits,
+    }));
 }
 
 async function dashboard(env, user) {
@@ -899,18 +937,7 @@ async function dashboard(env, user) {
         materialCode: product.variants[0]?.materialCode || '',
         cluster: product.cluster,
       }));
-    const incomingProducts = products
-      .filter((product) => product.incoming > 0)
-      .sort((left, right) => right.incoming - left.incoming
-        || left.name.localeCompare(right.name, 'pt-BR'))
-      .slice(0, 12)
-      .map((product) => ({
-        id: product.id,
-        name: product.name,
-        materialCode: product.variants[0]?.materialCode || '',
-        cluster: product.cluster,
-        incoming: product.incoming,
-      }));
+    const incomingProducts = incomingProductSummaries(products);
     return json({
       role: 'manager', stock, modelsAvailable,
       pendingRequests: orderStats.pending,
@@ -956,6 +983,7 @@ async function dashboard(env, user) {
       requests,
       readyRequests: requests.approved,
       inventoryGroups: managerInventoryGroups(products),
+      incomingProducts: incomingProductSummaries(products),
       recentRequests: await listRequests(env, user, 'approved', 6),
     });
   }
@@ -966,8 +994,9 @@ async function dashboard(env, user) {
   const requests = { pending: 0, approved: 0, rejected: 0, cancelled: 0 };
   for (const row of ownRows) requests[row.status] = Number(row.count);
   return json({
-    role: 'seller', stock: { available: stock.available }, modelsAvailable, requests,
+    role: 'seller', stock: { available: stock.available, incoming: stock.incoming }, modelsAvailable, requests,
     inventoryGroups: sellerInventoryGroups(products),
+    incomingProducts: incomingProductSummaries(products),
     recentRequests: await listRequests(env, user, '', 5),
   });
 }

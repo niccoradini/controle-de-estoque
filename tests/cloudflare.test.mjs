@@ -593,6 +593,61 @@ describe('Controle de estoque por código material', () => {
     );
   });
 
+  test('mostra DEPS e NREM como produtos a caminho sem liberar a venda', async () => {
+    const arrivingVariant = await row(`
+      SELECT id, quantity_on_hand
+      FROM product_variants
+      WHERE sku = 'TGMO59462000' AND active = 1
+    `);
+    assert.ok(arrivingVariant);
+    assert.equal(Number(arrivingVariant.quantity_on_hand), 0);
+    await database.prepare(`
+      INSERT INTO incoming_inventory (variant_id, quantity, deposits_json)
+      VALUES (?, 3, '{"DEPS":2,"NREM":1}')
+      ON CONFLICT(variant_id) DO UPDATE SET
+        quantity = excluded.quantity,
+        deposits_json = excluded.deposits_json
+    `).bind(arrivingVariant.id).run();
+
+    try {
+      const sellerCatalog = await seller.request('/api/catalog');
+      assert.equal(sellerCatalog.status, 200);
+      const arrivingProduct = sellerCatalog.payload.products.find((product) => (
+        product.variants[0]?.materialCode === 'TGMO59462000'
+      ));
+      assert.ok(arrivingProduct);
+      assert.equal(arrivingProduct.available, 0);
+      assert.equal(arrivingProduct.incoming, 3);
+      assert.deepEqual(arrivingProduct.incomingDeposits, { DEPS: 2, NREM: 1 });
+      assert.deepEqual(arrivingProduct.variants[0].incomingDeposits, { DEPS: 2, NREM: 1 });
+
+      const blockedOrder = await seller.request('/api/requests', {
+        method: 'POST',
+        body: { lines: [{ variantId: arrivingVariant.id, quantity: 1 }], priceCategory: 'VIVO V' },
+      });
+      assert.equal(blockedOrder.status, 409);
+      assert.match(blockedOrder.payload.error, /estoque|dispon|quantidade/i);
+
+      const sellerDashboard = await seller.request('/api/dashboard');
+      assert.equal(sellerDashboard.payload.stock.incoming, 3);
+      assert.deepEqual(sellerDashboard.payload.incomingProducts, [{
+        id: arrivingProduct.id,
+        name: arrivingProduct.name,
+        materialCode: 'TGMO59462000',
+        cluster: 'devices',
+        incoming: 3,
+        incomingDeposits: { DEPS: 2, NREM: 1 },
+      }]);
+
+      const managerDashboard = await manager.request('/api/dashboard');
+      assert.equal(managerDashboard.payload.management.incomingUnits, 3);
+      assert.deepEqual(managerDashboard.payload.management.incomingProducts[0].incomingDeposits, { DEPS: 2, NREM: 1 });
+      assert.equal(managerDashboard.payload.management.outOfStockMaterials, 20);
+    } finally {
+      await database.prepare('DELETE FROM incoming_inventory WHERE variant_id = ?').bind(arrivingVariant.id).run();
+    }
+  });
+
   test('agrupa aparelhos por modelo e relaciona somente capas compatíveis', async () => {
     const catalog = (await seller.request('/api/catalog')).payload.products;
     const groups = groupDeviceProducts(catalog);
@@ -1563,8 +1618,13 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.6\.12/);
-    assert.match(indexSource, /app\.js\?v=6\.6\.13/);
+    assert.match(indexSource, /styles\.css\?v=6\.6\.14/);
+    assert.match(indexSource, /app\.js\?v=6\.6\.14/);
+    assert.match(appSource, /Produtos a caminho/);
+    assert.match(appSource, /data-incoming-catalog/);
+    assert.match(appSource, /incomingDepositsText/);
+    assert.match(stylesSource, /\.incoming-showcase/);
+    assert.match(stylesSource, /\.incoming-product-card/);
     assert.match(stylesSource, /\.cart-fab\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?right:\s*20px;[\s\S]*?bottom:\s*20px;[\s\S]*?z-index:\s*9999;/);
     assert.match(appSource, /function productImageMarkup\(produto, className, width, height\)/);
     assert.match(appSource, /function productImageUrl\(produto\)[\s\S]*typeof produto\?\.imagem_url === 'string' \? produto\.imagem_url\.trim\(\)/);
@@ -1594,7 +1654,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.13');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.14');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');

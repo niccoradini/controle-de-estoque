@@ -591,6 +591,9 @@ function managerInventoryGroupCard(group, totalAvailable) {
   const topProducts = group.topProducts?.length
     ? `<div class="inventory-preview"><span class="inventory-preview__title">Maiores saldos</span><ul>${group.topProducts.map((product) => `<li><div><strong title="${escapeHtml(product.name)}">${escapeHtml(product.name)}</strong><code class="mono">${escapeHtml(product.materialCode || '—')}</code></div><span>${Number(product.available)} un.</span></li>`).join('')}</ul></div>`
     : '<div class="inventory-preview inventory-preview--empty">Nenhum produto disponível neste grupo.</div>';
+  const incomingAlert = Number(group.incoming || 0) > 0
+    ? `<div class="inventory-alerts"><span class="inventory-alert inventory-alert--incoming">${Number(group.incoming)} em chegada · ${Number(group.incomingMaterialCount || 0)} material(is)</span></div>`
+    : '';
   const alerts = [
     group.lowStockCount > 0 ? `<span class="inventory-alert inventory-alert--warning">${Number(group.lowStockCount)} com saldo baixo</span>` : '',
     group.outOfStockCount > 0 ? `<span class="inventory-alert inventory-alert--empty">${Number(group.outOfStockCount)} sem saldo</span>` : '',
@@ -645,8 +648,9 @@ function sellerInventoryGroupCard(group, totalAvailable) {
       <div class="inventory-group-card__materials"><strong>${Number(group.materialCount)}</strong><span>códigos materiais com saldo</span></div>
     </div>
     <div class="inventory-share" title="${Number(group.available)} de ${Number(totalAvailable)} unidades disponíveis"><span style="width:${share}%"></span></div>
+    ${incomingAlert}
     ${topProducts}
-    <button class="inventory-group-card__action" data-action="open-store-group" data-cluster="${cluster}"><span>Ver produtos e adicionar</span>${uiIcon('plus')}</button>
+    <button class="inventory-group-card__action" data-action="open-store-group" data-cluster="${cluster}"><span>Ver disponíveis e a caminho</span>${uiIcon('plus')}</button>
   </article>`;
 }
 
@@ -740,7 +744,7 @@ function orderDonut(stats = {}) {
 
 function managementProductList(products = [], emptyTitle, emptyText, valueKey = '') {
   if (!products.length) return emptyState(emptyTitle, emptyText);
-  return `<ul class="management-product-list">${products.map((product) => `<li><div><strong>${escapeHtml(product.name)}</strong><code class="mono">${escapeHtml(product.materialCode || '—')}</code></div>${valueKey ? `<span>${Number(product[valueKey] || 0)} un.</span>` : `<span>${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</span>`}</li>`).join('')}</ul>`;
+  return `<ul class="management-product-list">${products.map((product) => `<li><div><strong>${escapeHtml(product.name)}</strong><code class="mono">${escapeHtml(product.materialCode || '—')}</code>${valueKey === 'incoming' ? `<small>${escapeHtml(incomingDepositsText(product.incomingDeposits))}</small>` : ''}</div>${valueKey ? `<span>${Number(product[valueKey] || 0)} un.</span>` : `<span>${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</span>`}</li>`).join('')}</ul>`;
 }
 
 function recentAccessList(accesses = []) {
@@ -765,13 +769,13 @@ async function renderDashboard() {
     content.innerHTML = `
       <div class="page-heading"><div><p class="page-eyebrow">Central administrativa</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>${escapeHtml(snapshotText)}. Pedidos e IMEIs são liberados automaticamente.</p></div><div class="page-actions"><button class="btn" data-action="navigate" data-view="stock">Consultar estoque</button></div></div>
       ${teamBreakSchedule('dashboard')}
-      <div class="metrics-grid">${metric('Itens disponíveis', data.stock.available, `${data.modelsAvailable} materiais com saldo`, 'metric-card--success')}${metric('Materiais em falta', management.outOfStockMaterials || 0, 'Sem saldo e sem entrega prevista', 'metric-card--warning')}${metric('Saldo baixo', management.lowStockMaterials || 0, 'Materiais com até 2 unidades', 'metric-card--info')}${metric('Em entrega', management.incomingUnits || 0, `Depósitos ${management.snapshot?.incomingDeposits || 'DEPS e NREM'}`)}</div>
+      <div class="metrics-grid">${metric('Itens disponíveis', data.stock.available, `${data.modelsAvailable} materiais com saldo`, 'metric-card--success')}${metric('Materiais em falta', management.outOfStockMaterials || 0, 'Sem saldo e sem chegada prevista', 'metric-card--warning')}${metric('Saldo baixo', management.lowStockMaterials || 0, 'Materiais com até 2 unidades', 'metric-card--info')}${metric('Em chegada', management.incomingUnits || 0, `Depósitos ${management.snapshot?.incomingDeposits || 'DEPS e NREM'}`)}</div>
       <div class="admin-strip"><span><b>${Number(data.activeSellers || 0)}</b> vendedores ativos</span><span><b>${Number(data.activeStockers || 0)}</b> estoquistas ativos</span><span><b>${Number(management.orderStats?.approved || 0)}</b> pedidos liberados</span><span><b>${Number(data.stock.reserved || 0)}</b> unidades reservadas</span></div>
       <div class="management-dashboard-grid">
         <section class="card management-chart-card"><div class="card__head"><div><h3>Disponibilidade por grupo</h3><span>Comparação do saldo pronto e em entrega</span></div></div><div class="card__body">${managementClusterChart(data.inventoryGroups)}</div></section>
         <section class="card management-chart-card"><div class="card__head"><div><h3>Fluxo de pedidos</h3><span>Distribuição de todo o histórico</span></div></div><div class="card__body">${orderDonut(management.orderStats)}</div></section>
         <section class="card management-list-card"><div class="card__head"><div><h3>Produtos em falta</h3><span>${Number(management.outOfStockMaterials || 0)} materiais sem saldo</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="stock">Ver estoque</button></div><div class="card__body">${managementProductList(management.shortageProducts, 'Nenhum produto em falta', 'Todos os produtos monitorados possuem saldo ou entrega prevista.')}</div></section>
-        <section class="card management-list-card"><div class="card__head"><div><h3>Produtos em entrega</h3><span>Itens dos depósitos DEPS e NREM</span></div></div><div class="card__body">${managementProductList(management.incomingProducts, 'Nenhum item em entrega', 'A planilha atual não possui unidades em DEPS ou NREM.', 'incoming')}</div></section>
+        <section class="card management-list-card"><div class="card__head"><div><h3>Produtos a caminho</h3><span>Itens dos depósitos DEPS e NREM — ainda fora do saldo vendável</span></div></div><div class="card__body">${managementProductList(management.incomingProducts, 'Nenhum item a caminho', 'A planilha atual não possui unidades em DEPS ou NREM.', 'incoming')}</div></section>
       </div>
       ${managerInventoryOverview(data.inventoryGroups, data.stock.available)}
       <div class="dashboard-grid"><section class="card"><div class="card__head"><div><h3>Acessos recentes</h3><span>Login da equipe</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="audit">Histórico completo</button></div><div class="card__body">${recentAccessList(management.recentAccesses)}</div></section><section class="card"><div class="card__head"><h3>Pedidos recentes</h3><button class="btn btn--ghost btn--small" data-action="navigate" data-view="requests">Ver todos</button></div><div class="card-list">${data.recentRequests.length ? data.recentRequests.map((item) => requestCard(item, true)).join('') : emptyState('Nenhum pedido', 'As solicitações aparecerão aqui.')}</div></section></div>`;
@@ -780,15 +784,17 @@ async function renderDashboard() {
     content.innerHTML = `
       <div class="page-heading"><div><p class="page-eyebrow">Central operacional</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>Confira disponibilidade, preços e pedidos antes de movimentar qualquer item.</p></div><div class="page-actions"><button class="btn" data-action="navigate" data-view="stock">Conferir estoque</button><button class="btn btn--secondary" data-action="navigate" data-view="requests">Ver pedidos</button></div></div>
       ${teamBreakSchedule('dashboard')}
-      <div class="metrics-grid">${metric('Disponíveis agora', data.stock.available, `${data.modelsAvailable} materiais com saldo`, 'metric-card--success')}${metric('Pedidos para separar', data.readyRequests || 0, 'Podem ser cancelados com devolução automática', 'metric-card--info')}${metric('Unidades reservadas', data.stock.reserved || 0, 'Saldo comprometido em pedidos')}${metric('Materiais sem saldo', outOfStock, 'Confira antes de atender', 'metric-card--warning')}</div>
+      <div class="metrics-grid">${metric('Disponíveis agora', data.stock.available, `${data.modelsAvailable} materiais com saldo`, 'metric-card--success')}${metric('Pedidos para separar', data.readyRequests || 0, 'Podem ser cancelados com devolução automática', 'metric-card--info')}${metric('Unidades reservadas', data.stock.reserved || 0, 'Saldo comprometido em pedidos')}${metric('Em chegada', data.stock.incoming || 0, `${outOfStock} materiais sem saldo · DEPS/NREM`, 'metric-card--warning')}</div>
       ${stockerInventoryOverview(data.inventoryGroups, data.stock.available)}
+      <section class="card management-list-card"><div class="card__head"><div><h3>Produtos a caminho</h3><span>Consulta de DEPS e NREM — ainda fora do saldo vendável</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="stock">Ver estoque</button></div><div class="card__body">${managementProductList(data.incomingProducts, 'Nenhum item a caminho', 'A planilha atual não possui unidades em DEPS ou NREM.', 'incoming')}</div></section>
       <section class="card"><div class="card__head"><div><h3>Próximos pedidos para separar</h3><span>IMEIs, códigos materiais e valores registrados</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="requests">Ver todos</button></div><div class="card-list">${data.recentRequests.length ? data.recentRequests.map((item) => requestCard(item, true)).join('') : emptyState('Nenhum pedido para separar', 'Os próximos pedidos liberados aparecerão aqui.')}</div></section>`;
   } else {
     content.innerHTML = `
       <div class="page-heading"><div><p class="page-eyebrow">Sua área</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>Escolha os produtos disponíveis e envie seu pedido.</p></div><button class="btn" data-action="navigate" data-view="new-request">+ Novo pedido</button></div>
       ${teamBreakSchedule('dashboard')}
-      <div class="metrics-grid">${metric('Itens disponíveis', data.stock.available, `${data.modelsAvailable} materiais disponíveis`, 'metric-card--success')}${metric('Pedidos liberados', data.requests.approved, 'Com IMEI definido automaticamente', 'metric-card--info')}${metric('Pedidos recusados', data.requests.rejected, 'Somente quando não há estoque', 'metric-card--warning')}${metric('Produtos disponíveis', data.modelsAvailable, 'Consulte na loja')}</div>
+      <div class="metrics-grid">${metric('Itens disponíveis', data.stock.available, `${data.modelsAvailable} materiais disponíveis`, 'metric-card--success')}${metric('Pedidos liberados', data.requests.approved, 'Com IMEI definido automaticamente', 'metric-card--info')}${metric('Pedidos recusados', data.requests.rejected, 'Somente quando não há estoque', 'metric-card--warning')}${metric('Em chegada', data.stock.incoming || 0, 'Produtos em DEPS e NREM')}</div>
       ${sellerInventoryOverview(data.inventoryGroups, data.stock.available)}
+      <section class="card management-list-card"><div class="card__head"><div><h3>Produtos a caminho</h3><span>Consulte o que está previsto para chegar à loja</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="new-request">Abrir loja</button></div><div class="card__body">${managementProductList(data.incomingProducts, 'Nenhum item a caminho', 'A planilha atual não possui unidades em DEPS ou NREM.', 'incoming')}</div></section>
       <section class="card"><div class="card__head"><h3>Meus pedidos recentes</h3><button class="btn btn--ghost btn--small" data-action="navigate" data-view="requests">Ver todos</button></div><div class="card-list">${data.recentRequests.length ? data.recentRequests.map((item) => requestCard(item, true)).join('') : emptyState('Nenhum pedido', 'Crie seu primeiro pedido para começar.')}</div></section>`;
   }
 }
@@ -856,6 +862,33 @@ function materialCodeBox(code, copyable = false) {
   const safeCode = escapeHtml(code || '—');
   const copyButton = copyable && code ? `<button type="button" class="material-copy" data-action="copy-material" data-code="${safeCode}" aria-label="Copiar código material ${safeCode}" title="Copiar código">${uiIcon('copy')}</button>` : '';
   return `<div class="material-code-box"><span class="material-code-box__label">Código material</span><div class="material-code-box__value"><code class="mono">${safeCode}</code>${copyButton}</div></div>`;
+}
+
+function incomingDepositsText(deposits = {}) {
+  const entries = Object.entries(deposits || {})
+    .map(([deposit, quantity]) => [String(deposit).trim().toUpperCase(), Number(quantity)])
+    .filter(([deposit, quantity]) => deposit && Number.isInteger(quantity) && quantity > 0)
+    .sort(([left], [right]) => left.localeCompare(right, 'pt-BR'));
+  return entries.length
+    ? entries.map(([deposit, quantity]) => `${deposit}: ${quantity} un.`).join(' · ')
+    : 'DEPS/NREM';
+}
+
+function incomingCatalogSection() {
+  const products = filteredCatalog()
+    .filter((product) => Number(product.incoming || 0) > 0)
+    .sort((left, right) => Number(right.incoming) - Number(left.incoming)
+      || left.name.localeCompare(right.name, 'pt-BR'));
+  if (!products.length) return '';
+  return `<section class="incoming-showcase" aria-labelledby="incoming-showcase-title">
+    <div class="incoming-showcase__head"><div><span>Próximas entradas</span><h3 id="incoming-showcase-title">Produtos a caminho</h3><p>Itens identificados em DEPS ou NREM. Eles aparecem para consulta, mas só poderão ser vendidos após entrarem no saldo disponível.</p></div><strong>${products.reduce((sum, product) => sum + Number(product.incoming || 0), 0)} un.</strong></div>
+    <div class="incoming-showcase__grid">${products.map((product) => `<article class="incoming-product-card">${productImageMarkup(product, 'incoming-product-card__image', 72, 72)}<div><span>${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</span><h4>${escapeHtml(product.name)}</h4><code class="mono">${escapeHtml(materialCode(product) || '—')}</code><small>${escapeHtml(incomingDepositsText(product.incomingDeposits))}</small></div><div class="incoming-product-card__quantity"><strong>${Number(product.incoming || 0)}</strong><span>em chegada</span></div></article>`).join('')}</div>
+  </section>`;
+}
+
+function renderIncomingCatalog() {
+  const target = document.querySelector('[data-incoming-catalog]');
+  if (target) target.innerHTML = incomingCatalogSection();
 }
 
 function productCard(product) {
@@ -1126,7 +1159,8 @@ function renderCatalogGrid() {
   document.querySelectorAll('[data-action="filter-category"]').forEach((button) => button.classList.toggle('is-active', button.dataset.category === state.catalogCategory));
   const target = document.querySelector('[data-catalog-grid]');
   if (!target) return;
-  const products = filteredCatalog();
+  renderIncomingCatalog();
+  const products = filteredCatalog().filter((product) => Number(product.available || 0) > 0);
   const groups = clusterOrder.map((cluster) => ({ cluster, products: products.filter((product) => product.cluster === cluster) })).filter((group) => group.products.length);
   target.innerHTML = groups.length ? groups.map((group) => {
     if (group.cluster !== 'devices') {
@@ -1202,11 +1236,14 @@ function renderStockTable() {
         : state.user.role === 'manager'
           ? `<button class="btn btn--secondary btn--small" data-action="adjust-quantity" data-variant-id="${variant.id}">Ajustar</button>`
           : `<span class="balance-tracked-badge">${uiIcon('box')} Controle por saldo</span>`;
-      return `<tr><td data-label="Produto"><div class="stock-product-cell">${productImageMarkup(product, 'stock-product-cell__image', 48, 48)}<div><div class="cell-main">${escapeHtml(product.name)}</div><div class="cell-sub">${escapeHtml(product.brand || 'Sem marca')}</div></div></div></td><td data-label="Código material"><code class="material-pill mono">${escapeHtml(variant.materialCode)}</code></td><td data-label="Grupo">${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</td><td data-label="Preço">${shownPrice == null ? '<span class="price-unavailable">—</span>' : `<div class="stock-price"><strong>${productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(shownPrice)}</strong><span>${escapeHtml(priceCaption)}</span></div>`}</td><td data-label="Saldo físico"><strong>${variant.onHand}</strong></td><td data-label="Reservado">${variant.reserved}</td><td data-label="Com vendedores">${Number(variant.allocatedToSellers || 0)}</td><td data-label="Disponível"><strong class="${Number(variant.available) > 0 ? 'available-value' : 'unavailable-value'}">${variant.available}</strong></td><td data-label="Em entrega"><strong class="${Number(variant.incoming || 0) ? 'incoming-value' : ''}">${Number(variant.incoming || 0)}</strong></td><td data-label="Controle">${stockControl}</td></tr>`;
+      const incomingDetail = Number(variant.incoming || 0) > 0
+        ? `<div class="stock-incoming"><strong class="incoming-value">${Number(variant.incoming)}</strong><span>${escapeHtml(incomingDepositsText(variant.incomingDeposits))}</span></div>`
+        : '<span class="unavailable-value">—</span>';
+      return `<tr><td data-label="Produto"><div class="stock-product-cell">${productImageMarkup(product, 'stock-product-cell__image', 48, 48)}<div><div class="cell-main">${escapeHtml(product.name)}</div><div class="cell-sub">${escapeHtml(product.brand || 'Sem marca')}</div></div></div></td><td data-label="Código material"><code class="material-pill mono">${escapeHtml(variant.materialCode)}</code></td><td data-label="Grupo">${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</td><td data-label="Preço">${shownPrice == null ? '<span class="price-unavailable">—</span>' : `<div class="stock-price"><strong>${productPriceKind(product, variant) === 'no_charge' ? 'Sem cobrança' : formatMoney(shownPrice)}</strong><span>${escapeHtml(priceCaption)}</span></div>`}</td><td data-label="Saldo físico"><strong>${variant.onHand}</strong></td><td data-label="Reservado">${variant.reserved}</td><td data-label="Com vendedores">${Number(variant.allocatedToSellers || 0)}</td><td data-label="Disponível"><strong class="${Number(variant.available) > 0 ? 'available-value' : 'unavailable-value'}">${variant.available}</strong></td><td data-label="Em chegada">${incomingDetail}</td><td data-label="Controle">${stockControl}</td></tr>`;
     }).join('');
     return groupHeader + groupRows;
   }).join('');
-  target.innerHTML = `<div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Produto</th><th>Código material</th><th>Grupo</th><th>Preço</th><th>Saldo físico</th><th>Reservado</th><th>Com vendedores</th><th>Disponível</th><th>Em entrega</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`;
+  target.innerHTML = `<div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Produto</th><th>Código material</th><th>Grupo</th><th>Preço</th><th>Saldo físico</th><th>Reservado</th><th>Com vendedores</th><th>Disponível</th><th>Em chegada</th><th></th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
 async function renderStock() {
@@ -1228,9 +1265,9 @@ async function renderStock() {
     ? ['Conferência operacional', 'Estoque completo', 'Consulte preços, códigos materiais e disponibilidade antes de separar os pedidos.']
     : ['Inventário serializado', 'Estoque por código material', `${state.catalog.length} materiais cadastrados e rastreados pelo sistema.`];
   content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">${heading[0]}</p><h2>${heading[1]}</h2><p>${heading[2]}</p></div>${movementButton}</div>
-    <div class="metrics-grid stock-metrics">${metric('Saldo físico', totals.onHand, `${state.catalog.length} materiais cadastrados`, 'metric-card--info')}${metric('Disponível', totals.available, 'Pronto para pedidos', 'metric-card--success')}${metric('Reservado', totals.reserved, `${totals.allocated} chip(s) com vendedores`)}${metric('Sem disponibilidade', unavailableMaterials, `${totals.incoming} unidade(s) em entrega`, 'metric-card--warning')}</div>
+    <div class="metrics-grid stock-metrics">${metric('Saldo físico', totals.onHand, `${state.catalog.length} materiais cadastrados`, 'metric-card--info')}${metric('Disponível', totals.available, 'Pronto para pedidos', 'metric-card--success')}${metric('Reservado', totals.reserved, `${totals.allocated} chip(s) com vendedores`)}${metric('Em chegada', totals.incoming, `${unavailableMaterials} materiais sem saldo · DEPS/NREM`, 'metric-card--warning')}</div>
     ${pricingSelector()}
-    <section class="card stock-section"><div class="card__head"><div><h3>Produtos</h3><span>Preço, saldo físico, reservado, disponível e em entrega</span></div></div><div class="stock-toolbar"><div class="search-box"><input class="input" data-action="stock-search" value="${escapeHtml(state.stockSearch)}" placeholder="Buscar nome ou código material..."></div><div class="category-chips">${clusters.map(([value, label]) => `<button class="chip ${state.stockCluster === value ? 'is-active' : ''}" data-action="filter-stock-category" data-category="${value}">${label}</button>`).join('')}</div></div><div class="card__body--flush" data-stock-table></div></section>`;
+    <section class="card stock-section"><div class="card__head"><div><h3>Produtos</h3><span>Preço, saldo físico, reservado, disponível e itens a caminho por depósito</span></div></div><div class="stock-toolbar"><div class="search-box"><input class="input" data-action="stock-search" value="${escapeHtml(state.stockSearch)}" placeholder="Buscar nome ou código material..."></div><div class="category-chips">${clusters.map(([value, label]) => `<button class="chip ${state.stockCluster === value ? 'is-active' : ''}" data-action="filter-stock-category" data-category="${value}">${label}</button>`).join('')}</div></div><div class="card__body--flush" data-stock-table></div></section>`;
   renderStockTable();
 }
 
@@ -1355,7 +1392,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function renderSellerStore(title = 'Monte seu pedido', description = 'Escolha os produtos e informe as quantidades.') {
   const content = document.querySelector('#view-content');
   await loadCatalog();
-  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Loja interna</p><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)}</p></div></div>${pricingSelector()}${catalogToolbar()}<div data-catalog-grid></div>`;
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Loja interna</p><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)} Produtos em DEPS e NREM aparecem como “a caminho” e ainda não entram no pedido.</p></div></div>${pricingSelector()}${catalogToolbar()}<div data-incoming-catalog></div><div data-catalog-grid></div>`;
   renderCatalogGrid();
   renderCartBar();
 }

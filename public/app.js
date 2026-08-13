@@ -591,9 +591,6 @@ function managerInventoryGroupCard(group, totalAvailable) {
   const topProducts = group.topProducts?.length
     ? `<div class="inventory-preview"><span class="inventory-preview__title">Maiores saldos</span><ul>${group.topProducts.map((product) => `<li><div><strong title="${escapeHtml(product.name)}">${escapeHtml(product.name)}</strong><code class="mono">${escapeHtml(product.materialCode || '—')}</code></div><span>${Number(product.available)} un.</span></li>`).join('')}</ul></div>`
     : '<div class="inventory-preview inventory-preview--empty">Nenhum produto disponível neste grupo.</div>';
-  const incomingAlert = Number(group.incoming || 0) > 0
-    ? `<div class="inventory-alerts"><span class="inventory-alert inventory-alert--incoming">${Number(group.incoming)} em chegada · ${Number(group.incomingMaterialCount || 0)} material(is)</span></div>`
-    : '';
   const alerts = [
     group.lowStockCount > 0 ? `<span class="inventory-alert inventory-alert--warning">${Number(group.lowStockCount)} com saldo baixo</span>` : '',
     group.outOfStockCount > 0 ? `<span class="inventory-alert inventory-alert--empty">${Number(group.outOfStockCount)} sem saldo</span>` : '',
@@ -637,6 +634,9 @@ function sellerInventoryGroupCard(group, totalAvailable) {
   const topProducts = group.topProducts?.length
     ? `<div class="inventory-preview"><span class="inventory-preview__title">Mais disponíveis</span><ul>${group.topProducts.map((product) => `<li><div><strong title="${escapeHtml(product.name)}">${escapeHtml(product.name)}</strong><code class="mono">${escapeHtml(product.materialCode || '—')}</code></div><span>${Number(product.available)} un.</span></li>`).join('')}</ul></div>`
     : '<div class="inventory-preview inventory-preview--empty">Nenhum produto disponível neste grupo.</div>';
+  const incomingAlert = Number(group.incoming || 0) > 0
+    ? `<div class="inventory-alerts"><span class="inventory-alert inventory-alert--incoming">${Number(group.incoming)} em chegada · ${Number(group.incomingMaterialCount || 0)} material(is)</span></div>`
+    : '';
 
   return `<article class="inventory-group-card inventory-group-card--seller">
     <div class="inventory-group-card__head">

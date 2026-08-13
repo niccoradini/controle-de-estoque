@@ -1499,6 +1499,7 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /A senha atual não será solicitada/i);
     assert.match(appSource, /function managerInventoryOverview/);
     assert.match(appSource, /function sellerInventoryOverview/);
+    assert.match(appSource, /function sellerInventoryGroupCard[\s\S]*const incomingAlert = Number\(group\.incoming \|\| 0\)[\s\S]*\$\{incomingAlert\}/);
     assert.match(appSource, /function stockerInventoryOverview/);
     assert.match(appSource, /data-action="open-stock-group"/);
     assert.match(appSource, /data-action="open-store-group"/);
@@ -1630,8 +1631,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.6\.14/);
-    assert.match(indexSource, /app\.js\?v=6\.6\.14/);
+    assert.match(indexSource, /styles\.css\?v=6\.6\.15/);
+    assert.match(indexSource, /app\.js\?v=6\.6\.15/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /data-incoming-catalog/);
     assert.match(appSource, /incomingDepositsText/);
@@ -1666,7 +1667,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.14');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.15');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');

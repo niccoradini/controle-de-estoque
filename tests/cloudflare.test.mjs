@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -99,6 +99,7 @@ before(async () => {
     readFile(new URL('../migrations/0029_tv_samsung_vivo_total_news.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0030_inventory_refresh_2026_08_12.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0031_pricing_refresh_2026_08_13.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0032_renova_boosts_2026_08_12.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -197,6 +198,7 @@ before(async () => {
   await applyMigration(migration29);
   await applyMigration(migration30);
   await applyMigration(migration31);
+  await applyMigration(migration32);
 });
 
 after(async () => mf?.dispose());
@@ -782,6 +784,11 @@ describe('Controle de estoque por código material', () => {
         AND (ends_on IS NULL OR date(ends_on) >= date('now'))
     `);
     assert.equal(catalogResponse.payload.renova.boosts.length, Number(activeBoostCount.count));
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM renova_manufacturer_boosts`)).count), 74);
+    assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'Motorola Signature 512GB'`)).bonus_cents), 160000);
+    assert.equal((await row(`SELECT ends_on FROM renova_manufacturer_boosts WHERE device_name = 'iPhone 15 256GB'`)).ends_on, '2026-08-31');
+    assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'JOVI X300 Ultra 512GB'`)).bonus_cents), 150000);
+    assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'JOVI X300 FE 256GB'`)).bonus_cents), 70000);
     const samsungBoost = catalogResponse.payload.renova.boosts.find((boost) => boost.name === 'Samsung Galaxy S26 Ultra 256GB');
     if (samsungBoost) assert.equal(samsungBoost.bonusCents, 120000);
     const iphone15BoostCents = Number(catalogResponse.payload.renova.boosts.find((boost) => boost.name === 'iPhone 15 256GB')?.bonusCents || 0);

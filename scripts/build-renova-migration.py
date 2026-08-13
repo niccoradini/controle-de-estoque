@@ -145,6 +145,10 @@ def read_boosts():
     rows = []
     for line in BOOST_ROWS.splitlines():
         manufacturer, device_name, amount, starts_on, ends_on = line.split("\t")
+        if manufacturer in {"Apple", "Motorola", "JOVI"}:
+            ends_on = "31/08/2026"
+        if device_name == "Motorola Signature 512GB":
+            amount = "1600"
         rows.append({
             "manufacturer": manufacturer,
             "name": device_name,
@@ -153,9 +157,21 @@ def read_boosts():
             "startsOn": iso_date(starts_on),
             "endsOn": iso_date(ends_on),
         })
+    rows.extend([
+        {
+            "manufacturer": "JOVI", "name": "JOVI X300 Ultra 512GB",
+            "matchKey": model_key("JOVI X300 Ultra 512GB"), "bonusCents": cents("1500"),
+            "startsOn": iso_date("13/08/2026"), "endsOn": iso_date("31/08/2026"),
+        },
+        {
+            "manufacturer": "JOVI", "name": "JOVI X300 FE 256GB",
+            "matchKey": model_key("JOVI X300 FE 256GB"), "bonusCents": cents("700"),
+            "startsOn": iso_date("13/08/2026"), "endsOn": iso_date("31/08/2026"),
+        },
+    ])
     keys = [row["matchKey"] for row in rows]
-    if len(rows) != 72 or len(keys) != len(set(keys)):
-        raise ValueError(f"Esperados 72 boosts únicos; encontrados {len(rows)} / {len(set(keys))}")
+    if len(rows) != 74 or len(keys) != len(set(keys)):
+        raise ValueError(f"Esperados 74 boosts únicos; encontrados {len(rows)} / {len(set(keys))}")
     return rows
 
 

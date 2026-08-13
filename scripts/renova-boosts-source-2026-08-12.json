@@ -1,0 +1,601 @@
+{
+  "sourceImage": "new_9187_tabela-vivo-renova-12-08-2026-v01-tabelapng-1786627238.png",
+  "tableDate": "2026-08-12",
+  "tradeInSourceDate": "2026-08-04",
+  "tradeInCount": 1042,
+  "boostCount": 74,
+  "boosts": [
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 14 256GB",
+      "matchKey": "IPHONE14256GB",
+      "bonusCents": 40000,
+      "startsOn": "2026-06-23",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 15 256GB",
+      "matchKey": "IPHONE15256GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-06-23",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 128GB",
+      "matchKey": "IPHONE16128GB",
+      "bonusCents": 40000,
+      "startsOn": "2026-01-06",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 256GB",
+      "matchKey": "IPHONE16256GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-06-23",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 512GB",
+      "matchKey": "IPHONE16512GB",
+      "bonusCents": 40000,
+      "startsOn": "2026-03-26",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Plus 128GB",
+      "matchKey": "IPHONE16PLUS128GB",
+      "bonusCents": 70000,
+      "startsOn": "2025-09-02",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Plus 256GB",
+      "matchKey": "IPHONE16PLUS256GB",
+      "bonusCents": 70000,
+      "startsOn": "2025-09-02",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Plus 512GB",
+      "matchKey": "IPHONE16PLUS512GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-03-26",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Pro 128GB",
+      "matchKey": "IPHONE16PRO128GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-02-19",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Pro 256GB",
+      "matchKey": "IPHONE16PRO256GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-02-19",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Pro 512GB",
+      "matchKey": "IPHONE16PRO512GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-02-19",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Pro 1TB",
+      "matchKey": "IPHONE16PRO1TB",
+      "bonusCents": 70000,
+      "startsOn": "2026-03-26",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Pro Max 256GB",
+      "matchKey": "IPHONE16PROMAX256GB",
+      "bonusCents": 80000,
+      "startsOn": "2026-02-19",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Pro Max 512GB",
+      "matchKey": "IPHONE16PROMAX512GB",
+      "bonusCents": 80000,
+      "startsOn": "2026-02-19",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16 Pro Max 1TB",
+      "matchKey": "IPHONE16PROMAX1TB",
+      "bonusCents": 80000,
+      "startsOn": "2026-02-19",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16e 128GB",
+      "matchKey": "IPHONE16E128GB",
+      "bonusCents": 50000,
+      "startsOn": "2025-09-02",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 16e 256GB",
+      "matchKey": "IPHONE16E256GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-02-26",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17 256GB",
+      "matchKey": "IPHONE17256GB",
+      "bonusCents": 50000,
+      "startsOn": "2025-09-18",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17 512GB",
+      "matchKey": "IPHONE17512GB",
+      "bonusCents": 50000,
+      "startsOn": "2025-09-18",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17 Pro 1TB",
+      "matchKey": "IPHONE17PRO1TB",
+      "bonusCents": 80000,
+      "startsOn": "2026-06-23",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17 Pro 256GB",
+      "matchKey": "IPHONE17PRO256GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-01-20",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17 Pro 512GB",
+      "matchKey": "IPHONE17PRO512GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-01-20",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17 Pro Max 1TB",
+      "matchKey": "IPHONE17PROMAX1TB",
+      "bonusCents": 80000,
+      "startsOn": "2026-06-23",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17 Pro Max 256GB",
+      "matchKey": "IPHONE17PROMAX256GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-01-20",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17 Pro Max 2TB",
+      "matchKey": "IPHONE17PROMAX2TB",
+      "bonusCents": 80000,
+      "startsOn": "2026-06-23",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17 Pro Max 512GB",
+      "matchKey": "IPHONE17PROMAX512GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-01-20",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17e 256GB",
+      "matchKey": "IPHONE17E256GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-03-13",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone 17e 512GB",
+      "matchKey": "IPHONE17E512GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-03-13",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone Air 1TB",
+      "matchKey": "IPHONEAIR1TB",
+      "bonusCents": 80000,
+      "startsOn": "2026-03-03",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone Air 256GB",
+      "matchKey": "IPHONEAIR256GB",
+      "bonusCents": 80000,
+      "startsOn": "2026-03-03",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Apple",
+      "name": "iPhone Air 512GB",
+      "matchKey": "IPHONEAIR512GB",
+      "bonusCents": 80000,
+      "startsOn": "2026-01-06",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S25 256GB",
+      "matchKey": "SAMSUNGGALAXYS25256GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-03-31",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S25 Edge 512GB",
+      "matchKey": "SAMSUNGGALAXYS25EDGE512GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-03-31",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S25 Ultra 256GB",
+      "matchKey": "SAMSUNGGALAXYS25ULTRA256GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-03-31",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S25 Ultra 512GB",
+      "matchKey": "SAMSUNGGALAXYS25ULTRA512GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-03-31",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S25+ 256GB",
+      "matchKey": "SAMSUNGGALAXYS25PLUS256GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-03-31",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S25+ 512GB",
+      "matchKey": "SAMSUNGGALAXYS25PLUS512GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-03-31",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S26 Ultra 1TB",
+      "matchKey": "SAMSUNGGALAXYS26ULTRA1TB",
+      "bonusCents": 80000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S26 Ultra 256GB",
+      "matchKey": "SAMSUNGGALAXYS26ULTRA256GB",
+      "bonusCents": 120000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S26 Ultra 512GB",
+      "matchKey": "SAMSUNGGALAXYS26ULTRA512GB",
+      "bonusCents": 80000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S26 256GB",
+      "matchKey": "SAMSUNGGALAXYS26256GB",
+      "bonusCents": 40000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S26 512GB",
+      "matchKey": "SAMSUNGGALAXYS26512GB",
+      "bonusCents": 40000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S26+ 256GB",
+      "matchKey": "SAMSUNGGALAXYS26PLUS256GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy S26+ 512GB",
+      "matchKey": "SAMSUNGGALAXYS26PLUS512GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Flip 7 256GB",
+      "matchKey": "SAMSUNGGALAXYZFLIP7256GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Flip 7 512GB",
+      "matchKey": "SAMSUNGGALAXYZFLIP7512GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Flip 7 FE 256GB",
+      "matchKey": "SAMSUNGGALAXYZFLIP7FE256GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Fold 6 512GB",
+      "matchKey": "SAMSUNGGALAXYZFOLD6512GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-03-31",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Fold 7 1TB",
+      "matchKey": "SAMSUNGGALAXYZFOLD71TB",
+      "bonusCents": 50000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Fold 7 512GB",
+      "matchKey": "SAMSUNGGALAXYZFOLD7512GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-07-07",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Fold 8 Ultra 1TB",
+      "matchKey": "SAMSUNGGALAXYZFOLD8ULTRA1TB",
+      "bonusCents": 100000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Fold 8 Ultra 512GB",
+      "matchKey": "SAMSUNGGALAXYZFOLD8ULTRA512GB",
+      "bonusCents": 100000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Fold 8 Ultra 256GB",
+      "matchKey": "SAMSUNGGALAXYZFOLD8ULTRA256GB",
+      "bonusCents": 100000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Fold 8 512GB",
+      "matchKey": "SAMSUNGGALAXYZFOLD8512GB",
+      "bonusCents": 100000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Fold 8 256GB",
+      "matchKey": "SAMSUNGGALAXYZFOLD8256GB",
+      "bonusCents": 100000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Flip 8 512GB",
+      "matchKey": "SAMSUNGGALAXYZFLIP8512GB",
+      "bonusCents": 100000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Flip 8 256GB",
+      "matchKey": "SAMSUNGGALAXYZFLIP8256GB",
+      "bonusCents": 100000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Flip 6 256GB",
+      "matchKey": "SAMSUNGGALAXYZFLIP6256GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy Z Flip 6 512GB",
+      "matchKey": "SAMSUNGGALAXYZFLIP6512GB",
+      "bonusCents": 30000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy A37 5G 256GB",
+      "matchKey": "SAMSUNGGALAXYA37256GB",
+      "bonusCents": 10000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Samsung",
+      "name": "Samsung Galaxy A57 5G 256GB",
+      "matchKey": "SAMSUNGGALAXYA57256GB",
+      "bonusCents": 20000,
+      "startsOn": "2026-08-03",
+      "endsOn": "2026-08-17"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Motorola Edge 70 512GB",
+      "matchKey": "MOTOROLAEDGE70512GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-07-02",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Motorola Edge 70 Swarovski 5G 512GB",
+      "matchKey": "MOTOROLAEDGE70SWAROVSKI512GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-07-02",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Motorola Razr 60 Swarovski 256GB",
+      "matchKey": "MOTOROLARAZR60SWAROVSKI256GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-07-02",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Motorola Razr 60 Ultra 1TB",
+      "matchKey": "MOTOROLARAZR60ULTRA1TB",
+      "bonusCents": 100000,
+      "startsOn": "2026-03-03",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Motorola Signature 512GB",
+      "matchKey": "MOTOROLASIGNATURE512GB",
+      "bonusCents": 160000,
+      "startsOn": "2026-07-21",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Motorola Razr Fold Fifa World Cup 26 1TB",
+      "matchKey": "MOTOROLARAZRFOLDFIFAWORLDCUP261TB",
+      "bonusCents": 180000,
+      "startsOn": "2026-06-18",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Motorola Razr Fold 1TB",
+      "matchKey": "MOTOROLARAZRFOLD1TB",
+      "bonusCents": 200000,
+      "startsOn": "2026-07-02",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Motorola Razr 70 Ultra 512GB",
+      "matchKey": "MOTOROLARAZR70ULTRA512GB",
+      "bonusCents": 100000,
+      "startsOn": "2026-05-15",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Moto G Max 5G 256GB",
+      "matchKey": "MOTOGMAX256GB",
+      "bonusCents": 10000,
+      "startsOn": "2026-07-14",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "Motorola",
+      "name": "Motorola Moto G67 5G 128GB",
+      "matchKey": "MOTOROLAMOTOG67128GB",
+      "bonusCents": 10000,
+      "startsOn": "2026-07-14",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "JOVI",
+      "name": "JOVI V70 5G 512GB",
+      "matchKey": "JOVIV70512GB",
+      "bonusCents": 50000,
+      "startsOn": "2026-06-01",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "JOVI",
+      "name": "JOVI X300 Ultra 512GB",
+      "matchKey": "JOVIX300ULTRA512GB",
+      "bonusCents": 150000,
+      "startsOn": "2026-08-13",
+      "endsOn": "2026-08-31"
+    },
+    {
+      "manufacturer": "JOVI",
+      "name": "JOVI X300 FE 256GB",
+      "matchKey": "JOVIX300FE256GB",
+      "bonusCents": 70000,
+      "startsOn": "2026-08-13",
+      "endsOn": "2026-08-31"
+    }
+  ]
+}

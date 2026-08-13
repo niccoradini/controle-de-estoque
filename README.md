@@ -108,8 +108,8 @@ Inclui o Vivo Renova no configurador, com bônus do fabricante e voucher ASSURAN
 - renderização progressiva das seções longas do catálogo para manter a rolagem leve;
 - desfoque limitado às superfícies flutuantes e visual alternativo para navegadores sem suporte;
 
-- conferência integral dos 42 modelos de aparelhos no Simulador Produtos;
-- 378 preços validados individualmente em nove categorias de plano;
+- conferência integral dos 43 modelos de aparelhos no Simulador Produtos;
+- 387 preços validados individualmente em nove categorias de plano;
 - correção de quatro valores divergentes nos iPhones 13 e 15 de 256 GB;
 - migração corretiva própria para atualizar bancos que já receberam a versão 5.4;
 - arquivo de auditoria incluído para impedir que a tabela gerada divirja dos valores conferidos;
@@ -125,7 +125,7 @@ Inclui o Vivo Renova no configurador, com bônus do fabricante e voucher ASSURAN
 - itens novos não listados literalmente no simulador usam uma referência equivalente identificada e rastreável;
 
 - tabela do `Gramcell · Simulador Produtos` importada com data de 04/08/2026;
-- 42 modelos do estoque com preços em nove categorias de plano;
+- 43 modelos do estoque com preços em nove categorias de plano;
 - vendedor escolhe a categoria e vê o preço exato antes de adicionar o aparelho;
 - revisão mostra o total completo do pedido e o parcelamento sem juros;
 - preço, categoria e data da tabela ficam preservados no histórico do pedido;

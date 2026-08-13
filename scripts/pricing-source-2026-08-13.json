@@ -1,0 +1,819 @@
+[
+  {
+    "name": "iPhone 13 256GB",
+    "brand": "Apple",
+    "key": "iphone 13 256gb",
+    "listedFrom": 2799,
+    "prices": {
+      "PRÉ": "R$ 3.599,00",
+      "CONTROLE BTL": "R$ 3.599,00",
+      "CONTROLE ENTRADA": "R$ 3.499,00",
+      "CONTROLE ALTO VALOR": "R$ 3.299,00",
+      "PÓS INDIVIDUAL": "R$ 3.199,00",
+      "FAMILIA 2": "R$ 3.099,00",
+      "FAMILIA 3": "R$ 2.999,00",
+      "FAMILIA 4/5": "R$ 2.899,00",
+      "VIVO V": "R$ 2.799,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 15 256GB",
+    "brand": "Apple",
+    "key": "iphone 15 256gb",
+    "listedFrom": 3499,
+    "prices": {
+      "PRÉ": "R$ 4.799,00",
+      "CONTROLE BTL": "R$ 4.799,00",
+      "CONTROLE ENTRADA": "R$ 4.699,00",
+      "CONTROLE ALTO VALOR": "R$ 4.599,00",
+      "PÓS INDIVIDUAL": "R$ 4.099,00",
+      "FAMILIA 2": "R$ 3.999,00",
+      "FAMILIA 3": "R$ 3.699,00",
+      "FAMILIA 4/5": "R$ 3.599,00",
+      "VIVO V": "R$ 3.499,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 16 256GB",
+    "brand": "Apple",
+    "key": "iphone 16 256gb",
+    "listedFrom": 4399,
+    "prices": {
+      "PRÉ": "R$ 5.799,00",
+      "CONTROLE BTL": "R$ 5.799,00",
+      "CONTROLE ENTRADA": "R$ 5.399,00",
+      "CONTROLE ALTO VALOR": "R$ 5.349,00",
+      "PÓS INDIVIDUAL": "R$ 5.249,00",
+      "FAMILIA 2": "R$ 5.099,00",
+      "FAMILIA 3": "R$ 4.749,00",
+      "FAMILIA 4/5": "R$ 4.549,00",
+      "VIVO V": "R$ 4.399,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 16E 256GB",
+    "brand": "Apple",
+    "key": "iphone 16e 256gb",
+    "listedFrom": 3099,
+    "prices": {
+      "PRÉ": "R$ 4.299,00",
+      "CONTROLE BTL": "R$ 4.299,00",
+      "CONTROLE ENTRADA": "R$ 3.999,00",
+      "CONTROLE ALTO VALOR": "R$ 3.949,00",
+      "PÓS INDIVIDUAL": "R$ 3.899,00",
+      "FAMILIA 2": "R$ 3.799,00",
+      "FAMILIA 3": "R$ 3.599,00",
+      "FAMILIA 4/5": "R$ 3.299,00",
+      "VIVO V": "R$ 3.099,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 17 256GB",
+    "brand": "Apple",
+    "key": "iphone 17 256gb",
+    "listedFrom": 5499,
+    "prices": {
+      "PRÉ": "R$ 6.599,00",
+      "CONTROLE BTL": "R$ 6.399,00",
+      "CONTROLE ENTRADA": "R$ 6.299,00",
+      "CONTROLE ALTO VALOR": "R$ 6.199,00",
+      "PÓS INDIVIDUAL": "R$ 5.999,00",
+      "FAMILIA 2": "R$ 5.899,00",
+      "FAMILIA 3": "R$ 5.799,00",
+      "FAMILIA 4/5": "R$ 5.599,00",
+      "VIVO V": "R$ 5.499,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 17 512GB",
+    "brand": "Apple",
+    "key": "iphone 17 512gb",
+    "listedFrom": 6999,
+    "prices": {
+      "PRÉ": "R$ 7.999,00",
+      "CONTROLE BTL": "R$ 7.999,00",
+      "CONTROLE ENTRADA": "R$ 7.899,00",
+      "CONTROLE ALTO VALOR": "R$ 7.799,00",
+      "PÓS INDIVIDUAL": "R$ 7.699,00",
+      "FAMILIA 2": "R$ 7.599,00",
+      "FAMILIA 3": "R$ 7.499,00",
+      "FAMILIA 4/5": "R$ 7.299,00",
+      "VIVO V": "R$ 6.999,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 17 Pro 256GB",
+    "brand": "Apple",
+    "key": "iphone 17 pro 256gb",
+    "listedFrom": 8799,
+    "prices": {
+      "PRÉ": "R$ 10.299,00",
+      "CONTROLE BTL": "R$ 10.299,00",
+      "CONTROLE ENTRADA": "R$ 10.199,00",
+      "CONTROLE ALTO VALOR": "R$ 9.999,00",
+      "PÓS INDIVIDUAL": "R$ 9.899,00",
+      "FAMILIA 2": "R$ 9.799,00",
+      "FAMILIA 3": "R$ 9.599,00",
+      "FAMILIA 4/5": "R$ 9.299,00",
+      "VIVO V": "R$ 8.799,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 17 Pro 512GB",
+    "brand": "Apple",
+    "key": "iphone 17 pro 512gb",
+    "listedFrom": 9699,
+    "prices": {
+      "PRÉ": "R$ 12.349,00",
+      "CONTROLE BTL": "R$ 12.349,00",
+      "CONTROLE ENTRADA": "R$ 11.699,00",
+      "CONTROLE ALTO VALOR": "R$ 11.399,00",
+      "PÓS INDIVIDUAL": "R$ 11.249,00",
+      "FAMILIA 2": "R$ 10.699,00",
+      "FAMILIA 3": "R$ 10.499,00",
+      "FAMILIA 4/5": "R$ 10.199,00",
+      "VIVO V": "R$ 9.699,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 17 Pro Max 1TB",
+    "brand": "Apple",
+    "key": "iphone 17 pro max 1tb",
+    "listedFrom": 11199,
+    "prices": {
+      "PRÉ": "R$ 14.499,00",
+      "CONTROLE BTL": "R$ 14.499,00",
+      "CONTROLE ENTRADA": "R$ 13.399,00",
+      "CONTROLE ALTO VALOR": "R$ 13.099,00",
+      "PÓS INDIVIDUAL": "R$ 12.899,00",
+      "FAMILIA 2": "R$ 12.399,00",
+      "FAMILIA 3": "R$ 12.099,00",
+      "FAMILIA 4/5": "R$ 11.799,00",
+      "VIVO V": "R$ 11.199,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 17 Pro Max 256GB",
+    "brand": "Apple",
+    "key": "iphone 17 pro max 256gb",
+    "listedFrom": 9599,
+    "prices": {
+      "PRÉ": "R$ 10.999,00",
+      "CONTROLE BTL": "R$ 10.999,00",
+      "CONTROLE ENTRADA": "R$ 10.399,00",
+      "CONTROLE ALTO VALOR": "R$ 10.299,00",
+      "PÓS INDIVIDUAL": "R$ 10.099,00",
+      "FAMILIA 2": "R$ 9.999,00",
+      "FAMILIA 3": "R$ 9.899,00",
+      "FAMILIA 4/5": "R$ 9.799,00",
+      "VIVO V": "R$ 9.599,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 17 Pro Max 512GB",
+    "brand": "Apple",
+    "key": "iphone 17 pro max 512gb",
+    "listedFrom": 10799,
+    "prices": {
+      "PRÉ": "R$ 12.899,00",
+      "CONTROLE BTL": "R$ 12.899,00",
+      "CONTROLE ENTRADA": "R$ 12.499,00",
+      "CONTROLE ALTO VALOR": "R$ 12.299,00",
+      "PÓS INDIVIDUAL": "R$ 12.099,00",
+      "FAMILIA 2": "R$ 11.899,00",
+      "FAMILIA 3": "R$ 11.599,00",
+      "FAMILIA 4/5": "R$ 11.299,00",
+      "VIVO V": "R$ 10.799,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone 17E 256GB",
+    "brand": "Apple",
+    "key": "iphone 17e 256gb",
+    "listedFrom": 3899,
+    "prices": {
+      "PRÉ": "R$ 4.999,00",
+      "CONTROLE BTL": "R$ 4.999,00",
+      "CONTROLE ENTRADA": "R$ 4.849,00",
+      "CONTROLE ALTO VALOR": "R$ 4.799,00",
+      "PÓS INDIVIDUAL": "R$ 4.499,00",
+      "FAMILIA 2": "R$ 4.349,00",
+      "FAMILIA 3": "R$ 4.049,00",
+      "FAMILIA 4/5": "R$ 3.999,00",
+      "VIVO V": "R$ 3.899,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "iPhone Air 256GB",
+    "brand": "Apple",
+    "key": "iphone air 256gb",
+    "listedFrom": 5499,
+    "prices": {
+      "PRÉ": "R$ 7.199,00",
+      "CONTROLE BTL": "R$ 7.199,00",
+      "CONTROLE ENTRADA": "R$ 6.699,00",
+      "CONTROLE ALTO VALOR": "R$ 6.599,00",
+      "PÓS INDIVIDUAL": "R$ 6.499,00",
+      "FAMILIA 2": "R$ 6.399,00",
+      "FAMILIA 3": "R$ 6.099,00",
+      "FAMILIA 4/5": "R$ 5.799,00",
+      "VIVO V": "R$ 5.499,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Moto G35 5G",
+    "brand": "Motorola",
+    "key": "moto g35 5g",
+    "listedFrom": 735,
+    "prices": {
+      "PRÉ": "R$ 1.049,00",
+      "CONTROLE BTL": "R$ 1.049,00",
+      "CONTROLE ENTRADA": "R$ 999,00",
+      "CONTROLE ALTO VALOR": "R$ 979,00",
+      "PÓS INDIVIDUAL": "R$ 929,00",
+      "FAMILIA 2": "R$ 899,00",
+      "FAMILIA 3": "R$ 849,00",
+      "FAMILIA 4/5": "R$ 799,00",
+      "VIVO V": "R$ 749,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Moto G47 5G 128GB",
+    "brand": "Motorola",
+    "key": "moto g47 5g 128gb",
+    "listedFrom": 849,
+    "prices": {
+      "PRÉ": "R$ 1.199,00",
+      "CONTROLE BTL": "R$ 1.199,00",
+      "CONTROLE ENTRADA": "R$ 1.149,00",
+      "CONTROLE ALTO VALOR": "R$ 999,00",
+      "PÓS INDIVIDUAL": "R$ 969,00",
+      "FAMILIA 2": "R$ 939,00",
+      "FAMILIA 3": "R$ 909,00",
+      "FAMILIA 4/5": "R$ 879,00",
+      "VIVO V": "R$ 849,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Moto G86 5G 256GB",
+    "brand": "Motorola",
+    "key": "moto g86 5g 256gb",
+    "listedFrom": 1449,
+    "prices": {
+      "PRÉ": "R$ 1.899,00",
+      "CONTROLE BTL": "R$ 1.899,00",
+      "CONTROLE ENTRADA": "R$ 1.799,00",
+      "CONTROLE ALTO VALOR": "R$ 1.729,00",
+      "PÓS INDIVIDUAL": "R$ 1.649,00",
+      "FAMILIA 2": "R$ 1.599,00",
+      "FAMILIA 3": "R$ 1.549,00",
+      "FAMILIA 4/5": "R$ 1.499,00",
+      "VIVO V": "R$ 1.449,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Motorola Edge 60 Fusion 256GB",
+    "brand": "Motorola",
+    "key": "motorola edge 60 fusion 256gb",
+    "listedFrom": 1749,
+    "prices": {
+      "PRÉ": "R$ 2.169,00",
+      "CONTROLE BTL": "R$ 2.169,00",
+      "CONTROLE ENTRADA": "R$ 2.099,00",
+      "CONTROLE ALTO VALOR": "R$ 1.999,00",
+      "PÓS INDIVIDUAL": "R$ 1.949,00",
+      "FAMILIA 2": "R$ 1.899,00",
+      "FAMILIA 3": "R$ 1.849,00",
+      "FAMILIA 4/5": "R$ 1.799,00",
+      "VIVO V": "R$ 1.749,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Motorola Edge 60 Pro 256GB",
+    "brand": "Motorola",
+    "key": "motorola edge 60 pro 256gb",
+    "listedFrom": 2099,
+    "prices": {
+      "PRÉ": "R$ 3.299,00",
+      "CONTROLE BTL": "R$ 3.299,00",
+      "CONTROLE ENTRADA": "R$ 2.899,00",
+      "CONTROLE ALTO VALOR": "R$ 2.799,00",
+      "PÓS INDIVIDUAL": "R$ 2.699,00",
+      "FAMILIA 2": "R$ 2.399,00",
+      "FAMILIA 3": "R$ 2.299,00",
+      "FAMILIA 4/5": "R$ 2.199,00",
+      "VIVO V": "R$ 2.099,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Motorola Edge 70 512GB",
+    "brand": "Motorola",
+    "key": "motorola edge 70 512gb",
+    "listedFrom": 3199,
+    "prices": {
+      "PRÉ": "R$ 4.679,00",
+      "CONTROLE BTL": "R$ 4.679,00",
+      "CONTROLE ENTRADA": "R$ 3.599,00",
+      "CONTROLE ALTO VALOR": "R$ 3.499,00",
+      "PÓS INDIVIDUAL": "R$ 3.399,00",
+      "FAMILIA 2": "R$ 3.349,00",
+      "FAMILIA 3": "R$ 3.299,00",
+      "FAMILIA 4/5": "R$ 3.249,00",
+      "VIVO V": "R$ 3.199,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Motorola Edge 70 Fusion 256GB",
+    "brand": "Motorola",
+    "key": "motorola edge 70 fusion 256gb",
+    "listedFrom": 1869,
+    "prices": {
+      "PRÉ": "R$ 2.499,00",
+      "CONTROLE BTL": "R$ 2.499,00",
+      "CONTROLE ENTRADA": "R$ 2.199,00",
+      "CONTROLE ALTO VALOR": "R$ 2.149,00",
+      "PÓS INDIVIDUAL": "R$ 1.999,00",
+      "FAMILIA 2": "R$ 1.969,00",
+      "FAMILIA 3": "R$ 1.939,00",
+      "FAMILIA 4/5": "R$ 1.899,00",
+      "VIVO V": "R$ 1.869,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Motorola Moto G67 5G 128GB",
+    "brand": "Motorola",
+    "key": "motorola moto g67 5g 128gb",
+    "listedFrom": 1049,
+    "prices": {
+      "PRÉ": "R$ 1.499,00",
+      "CONTROLE BTL": "R$ 1.499,00",
+      "CONTROLE ENTRADA": "R$ 1.399,00",
+      "CONTROLE ALTO VALOR": "R$ 1.299,00",
+      "PÓS INDIVIDUAL": "R$ 1.249,00",
+      "FAMILIA 2": "R$ 1.199,00",
+      "FAMILIA 3": "R$ 1.149,00",
+      "FAMILIA 4/5": "R$ 1.099,00",
+      "VIVO V": "R$ 1.049,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Motorola Moto G67 5G 256GB",
+    "brand": "Motorola",
+    "key": "motorola moto g67 5g 256gb",
+    "listedFrom": 1050,
+    "prices": {
+      "PRÉ": "R$ 1.699,00",
+      "CONTROLE BTL": "R$ 1.699,00",
+      "CONTROLE ENTRADA": "R$ 1.499,00",
+      "CONTROLE ALTO VALOR": "R$ 1.459,00",
+      "PÓS INDIVIDUAL": "R$ 1.429,00",
+      "FAMILIA 2": "R$ 1.399,00",
+      "FAMILIA 3": "R$ 1.369,00",
+      "FAMILIA 4/5": "R$ 1.339,00",
+      "VIVO V": "R$ 1.309,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Motorola Moto G77 5G 256GB",
+    "brand": "Motorola",
+    "key": "motorola moto g77 5g 256gb",
+    "listedFrom": 1470,
+    "prices": {
+      "PRÉ": "R$ 1.899,00",
+      "CONTROLE BTL": "R$ 1.899,00",
+      "CONTROLE ENTRADA": "R$ 1.799,00",
+      "CONTROLE ALTO VALOR": "R$ 1.689,00",
+      "PÓS INDIVIDUAL": "R$ 1.599,00",
+      "FAMILIA 2": "R$ 1.569,00",
+      "FAMILIA 3": "R$ 1.539,00",
+      "FAMILIA 4/5": "R$ 1.509,00",
+      "VIVO V": "R$ 1.479,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Motorola Signature 512GB",
+    "brand": "Motorola",
+    "key": "motorola signature 512gb",
+    "listedFrom": 4899,
+    "prices": {
+      "PRÉ": "R$ 8.599,00",
+      "CONTROLE BTL": "R$ 8.599,00",
+      "CONTROLE ENTRADA": "R$ 6.199,00",
+      "CONTROLE ALTO VALOR": "R$ 6.099,00",
+      "PÓS INDIVIDUAL": "R$ 5.499,00",
+      "FAMILIA 2": "R$ 5.399,00",
+      "FAMILIA 3": "R$ 5.199,00",
+      "FAMILIA 4/5": "R$ 4.999,00",
+      "VIVO V": "R$ 4.899,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy A06 4G 128GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy a06 4g 128gb",
+    "listedFrom": 629,
+    "prices": {
+      "PRÉ": "R$ 979,00",
+      "CONTROLE BTL": "R$ 979,00",
+      "CONTROLE ENTRADA": "R$ 929,00",
+      "CONTROLE ALTO VALOR": "R$ 879,00",
+      "PÓS INDIVIDUAL": "R$ 829,00",
+      "FAMILIA 2": "R$ 779,00",
+      "FAMILIA 3": "R$ 729,00",
+      "FAMILIA 4/5": "R$ 679,00",
+      "VIVO V": "R$ 629,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy A07 5G 128GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy a07 5g 128gb",
+    "listedFrom": 735,
+    "prices": {
+      "PRÉ": "R$ 1.069,00",
+      "CONTROLE BTL": "R$ 1.069,00",
+      "CONTROLE ENTRADA": "R$ 1.019,00",
+      "CONTROLE ALTO VALOR": "R$ 999,00",
+      "PÓS INDIVIDUAL": "R$ 969,00",
+      "FAMILIA 2": "R$ 949,00",
+      "FAMILIA 3": "R$ 919,00",
+      "FAMILIA 4/5": "R$ 899,00",
+      "VIVO V": "R$ 869,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy A17 5G 128GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy a17 5g 128gb",
+    "listedFrom": 919,
+    "prices": {
+      "PRÉ": "R$ 1.279,00",
+      "CONTROLE BTL": "R$ 1.279,00",
+      "CONTROLE ENTRADA": "R$ 1.199,00",
+      "CONTROLE ALTO VALOR": "R$ 1.169,00",
+      "PÓS INDIVIDUAL": "R$ 1.119,00",
+      "FAMILIA 2": "R$ 1.069,00",
+      "FAMILIA 3": "R$ 1.019,00",
+      "FAMILIA 4/5": "R$ 969,00",
+      "VIVO V": "R$ 919,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy A17 5G 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy a17 5g 256gb",
+    "listedFrom": 1099,
+    "prices": {
+      "PRÉ": "R$ 1.549,00",
+      "CONTROLE BTL": "R$ 1.549,00",
+      "CONTROLE ENTRADA": "R$ 1.399,00",
+      "CONTROLE ALTO VALOR": "R$ 1.349,00",
+      "PÓS INDIVIDUAL": "R$ 1.299,00",
+      "FAMILIA 2": "R$ 1.249,00",
+      "FAMILIA 3": "R$ 1.199,00",
+      "FAMILIA 4/5": "R$ 1.149,00",
+      "VIVO V": "R$ 1.099,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy A37 5G 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy a37 5g 256gb",
+    "listedFrom": 1549,
+    "prices": {
+      "PRÉ": "R$ 2.149,00",
+      "CONTROLE BTL": "R$ 2.149,00",
+      "CONTROLE ENTRADA": "R$ 1.899,00",
+      "CONTROLE ALTO VALOR": "R$ 1.849,00",
+      "PÓS INDIVIDUAL": "R$ 1.799,00",
+      "FAMILIA 2": "R$ 1.699,00",
+      "FAMILIA 3": "R$ 1.649,00",
+      "FAMILIA 4/5": "R$ 1.599,00",
+      "VIVO V": "R$ 1.549,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy A57 5G 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy a57 5g 256gb",
+    "listedFrom": 1829,
+    "prices": {
+      "PRÉ": "R$ 2.499,00",
+      "CONTROLE BTL": "R$ 2.499,00",
+      "CONTROLE ENTRADA": "R$ 2.199,00",
+      "CONTROLE ALTO VALOR": "R$ 2.099,00",
+      "PÓS INDIVIDUAL": "R$ 1.999,00",
+      "FAMILIA 2": "R$ 1.979,00",
+      "FAMILIA 3": "R$ 1.929,00",
+      "FAMILIA 4/5": "R$ 1.879,00",
+      "VIVO V": "R$ 1.829,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy S25 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy s25 256gb",
+    "listedFrom": 3099,
+    "prices": {
+      "PRÉ": "R$ 3.999,00",
+      "CONTROLE BTL": "R$ 3.999,00",
+      "CONTROLE ENTRADA": "R$ 3.899,00",
+      "CONTROLE ALTO VALOR": "R$ 3.799,00",
+      "PÓS INDIVIDUAL": "R$ 3.699,00",
+      "FAMILIA 2": "R$ 3.499,00",
+      "FAMILIA 3": "R$ 3.399,00",
+      "FAMILIA 4/5": "R$ 3.199,00",
+      "VIVO V": "R$ 3.099,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy S25 FE 5G 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy s25 fe 5g 256gb",
+    "listedFrom": 2499,
+    "prices": {
+      "PRÉ": "R$ 3.999,00",
+      "CONTROLE BTL": "R$ 3.999,00",
+      "CONTROLE ENTRADA": "R$ 3.499,00",
+      "CONTROLE ALTO VALOR": "R$ 3.299,00",
+      "PÓS INDIVIDUAL": "R$ 3.099,00",
+      "FAMILIA 2": "R$ 2.899,00",
+      "FAMILIA 3": "R$ 2.699,00",
+      "FAMILIA 4/5": "R$ 2.599,00",
+      "VIVO V": "R$ 2.499,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy S25 Ultra 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy s25 ultra 256gb",
+    "listedFrom": 4999,
+    "prices": {
+      "PRÉ": "R$ 5.979,00",
+      "CONTROLE BTL": "R$ 5.979,00",
+      "CONTROLE ENTRADA": "R$ 5.899,00",
+      "CONTROLE ALTO VALOR": "R$ 5.799,00",
+      "PÓS INDIVIDUAL": "R$ 5.599,00",
+      "FAMILIA 2": "R$ 5.199,00",
+      "FAMILIA 3": "R$ 5.099,00",
+      "FAMILIA 4/5": "R$ 5.049,00",
+      "VIVO V": "R$ 4.999,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy S26 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy s26 256gb",
+    "listedFrom": 2899,
+    "prices": {
+      "PRÉ": "R$ 4.799,00",
+      "CONTROLE BTL": "R$ 4.799,00",
+      "CONTROLE ENTRADA": "R$ 4.399,00",
+      "CONTROLE ALTO VALOR": "R$ 4.299,00",
+      "PÓS INDIVIDUAL": "R$ 4.199,00",
+      "FAMILIA 2": "R$ 3.299,00",
+      "FAMILIA 3": "R$ 3.199,00",
+      "FAMILIA 4/5": "R$ 2.999,00",
+      "VIVO V": "R$ 2.899,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy S26 512GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy s26 512gb",
+    "listedFrom": 3899,
+    "prices": {
+      "PRÉ": "R$ 7.899,00",
+      "CONTROLE BTL": "R$ 7.899,00",
+      "CONTROLE ENTRADA": "R$ 6.299,00",
+      "CONTROLE ALTO VALOR": "R$ 5.999,00",
+      "PÓS INDIVIDUAL": "R$ 5.399,00",
+      "FAMILIA 2": "R$ 4.399,00",
+      "FAMILIA 3": "R$ 4.299,00",
+      "FAMILIA 4/5": "R$ 3.999,00",
+      "VIVO V": "R$ 3.899,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy S26 Ultra 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy s26 ultra 256gb",
+    "listedFrom": 5499,
+    "prices": {
+      "PRÉ": "R$ 8.599,00",
+      "CONTROLE BTL": "R$ 8.599,00",
+      "CONTROLE ENTRADA": "R$ 8.499,00",
+      "CONTROLE ALTO VALOR": "R$ 8.299,00",
+      "PÓS INDIVIDUAL": "R$ 6.899,00",
+      "FAMILIA 2": "R$ 5.799,00",
+      "FAMILIA 3": "R$ 5.699,00",
+      "FAMILIA 4/5": "R$ 5.599,00",
+      "VIVO V": "R$ 5.499,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy S26+ 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy s26+ 256gb",
+    "listedFrom": 4899,
+    "prices": {
+      "PRÉ": "R$ 8.699,00",
+      "CONTROLE BTL": "R$ 8.699,00",
+      "CONTROLE ENTRADA": "R$ 8.299,00",
+      "CONTROLE ALTO VALOR": "R$ 6.999,00",
+      "PÓS INDIVIDUAL": "R$ 5.999,00",
+      "FAMILIA 2": "R$ 5.499,00",
+      "FAMILIA 3": "R$ 5.399,00",
+      "FAMILIA 4/5": "R$ 4.999,00",
+      "VIVO V": "R$ 4.899,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy S26+ 512GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy s26+ 512gb",
+    "listedFrom": 5199,
+    "prices": {
+      "PRÉ": "R$ 9.299,00",
+      "CONTROLE BTL": "R$ 9.299,00",
+      "CONTROLE ENTRADA": "R$ 7.999,00",
+      "CONTROLE ALTO VALOR": "R$ 7.499,00",
+      "PÓS INDIVIDUAL": "R$ 6.499,00",
+      "FAMILIA 2": "R$ 5.799,00",
+      "FAMILIA 3": "R$ 5.699,00",
+      "FAMILIA 4/5": "R$ 5.499,00",
+      "VIVO V": "R$ 5.199,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy Z Flip 7 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy z flip 7 256gb",
+    "listedFrom": 2399,
+    "prices": {
+      "PRÉ": "R$ 3.899,00",
+      "CONTROLE BTL": "R$ 3.899,00",
+      "CONTROLE ENTRADA": "R$ 3.399,00",
+      "CONTROLE ALTO VALOR": "R$ 3.349,00",
+      "PÓS INDIVIDUAL": "R$ 2.899,00",
+      "FAMILIA 2": "R$ 2.699,00",
+      "FAMILIA 3": "R$ 2.599,00",
+      "FAMILIA 4/5": "R$ 2.499,00",
+      "VIVO V": "R$ 2.399,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy Z Flip 7 512GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy z flip 7 512gb",
+    "listedFrom": 2599,
+    "prices": {
+      "PRÉ": "R$ 4.199,00",
+      "CONTROLE BTL": "R$ 4.199,00",
+      "CONTROLE ENTRADA": "R$ 3.699,00",
+      "CONTROLE ALTO VALOR": "R$ 3.649,00",
+      "PÓS INDIVIDUAL": "R$ 3.199,00",
+      "FAMILIA 2": "R$ 2.899,00",
+      "FAMILIA 3": "R$ 2.799,00",
+      "FAMILIA 4/5": "R$ 2.699,00",
+      "VIVO V": "R$ 2.599,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy Z Flip 7 FE 256GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy z flip 7 fe 256gb",
+    "listedFrom": 1749,
+    "prices": {
+      "PRÉ": "R$ 3.099,00",
+      "CONTROLE BTL": "R$ 3.099,00",
+      "CONTROLE ENTRADA": "R$ 2.599,00",
+      "CONTROLE ALTO VALOR": "R$ 2.549,00",
+      "PÓS INDIVIDUAL": "R$ 2.199,00",
+      "FAMILIA 2": "R$ 2.049,00",
+      "FAMILIA 3": "R$ 1.949,00",
+      "FAMILIA 4/5": "R$ 1.849,00",
+      "VIVO V": "R$ 1.749,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Samsung Galaxy Z Fold 7 512GB",
+    "brand": "Samsung",
+    "key": "samsung galaxy z fold 7 512gb",
+    "listedFrom": 5199,
+    "prices": {
+      "PRÉ": "R$ 6.999,00",
+      "CONTROLE BTL": "R$ 6.999,00",
+      "CONTROLE ENTRADA": "R$ 6.499,00",
+      "CONTROLE ALTO VALOR": "R$ 6.449,00",
+      "PÓS INDIVIDUAL": "R$ 5.799,00",
+      "FAMILIA 2": "R$ 5.499,00",
+      "FAMILIA 3": "R$ 5.399,00",
+      "FAMILIA 4/5": "R$ 5.299,00",
+      "VIVO V": "R$ 5.199,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  },
+  {
+    "name": "Moto G56 5G 256GB",
+    "brand": "Motorola",
+    "key": "moto g56 5g 256gb",
+    "listedFrom": 1199,
+    "prices": {
+      "PRÉ": "R$ 1.699,00",
+      "CONTROLE BTL": "R$ 1.699,00",
+      "CONTROLE ENTRADA": "R$ 1.499,00",
+      "CONTROLE ALTO VALOR": "R$ 1.479,00",
+      "PÓS INDIVIDUAL": "R$ 1.399,00",
+      "FAMILIA 2": "R$ 1.349,00",
+      "FAMILIA 3": "R$ 1.299,00",
+      "FAMILIA 4/5": "R$ 1.249,00",
+      "VIVO V": "R$ 1.199,00",
+      "B2B - 10x": null,
+      "B2B - 24x": null
+    }
+  }
+]

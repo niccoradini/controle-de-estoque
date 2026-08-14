@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -100,6 +100,7 @@ before(async () => {
     readFile(new URL('../migrations/0030_inventory_refresh_2026_08_12.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0031_pricing_refresh_2026_08_13.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0032_renova_boosts_2026_08_12.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0033_semana_gamer_controle_news.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -199,6 +200,7 @@ before(async () => {
   await applyMigration(migration30);
   await applyMigration(migration31);
   await applyMigration(migration32);
+  await applyMigration(migration33);
 });
 
 after(async () => mf?.dispose());
@@ -1304,7 +1306,7 @@ describe('Controle de estoque por código material', () => {
   test('publica, edita, oculta e republica notícias com permissões por perfil', async () => {
     const initialSellerNews = await seller.request('/api/news');
     assert.equal(initialSellerNews.status, 200);
-    assert.equal(initialSellerNews.payload.news.length, 7);
+    assert.equal(initialSellerNews.payload.news.length, 8);
     const gamerCampaign = initialSellerNews.payload.news.find((item) => item.id === 'campaign-gamer-week-2026-08');
     assert.equal(gamerCampaign.validityLabel, '11 a 31/08/2026');
     assert.equal(gamerCampaign.imagePath, '/news/semana-gamer-2026-08.jpeg');
@@ -1314,6 +1316,11 @@ describe('Controle de estoque por código material', () => {
     assert.equal(tvCampaign.imagePath, '/news/tv-samsung-vivo-total-55-98-2026-08.jpg');
     assert.match(tvCampaign.body, /R\$ 15\.999 por R\$ 14\.599/);
     assert.match(tvCampaign.body, /Prateleira Infinita/);
+    const controleCampaign = initialSellerNews.payload.news.find((item) => item.id === 'campaign-semana-gamer-controle-2026-08');
+    assert.equal(controleCampaign.validityLabel, '11 a 31/08/2026');
+    assert.equal(controleCampaign.imagePath, '/news/semana-gamer-controle-2026-08.webp');
+    assert.match(controleCampaign.body, /30GB de bônus de internet móvel por 12 meses/);
+    assert.match(controleCampaign.body, /Netflix Padrão com anúncios/);
     assert.doesNotMatch(JSON.stringify(initialSellerNews.payload), /@/);
 
     assert.equal((await seller.request('/api/news', {
@@ -1339,7 +1346,7 @@ describe('Controle de estoque por código material', () => {
     for (const client of [seller, stocker]) {
       const visible = await client.request('/api/news');
       assert.equal(visible.status, 200);
-      assert.equal(visible.payload.news.length, 8);
+      assert.equal(visible.payload.news.length, 9);
       assert.ok(visible.payload.news.some((item) => item.title === 'Oferta especial da semana'));
       assert.doesNotMatch(JSON.stringify(visible.payload), /gerente@exemplo\.com/i);
     }
@@ -1361,13 +1368,13 @@ describe('Controle de estoque por código material', () => {
     });
     assert.equal(hidden.status, 200);
     assert.equal(hidden.payload.news.active, false);
-    assert.equal((await seller.request('/api/news')).payload.news.length, 7);
-    assert.equal((await stocker.request('/api/news')).payload.news.length, 7);
+    assert.equal((await seller.request('/api/news')).payload.news.length, 8);
+    assert.equal((await stocker.request('/api/news')).payload.news.length, 8);
     assert.ok(!(await seller.request('/api/news')).payload.news.some((item) => item.id === created.payload.news.id));
 
     const managerView = await manager.request('/api/news');
     assert.equal(managerView.status, 200);
-    assert.equal(managerView.payload.news.length, 8);
+    assert.equal(managerView.payload.news.length, 9);
     assert.equal(managerView.payload.news.find((item) => item.id === created.payload.news.id).active, false);
 
     const republished = await manager.request(`/api/news/${created.payload.news.id}/visibility`, {
@@ -1375,7 +1382,7 @@ describe('Controle de estoque por código material', () => {
     });
     assert.equal(republished.status, 200);
     assert.equal(republished.payload.news.active, true);
-    assert.equal((await seller.request('/api/news')).payload.news.length, 8);
+    assert.equal((await seller.request('/api/news')).payload.news.length, 9);
 
     assert.equal((await manager.request('/api/news', {
       method: 'POST', body: { title: 'Tipo inválido', body: 'Teste de validação.', category: 'qualquer' },
@@ -1631,8 +1638,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.6\.15/);
-    assert.match(indexSource, /app\.js\?v=6\.6\.15/);
+    assert.match(indexSource, /styles\.css\?v=6\.6\.16/);
+    assert.match(indexSource, /app\.js\?v=6\.6\.16/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /data-incoming-catalog/);
     assert.match(appSource, /incomingDepositsText/);
@@ -1667,7 +1674,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.15');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.16');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');
@@ -1675,6 +1682,8 @@ describe('Controle de estoque por código material', () => {
     const tvNewsImageCompact = await mf.dispatchFetch('https://controleestoque.app.br/news/tv-samsung-vivo-total-32-43-50-2026-08.jpg');
     const tvNewsCardImage = await mf.dispatchFetch('https://controleestoque.app.br/news/tv-samsung-vivo-total-55-98-2026-08-card.jpg');
     const tvNewsCardImageCompact = await mf.dispatchFetch('https://controleestoque.app.br/news/tv-samsung-vivo-total-32-43-50-2026-08-card.jpg');
+    const controleNewsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-controle-2026-08.webp');
+    const controleNewsCardImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-controle-2026-08-card.jpg');
     const additionalNewsCardImages = await Promise.all([
       'semana-gamer-2026-08-card.jpg',
       'campanhas-acessorios-2026-08-card.jpg',
@@ -1698,6 +1707,10 @@ describe('Controle de estoque por código material', () => {
     assert.match(tvNewsCardImage.headers.get('content-type') || '', /image\/jpeg/i);
     assert.equal(tvNewsCardImageCompact.status, 200);
     assert.match(tvNewsCardImageCompact.headers.get('content-type') || '', /image\/jpeg/i);
+    assert.equal(controleNewsImage.status, 200);
+    assert.match(controleNewsImage.headers.get('content-type') || '', /image\/webp/i);
+    assert.equal(controleNewsCardImage.status, 200);
+    assert.match(controleNewsCardImage.headers.get('content-type') || '', /image\/jpeg/i);
     for (const response of additionalNewsCardImages) {
       assert.equal(response.status, 200);
       assert.match(response.headers.get('content-type') || '', /image\/jpeg/i);
@@ -1705,5 +1718,6 @@ describe('Controle de estoque por código material', () => {
     const renderedScript = await script.text();
     assert.match(renderedScript, /tv-samsung-vivo-total-55-98-2026-08-card\.jpg/);
     assert.match(renderedScript, /bundle-apple-2026-08-card\.jpg/);
+    assert.match(renderedScript, /semana-gamer-controle-2026-08-card\.jpg/);
   });
 });

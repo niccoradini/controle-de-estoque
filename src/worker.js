@@ -225,6 +225,22 @@ function saleDateRule(value) {
   return { value: soldOn };
 }
 
+function renovaDateRule(label, { optional = false } = {}) {
+  return (value) => {
+    const date = typeof value === 'string' ? value.trim() : '';
+    if (!date && optional) return { value: '' };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: `Informe ${label}.` };
+    const parsed = new Date(`${date}T12:00:00.000Z`);
+    if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
+      return { error: `Informe ${label} válida.` };
+    }
+    if (date > todayInSaoPaulo()) {
+      return { error: `${label[0].toUpperCase()}${label.slice(1)} não pode estar no futuro.` };
+    }
+    return { value: date };
+  };
+}
+
 function positiveIdRule(label) {
   return (value) => {
     const id = Number(value);
@@ -1521,6 +1537,119 @@ async function setNewsVisibility(request, env, manager, id) {
   return json({ news: publicNewsItem(await newsItemById(env, id)) });
 }
 
+function publicRenovaIntakeItem(row) {
+  return {
+    id: row.id,
+    model: row.model,
+    receivedOn: row.received_on,
+    pickupOn: row.pickup_on || '',
+    status: row.pickup_on ? 'picked_up' : 'awaiting_pickup',
+    createdByName: row.created_by_name || 'Equipe da loja',
+    updatedByName: row.updated_by_name || row.created_by_name || 'Equipe da loja',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function renovaIntakeItemById(env, id) {
+  return env.DB.prepare(`
+    SELECT item.*, creator.name AS created_by_name, updater.name AS updated_by_name
+    FROM renova_intake_items item
+    LEFT JOIN users creator ON creator.id = item.created_by
+    LEFT JOIN users updater ON updater.id = item.updated_by
+    WHERE item.id = ?
+  `).bind(id).first();
+}
+
+async function listRenovaIntake(env, user) {
+  requireRole(user, ['manager', 'stocker']);
+  const rows = (await env.DB.prepare(`
+    SELECT item.*, creator.name AS created_by_name, updater.name AS updated_by_name
+    FROM renova_intake_items item
+    LEFT JOIN users creator ON creator.id = item.created_by
+    LEFT JOIN users updater ON updater.id = item.updated_by
+    ORDER BY CASE WHEN item.pickup_on IS NULL THEN 0 ELSE 1 END,
+             item.received_on DESC,
+             item.updated_at DESC,
+             item.id
+  `).all()).results || [];
+  const items = rows.map(publicRenovaIntakeItem);
+  return json({
+    items,
+    summary: {
+      awaitingPickup: items.filter((item) => item.status === 'awaiting_pickup').length,
+      pickedUp: items.filter((item) => item.status === 'picked_up').length,
+      total: items.length,
+    },
+  });
+}
+
+async function createRenovaIntake(request, env, user) {
+  requireRole(user, ['manager', 'stocker']);
+  const data = validateFields(await readJson(request), {
+    model: textRule('o modelo do aparelho', { min: 2, max: 120 }),
+    receivedOn: renovaDateRule('a data de recebimento'),
+    pickupOn: renovaDateRule('a data de retirada', { optional: true }),
+  });
+  if (data.pickupOn && data.pickupOn < data.receivedOn) {
+    throw new HttpError(400, 'A retirada não pode ser anterior ao recebimento.', {
+      pickupOn: 'Escolha uma data igual ou posterior ao recebimento.',
+    });
+  }
+  const id = crypto.randomUUID();
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO renova_intake_items
+        (id, model, received_on, pickup_on, created_by, updated_by, created_at, updated_at)
+      VALUES (?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?)
+    `).bind(id, data.model, data.receivedOn, data.pickupOn, user.id, user.id, timestamp, timestamp),
+    auditStatement(env, user.id, data.pickupOn ? 'renova.received_and_picked_up' : 'renova.received', 'renova_intake', id, {
+      model: data.model,
+      receivedOn: data.receivedOn,
+      pickupOn: data.pickupOn,
+    }),
+  ]);
+  return json({ item: publicRenovaIntakeItem(await renovaIntakeItemById(env, id)) }, 201);
+}
+
+async function updateRenovaIntake(request, env, user, id) {
+  requireRole(user, ['manager', 'stocker']);
+  const existing = await renovaIntakeItemById(env, id);
+  if (!existing) throw new HttpError(404, 'Aparelho do Renova não encontrado.');
+  const data = validateFields(await readJson(request), {
+    model: textRule('o modelo do aparelho', { min: 2, max: 120 }),
+    receivedOn: renovaDateRule('a data de recebimento'),
+    pickupOn: renovaDateRule('a data de retirada', { optional: true }),
+  });
+  if (data.pickupOn && data.pickupOn < data.receivedOn) {
+    throw new HttpError(400, 'A retirada não pode ser anterior ao recebimento.', {
+      pickupOn: 'Escolha uma data igual ou posterior ao recebimento.',
+    });
+  }
+  const previousPickupOn = existing.pickup_on || '';
+  const action = !previousPickupOn && data.pickupOn
+    ? 'renova.pickup_registered'
+    : previousPickupOn && !data.pickupOn
+      ? 'renova.pickup_cleared'
+      : 'renova.updated';
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`
+      UPDATE renova_intake_items
+      SET model = ?, received_on = ?, pickup_on = NULLIF(?, ''), updated_by = ?, updated_at = ?
+      WHERE id = ?
+    `).bind(data.model, data.receivedOn, data.pickupOn, user.id, timestamp, id),
+    auditStatement(env, user.id, action, 'renova_intake', id, {
+      model: data.model,
+      receivedOn: data.receivedOn,
+      previousPickupOn,
+      pickupOn: data.pickupOn,
+    }),
+  ]);
+  return json({ item: publicRenovaIntakeItem(await renovaIntakeItemById(env, id)) });
+}
+
 function publicChip(row) {
   return {
     id: row.id,
@@ -2441,6 +2570,12 @@ async function routeApi(request, env) {
   if (method === 'PUT' && newsMatch) {
     requireRole(user, 'manager');
     return updateNews(request, env, user, decodeURIComponent(newsMatch[1]));
+  }
+  if (method === 'GET' && path === '/api/renova-intake') return listRenovaIntake(env, user);
+  if (method === 'POST' && path === '/api/renova-intake') return createRenovaIntake(request, env, user);
+  const renovaIntakeMatch = path.match(/^\/api\/renova-intake\/([^/]+)$/);
+  if (method === 'PUT' && renovaIntakeMatch) {
+    return updateRenovaIntake(request, env, user, decodeURIComponent(renovaIntakeMatch[1]));
   }
   if (method === 'GET' && path === '/api/chips/candidates') return listChipCandidates(env, user, url);
   if (method === 'GET' && path === '/api/chips') return listChips(env, user);

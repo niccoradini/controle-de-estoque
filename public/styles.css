@@ -5336,6 +5336,7 @@ body.cart-drawer-open { overflow: hidden; }
 .renova-intake-card__heading { display: flex; align-items: center; gap: 9px; }
 .renova-intake-card__heading small { overflow: hidden; color: rgba(224, 220, 230, .38); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .renova-intake-card h3 { overflow: hidden; margin: 7px 0 10px; color: #f0edf5; font-size: 16px; font-weight: 590; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
+.renova-intake-code { display: inline-flex; margin-right: 9px; padding: 4px 7px; border: 1px solid rgba(203, 178, 255, .28); border-radius: 7px; color: #d9c4ff; background: rgba(181, 140, 255, .11); font-size: 10px; font-weight: 800; letter-spacing: .04em; vertical-align: 2px; }
 .renova-intake-status { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid currentColor; border-radius: 99px; font-size: 8px; font-weight: 750; letter-spacing: .055em; text-transform: uppercase; }
 .renova-intake-status::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 .renova-intake-status--waiting { color: #efbd75; background: rgba(239, 189, 117, .045); }

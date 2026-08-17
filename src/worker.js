@@ -196,6 +196,13 @@ function iccidSuffixRule(value) {
   return { value: suffix };
 }
 
+function imeiRule(value, { optional = false } = {}) {
+  const imei = typeof value === 'string' ? value.replace(/\D/g, '') : '';
+  if (!imei && optional) return { value: '' };
+  if (!/^\d{15}$/.test(imei)) return { error: 'Informe um IMEI válido com exatamente 15 dígitos.' };
+  return { value: imei };
+}
+
 function phoneNumberRule(value) {
   const source = typeof value === 'string' ? value.trim() : '';
   if (!source || /[^0-9()+\s-]/.test(source)) return { error: 'Informe o número cadastrado no chip.' };
@@ -1537,6 +1544,14 @@ async function setNewsVisibility(request, env, manager, id) {
   return json({ news: publicNewsItem(await newsItemById(env, id)) });
 }
 
+async function renovaIntakeIdByImei(env, imei) {
+  if (!imei) return '';
+  const row = await env.DB.prepare(`
+    SELECT id FROM renova_intake_items WHERE imei = ? LIMIT 1
+  `).bind(imei).first();
+  return row?.id || '';
+}
+
 async function activeRenovaDeviceName(env, model) {
   const device = await env.DB.prepare(`
     SELECT device_name
@@ -1551,6 +1566,7 @@ function publicRenovaIntakeItem(row) {
   return {
     id: row.id,
     model: row.model,
+    imei: row.imei || '',
     receivedOn: row.received_on,
     pickupOn: row.pickup_on || '',
     status: row.pickup_on ? 'picked_up' : 'awaiting_pickup',
@@ -1598,6 +1614,7 @@ async function createRenovaIntake(request, env, user) {
   requireRole(user, ['manager', 'stocker']);
   const data = validateFields(await readJson(request), {
     model: textRule('o modelo do aparelho', { min: 2, max: 120 }),
+    imei: imeiRule,
     receivedOn: renovaDateRule('a data de recebimento'),
     pickupOn: renovaDateRule('a data de retirada', { optional: true }),
   });
@@ -1612,16 +1629,22 @@ async function createRenovaIntake(request, env, user) {
       model: 'Escolha uma das opções exibidas na busca.',
     });
   }
+  if (await renovaIntakeIdByImei(env, data.imei)) {
+    throw new HttpError(409, 'Este IMEI já está cadastrado no Renova.', {
+      imei: 'Confira o número ou localize o cadastro existente.',
+    });
+  }
   const id = crypto.randomUUID();
   const timestamp = nowIso();
   await env.DB.batch([
     env.DB.prepare(`
       INSERT INTO renova_intake_items
-        (id, model, received_on, pickup_on, created_by, updated_by, created_at, updated_at)
-      VALUES (?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?)
-    `).bind(id, model, data.receivedOn, data.pickupOn, user.id, user.id, timestamp, timestamp),
+        (id, model, imei, received_on, pickup_on, created_by, updated_by, created_at, updated_at)
+      VALUES (?, ?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?)
+    `).bind(id, model, data.imei, data.receivedOn, data.pickupOn, user.id, user.id, timestamp, timestamp),
     auditStatement(env, user.id, data.pickupOn ? 'renova.received_and_picked_up' : 'renova.received', 'renova_intake', id, {
       model,
+      imei: data.imei,
       receivedOn: data.receivedOn,
       pickupOn: data.pickupOn,
     }),
@@ -1635,6 +1658,7 @@ async function updateRenovaIntake(request, env, user, id) {
   if (!existing) throw new HttpError(404, 'Aparelho do Renova não encontrado.');
   const data = validateFields(await readJson(request), {
     model: textRule('o modelo do aparelho', { min: 2, max: 120 }),
+    imei: (value) => imeiRule(value, { optional: true }),
     receivedOn: renovaDateRule('a data de recebimento'),
     pickupOn: renovaDateRule('a data de retirada', { optional: true }),
   });
@@ -1651,6 +1675,13 @@ async function updateRenovaIntake(request, env, user, id) {
       model: 'Escolha uma das opções exibidas na busca.',
     });
   }
+  const imei = data.imei || existing.imei || '';
+  const duplicateImeiId = await renovaIntakeIdByImei(env, imei);
+  if (duplicateImeiId && duplicateImeiId !== id) {
+    throw new HttpError(409, 'Este IMEI já está cadastrado no Renova.', {
+      imei: 'Confira o número ou localize o cadastro existente.',
+    });
+  }
   const previousPickupOn = existing.pickup_on || '';
   const action = !previousPickupOn && data.pickupOn
     ? 'renova.pickup_registered'
@@ -1661,17 +1692,34 @@ async function updateRenovaIntake(request, env, user, id) {
   await env.DB.batch([
     env.DB.prepare(`
       UPDATE renova_intake_items
-      SET model = ?, received_on = ?, pickup_on = NULLIF(?, ''), updated_by = ?, updated_at = ?
+      SET model = ?, imei = NULLIF(?, ''), received_on = ?, pickup_on = NULLIF(?, ''), updated_by = ?, updated_at = ?
       WHERE id = ?
-    `).bind(model, data.receivedOn, data.pickupOn, user.id, timestamp, id),
+    `).bind(model, imei, data.receivedOn, data.pickupOn, user.id, timestamp, id),
     auditStatement(env, user.id, action, 'renova_intake', id, {
       model,
+      imei,
       receivedOn: data.receivedOn,
       previousPickupOn,
       pickupOn: data.pickupOn,
     }),
   ]);
   return json({ item: publicRenovaIntakeItem(await renovaIntakeItemById(env, id)) });
+}
+
+async function deleteRenovaIntake(env, user, id) {
+  requireRole(user, ['manager', 'stocker']);
+  const existing = await renovaIntakeItemById(env, id);
+  if (!existing) throw new HttpError(404, 'Aparelho do Renova não encontrado.');
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM renova_intake_items WHERE id = ?').bind(id),
+    auditStatement(env, user.id, 'renova.deleted', 'renova_intake', id, {
+      model: existing.model,
+      imei: existing.imei || '',
+      receivedOn: existing.received_on,
+      pickupOn: existing.pickup_on || '',
+    }),
+  ]);
+  return new Response(null, { status: 204 });
 }
 
 function publicChip(row) {
@@ -2600,6 +2648,9 @@ async function routeApi(request, env) {
   const renovaIntakeMatch = path.match(/^\/api\/renova-intake\/([^/]+)$/);
   if (method === 'PUT' && renovaIntakeMatch) {
     return updateRenovaIntake(request, env, user, decodeURIComponent(renovaIntakeMatch[1]));
+  }
+  if (method === 'DELETE' && renovaIntakeMatch) {
+    return deleteRenovaIntake(env, user, decodeURIComponent(renovaIntakeMatch[1]));
   }
   if (method === 'GET' && path === '/api/chips/candidates') return listChipCandidates(env, user, url);
   if (method === 'GET' && path === '/api/chips') return listChips(env, user);

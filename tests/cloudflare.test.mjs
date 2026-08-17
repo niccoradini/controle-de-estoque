@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -103,6 +103,7 @@ before(async () => {
     readFile(new URL('../migrations/0033_semana_gamer_controle_news.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0034_renova_intake.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0035_renova_imei.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0036_renova_registration_code.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -205,6 +206,7 @@ before(async () => {
   await applyMigration(migration33);
   await applyMigration(migration34);
   await applyMigration(migration35);
+  await applyMigration(migration36);
 });
 
 after(async () => mf?.dispose());
@@ -1331,6 +1333,7 @@ describe('Controle de estoque por código material', () => {
       body: { model: 'samsung galaxy s23 128gb', imei: '351234567890123', receivedOn: '2026-08-10', pickupOn: '' },
     });
     assert.equal(created.status, 201);
+    assert.equal(created.payload.item.registrationCode, '#001');
     assert.equal(created.payload.item.model, 'SAMSUNG GALAXY S23 128GB');
     assert.equal(created.payload.item.imei, '351234567890123');
     assert.equal(created.payload.item.status, 'awaiting_pickup');
@@ -1350,6 +1353,14 @@ describe('Controle de estoque por código material', () => {
     });
     assert.equal(duplicateImei.status, 409);
     assert.match(duplicateImei.payload.error, /IMEI já está cadastrado/i);
+
+    const secondDevice = await manager.request('/api/renova-intake', {
+      method: 'POST',
+      body: { model: 'SAMSUNG GALAXY S23 256GB', imei: '351234567890124', receivedOn: '2026-08-10', pickupOn: '' },
+    });
+    assert.equal(secondDevice.status, 201);
+    assert.equal(secondDevice.payload.item.registrationCode, '#002');
+    assert.equal((await manager.request(`/api/renova-intake/${secondDevice.payload.item.id}`, { method: 'DELETE' })).status, 204);
 
     const stockerView = await stocker.request('/api/renova-intake');
     assert.equal(stockerView.status, 200);
@@ -1553,7 +1564,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.0');
+    assert.equal(JSON.parse(packageSource).version, '6.8.1');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1687,6 +1698,9 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /name="imei"[\s\S]*pattern="\[0-9\]\{15\}"/);
     assert.match(appSource, /data-action="delete-renova-intake"/);
     assert.match(appSource, /data-form="delete-renova-intake"/);
+    assert.match(appSource, /item\.registrationCode/);
+    assert.match(appSource, /Buscar código, modelo ou IMEI/);
+    assert.match(stylesSource, /\.renova-intake-code/);
     assert.match(appSource, /Selecione um aparelho da lista do Vivo Renova/);
     assert.match(appSource, /Data da retirada pela empresa/);
     assert.match(stylesSource, /\.renova-intake-hero/);
@@ -1744,8 +1758,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.1/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.1/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /data-incoming-catalog/);
     assert.match(appSource, /incomingDepositsText/);
@@ -1780,7 +1794,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.1');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');

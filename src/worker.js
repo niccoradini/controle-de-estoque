@@ -1537,6 +1537,16 @@ async function setNewsVisibility(request, env, manager, id) {
   return json({ news: publicNewsItem(await newsItemById(env, id)) });
 }
 
+async function activeRenovaDeviceName(env, model) {
+  const device = await env.DB.prepare(`
+    SELECT device_name
+    FROM renova_trade_in_values
+    WHERE active = 1 AND device_name = ? COLLATE NOCASE
+    LIMIT 1
+  `).bind(model).first();
+  return device?.device_name || '';
+}
+
 function publicRenovaIntakeItem(row) {
   return {
     id: row.id,
@@ -1596,6 +1606,12 @@ async function createRenovaIntake(request, env, user) {
       pickupOn: 'Escolha uma data igual ou posterior ao recebimento.',
     });
   }
+  const model = await activeRenovaDeviceName(env, data.model);
+  if (!model) {
+    throw new HttpError(400, 'Selecione um aparelho da lista do Vivo Renova.', {
+      model: 'Escolha uma das opções exibidas na busca.',
+    });
+  }
   const id = crypto.randomUUID();
   const timestamp = nowIso();
   await env.DB.batch([
@@ -1603,9 +1619,9 @@ async function createRenovaIntake(request, env, user) {
       INSERT INTO renova_intake_items
         (id, model, received_on, pickup_on, created_by, updated_by, created_at, updated_at)
       VALUES (?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?)
-    `).bind(id, data.model, data.receivedOn, data.pickupOn, user.id, user.id, timestamp, timestamp),
+    `).bind(id, model, data.receivedOn, data.pickupOn, user.id, user.id, timestamp, timestamp),
     auditStatement(env, user.id, data.pickupOn ? 'renova.received_and_picked_up' : 'renova.received', 'renova_intake', id, {
-      model: data.model,
+      model,
       receivedOn: data.receivedOn,
       pickupOn: data.pickupOn,
     }),
@@ -1627,6 +1643,14 @@ async function updateRenovaIntake(request, env, user, id) {
       pickupOn: 'Escolha uma data igual ou posterior ao recebimento.',
     });
   }
+  const catalogModel = await activeRenovaDeviceName(env, data.model);
+  const unchangedModel = String(existing.model).toLocaleUpperCase('pt-BR') === data.model.toLocaleUpperCase('pt-BR');
+  const model = catalogModel || (unchangedModel ? existing.model : '');
+  if (!model) {
+    throw new HttpError(400, 'Selecione um aparelho da lista do Vivo Renova.', {
+      model: 'Escolha uma das opções exibidas na busca.',
+    });
+  }
   const previousPickupOn = existing.pickup_on || '';
   const action = !previousPickupOn && data.pickupOn
     ? 'renova.pickup_registered'
@@ -1639,9 +1663,9 @@ async function updateRenovaIntake(request, env, user, id) {
       UPDATE renova_intake_items
       SET model = ?, received_on = ?, pickup_on = NULLIF(?, ''), updated_by = ?, updated_at = ?
       WHERE id = ?
-    `).bind(data.model, data.receivedOn, data.pickupOn, user.id, timestamp, id),
+    `).bind(model, data.receivedOn, data.pickupOn, user.id, timestamp, id),
     auditStatement(env, user.id, action, 'renova_intake', id, {
-      model: data.model,
+      model,
       receivedOn: data.receivedOn,
       previousPickupOn,
       pickupOn: data.pickupOn,

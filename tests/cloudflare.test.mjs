@@ -1340,6 +1340,12 @@ describe('Controle de estoque por código material', () => {
     assert.equal(created.payload.item.pickupOn, '');
     assert.equal(created.payload.item.createdByName, 'Gerente Geral');
 
+    const sellerUpdate = await seller.request(`/api/renova-intake/${created.payload.item.id}`, {
+      method: 'PUT',
+      body: { model: created.payload.item.model, imei: created.payload.item.imei, receivedOn: '2026-08-10', pickupOn: '' },
+    });
+    assert.equal(sellerUpdate.status, 403);
+
     const invalidImei = await manager.request('/api/renova-intake', {
       method: 'POST',
       body: { model: 'SAMSUNG GALAXY S23 256GB', imei: '12345', receivedOn: '2026-08-10', pickupOn: '' },
@@ -1693,6 +1699,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /\.chips-hero/);
     assert.match(appSource, /\['renova-intake', 'renova', 'Renova'\]/);
     assert.match(appSource, /function renderRenovaIntake/);
+    assert.match(appSource, /RENOVA_INTAKE_ROLES = new Set\(\['manager', 'stocker'\]\)/);
+    assert.match(appSource, /view === 'renova-intake' && !canAccessRenovaIntake\(\)/);
     assert.match(appSource, /data-action="pickup-renova-intake"/);
     assert.match(appSource, /list="renova-intake-device-options"/);
     assert.match(appSource, /name="imei"[\s\S]*pattern="\[0-9\]\{15\}"/);

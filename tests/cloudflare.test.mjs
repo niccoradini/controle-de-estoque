@@ -1340,6 +1340,12 @@ describe('Controle de estoque por código material', () => {
     assert.equal(created.payload.item.pickupOn, '');
     assert.equal(created.payload.item.createdByName, 'Gerente Geral');
 
+    const sellerUpdate = await seller.request(`/api/renova-intake/${created.payload.item.id}`, {
+      method: 'PUT',
+      body: { model: created.payload.item.model, imei: created.payload.item.imei, receivedOn: '2026-08-10', pickupOn: '' },
+    });
+    assert.equal(sellerUpdate.status, 403);
+
     const invalidImei = await manager.request('/api/renova-intake', {
       method: 'POST',
       body: { model: 'SAMSUNG GALAXY S23 256GB', imei: '12345', receivedOn: '2026-08-10', pickupOn: '' },
@@ -1564,7 +1570,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.1');
+    assert.equal(JSON.parse(packageSource).version, '6.8.2');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1693,6 +1699,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /\.chips-hero/);
     assert.match(appSource, /\['renova-intake', 'renova', 'Renova'\]/);
     assert.match(appSource, /function renderRenovaIntake/);
+    assert.match(appSource, /RENOVA_INTAKE_ROLES = new Set\(\['manager', 'stocker'\]\)/);
+    assert.match(appSource, /view === 'renova-intake' && !canAccessRenovaIntake\(\)/);
     assert.match(appSource, /data-action="pickup-renova-intake"/);
     assert.match(appSource, /list="renova-intake-device-options"/);
     assert.match(appSource, /name="imei"[\s\S]*pattern="\[0-9\]\{15\}"/);
@@ -1758,8 +1766,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.1/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.1/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.2/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.2/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /data-incoming-catalog/);
     assert.match(appSource, /incomingDepositsText/);
@@ -1794,7 +1802,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.1');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.2');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');

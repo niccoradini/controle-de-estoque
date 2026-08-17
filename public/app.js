@@ -46,6 +46,12 @@ const state = {
   pendingCount: 0,
 };
 
+const RENOVA_INTAKE_ROLES = new Set(['manager', 'stocker']);
+
+function canAccessRenovaIntake() {
+  return RENOVA_INTAKE_ROLES.has(state.user?.role);
+}
+
 const viewTitles = {
   dashboard: 'Visão geral',
   news: 'Notícias',
@@ -1657,6 +1663,7 @@ function renderRenovaIntakeResults() {
 }
 
 async function renderRenovaIntake() {
+  if (!canAccessRenovaIntake()) return navigate('dashboard');
   const content = document.querySelector('#view-content');
   const data = await api('/api/renova-intake');
   state.renovaItems = data.items || [];
@@ -1913,7 +1920,7 @@ async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
   if (state.user.role === 'stocker' && ['new-request', 'chips'].includes(view)) return;
-  if (state.user.role === 'seller' && view === 'renova-intake') return;
+  if (view === 'renova-intake' && !canAccessRenovaIntake()) return;
   state.cartDrawerOpen = false;
   document.body.classList.remove('cart-drawer-open');
   state.view = view;
@@ -2455,16 +2462,16 @@ root.addEventListener('click', async (event) => {
         await renderNews();
       });
     }
-    if (action === 'open-renova-intake') {
+    if (action === 'open-renova-intake' && canAccessRenovaIntake()) {
       if (!state.renovaCatalog.devices?.length) await loadCatalog();
       renovaIntakeModal();
     }
-    if (action === 'edit-renova-intake') {
+    if (action === 'edit-renova-intake' && canAccessRenovaIntake()) {
       if (!state.renovaCatalog.devices?.length) await loadCatalog();
       renovaIntakeModal(state.renovaItems.find((item) => item.id === button.dataset.id));
     }
-    if (action === 'pickup-renova-intake') renovaIntakePickupModal(state.renovaItems.find((item) => item.id === button.dataset.id));
-    if (action === 'delete-renova-intake') renovaIntakeDeleteModal(state.renovaItems.find((item) => item.id === button.dataset.id));
+    if (action === 'pickup-renova-intake' && canAccessRenovaIntake()) renovaIntakePickupModal(state.renovaItems.find((item) => item.id === button.dataset.id));
+    if (action === 'delete-renova-intake' && canAccessRenovaIntake()) renovaIntakeDeleteModal(state.renovaItems.find((item) => item.id === button.dataset.id));
     if (action === 'filter-renova-intake') { state.renovaStatus = button.dataset.status; renderRenovaIntakeResults(); }
     if (action === 'open-chip') chipModal();
     if (action === 'edit-chip') chipModal(state.chips.find((chip) => chip.id === button.dataset.id));

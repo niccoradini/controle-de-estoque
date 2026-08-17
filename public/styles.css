@@ -5306,3 +5306,59 @@ body.cart-drawer-open { overflow: hidden; }
   .cart-review li .btn { grid-column: 2 / -1; }
   .cart-review__image { width: 46px; height: 46px; }
 }
+
+/* Controle de aparelhos recebidos pelo Vivo Renova */
+.renova-intake-hero { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; overflow: hidden; padding: 28px; border: 1px solid rgba(181, 140, 255, .16); border-radius: 24px; background: radial-gradient(circle at 84% 15%, rgba(181, 140, 255, .16), transparent 32%), linear-gradient(135deg, rgba(44, 34, 58, .95), rgba(17, 16, 21, .98)); }
+.renova-intake-hero::after { content: ""; position: absolute; width: 190px; height: 190px; right: 3%; bottom: -120px; border: 1px solid rgba(202, 177, 255, .16); border-radius: 50%; box-shadow: 0 0 0 28px rgba(181, 140, 255, .025), 0 0 0 56px rgba(181, 140, 255, .018); pointer-events: none; }
+.renova-intake-hero > * { position: relative; z-index: 1; }
+.renova-intake-hero h2 { margin: 4px 0 8px; color: #faf7ff; font-size: clamp(30px, 4vw, 44px); font-weight: 590; letter-spacing: -.05em; }
+.renova-intake-hero p:not(.page-eyebrow) { max-width: 680px; margin: 0; color: rgba(232, 228, 238, .62); font-size: 14px; line-height: 1.65; }
+.renova-intake-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+.renova-intake-metrics article { padding: 19px 21px; border: 1px solid rgba(255, 255, 255, .075); border-radius: 18px; background: rgba(20, 20, 24, .88); }
+.renova-intake-metrics span, .renova-intake-metrics small { display: block; color: rgba(225, 222, 231, .48); font-size: 9px; }
+.renova-intake-metrics span { font-weight: 720; letter-spacing: .08em; text-transform: uppercase; }
+.renova-intake-metrics strong { display: block; margin: 7px 0 2px; color: #f7f3fd; font-size: 32px; font-weight: 580; letter-spacing: -.04em; }
+.renova-intake-metrics article:first-child strong { color: #efbd75; }
+.renova-intake-metrics article:nth-child(2) strong { color: #79deb6; }
+.renova-intake-control { overflow: hidden; margin-top: 16px; border: 1px solid rgba(255, 255, 255, .08); border-radius: 22px; background: #121215; }
+.renova-intake-control__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 21px 23px 17px; }
+.renova-intake-control__head h3 { margin: 3px 0 0; color: #f4f1f8; font-size: 19px; font-weight: 580; letter-spacing: -.025em; }
+.renova-intake-filter-tabs { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.renova-intake-toolbar { max-width: 560px; padding: 14px 23px; border-block: 1px solid rgba(255, 255, 255, .06); background: rgba(255, 255, 255, .018); }
+.renova-intake-toolbar .field { margin: 0; }
+.renova-intake-grid { display: grid; gap: 9px; padding: 15px; }
+.renova-intake-card { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; align-items: center; gap: 15px; padding: 16px; border: 1px solid rgba(255, 255, 255, .075); border-radius: 17px; background: rgba(255, 255, 255, .022); transition: border-color .16s, background .16s, transform .16s; }
+.renova-intake-card:hover { border-color: rgba(181, 140, 255, .23); background: rgba(181, 140, 255, .04); transform: translateY(-1px); }
+.renova-intake-card.is-picked { opacity: .78; }
+.renova-intake-card__icon { width: 46px; height: 46px; display: grid; place-items: center; border: 1px solid rgba(198, 171, 255, .18); border-radius: 14px; color: #d9c8fb; background: linear-gradient(145deg, rgba(111, 82, 151, .34), rgba(47, 35, 61, .55)); }
+.renova-intake-card__icon .ui-icon { width: 23px; height: 23px; }
+.renova-intake-card__main { min-width: 0; }
+.renova-intake-card__heading { display: flex; align-items: center; gap: 9px; }
+.renova-intake-card__heading small { overflow: hidden; color: rgba(224, 220, 230, .38); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.renova-intake-card h3 { overflow: hidden; margin: 7px 0 10px; color: #f0edf5; font-size: 16px; font-weight: 590; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
+.renova-intake-status { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid currentColor; border-radius: 99px; font-size: 8px; font-weight: 750; letter-spacing: .055em; text-transform: uppercase; }
+.renova-intake-status::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.renova-intake-status--waiting { color: #efbd75; background: rgba(239, 189, 117, .045); }
+.renova-intake-status--picked { color: #72ddb0; background: rgba(72, 216, 155, .045); }
+.renova-intake-dates { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.renova-intake-dates div { display: grid; gap: 2px; }
+.renova-intake-dates span { color: rgba(224, 220, 230, .38); font-size: 8px; }
+.renova-intake-dates strong { color: rgba(239, 236, 244, .76); font-size: 10px; font-weight: 590; }
+.renova-intake-card__actions { min-width: 142px; display: flex; flex-direction: column; gap: 6px; }
+.renova-intake-result-count { margin: 0; padding: 10px 15px; color: rgba(221, 219, 227, .32); background: #0f0f12; font-size: 8px; text-align: right; }
+.renova-intake-pickup-summary { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 13px; border: 1px solid rgba(181, 140, 255, .13); border-radius: 14px; background: rgba(181, 140, 255, .045); }
+.renova-intake-pickup-summary > .ui-icon { width: 25px; height: 25px; color: #d5c1ff; }
+.renova-intake-pickup-summary span, .renova-intake-pickup-summary strong { display: block; }
+.renova-intake-pickup-summary span { color: rgba(226, 221, 234, .48); font-size: 9px; }
+.renova-intake-pickup-summary strong { margin-top: 3px; color: #eee9f7; font-size: 12px; }
+@media (max-width: 760px) {
+  .renova-intake-hero, .renova-intake-control__head { align-items: stretch; flex-direction: column; }
+  .renova-intake-hero .btn { width: 100%; }
+  .renova-intake-metrics { grid-template-columns: 1fr; }
+  .renova-intake-filter-tabs { justify-content: flex-start; }
+  .renova-intake-toolbar { max-width: none; }
+  .renova-intake-card { grid-template-columns: 42px minmax(0, 1fr); }
+  .renova-intake-card__icon { width: 42px; height: 42px; }
+  .renova-intake-card__actions { grid-column: 1 / -1; min-width: 0; flex-direction: row; }
+  .renova-intake-card__actions .btn { flex: 1; }
+}

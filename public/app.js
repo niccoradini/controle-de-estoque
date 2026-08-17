@@ -2014,10 +2014,12 @@ function newsModal(item = null) {
 
 function renovaIntakeModal(item = null) {
   const today = localDateValue();
+  const devices = state.renovaCatalog.devices || [];
+  const deviceOptions = devices.map((device) => `<option value="${escapeHtml(device.name)}" label="${escapeHtml([device.manufacturer, device.productType].filter(Boolean).join(' · '))}"></option>`).join('');
   showModal(`<form data-form="${item ? 'edit-renova-intake' : 'create-renova-intake'}" data-id="${escapeHtml(item?.id || '')}" novalidate>
-    <div class="modal__head"><div><h2>${item ? 'Editar aparelho do Renova' : 'Cadastrar aparelho recebido'}</h2><p>Informe o modelo deixado na loja e acompanhe a retirada pela empresa.</p></div>${modalCloseButton()}</div>
+    <div class="modal__head"><div><h2>${item ? 'Editar aparelho do Renova' : 'Cadastrar aparelho recebido'}</h2><p>Busque e selecione o aparelho na mesma lista usada pelo Vivo Renova.</p></div>${modalCloseButton()}</div>
     <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid">
-      <div class="field field--full"><label for="renova-intake-model">Modelo do aparelho</label><input class="input" id="renova-intake-model" name="model" minlength="2" maxlength="120" required value="${escapeHtml(item?.model || '')}" placeholder="Ex.: Samsung Galaxy S23 256GB"></div>
+      <div class="field field--full"><label for="renova-intake-model">Buscar aparelho</label><input class="input" id="renova-intake-model" name="model" type="search" list="renova-intake-device-options" autocomplete="off" minlength="2" maxlength="120" required value="${escapeHtml(item?.model || '')}" placeholder="Digite parte da marca ou do modelo"><datalist id="renova-intake-device-options">${deviceOptions}</datalist><small class="field-hint">Digite algumas letras e escolha uma das ${devices.length} opções do Vivo Renova.</small></div>
       <div class="field"><label for="renova-intake-received-on">Data de recebimento</label><input class="input" id="renova-intake-received-on" name="receivedOn" type="date" max="${today}" required value="${escapeHtml(item?.receivedOn || today)}"></div>
       <div class="field"><label for="renova-intake-pickup-on">Data de retirada <span class="request-meta">(opcional)</span></label><input class="input" id="renova-intake-pickup-on" name="pickupOn" type="date" max="${today}" value="${escapeHtml(item?.pickupOn || '')}"><small class="field-hint">Deixe em branco enquanto o aparelho estiver na loja.</small></div>
     </div></div>
@@ -2443,8 +2445,14 @@ root.addEventListener('click', async (event) => {
         await renderNews();
       });
     }
-    if (action === 'open-renova-intake') renovaIntakeModal();
-    if (action === 'edit-renova-intake') renovaIntakeModal(state.renovaItems.find((item) => item.id === button.dataset.id));
+    if (action === 'open-renova-intake') {
+      if (!state.renovaCatalog.devices?.length) await loadCatalog();
+      renovaIntakeModal();
+    }
+    if (action === 'edit-renova-intake') {
+      if (!state.renovaCatalog.devices?.length) await loadCatalog();
+      renovaIntakeModal(state.renovaItems.find((item) => item.id === button.dataset.id));
+    }
     if (action === 'pickup-renova-intake') renovaIntakePickupModal(state.renovaItems.find((item) => item.id === button.dataset.id));
     if (action === 'filter-renova-intake') { state.renovaStatus = button.dataset.status; renderRenovaIntakeResults(); }
     if (action === 'open-chip') chipModal();
@@ -2632,13 +2640,19 @@ document.addEventListener('submit', async (event) => {
         await renderNews();
       }
       if (form.dataset.form === 'create-renova-intake') {
-        await api('/api/renova-intake', { method: 'POST', body: { model: data.model, receivedOn: data.receivedOn, pickupOn: data.pickupOn } });
+        const selectedDevice = renovaTradeInByName(data.model);
+        if (!selectedDevice) throw new ApiError('Selecione um aparelho da lista do Vivo Renova.', 400, { model: 'Escolha uma das opções exibidas na busca.' });
+        await api('/api/renova-intake', { method: 'POST', body: { model: selectedDevice.name, receivedOn: data.receivedOn, pickupOn: data.pickupOn } });
         closeModal(true);
         showToast('Aparelho cadastrado no Renova.');
         await renderRenovaIntake();
       }
       if (form.dataset.form === 'edit-renova-intake') {
-        await api(`/api/renova-intake/${encodeURIComponent(form.dataset.id)}`, { method: 'PUT', body: { model: data.model, receivedOn: data.receivedOn, pickupOn: data.pickupOn } });
+        const selectedDevice = renovaTradeInByName(data.model);
+        const currentItem = state.renovaItems.find((item) => item.id === form.dataset.id);
+        const unchangedLegacyModel = currentItem && currentItem.model.toLocaleUpperCase('pt-BR') === String(data.model).trim().toLocaleUpperCase('pt-BR');
+        if (!selectedDevice && !unchangedLegacyModel) throw new ApiError('Selecione um aparelho da lista do Vivo Renova.', 400, { model: 'Escolha uma das opções exibidas na busca.' });
+        await api(`/api/renova-intake/${encodeURIComponent(form.dataset.id)}`, { method: 'PUT', body: { model: selectedDevice?.name || currentItem.model, receivedOn: data.receivedOn, pickupOn: data.pickupOn } });
         closeModal(true);
         showToast(data.pickupOn ? 'Aparelho e retirada atualizados.' : 'Dados do aparelho atualizados.');
         await renderRenovaIntake();

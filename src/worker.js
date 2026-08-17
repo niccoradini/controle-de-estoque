@@ -2658,13 +2658,21 @@ async function routeApi(request, env) {
     requireRole(user, 'manager');
     return updateNews(request, env, user, decodeURIComponent(newsMatch[1]));
   }
-  if (method === 'GET' && path === '/api/renova-intake') return listRenovaIntake(env, user);
-  if (method === 'POST' && path === '/api/renova-intake') return createRenovaIntake(request, env, user);
+  if (method === 'GET' && path === '/api/renova-intake') {
+    requireRole(user, ['manager', 'stocker']);
+    return listRenovaIntake(env, user);
+  }
+  if (method === 'POST' && path === '/api/renova-intake') {
+    requireRole(user, ['manager', 'stocker']);
+    return createRenovaIntake(request, env, user);
+  }
   const renovaIntakeMatch = path.match(/^\/api\/renova-intake\/([^/]+)$/);
   if (method === 'PUT' && renovaIntakeMatch) {
+    requireRole(user, ['manager', 'stocker']);
     return updateRenovaIntake(request, env, user, decodeURIComponent(renovaIntakeMatch[1]));
   }
   if (method === 'DELETE' && renovaIntakeMatch) {
+    requireRole(user, ['manager', 'stocker']);
     return deleteRenovaIntake(env, user, decodeURIComponent(renovaIntakeMatch[1]));
   }
   if (method === 'GET' && path === '/api/chips/candidates') return listChipCandidates(env, user, url);

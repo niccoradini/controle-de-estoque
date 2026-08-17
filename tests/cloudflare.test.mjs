@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -101,6 +101,7 @@ before(async () => {
     readFile(new URL('../migrations/0031_pricing_refresh_2026_08_13.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0032_renova_boosts_2026_08_12.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0033_semana_gamer_controle_news.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0034_renova_intake.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -201,6 +202,7 @@ before(async () => {
   await applyMigration(migration31);
   await applyMigration(migration32);
   await applyMigration(migration33);
+  await applyMigration(migration34);
 });
 
 after(async () => mf?.dispose());
@@ -1303,6 +1305,63 @@ describe('Controle de estoque por código material', () => {
     `)).count) >= 17);
   });
 
+
+  test('controla aparelhos do Renova até a retirada pela empresa', async () => {
+    assert.equal((await seller.request('/api/renova-intake')).status, 403);
+    assert.equal((await seller.request('/api/renova-intake', {
+      method: 'POST',
+      body: { model: 'Sem permissão', receivedOn: '2026-08-10', pickupOn: '' },
+    })).status, 403);
+
+    const initial = await manager.request('/api/renova-intake');
+    assert.equal(initial.status, 200);
+    assert.deepEqual(initial.payload.summary, { awaitingPickup: 0, pickedUp: 0, total: 0 });
+
+    const created = await manager.request('/api/renova-intake', {
+      method: 'POST',
+      body: { model: 'Samsung Galaxy S23 256GB', receivedOn: '2026-08-10', pickupOn: '' },
+    });
+    assert.equal(created.status, 201);
+    assert.equal(created.payload.item.model, 'Samsung Galaxy S23 256GB');
+    assert.equal(created.payload.item.status, 'awaiting_pickup');
+    assert.equal(created.payload.item.pickupOn, '');
+    assert.equal(created.payload.item.createdByName, 'Gerente Geral');
+
+    const stockerView = await stocker.request('/api/renova-intake');
+    assert.equal(stockerView.status, 200);
+    assert.equal(stockerView.payload.summary.awaitingPickup, 1);
+    assert.equal(stockerView.payload.items.length, 1);
+
+    const invalidPickup = await stocker.request(`/api/renova-intake/${created.payload.item.id}`, {
+      method: 'PUT',
+      body: { model: created.payload.item.model, receivedOn: '2026-08-10', pickupOn: '2026-08-09' },
+    });
+    assert.equal(invalidPickup.status, 400);
+    assert.match(invalidPickup.payload.error, /anterior ao recebimento/i);
+
+    const pickedUp = await stocker.request(`/api/renova-intake/${created.payload.item.id}`, {
+      method: 'PUT',
+      body: { model: created.payload.item.model, receivedOn: '2026-08-10', pickupOn: '2026-08-12' },
+    });
+    assert.equal(pickedUp.status, 200);
+    assert.equal(pickedUp.payload.item.status, 'picked_up');
+    assert.equal(pickedUp.payload.item.pickupOn, '2026-08-12');
+    assert.equal(pickedUp.payload.item.updatedByName, 'Estoquista Um');
+
+    const corrected = await manager.request(`/api/renova-intake/${created.payload.item.id}`, {
+      method: 'PUT',
+      body: { model: 'Samsung Galaxy S23 256 GB', receivedOn: '2026-08-10', pickupOn: '' },
+    });
+    assert.equal(corrected.status, 200);
+    assert.equal(corrected.payload.item.status, 'awaiting_pickup');
+    assert.equal((await manager.request('/api/renova-intake')).payload.summary.awaitingPickup, 1);
+    assert.equal(Number((await row(`
+      SELECT COUNT(*) AS count FROM audit_logs
+      WHERE entity_type = 'renova_intake' AND entity_id = ?
+        AND action IN ('renova.received', 'renova.pickup_registered', 'renova.pickup_cleared')
+    `, created.payload.item.id)).count), 3);
+  });
+
   test('publica, edita, oculta e republica notícias com permissões por perfil', async () => {
     const initialSellerNews = await seller.request('/api/news');
     assert.equal(initialSellerNews.status, 200);
@@ -1458,7 +1517,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.7.0');
+    assert.equal(JSON.parse(packageSource).version, '6.7.1');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1585,6 +1644,12 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /data-form="sell-chip"/);
     assert.match(appSource, /allocatedToSellers/);
     assert.match(stylesSource, /\.chips-hero/);
+    assert.match(appSource, /\['renova-intake', 'renova', 'Renova'\]/);
+    assert.match(appSource, /function renderRenovaIntake/);
+    assert.match(appSource, /data-action="pickup-renova-intake"/);
+    assert.match(appSource, /Data da retirada pela empresa/);
+    assert.match(stylesSource, /\.renova-intake-hero/);
+    assert.match(stylesSource, /\.renova-intake-card/);
     assert.match(stylesSource, /\.chip-owner-card/);
     assert.match(updaterSource, /npm run check/);
     assert.match(updaterSource, /npm test/);
@@ -1638,8 +1703,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.6\.16/);
-    assert.match(indexSource, /app\.js\?v=6\.6\.16/);
+    assert.match(indexSource, /styles\.css\?v=6\.7\.1/);
+    assert.match(indexSource, /app\.js\?v=6\.7\.1/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /data-incoming-catalog/);
     assert.match(appSource, /incomingDepositsText/);
@@ -1674,7 +1739,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.6.16');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.7.1');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');

@@ -1636,7 +1636,7 @@ function filteredRenovaIntakeItems() {
   return state.renovaItems.filter((item) => {
     const statusMatches = state.renovaStatus === 'all'
       || (state.renovaStatus === 'picked_up' ? Boolean(item.pickupOn) : !item.pickupOn);
-    return statusMatches && (!query || [item.model, item.imei].some((value) => String(value || '').toLocaleUpperCase('pt-BR').includes(query)));
+    return statusMatches && (!query || [item.registrationCode, item.model, item.imei].some((value) => String(value || '').toLocaleUpperCase('pt-BR').includes(query)));
   });
 }
 
@@ -1650,7 +1650,7 @@ function renderRenovaIntakeResults() {
   target.innerHTML = items.length
     ? `<div class="renova-intake-grid">${items.map((item) => `<article class="renova-intake-card ${item.pickupOn ? 'is-picked' : ''}">
         <div class="renova-intake-card__icon">${uiIcon('renova')}</div>
-        <div class="renova-intake-card__main"><div class="renova-intake-card__heading">${renovaIntakeStatus(item)}<small>Atualizado por ${escapeHtml(item.updatedByName)}</small></div><h3>${escapeHtml(item.model)}</h3><div class="renova-intake-dates"><div><span>IMEI</span><strong class="mono">${item.imei ? escapeHtml(item.imei) : 'Não informado'}</strong></div><div><span>Recebido em</span><strong>${escapeHtml(formatDateOnly(item.receivedOn))}</strong></div><div><span>Retirado em</span><strong>${item.pickupOn ? escapeHtml(formatDateOnly(item.pickupOn)) : 'Ainda não retirado'}</strong></div></div></div>
+        <div class="renova-intake-card__main"><div class="renova-intake-card__heading">${renovaIntakeStatus(item)}<small>Atualizado por ${escapeHtml(item.updatedByName)}</small></div><h3><span class="renova-intake-code">${escapeHtml(item.registrationCode || '#---')}</span>${escapeHtml(item.model)}</h3><div class="renova-intake-dates"><div><span>IMEI</span><strong class="mono">${item.imei ? escapeHtml(item.imei) : 'Não informado'}</strong></div><div><span>Recebido em</span><strong>${escapeHtml(formatDateOnly(item.receivedOn))}</strong></div><div><span>Retirado em</span><strong>${item.pickupOn ? escapeHtml(formatDateOnly(item.pickupOn)) : 'Ainda não retirado'}</strong></div></div></div>
         <div class="renova-intake-card__actions">${item.pickupOn ? `<button class="btn btn--secondary btn--small" data-action="edit-renova-intake" data-id="${escapeHtml(item.id)}">Corrigir dados</button>` : `<button class="btn btn--small" data-action="pickup-renova-intake" data-id="${escapeHtml(item.id)}">Registrar retirada</button><button class="btn btn--secondary btn--small" data-action="edit-renova-intake" data-id="${escapeHtml(item.id)}">Editar</button>`}<button class="btn btn--danger btn--small" data-action="delete-renova-intake" data-id="${escapeHtml(item.id)}">Excluir</button></div>
       </article>`).join('')}</div><p class="renova-intake-result-count">${items.length} ${items.length === 1 ? 'aparelho encontrado' : 'aparelhos encontrados'}</p>`
     : emptyState('Nenhum aparelho encontrado', state.renovaStatus === 'awaiting_pickup' ? 'Não há aparelhos aguardando retirada.' : 'Ajuste a busca ou cadastre um novo aparelho.');
@@ -1665,7 +1665,7 @@ async function renderRenovaIntake() {
   const total = Number(data.summary?.total || 0);
   content.innerHTML = `<section class="renova-intake-hero"><div><p class="page-eyebrow">Controle de aparelhos recebidos</p><h2>Renova</h2><p>Registre os aparelhos deixados na loja e acompanhe o que ainda aguarda retirada pela empresa.</p></div><button class="btn" data-action="open-renova-intake">${uiIcon('plus')} Cadastrar aparelho</button></section>
     <section class="renova-intake-metrics"><article><span>Aguardando retirada</span><strong>${awaiting}</strong><small>aparelhos na loja</small></article><article><span>Já retirados</span><strong>${pickedUp}</strong><small>com data registrada</small></article><article><span>Total recebido</span><strong>${total}</strong><small>histórico completo</small></article></section>
-    <section class="renova-intake-control"><div class="renova-intake-control__head"><div><p class="page-eyebrow">Acompanhamento</p><h3>Recebimentos e retiradas</h3></div><div class="renova-intake-filter-tabs" aria-label="Filtrar aparelhos"><button class="chip ${state.renovaStatus === 'awaiting_pickup' ? 'is-active' : ''}" data-action="filter-renova-intake" data-status="awaiting_pickup">Aguardando</button><button class="chip ${state.renovaStatus === 'picked_up' ? 'is-active' : ''}" data-action="filter-renova-intake" data-status="picked_up">Retirados</button><button class="chip ${state.renovaStatus === 'all' ? 'is-active' : ''}" data-action="filter-renova-intake" data-status="all">Todos</button></div></div><div class="renova-intake-toolbar"><div class="field"><label for="renova-intake-search">Buscar modelo ou IMEI</label><input class="input" id="renova-intake-search" data-action="search-renova-intake" value="${escapeHtml(state.renovaSearch)}" placeholder="Ex.: iPhone 15 ou os dígitos do IMEI"></div></div><div data-renova-intake-results></div></section>`;
+    <section class="renova-intake-control"><div class="renova-intake-control__head"><div><p class="page-eyebrow">Acompanhamento</p><h3>Recebimentos e retiradas</h3></div><div class="renova-intake-filter-tabs" aria-label="Filtrar aparelhos"><button class="chip ${state.renovaStatus === 'awaiting_pickup' ? 'is-active' : ''}" data-action="filter-renova-intake" data-status="awaiting_pickup">Aguardando</button><button class="chip ${state.renovaStatus === 'picked_up' ? 'is-active' : ''}" data-action="filter-renova-intake" data-status="picked_up">Retirados</button><button class="chip ${state.renovaStatus === 'all' ? 'is-active' : ''}" data-action="filter-renova-intake" data-status="all">Todos</button></div></div><div class="renova-intake-toolbar"><div class="field"><label for="renova-intake-search">Buscar código, modelo ou IMEI</label><input class="input" id="renova-intake-search" data-action="search-renova-intake" value="${escapeHtml(state.renovaSearch)}" placeholder="Ex.: #001, iPhone 15 ou IMEI"></div></div><div data-renova-intake-results></div></section>`;
   renderRenovaIntakeResults();
 }
 
@@ -2032,7 +2032,7 @@ function renovaIntakePickupModal(item) {
   if (!item) return;
   const today = localDateValue();
   showModal(`<form data-form="pickup-renova-intake" data-id="${escapeHtml(item.id)}" novalidate>
-    <div class="modal__head"><div><h2>Registrar retirada</h2><p>${escapeHtml(item.model)}</p></div>${modalCloseButton()}</div>
+    <div class="modal__head"><div><h2>Registrar retirada</h2><p>${escapeHtml(item.registrationCode || '#---')} · ${escapeHtml(item.model)}</p></div>${modalCloseButton()}</div>
     <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="renova-intake-pickup-summary">${uiIcon('renova')}<div><span>Recebido em ${escapeHtml(formatDateOnly(item.receivedOn))}</span><strong>Aparelho aguardando coleta</strong></div></div><div class="field"><label for="renova-pickup-date">Data da retirada pela empresa</label><input class="input" id="renova-pickup-date" name="pickupOn" type="date" min="${escapeHtml(item.receivedOn)}" max="${today}" value="${today}" required></div></div>
     <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Confirmar retirada</button></div>
   </form>`, { small: true });
@@ -2042,7 +2042,7 @@ function renovaIntakeDeleteModal(item) {
   if (!item) return;
   showModal(`<form data-form="delete-renova-intake" data-id="${escapeHtml(item.id)}">
     <div class="modal__head"><div><h2>Excluir aparelho?</h2><p>Esta ação remove o cadastro da lista do Renova.</p></div>${modalCloseButton()}</div>
-    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="chip-confirmation"><span>Aparelho selecionado</span><strong>${escapeHtml(item.model)}</strong><code class="mono">IMEI: ${escapeHtml(item.imei || 'não informado')}</code></div><p>O registro deixará de aparecer no acompanhamento. A exclusão continuará registrada no histórico de auditoria.</p></div>
+    <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="chip-confirmation"><span>Aparelho ${escapeHtml(item.registrationCode || '#---')}</span><strong>${escapeHtml(item.model)}</strong><code class="mono">IMEI: ${escapeHtml(item.imei || 'não informado')}</code></div><p>O registro deixará de aparecer no acompanhamento. A exclusão continuará registrada no histórico de auditoria.</p></div>
     <div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn btn--danger">Excluir definitivamente</button></div>
   </form>`, { small: true });
 }
@@ -2653,9 +2653,9 @@ document.addEventListener('submit', async (event) => {
       if (form.dataset.form === 'create-renova-intake') {
         const selectedDevice = renovaTradeInByName(data.model);
         if (!selectedDevice) throw new ApiError('Selecione um aparelho da lista do Vivo Renova.', 400, { model: 'Escolha uma das opções exibidas na busca.' });
-        await api('/api/renova-intake', { method: 'POST', body: { model: selectedDevice.name, imei: data.imei, receivedOn: data.receivedOn, pickupOn: data.pickupOn } });
+        const result = await api('/api/renova-intake', { method: 'POST', body: { model: selectedDevice.name, imei: data.imei, receivedOn: data.receivedOn, pickupOn: data.pickupOn } });
         closeModal(true);
-        showToast('Aparelho cadastrado no Renova.');
+        showToast(`Aparelho ${result.item.registrationCode} cadastrado no Renova.`);
         await renderRenovaIntake();
       }
       if (form.dataset.form === 'edit-renova-intake') {

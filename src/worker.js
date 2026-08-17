@@ -1552,6 +1552,17 @@ async function renovaIntakeIdByImei(env, imei) {
   return row?.id || '';
 }
 
+async function nextRenovaRegistrationCode(env) {
+  const counter = await env.DB.prepare(`
+    UPDATE renova_registration_counter
+    SET last_number = last_number + 1
+    WHERE id = 1
+    RETURNING last_number
+  `).first();
+  if (!counter?.last_number) throw new HttpError(500, 'Não foi possível gerar o código de registro.');
+  return `#${String(counter.last_number).padStart(3, '0')}`;
+}
+
 async function activeRenovaDeviceName(env, model) {
   const device = await env.DB.prepare(`
     SELECT device_name
@@ -1565,6 +1576,7 @@ async function activeRenovaDeviceName(env, model) {
 function publicRenovaIntakeItem(row) {
   return {
     id: row.id,
+    registrationCode: row.registration_code || '',
     model: row.model,
     imei: row.imei || '',
     receivedOn: row.received_on,
@@ -1634,15 +1646,17 @@ async function createRenovaIntake(request, env, user) {
       imei: 'Confira o número ou localize o cadastro existente.',
     });
   }
+  const registrationCode = await nextRenovaRegistrationCode(env);
   const id = crypto.randomUUID();
   const timestamp = nowIso();
   await env.DB.batch([
     env.DB.prepare(`
       INSERT INTO renova_intake_items
-        (id, model, imei, received_on, pickup_on, created_by, updated_by, created_at, updated_at)
-      VALUES (?, ?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?)
-    `).bind(id, model, data.imei, data.receivedOn, data.pickupOn, user.id, user.id, timestamp, timestamp),
+        (id, registration_code, model, imei, received_on, pickup_on, created_by, updated_by, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?, ?, ?)
+    `).bind(id, registrationCode, model, data.imei, data.receivedOn, data.pickupOn, user.id, user.id, timestamp, timestamp),
     auditStatement(env, user.id, data.pickupOn ? 'renova.received_and_picked_up' : 'renova.received', 'renova_intake', id, {
+      registrationCode,
       model,
       imei: data.imei,
       receivedOn: data.receivedOn,
@@ -1713,6 +1727,7 @@ async function deleteRenovaIntake(env, user, id) {
   await env.DB.batch([
     env.DB.prepare('DELETE FROM renova_intake_items WHERE id = ?').bind(id),
     auditStatement(env, user.id, 'renova.deleted', 'renova_intake', id, {
+      registrationCode: existing.registration_code || '',
       model: existing.model,
       imei: existing.imei || '',
       receivedOn: existing.received_on,

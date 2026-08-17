@@ -1317,12 +1317,19 @@ describe('Controle de estoque por código material', () => {
     assert.equal(initial.status, 200);
     assert.deepEqual(initial.payload.summary, { awaitingPickup: 0, pickedUp: 0, total: 0 });
 
+    const invalidModel = await manager.request('/api/renova-intake', {
+      method: 'POST',
+      body: { model: 'Aparelho digitado fora da lista', receivedOn: '2026-08-10', pickupOn: '' },
+    });
+    assert.equal(invalidModel.status, 400);
+    assert.match(invalidModel.payload.error, /lista do Vivo Renova/i);
+
     const created = await manager.request('/api/renova-intake', {
       method: 'POST',
-      body: { model: 'Samsung Galaxy S23 256GB', receivedOn: '2026-08-10', pickupOn: '' },
+      body: { model: 'galaxy s23 128gb', receivedOn: '2026-08-10', pickupOn: '' },
     });
     assert.equal(created.status, 201);
-    assert.equal(created.payload.item.model, 'Samsung Galaxy S23 256GB');
+    assert.equal(created.payload.item.model, 'Galaxy S23 128GB');
     assert.equal(created.payload.item.status, 'awaiting_pickup');
     assert.equal(created.payload.item.pickupOn, '');
     assert.equal(created.payload.item.createdByName, 'Gerente Geral');
@@ -1350,9 +1357,10 @@ describe('Controle de estoque por código material', () => {
 
     const corrected = await manager.request(`/api/renova-intake/${created.payload.item.id}`, {
       method: 'PUT',
-      body: { model: 'Samsung Galaxy S23 256 GB', receivedOn: '2026-08-10', pickupOn: '' },
+      body: { model: 'Galaxy S23 Ultra 256GB', receivedOn: '2026-08-10', pickupOn: '' },
     });
     assert.equal(corrected.status, 200);
+    assert.equal(corrected.payload.item.model, 'Galaxy S23 Ultra 256GB');
     assert.equal(corrected.payload.item.status, 'awaiting_pickup');
     assert.equal((await manager.request('/api/renova-intake')).payload.summary.awaitingPickup, 1);
     assert.equal(Number((await row(`
@@ -1647,6 +1655,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /\['renova-intake', 'renova', 'Renova'\]/);
     assert.match(appSource, /function renderRenovaIntake/);
     assert.match(appSource, /data-action="pickup-renova-intake"/);
+    assert.match(appSource, /list="renova-intake-device-options"/);
+    assert.match(appSource, /Selecione um aparelho da lista do Vivo Renova/);
     assert.match(appSource, /Data da retirada pela empresa/);
     assert.match(stylesSource, /\.renova-intake-hero/);
     assert.match(stylesSource, /\.renova-intake-card/);
@@ -1703,8 +1713,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.7\.1/);
-    assert.match(indexSource, /app\.js\?v=6\.7\.1/);
+    assert.match(indexSource, /styles\.css\?v=6\.7\.2/);
+    assert.match(indexSource, /app\.js\?v=6\.7\.2/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /data-incoming-catalog/);
     assert.match(appSource, /incomingDepositsText/);
@@ -1739,7 +1749,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.7.1');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.7.2');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');

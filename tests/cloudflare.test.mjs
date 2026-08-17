@@ -1326,10 +1326,10 @@ describe('Controle de estoque por código material', () => {
 
     const created = await manager.request('/api/renova-intake', {
       method: 'POST',
-      body: { model: 'galaxy s23 128gb', receivedOn: '2026-08-10', pickupOn: '' },
+      body: { model: 'samsung galaxy s23 128gb', receivedOn: '2026-08-10', pickupOn: '' },
     });
     assert.equal(created.status, 201);
-    assert.equal(created.payload.item.model, 'Galaxy S23 128GB');
+    assert.equal(created.payload.item.model, 'SAMSUNG GALAXY S23 128GB');
     assert.equal(created.payload.item.status, 'awaiting_pickup');
     assert.equal(created.payload.item.pickupOn, '');
     assert.equal(created.payload.item.createdByName, 'Gerente Geral');
@@ -1357,10 +1357,10 @@ describe('Controle de estoque por código material', () => {
 
     const corrected = await manager.request(`/api/renova-intake/${created.payload.item.id}`, {
       method: 'PUT',
-      body: { model: 'Galaxy S23 Ultra 256GB', receivedOn: '2026-08-10', pickupOn: '' },
+      body: { model: 'SAMSUNG GALAXY S23 ULTRA 256GB', receivedOn: '2026-08-10', pickupOn: '' },
     });
     assert.equal(corrected.status, 200);
-    assert.equal(corrected.payload.item.model, 'Galaxy S23 Ultra 256GB');
+    assert.equal(corrected.payload.item.model, 'SAMSUNG GALAXY S23 ULTRA 256GB');
     assert.equal(corrected.payload.item.status, 'awaiting_pickup');
     assert.equal((await manager.request('/api/renova-intake')).payload.summary.awaitingPickup, 1);
     assert.equal(Number((await row(`
@@ -1525,7 +1525,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.7.1');
+    assert.equal(JSON.parse(packageSource).version, '6.7.2');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);

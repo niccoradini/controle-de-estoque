@@ -540,12 +540,12 @@ describe('Controle de estoque por código material', () => {
       assert.equal(unlisted.retailPrice, null);
     }
     const fold8 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'TGSA61962000');
-    const blockedWithoutVerifiedPrice = await seller.request('/api/requests', {
+    const blockedIncomingWithoutVerifiedPrice = await seller.request('/api/requests', {
       method: 'POST',
       body: { lines: [{ variantId: fold8.variants[0].id, quantity: 1 }], priceCategory: 'FAMILIA 3' },
     });
-    assert.equal(blockedWithoutVerifiedPrice.status, 409);
-    assert.match(blockedWithoutVerifiedPrice.payload.error, /preço não disponível/i);
+    assert.equal(blockedIncomingWithoutVerifiedPrice.status, 409);
+    assert.match(blockedIncomingWithoutVerifiedPrice.payload.error, /quantidade solicitada/i);
     const hiddenSerial = await row(`SELECT serial_number FROM inventory_serials WHERE variant_id = ? LIMIT 1`, iphone.variants[0].id);
     assert.doesNotMatch(JSON.stringify(catalog.payload), new RegExp(hiddenSerial.serial_number.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     const adjusted = await manager.request('/api/inventory/quantity', {

@@ -73,7 +73,12 @@ for (const [index, row] of source.rows.entries()) {
 
 for (const [index, row] of source.incomingRows.entries()) {
   const parsed = validateAndRegisterRow(row, index, 'em entrega');
-  if (!source.incomingDeposits.includes(parsed.deposit)) {
+  const incomingStatus = String(row.systemStatus || '').trim().toUpperCase();
+  if (Array.isArray(source.incomingStatuses) && source.incomingStatuses.length > 0) {
+    if (!source.incomingStatuses.includes(incomingStatus) || !/(^|\s)NREM($|\s)/.test(incomingStatus)) {
+      throw new Error(`O status ${incomingStatus || '(vazio)'} não está configurado como em entrega.`);
+    }
+  } else if (!source.incomingDeposits.includes(parsed.deposit)) {
     throw new Error(`O depósito ${parsed.deposit} não está configurado como em entrega.`);
   }
   if (!incomingByMaterial.has(parsed.materialCode)) {
@@ -81,7 +86,8 @@ for (const [index, row] of source.incomingRows.entries()) {
   }
   const group = incomingByMaterial.get(parsed.materialCode);
   group.serialNumbers.push(parsed.serialNumber);
-  group.deposits.set(parsed.deposit, (group.deposits.get(parsed.deposit) || 0) + 1);
+  const incomingLabel = incomingStatus || parsed.deposit;
+  group.deposits.set(incomingLabel, (group.deposits.get(incomingLabel) || 0) + 1);
 }
 
 const materialCodes = new Set([...availableByMaterial.keys(), ...incomingByMaterial.keys()]);

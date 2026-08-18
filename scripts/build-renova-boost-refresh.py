@@ -16,11 +16,11 @@ def build_sql(rows):
         "  (" + ", ".join([
             sql_text(row["manufacturer"]), sql_text(row["name"]), sql_text(row["matchKey"]),
             str(row["bonusCents"]), sql_text(row["startsOn"]), sql_text(row["endsOn"]),
-            sql_text("Tabela Vivo Renova 12/08/2026"), "1",
+            sql_text("Tabela Vivo Renova 17/08/2026"), "1",
         ]) + ")"
         for row in rows
     )
-    return f"""-- Bônus de fabricante conferidos na Tabela Vivo Renova de 12/08/2026.
+    return f"""-- Bônus de fabricante conferidos na Tabela Vivo Renova de 17/08/2026.
 -- Os 1.042 vouchers ASSURANT da tabela de 04/08/2026 permanecem inalterados.
 
 DROP TABLE renova_manufacturer_boosts;
@@ -56,8 +56,8 @@ def main():
     rows = read_boosts()
     args.migration.write_text(build_sql(rows), encoding="utf-8")
     args.audit.write_text(json.dumps({
-        "sourceImage": "new_9187_tabela-vivo-renova-12-08-2026-v01-tabelapng-1786627238.png",
-        "tableDate": "2026-08-12",
+        "sourceImage": "new_9187_tabela-vivo-renova-17-08-2026-v01-tabelapng-1786995913.png",
+        "tableDate": "2026-08-17",
         "tradeInSourceDate": "2026-08-04",
         "tradeInCount": 1042,
         "boostCount": len(rows),

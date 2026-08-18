@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -105,6 +105,8 @@ before(async () => {
     readFile(new URL('../migrations/0035_renova_imei.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0036_renova_registration_code.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0037_inventory_refresh_2026_08_18.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0038_renova_boosts_2026_08_17.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0039_pricing_refresh_2026_08_18.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -209,6 +211,8 @@ before(async () => {
   await applyMigration(migration35);
   await applyMigration(migration36);
   await applyMigration(migration37);
+  await applyMigration(migration38);
+  await applyMigration(migration39);
 });
 
 after(async () => mf?.dispose());
@@ -484,21 +488,21 @@ describe('Controle de estoque por código material', () => {
 
     const iphone = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP27943000');
     assert.equal(iphone.name, 'APPLE IPHONE 17 PRO MAX 1TB PRATA');
-    assert.equal(catalog.payload.pricing.tableDate, '2026-08-13');
+    assert.equal(catalog.payload.pricing.tableDate, '2026-08-18');
     assert.equal(catalog.payload.pricing.retailTableDate, '2026-08-04');
     assert.equal(catalog.payload.pricing.categories.length, 9);
-    assert.equal(catalog.payload.products.filter((product) => product.pricing).length, 73);
+    assert.equal(catalog.payload.products.filter((product) => product.pricing).length, 76);
     assert.equal(catalog.payload.products.filter((product) => product.retailPrice).length, 226);
     const sellerCatalog = await seller.request('/api/catalog');
-    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 62);
+    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 65);
     assert.equal(iphone.pricing.model, 'iPhone 17 Pro Max 1TB');
     assert.equal(iphone.pricing.prices['VIVO V'], 1119900);
     const iphone15 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP20312000');
     assert.equal(iphone15.pricing.model, 'iPhone 15 256GB');
     assert.equal(iphone15.pricing.prices['PRÉ'], 479900);
     assert.equal(iphone15.pricing.prices['CONTROLE BTL'], 479900);
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_profiles')).count), 43);
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_values')).count), 387);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_profiles')).count), 46);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_values')).count), 414);
     assert.equal(Number((await row('SELECT COUNT(*) AS count FROM product_retail_prices')).count), 226);
     assert.equal((await row(`SELECT price_cents FROM product_retail_prices WHERE material_code = '22023768'`)).price_cents, 12900);
     assert.equal((await row(`SELECT price_cents FROM product_retail_prices WHERE material_code = '22023386'`)).price_cents, 6900);
@@ -514,7 +518,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(motoG56.pricing.prices['VIVO V'], 119900);
     const motoG67 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'TGMO586C2000');
     assert.equal(motoG67.pricing.model, 'Motorola Moto G67 5G 128GB');
-    assert.equal(motoG67.pricing.tableDate, '2026-08-13');
+    assert.equal(motoG67.pricing.tableDate, '2026-08-18');
     assert.deepEqual(motoG67.pricing.prices, {
       'PRÉ': 149900,
       'CONTROLE BTL': 149900,
@@ -532,13 +536,17 @@ describe('Controle de estoque por código material', () => {
       assert.equal(accessoryWithoutSimulatorPrice.pricing, null);
       assert.equal(accessoryWithoutSimulatorPrice.retailPrice, null);
     }
-    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_date'`)).value, '2026-08-13');
-    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_source_table_date'`)).value, '2026-08-13');
-    for (const code of ['TGSA61762000', 'TGSA61962000']) {
-      const unlisted = catalog.payload.products.find((product) => product.variants[0].materialCode === code);
-      assert.equal(unlisted.pricing, null);
-      assert.equal(unlisted.retailPrice, null);
-    }
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_date'`)).value, '2026-08-18');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_source_table_date'`)).value, '2026-08-18');
+    const iphone14 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP17622000');
+    assert.equal(iphone14.pricing.model, 'iPhone 14 256GB');
+    assert.equal(iphone14.pricing.prices['VIVO V'], 269900);
+    const flip8 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'TGSA61762000');
+    assert.equal(flip8.pricing.model, 'Samsung Galaxy Z Flip 8 512GB');
+    assert.equal(flip8.pricing.prices['FAMILIA 3'], 639900);
+    const fold8Catalog = catalog.payload.products.find((product) => product.variants[0].materialCode === 'TGSA61962000');
+    assert.equal(fold8Catalog.pricing.model, 'Samsung Galaxy Z Fold 8 512GB');
+    assert.equal(fold8Catalog.pricing.prices['FAMILIA 3'], 819900);
     const fold8 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'TGSA61962000');
     const blockedIncomingWithoutVerifiedPrice = await seller.request('/api/requests', {
       method: 'POST',
@@ -557,10 +565,10 @@ describe('Controle de estoque por código material', () => {
     assert.equal((await manager.request('/api/devices')).status, 404);
   });
 
-  test('mantém os 387 preços de aparelhos iguais à auditoria integral', async () => {
+  test('mantém os 414 preços de aparelhos iguais à auditoria integral', async () => {
     const [audit, source] = await Promise.all([
-      readFile(new URL('../scripts/pricing-audit-2026-08-13.json', import.meta.url), 'utf8').then(JSON.parse),
-      readFile(new URL('../scripts/pricing-source-2026-08-13.json', import.meta.url), 'utf8').then(JSON.parse),
+      readFile(new URL('../scripts/pricing-audit-2026-08-18.json', import.meta.url), 'utf8').then(JSON.parse),
+      readFile(new URL('../scripts/pricing-source-2026-08-18.json', import.meta.url), 'utf8').then(JSON.parse),
     ]);
     const result = await database.prepare(`
       SELECT price_key, category, price_cents
@@ -586,11 +594,11 @@ describe('Controle de estoque por código material', () => {
         assert.equal(moneyToCents(sourceModel.prices[category]), expected, `${model.name} · ${category} na fonte`);
         checked += 1;
       }
-      for (const category of audit.unavailableCategories) assert.equal(model.prices[category], null);
+      assert.equal(model.prices['B2B - 10x'], null);
     }
-    assert.equal(checked, 387);
-    assert.equal(databasePrices.size, 387);
-    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_audit_value_count'`)).value, '387');
+    assert.equal(checked, 414);
+    assert.equal(databasePrices.size, 414);
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_audit_value_count'`)).value, '414');
   });
 
   test('organiza os produtos no painel do vendedor sem revelar dados gerenciais', async () => {
@@ -727,7 +735,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(created.payload.request.items[0].unitPriceCents, 349900);
     assert.equal(created.payload.request.items[0].lineTotalCents, 349900);
     assert.deepEqual(created.payload.request.pricing, {
-      category: 'VIVO V', deviceTotalCents: 349900, orderTotalCents: 349900, tableDate: '2026-08-13',
+      category: 'VIVO V', deviceTotalCents: 349900, orderTotalCents: 349900, tableDate: '2026-08-18',
     });
     assert.deepEqual(created.payload.request.items[0].serialNumbers, [expectedSerial.serial_number]);
     assert.equal((await manager.request(`/api/requests/${created.payload.request.id}/serial-options`)).status, 404);
@@ -806,6 +814,8 @@ describe('Controle de estoque por código material', () => {
     assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM renova_manufacturer_boosts`)).count), 74);
     assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'Motorola Signature 512GB'`)).bonus_cents), 160000);
     assert.equal((await row(`SELECT ends_on FROM renova_manufacturer_boosts WHERE device_name = 'iPhone 15 256GB'`)).ends_on, '2026-08-31');
+    assert.equal((await row(`SELECT ends_on FROM renova_manufacturer_boosts WHERE device_name = 'Samsung Galaxy S26 Ultra 256GB'`)).ends_on, '2026-09-08');
+    assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'Samsung Galaxy Z Fold 6 512GB'`)).bonus_cents), 40000);
     assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'JOVI X300 Ultra 512GB'`)).bonus_cents), 150000);
     assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'JOVI X300 FE 256GB'`)).bonus_cents), 70000);
     const samsungBoost = catalogResponse.payload.renova.boosts.find((boost) => boost.name === 'Samsung Galaxy S26 Ultra 256GB');

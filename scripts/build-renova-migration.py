@@ -147,8 +147,12 @@ def read_boosts():
         manufacturer, device_name, amount, starts_on, ends_on = line.split("\t")
         if manufacturer in {"Apple", "Motorola", "JOVI"}:
             ends_on = "31/08/2026"
+        if manufacturer == "Samsung":
+            ends_on = "08/09/2026"
         if device_name == "Motorola Signature 512GB":
             amount = "1600"
+        if device_name == "Samsung Galaxy Z Fold 6 512GB":
+            amount = "400"
         rows.append({
             "manufacturer": manufacturer,
             "name": device_name,

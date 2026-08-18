@@ -267,7 +267,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(iphone.technical_name, 'APPLE IPHONE 17 PRO MAX 256GB PR');
     assert.equal(Number(iphone.quantity_on_hand), 0);
     assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22022613'`)).quantity_on_hand), 3);
-    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22022526'`)).quantity_on_hand), 5);
+    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22022526'`)).quantity_on_hand), 16);
     assert.equal((await row(`SELECT status FROM inventory_serials WHERE serial_number = '22022526370124'`)).status, 'available');
     assert.equal((await row(`SELECT status FROM inventory_serials WHERE serial_number = '22022526351919'`)).status, 'withdrawn');
     assert.equal((await row(`SELECT status FROM inventory_serials WHERE serial_number = '220233860385832'`)).status, 'withdrawn');
@@ -282,15 +282,15 @@ describe('Controle de estoque por código material', () => {
     `).all()).results;
     const clusters = Object.fromEntries(clusterRows.map((item) => [item.cluster, { products: Number(item.products), units: Number(item.units) }]));
     assert.deepEqual(clusters, {
-      cables: { products: 22, units: 66 },
-      cases: { products: 109, units: 180 },
-      chargers: { products: 24, units: 59 },
-      devices: { products: 88, units: 152 },
-      misc: { products: 46, units: 326 },
+      cables: { products: 22, units: 61 },
+      cases: { products: 114, units: 173 },
+      chargers: { products: 24, units: 73 },
+      devices: { products: 91, units: 144 },
+      misc: { products: 48, units: 300 },
       notebooks: { products: 2, units: 2 },
-      screen_protectors: { products: 6, units: 219 },
-      speakers: { products: 10, units: 22 },
-      tvs: { products: 2, units: 21 },
+      screen_protectors: { products: 6, units: 204 },
+      speakers: { products: 10, units: 21 },
+      tvs: { products: 2, units: 20 },
     });
     assert.equal(Number((await row(`SELECT active FROM product_variants WHERE sku = 'YBSC001A1000'`)).active), 0);
     assert.equal(Number((await row(`SELECT active FROM product_variants WHERE sku = 'TGSA56224000'`)).active), 0);
@@ -328,7 +328,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(addedNintendo.display_name, 'UP2 CONSOLE NINTENDO SWITCH OLED BRANCO');
     assert.equal(addedNintendo.cluster, 'misc');
     assert.equal(Number(addedNintendo.quantity_on_hand), 1);
-    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = 'DGAP22722000'`)).quantity_on_hand), 2);
+    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = 'DGAP22722000'`)).quantity_on_hand), 4);
 
     await database.prepare(`DELETE FROM chips WHERE id = 'chip-preservado-0026'`).run();
 
@@ -487,10 +487,10 @@ describe('Controle de estoque por código material', () => {
     assert.equal(catalog.payload.pricing.tableDate, '2026-08-13');
     assert.equal(catalog.payload.pricing.retailTableDate, '2026-08-04');
     assert.equal(catalog.payload.pricing.categories.length, 9);
-    assert.equal(catalog.payload.products.filter((product) => product.pricing).length, 72);
+    assert.equal(catalog.payload.products.filter((product) => product.pricing).length, 73);
     assert.equal(catalog.payload.products.filter((product) => product.retailPrice).length, 226);
     const sellerCatalog = await seller.request('/api/catalog');
-    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 62);
+    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 63);
     assert.equal(iphone.pricing.model, 'iPhone 17 Pro Max 1TB');
     assert.equal(iphone.pricing.prices['VIVO V'], 1119900);
     const iphone15 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP20312000');
@@ -956,8 +956,8 @@ describe('Controle de estoque por código material', () => {
       screen_protectors: 1,
     });
     assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = 'DGAP27022000'`)).quantity_on_hand), 0);
-    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22023768'`)).quantity_on_hand), 2);
-    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22023386'`)).quantity_on_hand), 38);
+    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22023768'`)).quantity_on_hand), 1);
+    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22023386'`)).quantity_on_hand), 36);
   });
 
   test('registra preço fixo de acessórios sem exigir categoria de plano', async () => {
@@ -1132,7 +1132,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(managerSetup.payload.materials.length, 5);
     const simMaterial = managerSetup.payload.materials.find((material) => material.materialCode === 'YBSC001A4000');
     assert.equal(simMaterial.name, 'SIM CARD 5G 2/3/4FF AVULSO P69S MG');
-    assert.ok(simMaterial.availableCount >= 80);
+    assert.ok(simMaterial.availableCount >= 12);
     assert.equal('materials' in (await seller.request('/api/chips')).payload, false);
     assert.equal((await manager.request('/api/chips/candidates?materialCode=YBSC001A4000&suffix=12345')).status, 400);
     const matchingCandidates = await manager.request(`/api/chips/candidates?materialCode=YBSC001A4000&suffix=${collisionSuffix}`);

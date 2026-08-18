@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -107,6 +107,7 @@ before(async () => {
     readFile(new URL('../migrations/0037_inventory_refresh_2026_08_18.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0038_renova_boosts_2026_08_17.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0039_pricing_refresh_2026_08_18.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0040_waaw_second_item_news.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -213,6 +214,7 @@ before(async () => {
   await applyMigration(migration37);
   await applyMigration(migration38);
   await applyMigration(migration39);
+  await applyMigration(migration40);
 });
 
 after(async () => mf?.dispose());
@@ -1439,7 +1441,7 @@ describe('Controle de estoque por código material', () => {
   test('publica, edita, oculta e republica notícias com permissões por perfil', async () => {
     const initialSellerNews = await seller.request('/api/news');
     assert.equal(initialSellerNews.status, 200);
-    assert.equal(initialSellerNews.payload.news.length, 8);
+    assert.equal(initialSellerNews.payload.news.length, 10);
     const gamerCampaign = initialSellerNews.payload.news.find((item) => item.id === 'campaign-gamer-week-2026-08');
     assert.equal(gamerCampaign.validityLabel, '11 a 31/08/2026');
     assert.equal(gamerCampaign.imagePath, '/news/semana-gamer-2026-08.jpeg');
@@ -1454,6 +1456,14 @@ describe('Controle de estoque por código material', () => {
     assert.equal(controleCampaign.imagePath, '/news/semana-gamer-controle-2026-08.webp');
     assert.match(controleCampaign.body, /30GB de bônus de internet móvel por 12 meses/);
     assert.match(controleCampaign.body, /Netflix Padrão com anúncios/);
+    const waawSpeakers = initialSellerNews.payload.news.find((item) => item.id === 'campaign-waaw-caixas-segundo-item-2026-08');
+    assert.equal(waawSpeakers.validityLabel, '04 a 31/08/2026');
+    assert.equal(waawSpeakers.imagePath, '/news/waaw-caixas-30-segundo-2026-08.jpeg');
+    assert.match(waawSpeakers.body, /WAAW US 200SB DUO/);
+    const waawHeadphones = initialSellerNews.payload.news.find((item) => item.id === 'campaign-waaw-fones-segundo-item-2026-08');
+    assert.equal(waawHeadphones.validityLabel, '04 a 31/08/2026');
+    assert.equal(waawHeadphones.imagePath, '/news/waaw-fones-30-segundo-2026-08.jpeg');
+    assert.match(waawHeadphones.body, /WAAW Mob 500 ANC/);
     assert.doesNotMatch(JSON.stringify(initialSellerNews.payload), /@/);
 
     assert.equal((await seller.request('/api/news', {
@@ -1479,7 +1489,7 @@ describe('Controle de estoque por código material', () => {
     for (const client of [seller, stocker]) {
       const visible = await client.request('/api/news');
       assert.equal(visible.status, 200);
-      assert.equal(visible.payload.news.length, 9);
+      assert.equal(visible.payload.news.length, 11);
       assert.ok(visible.payload.news.some((item) => item.title === 'Oferta especial da semana'));
       assert.doesNotMatch(JSON.stringify(visible.payload), /gerente@exemplo\.com/i);
     }
@@ -1501,13 +1511,13 @@ describe('Controle de estoque por código material', () => {
     });
     assert.equal(hidden.status, 200);
     assert.equal(hidden.payload.news.active, false);
-    assert.equal((await seller.request('/api/news')).payload.news.length, 8);
-    assert.equal((await stocker.request('/api/news')).payload.news.length, 8);
+    assert.equal((await seller.request('/api/news')).payload.news.length, 10);
+    assert.equal((await stocker.request('/api/news')).payload.news.length, 10);
     assert.ok(!(await seller.request('/api/news')).payload.news.some((item) => item.id === created.payload.news.id));
 
     const managerView = await manager.request('/api/news');
     assert.equal(managerView.status, 200);
-    assert.equal(managerView.payload.news.length, 9);
+    assert.equal(managerView.payload.news.length, 11);
     assert.equal(managerView.payload.news.find((item) => item.id === created.payload.news.id).active, false);
 
     const republished = await manager.request(`/api/news/${created.payload.news.id}/visibility`, {
@@ -1515,7 +1525,7 @@ describe('Controle de estoque por código material', () => {
     });
     assert.equal(republished.status, 200);
     assert.equal(republished.payload.news.active, true);
-    assert.equal((await seller.request('/api/news')).payload.news.length, 9);
+    assert.equal((await seller.request('/api/news')).payload.news.length, 11);
 
     assert.equal((await manager.request('/api/news', {
       method: 'POST', body: { title: 'Tipo inválido', body: 'Teste de validação.', category: 'qualquer' },

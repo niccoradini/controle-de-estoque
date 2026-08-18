@@ -87,6 +87,8 @@ const newsCardArtwork = Object.freeze({
   '/news/tv-samsung-vivo-total-32-43-50-2026-08.jpg': '/news/tv-samsung-vivo-total-32-43-50-2026-08-card.jpg',
   '/news/tv-samsung-vivo-total-55-98-2026-08.jpg': '/news/tv-samsung-vivo-total-55-98-2026-08-card.jpg',
   '/news/semana-gamer-controle-2026-08.webp': '/news/semana-gamer-controle-2026-08-card.jpg',
+  '/news/waaw-caixas-30-segundo-2026-08.jpeg': '/news/waaw-caixas-30-segundo-2026-08-card.jpg',
+  '/news/waaw-fones-30-segundo-2026-08.jpeg': '/news/waaw-fones-30-segundo-2026-08-card.jpg',
 });
 
 const clusterLabels = {

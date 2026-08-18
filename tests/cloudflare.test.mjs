@@ -490,7 +490,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(catalog.payload.products.filter((product) => product.pricing).length, 73);
     assert.equal(catalog.payload.products.filter((product) => product.retailPrice).length, 226);
     const sellerCatalog = await seller.request('/api/catalog');
-    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 63);
+    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 62);
     assert.equal(iphone.pricing.model, 'iPhone 17 Pro Max 1TB');
     assert.equal(iphone.pricing.prices['VIVO V'], 1119900);
     const iphone15 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP20312000');

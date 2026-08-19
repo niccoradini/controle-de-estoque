@@ -64,7 +64,12 @@ function validateAndRegisterRow(row, index, kind) {
 
 for (const [index, row] of source.rows.entries()) {
   const parsed = validateAndRegisterRow(row, index, 'disponível');
-  if (source.excludedDeposits.includes(parsed.deposit) || source.incomingDeposits.includes(parsed.deposit)) {
+  const availableStatus = String(row.systemStatus || '').trim().toUpperCase();
+  if (Array.isArray(source.availableStatuses) && source.availableStatuses.length > 0) {
+    if (!source.availableStatuses.includes(availableStatus)) {
+      throw new Error(`O status ${availableStatus || '(vazio)'} não está configurado como disponível.`);
+    }
+  } else if (source.excludedDeposits.includes(parsed.deposit) || source.incomingDeposits.includes(parsed.deposit)) {
     throw new Error(`O depósito ${parsed.deposit} foi incluído incorretamente no estoque disponível.`);
   }
   if (!availableByMaterial.has(parsed.materialCode)) availableByMaterial.set(parsed.materialCode, []);

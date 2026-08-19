@@ -6,7 +6,7 @@ title Atualizador do Controle de Estoque
 color 0A
 
 echo ============================================================
-echo       CONTROLE DE ESTOQUE - ATUALIZACAO AUTOMATICA 6.6.2
+echo       CONTROLE DE ESTOQUE - ATUALIZACAO AUTOMATICA 6.8.3
 echo ============================================================
 echo.
 echo Este atualizador vai:
@@ -44,7 +44,7 @@ if errorlevel 1 (
   if errorlevel 1 goto :failed
 )
 
-set "BACKUP_FILE=backup-controle-estoque-v662-%RANDOM%.sql"
+set "BACKUP_FILE=backup-controle-estoque-v683-%RANDOM%.sql"
 echo.
 echo [5/8] Criando backup do banco em %BACKUP_FILE%...
 call npx wrangler d1 export controle-estoque-db --remote --output "%BACKUP_FILE%"
@@ -61,7 +61,7 @@ call npx wrangler deploy --dry-run --keep-vars
 if errorlevel 1 goto :failed
 
 echo.
-echo [8/8] Publicando a versao 6.6.2...
+echo [8/8] Publicando a versao 6.8.3...
 call npx wrangler deploy --keep-vars
 if errorlevel 1 goto :failed
 

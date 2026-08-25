@@ -685,7 +685,7 @@ async function catalogData(env, user) {
     const available = Math.max(0, Number(row.quantity_on_hand)
       - Number(row.quantity_reserved)
       - Number(row.quantity_chip_allocated));
-    if (user.role === 'seller' && available <= 0 && Number(row.quantity_incoming) <= 0) continue;
+    if (user.role === 'seller' && available <= 0) continue;
     const variant = {
       id: row.id,
       productId: row.product_id,
@@ -701,8 +701,8 @@ async function catalogData(env, user) {
       allocatedToSellers: Number(row.quantity_chip_allocated),
       withdrawn: Number(row.quantity_withdrawn),
       onHand: Number(row.quantity_on_hand),
-      incoming: Number(row.quantity_incoming),
-      incomingDeposits: parseIncomingDeposits(row.incoming_deposits_json),
+      incoming: user.role === 'seller' ? 0 : Number(row.quantity_incoming),
+      incomingDeposits: user.role === 'seller' ? {} : parseIncomingDeposits(row.incoming_deposits_json),
       retailPrice: row.retail_price_cents == null ? null : {
         priceCents: Number(row.retail_price_cents),
         kind: row.retail_price_kind,
@@ -1017,10 +1017,63 @@ async function dashboard(env, user) {
   const requests = { pending: 0, approved: 0, rejected: 0, cancelled: 0 };
   for (const row of ownRows) requests[row.status] = Number(row.count);
   return json({
-    role: 'seller', stock: { available: stock.available, incoming: stock.incoming }, modelsAvailable, requests,
+    role: 'seller', stock: { available: stock.available }, modelsAvailable, requests,
     inventoryGroups: sellerInventoryGroups(products),
-    incomingProducts: incomingProductSummaries(products),
     recentRequests: await listRequests(env, user, '', 5),
+  });
+}
+
+async function incomingInventoryDetails(env) {
+  const rows = (await env.DB.prepare(`
+    SELECT incoming.serial_number, incoming.material_code, incoming.technical_name,
+           incoming.center, incoming.deposit, incoming.stock_type, incoming.system_status,
+           incoming.source_row, incoming.snapshot_date, incoming.source_file,
+           COALESCE(product.display_name, product.name, incoming.technical_name) AS display_name,
+           COALESCE(product.brand, '') AS brand, COALESCE(product.category, '') AS category,
+           COALESCE(product.cluster, 'misc') AS cluster, product.imagem_url
+    FROM incoming_inventory_serials incoming
+    LEFT JOIN product_variants variant ON variant.sku = incoming.material_code COLLATE NOCASE
+    LEFT JOIN products product ON product.id = variant.product_id
+    ORDER BY display_name COLLATE NOCASE, incoming.material_code COLLATE NOCASE,
+             incoming.serial_number COLLATE NOCASE
+  `).all()).results || [];
+  const products = new Map();
+  for (const row of rows) {
+    if (!products.has(row.material_code)) products.set(row.material_code, {
+      materialCode: row.material_code,
+      name: row.display_name,
+      technicalName: row.technical_name,
+      brand: row.brand,
+      category: row.category,
+      cluster: row.cluster,
+      imagem_url: row.imagem_url || '',
+      quantity: 0,
+      statuses: {},
+      centers: [],
+      serials: [],
+    });
+    const product = products.get(row.material_code);
+    product.quantity += 1;
+    product.statuses[row.system_status] = (product.statuses[row.system_status] || 0) + 1;
+    if (!product.centers.includes(row.center)) product.centers.push(row.center);
+    product.serials.push({
+      serialNumber: row.serial_number,
+      center: row.center,
+      deposit: row.deposit,
+      stockType: row.stock_type,
+      status: row.system_status,
+      sourceRow: Number(row.source_row),
+    });
+  }
+  return json({
+    summary: {
+      units: rows.length,
+      materials: products.size,
+      snapshotDate: rows[0]?.snapshot_date || '',
+      source: rows[0]?.source_file || '',
+      status: 'DEPS NREM',
+    },
+    products: [...products.values()],
   });
 }
 
@@ -2643,6 +2696,10 @@ async function routeApi(request, env) {
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
   if (method === 'GET' && path === '/api/catalog') return listCatalog(env, user);
   if (method === 'GET' && path === '/api/stock/summary') return stockSummary(env, user);
+  if (method === 'GET' && path === '/api/incoming') {
+    requireRole(user, ['manager', 'stocker']);
+    return incomingInventoryDetails(env);
+  }
   if (method === 'GET' && path === '/api/repairs') {
     requireRole(user, ['manager', 'stocker']);
     const items = (await env.DB.prepare(`

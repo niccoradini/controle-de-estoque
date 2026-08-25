@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -113,6 +113,7 @@ before(async () => {
     readFile(new URL('../migrations/0045_pricing_refresh_2026_08_25.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0046_inventory_refresh_2026_08_25.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0047_inventory_refresh_2026_08_25.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0048_incoming_inventory_details_2026_08_25.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -225,6 +226,7 @@ before(async () => {
   await applyMigration(migration45);
   await applyMigration(migration46);
   await applyMigration(migration47);
+  await applyMigration(migration48);
 });
 
 after(async () => mf?.dispose());
@@ -515,7 +517,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(catalog.payload.products.filter((product) => product.pricing).length, 79);
     assert.equal(catalog.payload.products.filter((product) => product.retailPrice).length, 227);
     const sellerCatalog = await seller.request('/api/catalog');
-    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 62);
+    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 58);
     assert.equal(iphone.pricing.model, 'iPhone 17 Pro Max 1TB');
     assert.equal(iphone.pricing.prices['VIVO V'], 1119900);
     const iphone15 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP20312000');
@@ -644,63 +646,21 @@ describe('Controle de estoque por código material', () => {
     );
   });
 
-  test('mostra DEPS e NREM como produtos a caminho sem liberar a venda', async () => {
-    const arrivingVariant = await row(`
-      SELECT id, quantity_on_hand
-      FROM product_variants
-      WHERE sku = 'TGMO59462000' AND active = 1
-    `);
-    assert.ok(arrivingVariant);
-    assert.equal(Number(arrivingVariant.quantity_on_hand), 0);
-    await database.prepare(`
-      INSERT INTO incoming_inventory (variant_id, quantity, deposits_json)
-      VALUES (?, 3, '{"DEPS":2,"NREM":1}')
-      ON CONFLICT(variant_id) DO UPDATE SET
-        quantity = excluded.quantity,
-        deposits_json = excluded.deposits_json
-    `).bind(arrivingVariant.id).run();
-
-    try {
-      const sellerCatalog = await seller.request('/api/catalog');
-      assert.equal(sellerCatalog.status, 200);
-      const arrivingProduct = sellerCatalog.payload.products.find((product) => (
-        product.variants[0]?.materialCode === 'TGMO59462000'
-      ));
-      assert.ok(arrivingProduct);
-      assert.equal(arrivingProduct.available, 0);
-      assert.equal(arrivingProduct.incoming, 3);
-      assert.deepEqual(arrivingProduct.incomingDeposits, { DEPS: 2, NREM: 1 });
-      assert.deepEqual(arrivingProduct.variants[0].incomingDeposits, { DEPS: 2, NREM: 1 });
-
-      const blockedOrder = await seller.request('/api/requests', {
-        method: 'POST',
-        body: { lines: [{ variantId: arrivingVariant.id, quantity: 1 }], priceCategory: 'VIVO V' },
-      });
-      assert.equal(blockedOrder.status, 409);
-      assert.match(blockedOrder.payload.error, /estoque|dispon|quantidade/i);
-
-      const sellerDashboard = await seller.request('/api/dashboard');
-      assert.equal(sellerDashboard.payload.stock.incoming, 93);
-      assert.deepEqual(sellerDashboard.payload.incomingProducts.find((product) => (
-        product.materialCode === 'TGMO59462000'
-      )), {
-        id: arrivingProduct.id,
-        name: arrivingProduct.name,
-        materialCode: 'TGMO59462000',
-        cluster: 'devices',
-        incoming: 3,
-        incomingDeposits: { DEPS: 2, NREM: 1 },
-      });
-
-      const managerDashboard = await manager.request('/api/dashboard');
-      assert.equal(managerDashboard.payload.management.incomingUnits, 93);
-      assert.deepEqual(managerDashboard.payload.management.incomingProducts.find((product) => (
-        product.materialCode === 'TGMO59462000'
-      )).incomingDeposits, { DEPS: 2, NREM: 1 });
-      assert.equal(managerDashboard.payload.management.outOfStockMaterials, 31);
-    } finally {
-      await database.prepare('DELETE FROM incoming_inventory WHERE variant_id = ?').bind(arrivingVariant.id).run();
-    }
+  test('restringe e detalha os produtos a caminho para gerente e estoquista', async () => {
+    const managerIncoming = await manager.request('/api/incoming');
+    assert.equal(managerIncoming.status, 200);
+    assert.deepEqual(managerIncoming.payload.summary, {
+      units: 90, materials: 51, snapshotDate: '2026-08-25', source: 'ESTOQUE25.08(1).xlsx', status: 'DEPS NREM',
+    });
+    assert.equal(managerIncoming.payload.products.reduce((sum, product) => sum + product.quantity, 0), 90);
+    assert.ok(managerIncoming.payload.products.every((product) => product.serials.length === product.quantity));
+    assert.ok(managerIncoming.payload.products.flatMap((product) => product.serials).every((serial) => serial.status === 'DEPS NREM'));
+    assert.equal((await seller.request('/api/incoming')).status, 403);
+    const sellerDashboard = await seller.request('/api/dashboard');
+    assert.equal(Object.hasOwn(sellerDashboard.payload.stock, 'incoming'), false);
+    assert.equal(Object.hasOwn(sellerDashboard.payload, 'incomingProducts'), false);
+    const sellerCatalog = await seller.request('/api/catalog');
+    assert.ok(sellerCatalog.payload.products.every((product) => product.available > 0));
   });
 
   test('agrupa aparelhos por modelo e relaciona somente capas compatíveis', async () => {
@@ -1053,6 +1013,7 @@ describe('Controle de estoque por código material', () => {
       body: { currentPassword: 'ProvisoriaEstoque123', newPassword: 'SenhaEstoque123' },
     })).status, 200);
     assert.equal((await stocker.request('/api/repairs')).status, 200);
+    assert.equal((await stocker.request('/api/incoming')).status, 200);
 
     const requests = await stocker.request('/api/requests?status=approved');
     assert.equal(requests.status, 200);
@@ -1628,7 +1589,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.8');
+    assert.equal(JSON.parse(packageSource).version, '6.8.9');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1676,7 +1637,9 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /A senha atual não será solicitada/i);
     assert.match(appSource, /function managerInventoryOverview/);
     assert.match(appSource, /function sellerInventoryOverview/);
-    assert.match(appSource, /function sellerInventoryGroupCard[\s\S]*const incomingAlert = Number\(group\.incoming \|\| 0\)[\s\S]*\$\{incomingAlert\}/);
+    assert.doesNotMatch(appSource, /function sellerInventoryGroupCard[\s\S]*const incomingAlert = Number\(group\.incoming \|\| 0\)/);
+    assert.match(appSource, /function renderIncoming/);
+    assert.match(appSource, /api\/incoming/);
     assert.match(appSource, /function stockerInventoryOverview/);
     assert.match(appSource, /data-action="open-stock-group"/);
     assert.match(appSource, /data-action="open-store-group"/);
@@ -1824,8 +1787,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.8/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.8/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.9/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.9/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /Produtos em reparo/);
     assert.match(workerSource, /\/api\/repairs/);
@@ -1862,7 +1825,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.8');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.9');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

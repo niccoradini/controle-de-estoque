@@ -1835,6 +1835,7 @@ describe('Controle de estoque por código material', () => {
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
     const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.6');
+    const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');
@@ -1875,7 +1876,6 @@ describe('Controle de estoque por código material', () => {
       assert.equal(response.status, 200);
       assert.match(response.headers.get('content-type') || '', /image\/jpeg/i);
     }
-    const renderedScript = await script.text();
     assert.match(renderedScript, /tv-samsung-vivo-total-55-98-2026-08-card\.jpg/);
     assert.match(renderedScript, /bundle-apple-2026-08-card\.jpg/);
     assert.match(renderedScript, /semana-gamer-controle-2026-08-card\.jpg/);

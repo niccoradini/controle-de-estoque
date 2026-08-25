@@ -15,7 +15,8 @@ workbook = load_workbook(source_path, read_only=True, data_only=True)
 sheet = workbook.active
 headers = [str(value or '').strip() for value in next(sheet.iter_rows(values_only=True))]
 expected_headers = ['Material', 'Denominação', 'Nº de série', 'Centro', 'Depósito']
-if headers != expected_headers:
+extended_headers = expected_headers + ['Tipo de estoque', 'Status sistema', 'Modificado por', 'Modificado em']
+if headers not in (expected_headers, extended_headers):
     raise SystemExit(f'Cabeçalhos inesperados: {headers!r}')
 
 available_rows = []
@@ -23,10 +24,14 @@ incoming_rows = []
 excluded_rpar = 0
 repair_rows = []
 status_summary = Counter()
+excluded_status_rows = 0
 serials = set()
 
 for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
-    material, technical_name, serial_number, center, deposit = [str(value or '').strip() for value in values]
+    normalized = [str(value or '').strip() for value in values]
+    material, technical_name, serial_number, center, deposit = normalized[:5]
+    stock_type = normalized[5] if len(normalized) > 5 else '01'
+    reported_status = normalized[6].upper() if len(normalized) > 6 else ''
     if not material or not technical_name or not serial_number or not center:
         raise SystemExit(f'Linha {source_row} incompleta.')
     serial_key = serial_number.casefold()
@@ -47,9 +52,13 @@ for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True)
         })
         continue
 
-    # Neste relatório, itens ainda não recebidos vêm sem depósito. Os itens já
-    # recebidos aparecem em LVUT, LOJA ou EXPO.
-    system_status = 'DEPS NREM' if not deposit else 'DEPS'
+    system_status = reported_status or ('DEPS NREM' if not deposit else 'DEPS')
+    if system_status in ('LIDI', 'LIDI NREM'):
+        excluded_status_rows += 1
+        status_summary[system_status] += 1
+        continue
+    if system_status not in ('DEPS', 'DEPS NREM'):
+        raise SystemExit(f'Status desconhecido na linha {source_row}: {system_status!r}')
     row = {
         'sourceRow': source_row,
         'material': material,
@@ -57,7 +66,7 @@ for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True)
         'serialNumber': serial_number,
         'center': center,
         'deposit': deposit or 'NREM',
-        'stockType': '01',
+        'stockType': stock_type,
         'systemStatus': system_status,
     }
     (incoming_rows if system_status == 'DEPS NREM' else available_rows).append(row)
@@ -67,7 +76,7 @@ material_count = len({row['material'] for row in available_rows + incoming_rows}
 result = {
     'source': source_path.name,
     'importedAt': '2026-08-25',
-    'migrationNumber': 46,
+    'migrationNumber': 47,
     'headers': headers,
     'sourceRowCount': len(serials),
     'availableDeposits': ['EXPO', 'LOJA', 'LVUT'],
@@ -75,12 +84,12 @@ result = {
     'excludedDeposits': ['RPAR'],
     'availableStatuses': ['DEPS'],
     'incomingStatuses': ['DEPS NREM'],
-    'excludedStatuses': [],
+    'excludedStatuses': ['LIDI', 'LIDI NREM'],
     'normalizedBlankDeposit': 'NREM',
     'normalizedBlankDepositCount': len(incoming_rows),
     'statusSummary': dict(status_summary),
     'excludedRowCount': excluded_rpar,
-    'excludedStatusRowCount': 0,
+    'excludedStatusRowCount': excluded_status_rows,
     'expectedExcludedRowCount': excluded_rpar,
     'expectedProductCount': material_count,
     'expectedAvailableQuantity': len(available_rows),

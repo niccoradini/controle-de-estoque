@@ -1962,20 +1962,46 @@ async function renderIncoming() {
   const content = document.querySelector('#view-content');
   const data = await api('/api/incoming');
   state.incomingItems = data.products;
-  const rows = data.products.flatMap((product) => product.serials.map((serial, index) => `<tr>
-    <td><div class="stock-product-cell">${index === 0 ? productImageMarkup(product, 'stock-product-cell__image', 48, 48) : ''}<div><strong>${escapeHtml(product.name)}</strong><small>${escapeHtml(product.technicalName)}</small></div></div></td>
-    <td><code class="material-pill mono">${escapeHtml(product.materialCode)}</code></td>
-    <td>${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</td>
-    <td><code class="mono">${escapeHtml(serial.serialNumber)}</code></td>
-    <td>${escapeHtml(serial.center)}</td>
-    <td>${escapeHtml(serial.deposit || 'NREM')}</td>
-    <td>${escapeHtml(serial.stockType)}</td>
-    <td><span class="badge badge--pending">${escapeHtml(serial.status)}</span></td>
-    <td>${Number(serial.sourceRow)}</td>
-  </tr>`)).join('');
-  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Controle restrito</p><h2>Produtos a caminho</h2><p>Detalhamento completo dos itens DEPS NREM que ainda não fazem parte do saldo vendável.</p></div></div>
-    <section class="repair-metrics"><article><span>Unidades em entrega</span><strong>${data.summary.units}</strong></article><article><span>Materiais diferentes</span><strong>${data.summary.materials}</strong></article><article><span>Status</span><strong>${escapeHtml(data.summary.status)}</strong></article></section>
-    <section class="card"><div class="card__head"><div><h3>Relação serializada completa</h3><span>${escapeHtml(data.summary.source)} · posição de ${escapeHtml(formatDateOnly(data.summary.snapshotDate))}</span></div></div><div class="repair-table-wrap"><table class="repair-table incoming-detail-table"><thead><tr><th>Produto</th><th>Material</th><th>Grupo</th><th>Série / IMEI</th><th>Centro</th><th>Depósito</th><th>Tipo</th><th>Status</th><th>Linha</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+  const byCluster = data.products.reduce((totals, product) => {
+    const cluster = product.cluster || 'misc';
+    totals[cluster] = (totals[cluster] || 0) + Number(product.quantity || product.serials.length || 0);
+    return totals;
+  }, {});
+  const distribution = Object.entries(byCluster).sort((a, b) => b[1] - a[1]);
+  const palette = ['#b58cff', '#efbd75', '#72ddb0', '#72b8f2', '#f08ca4', '#c8a9ff', '#98d8ca', '#e7a6df', '#a4a7ee'];
+  let chartCursor = 0;
+  const chartSegments = distribution.map(([, quantity], index) => {
+    const start = chartCursor;
+    chartCursor += (quantity / data.summary.units) * 100;
+    return `${palette[index % palette.length]} ${start}% ${chartCursor}%`;
+  }).join(', ');
+  const chartLegend = distribution.map(([cluster, quantity], index) => `<li><i style="--legend-color:${palette[index % palette.length]}"></i><span>${escapeHtml(clusterLabels[cluster] || clusterLabels.misc)}</span><strong>${quantity}</strong></li>`).join('');
+  const heroImages = data.products.filter((product) => product.imagem_url).slice(0, 3).map((product, index) => `<span class="incoming-hero__product incoming-hero__product--${index + 1}">${productImageMarkup(product, '', 104, 104)}</span>`).join('');
+  const cards = data.products.map((product) => {
+    const serialRows = product.serials.map((serial) => `<tr><td><code class="mono">${escapeHtml(serial.serialNumber)}</code></td><td>${escapeHtml(serial.center)}</td><td>${escapeHtml(serial.deposit || 'NREM')}</td><td>${escapeHtml(serial.stockType)}</td><td><span class="incoming-status-dot">${escapeHtml(serial.status)}</span></td></tr>`).join('');
+    const searchText = [product.name, product.technicalName, product.materialCode, product.brand, product.cluster, ...product.serials.map((serial) => serial.serialNumber)].join(' ').toLowerCase();
+    return `<article class="incoming-card" data-incoming-product data-search="${escapeHtml(searchText)}">
+      <div class="incoming-card__media">${productImageMarkup(product, 'incoming-card__image', 180, 150)}<span>${escapeHtml(clusterLabels[product.cluster] || clusterLabels.misc)}</span></div>
+      <div class="incoming-card__body"><div class="incoming-card__top"><span>${escapeHtml(product.brand || 'Produto')}</span><strong><b>${Number(product.quantity || product.serials.length)}</b> ${Number(product.quantity || product.serials.length) === 1 ? 'unidade' : 'unidades'}</strong></div><h3>${escapeHtml(product.name)}</h3><p>${escapeHtml(product.technicalName || 'Produto identificado no relatório de estoque')}</p><div class="incoming-card__meta"><code class="mono">${escapeHtml(product.materialCode)}</code><span>${uiIcon('history')} Em deslocamento</span></div></div>
+      <details class="incoming-card__details"><summary><span>Ver séries e detalhes</span>${uiIcon('chevron')}</summary><div class="incoming-card__table-wrap"><table><thead><tr><th>Série / IMEI</th><th>Centro</th><th>Depósito</th><th>Tipo</th><th>Status</th></tr></thead><tbody>${serialRows}</tbody></table></div></details>
+    </article>`;
+  }).join('');
+  content.innerHTML = `<section class="incoming-hero"><div class="incoming-hero__copy"><p class="page-eyebrow">Logística · acesso restrito</p><h2>Produtos a caminho</h2><p>Acompanhe tudo o que está em deslocamento até a loja. Estes itens ainda não fazem parte do saldo disponível para venda.</p><div class="incoming-hero__source">${uiIcon('history')}<span>Atualizado em <strong>${escapeHtml(formatDateOnly(data.summary.snapshotDate))}</strong> · ${escapeHtml(data.summary.source)}</span></div></div><div class="incoming-hero__visual"><div class="incoming-hero__glow"></div>${heroImages}<span class="incoming-hero__route">${uiIcon('box')} Em rota</span></div></section>
+    <section class="incoming-overview"><article class="incoming-kpi incoming-kpi--primary"><span class="incoming-kpi__icon">${uiIcon('box')}</span><div><small>Unidades em entrega</small><strong>${data.summary.units}</strong><p>Itens aguardando entrada</p></div></article><article class="incoming-kpi"><span class="incoming-kpi__icon">${uiIcon('stock')}</span><div><small>Materiais diferentes</small><strong>${data.summary.materials}</strong><p>Produtos identificados</p></div></article><article class="incoming-chart"><div class="incoming-donut" style="--incoming-chart:conic-gradient(${chartSegments})"><span><strong>${data.summary.units}</strong><small>unidades</small></span></div><div><small>Distribuição por grupo</small><ul>${chartLegend}</ul></div></article></section>
+    <section class="incoming-catalog"><header><div><p class="page-eyebrow">Visão por produto</p><h2>O que está chegando</h2><span>Selecione um card para consultar IMEIs e dados logísticos.</span></div><label class="incoming-search">${uiIcon('search')}<input type="search" placeholder="Buscar produto, material ou IMEI" data-incoming-search aria-label="Buscar produto a caminho"></label></header><div class="incoming-grid" data-incoming-grid>${cards}</div><div class="incoming-no-results" data-incoming-empty hidden>${emptyState('Nenhum produto encontrado', 'Tente buscar por outro nome, material ou IMEI.')}</div><p class="incoming-result-count"><strong data-incoming-count>${data.products.length}</strong> de ${data.products.length} materiais exibidos</p></section>`;
+  const search = content.querySelector('[data-incoming-search]');
+  search?.addEventListener('input', () => {
+    const query = search.value.trim().toLowerCase();
+    let visible = 0;
+    content.querySelectorAll('[data-incoming-product]').forEach((card) => {
+      const matches = !query || card.dataset.search.includes(query);
+      card.hidden = !matches;
+      if (matches) visible += 1;
+    });
+    content.querySelector('[data-incoming-count]').textContent = visible;
+    content.querySelector('[data-incoming-empty]').hidden = visible !== 0;
+    content.querySelector('[data-incoming-grid]').hidden = visible === 0;
+  });
 }
 
 async function navigate(view) {

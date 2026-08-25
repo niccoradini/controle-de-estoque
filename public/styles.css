@@ -5430,7 +5430,7 @@ body.cart-drawer-open { overflow: hidden; }
 .incoming-card__image { width: 100%; height: 100%; padding: 6px; object-fit: contain; transition: transform .22s; }
 .incoming-card:hover .incoming-card__image { transform: scale(1.035); }
 .incoming-card__media > span { position: absolute; z-index: 2; left: 11px; bottom: 10px; padding: 5px 8px; border-radius: 999px; color: #fff; background: rgba(17, 16, 20, .75); backdrop-filter: blur(6px); font-size: 7px; font-weight: 770; letter-spacing: .07em; text-transform: uppercase; }
-.incoming-card__body { min-height: 166px; padding: 15px 16px 14px; }
+.incoming-card__body { min-height: 204px; padding: 15px 16px 14px; }
 .incoming-card__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .incoming-card__top > span { color: rgba(220, 213, 227, .36); font-size: 7px; font-weight: 760; letter-spacing: .08em; text-transform: uppercase; }
 .incoming-card__top > strong { display: inline-flex; align-items: baseline; gap: 4px; color: #efbd75; font-size: 8px; font-weight: 600; }
@@ -5441,6 +5441,11 @@ body.cart-drawer-open { overflow: hidden; }
 .incoming-card__meta code { padding: 5px 7px; border: 1px solid rgba(181, 140, 255, .17); border-radius: 7px; color: #cdb4fb; background: rgba(181, 140, 255, .06); font-size: 8px; }
 .incoming-card__meta span { display: inline-flex; align-items: center; gap: 5px; color: #dbab68; font-size: 8px; }
 .incoming-card__meta .ui-icon { width: 13px; }
+.incoming-card__delivery { display: flex; align-items: center; gap: 9px; margin-top: 12px; padding: 9px 10px; border: 1px solid rgba(239, 189, 117, .14); border-radius: 10px; color: #efbd75; background: rgba(239, 189, 117, .045); }
+.incoming-card__delivery .ui-icon { width: 17px; flex: 0 0 auto; }
+.incoming-card__delivery span { display: grid; gap: 2px; color: rgba(225, 216, 228, .43); font-size: 7px; }
+.incoming-card__delivery strong { color: #f1cf9e; font-size: 9px; font-weight: 670; }
+.incoming-delivery-date { color: #efc98e; font-size: 8px; font-weight: 680; }
 .incoming-card__details { border-top: 1px solid rgba(255, 255, 255, .06); }
 .incoming-card__details summary { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; color: rgba(228, 222, 233, .63); cursor: pointer; font-size: 9px; font-weight: 620; list-style: none; }
 .incoming-card__details summary::-webkit-details-marker { display: none; }

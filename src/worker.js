@@ -1027,7 +1027,7 @@ async function incomingInventoryDetails(env) {
   const rows = (await env.DB.prepare(`
     SELECT incoming.serial_number, incoming.material_code, incoming.technical_name,
            incoming.center, incoming.deposit, incoming.stock_type, incoming.system_status,
-           incoming.source_row, incoming.snapshot_date, incoming.source_file,
+           incoming.source_row, incoming.snapshot_date, incoming.source_file, incoming.delivery_started_on,
            COALESCE(product.display_name, product.name, incoming.technical_name) AS display_name,
            COALESCE(product.brand, '') AS brand, COALESCE(product.category, '') AS category,
            COALESCE(product.cluster, 'misc') AS cluster, product.imagem_url
@@ -1050,18 +1050,23 @@ async function incomingInventoryDetails(env) {
       quantity: 0,
       statuses: {},
       centers: [],
+      firstDeliveryOn: '',
+      lastDeliveryOn: '',
       serials: [],
     });
     const product = products.get(row.material_code);
     product.quantity += 1;
     product.statuses[row.system_status] = (product.statuses[row.system_status] || 0) + 1;
     if (!product.centers.includes(row.center)) product.centers.push(row.center);
+    if (!product.firstDeliveryOn || row.delivery_started_on < product.firstDeliveryOn) product.firstDeliveryOn = row.delivery_started_on;
+    if (!product.lastDeliveryOn || row.delivery_started_on > product.lastDeliveryOn) product.lastDeliveryOn = row.delivery_started_on;
     product.serials.push({
       serialNumber: row.serial_number,
       center: row.center,
       deposit: row.deposit,
       stockType: row.stock_type,
       status: row.system_status,
+      deliveryStartedOn: row.delivery_started_on,
       sourceRow: Number(row.source_row),
     });
   }

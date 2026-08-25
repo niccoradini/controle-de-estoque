@@ -2,6 +2,7 @@
 import json
 import sys
 from collections import Counter
+from datetime import date, datetime
 from pathlib import Path
 
 from openpyxl import load_workbook
@@ -28,6 +29,12 @@ excluded_status_rows = 0
 serials = set()
 
 for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+    modified_by = str(values[7] or '').strip() if len(values) > 7 else ''
+    modified_value = values[8] if len(values) > 8 else None
+    if isinstance(modified_value, (datetime, date)):
+        modified_on = modified_value.date().isoformat() if isinstance(modified_value, datetime) else modified_value.isoformat()
+    else:
+        modified_on = str(modified_value or '').strip()[:10]
     normalized = [str(value or '').strip() for value in values]
     material, technical_name, serial_number, center, deposit = normalized[:5]
     stock_type = normalized[5] if len(normalized) > 5 else '01'
@@ -68,6 +75,8 @@ for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True)
         'deposit': deposit or 'NREM',
         'stockType': stock_type,
         'systemStatus': system_status,
+        'modifiedBy': modified_by,
+        'modifiedOn': modified_on,
     }
     (incoming_rows if system_status == 'DEPS NREM' else available_rows).append(row)
     status_summary[system_status] += 1

@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -114,6 +114,7 @@ before(async () => {
     readFile(new URL('../migrations/0046_inventory_refresh_2026_08_25.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0047_inventory_refresh_2026_08_25.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0048_incoming_inventory_details_2026_08_25.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0049_incoming_delivery_dates_2026_08_25.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -227,6 +228,7 @@ before(async () => {
   await applyMigration(migration46);
   await applyMigration(migration47);
   await applyMigration(migration48);
+  await applyMigration(migration49);
 });
 
 after(async () => mf?.dispose());
@@ -655,6 +657,10 @@ describe('Controle de estoque por código material', () => {
     assert.equal(managerIncoming.payload.products.reduce((sum, product) => sum + product.quantity, 0), 90);
     assert.ok(managerIncoming.payload.products.every((product) => product.serials.length === product.quantity));
     assert.ok(managerIncoming.payload.products.flatMap((product) => product.serials).every((serial) => serial.status === 'DEPS NREM'));
+    const incomingSerials = managerIncoming.payload.products.flatMap((product) => product.serials);
+    assert.ok(incomingSerials.every((serial) => /^\d{4}-\d{2}-\d{2}$/.test(serial.deliveryStartedOn)));
+    assert.equal(incomingSerials.find((serial) => serial.serialNumber === '220181370044450').deliveryStartedOn, '2025-12-16');
+    assert.ok(managerIncoming.payload.products.every((product) => product.firstDeliveryOn && product.lastDeliveryOn));
     assert.equal((await seller.request('/api/incoming')).status, 403);
     const sellerDashboard = await seller.request('/api/dashboard');
     assert.equal(Object.hasOwn(sellerDashboard.payload.stock, 'incoming'), false);
@@ -1589,7 +1595,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.10');
+    assert.equal(JSON.parse(packageSource).version, '6.8.11');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1787,8 +1793,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.10/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.10/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.11/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.11/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /Produtos em reparo/);
     assert.match(workerSource, /\/api\/repairs/);
@@ -1825,7 +1831,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.10');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.11');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

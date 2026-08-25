@@ -1,0 +1,1337 @@
+{
+  "tabelaData": "25/08/2026",
+  "smartphones": [
+    [
+      "Moto G42",
+      "Motorola",
+      "moto g42",
+      349
+    ],
+    [
+      "Nokia 2.4",
+      "Nokia",
+      "nokia 2.4",
+      249
+    ],
+    [
+      "Nokia 5.4",
+      "Nokia",
+      "nokia 5.4",
+      299
+    ],
+    [
+      "Moto G34 5G",
+      "Motorola",
+      "moto g34 5g",
+      399
+    ],
+    [
+      "Moto G35 5G",
+      "Motorola",
+      "moto g35 5g",
+      735
+    ],
+    [
+      "Moto G53 5G",
+      "Motorola",
+      "moto g53 5g",
+      399
+    ],
+    [
+      "Moto G55 5G",
+      "Motorola",
+      "moto g55 5g",
+      589
+    ],
+    [
+      "Moto G75 5G",
+      "Motorola",
+      "moto g75 5g",
+      869
+    ],
+    [
+      "Moto G82 5G",
+      "Motorola",
+      "moto g82 5g",
+      549
+    ],
+    [
+      "Moto G84 5G",
+      "Motorola",
+      "moto g84 5g",
+      799
+    ],
+    [
+      "Moto E7 64GB",
+      "Motorola",
+      "moto e7 64gb",
+      349
+    ],
+    [
+      "Moto E22 64GB",
+      "Motorola",
+      "moto e22 64gb",
+      249
+    ],
+    [
+      "iPhone Air 1TB",
+      "Apple",
+      "iphone air 1tb",
+      7399
+    ],
+    [
+      "Moto E22 128GB",
+      "Motorola",
+      "moto e22 128gb",
+      279
+    ],
+    [
+      "Moto G04 128GB",
+      "Motorola",
+      "moto g04 128gb",
+      329
+    ],
+    [
+      "Moto G15 128GB",
+      "Motorola",
+      "moto g15 128gb",
+      399
+    ],
+    [
+      "Moto G24 128GB",
+      "Motorola",
+      "moto g24 128gb",
+      249
+    ],
+    [
+      "Nokia C01 Plus",
+      "Nokia",
+      "nokia c01 plus",
+      159
+    ],
+    [
+      "Infinix Hot 11S",
+      "Infinix",
+      "infinix hot 11s",
+      559
+    ],
+    [
+      "Infinix Smart 6",
+      "Infinix",
+      "infinix smart 6",
+      259
+    ],
+    [
+      "iPhone 11 256GB",
+      "Apple",
+      "iphone 11 256gb",
+      2049
+    ],
+    [
+      "iPhone 12 128GB",
+      "Apple",
+      "iphone 12 128gb",
+      2149
+    ],
+    [
+      "iPhone 12 256GB",
+      "Apple",
+      "iphone 12 256gb",
+      2549
+    ],
+    [
+      "iPhone 13 128GB",
+      "Apple",
+      "iphone 13 128gb",
+      2599
+    ],
+    [
+      "iPhone 13 256GB",
+      "Apple",
+      "iphone 13 256gb",
+      2799
+    ],
+    [
+      "iPhone 14 128GB",
+      "Apple",
+      "iphone 14 128gb",
+      2899
+    ],
+    [
+      "iPhone 14 256GB",
+      "Apple",
+      "iphone 14 256gb",
+      2699
+    ],
+    [
+      "iPhone 14 512GB",
+      "Apple",
+      "iphone 14 512gb",
+      3699
+    ],
+    [
+      "iPhone 15 128GB",
+      "Apple",
+      "iphone 15 128gb",
+      3099
+    ],
+    [
+      "iPhone 15 256GB",
+      "Apple",
+      "iphone 15 256gb",
+      3499
+    ],
+    [
+      "iPhone 15 512GB",
+      "Apple",
+      "iphone 15 512gb",
+      4599
+    ],
+    [
+      "iPhone 16 128GB",
+      "Apple",
+      "iphone 16 128gb",
+      3899
+    ],
+    [
+      "iPhone 16 256GB",
+      "Apple",
+      "iphone 16 256gb",
+      4599
+    ],
+    [
+      "iPhone 16 512GB",
+      "Apple",
+      "iphone 16 512gb",
+      6099
+    ],
+    [
+      "iPhone 17 256GB",
+      "Apple",
+      "iphone 17 256gb",
+      5499
+    ],
+    [
+      "iPhone 17 512GB",
+      "Apple",
+      "iphone 17 512gb",
+      6999
+    ],
+    [
+      "iPhone 16E 128GB",
+      "Apple",
+      "iphone 16e 128gb",
+      2899
+    ],
+    [
+      "iPhone 16E 256GB",
+      "Apple",
+      "iphone 16e 256gb",
+      3099
+    ],
+    [
+      "iPhone 17E 256GB",
+      "Apple",
+      "iphone 17e 256gb",
+      3899
+    ],
+    [
+      "iPhone 17E 512GB",
+      "Apple",
+      "iphone 17e 512gb",
+      5499
+    ],
+    [
+      "iPhone Air 256GB",
+      "Apple",
+      "iphone air 256gb",
+      5499
+    ],
+    [
+      "iPhone Air 512GB",
+      "Apple",
+      "iphone air 512gb",
+      6399
+    ],
+    [
+      "Moto G06 128G 4G",
+      "Motorola",
+      "moto g06 128g 4g",
+      629
+    ],
+    [
+      "Motorola Edge 40",
+      "Motorola",
+      "motorola edge 40",
+      1149
+    ],
+    [
+      "Motorola Razr 40",
+      "Motorola",
+      "motorola razr 40",
+      1599
+    ],
+    [
+      "Motorola Razr 50",
+      "Motorola",
+      "motorola razr 50",
+      1749
+    ],
+    [
+      "Oppo A5 5G 256GB",
+      "Oppo",
+      "oppo a5 5g 256gb",
+      1470
+    ],
+    [
+      "Oppo Reno7 128GB",
+      "Oppo",
+      "oppo reno7 128gb",
+      799
+    ],
+    [
+      "iPhone 13 Pro 1TB",
+      "Apple",
+      "iphone 13 pro 1tb",
+      10849
+    ],
+    [
+      "iPhone 16 Pro 1TB",
+      "Apple",
+      "iphone 16 pro 1tb",
+      9099
+    ],
+    [
+      "iPhone 17 Pro 1TB",
+      "Apple",
+      "iphone 17 pro 1tb",
+      10599
+    ],
+    [
+      "iPhone SE 5G 64GB",
+      "Apple",
+      "iphone se 5g 64gb",
+      1599
+    ],
+    [
+      "Jovi V70 5G 512GB",
+      "Jovi",
+      "jovi v70 5g 512gb",
+      2599
+    ],
+    [
+      "Jovi Y21 5G 256GB",
+      "Jovi",
+      "jovi y21 5g 256gb",
+      1149
+    ],
+    [
+      "Moto G47 5G 128GB",
+      "Motorola",
+      "moto g47 5g 128gb",
+      849
+    ],
+    [
+      "Moto G54 5G 128GB",
+      "Motorola",
+      "moto g54 5g 128gb",
+      399
+    ],
+    [
+      "Moto G54 5G 256GB",
+      "Motorola",
+      "moto g54 5g 256gb",
+      599
+    ],
+    [
+      "Moto G56 5G 256GB",
+      "Motorola",
+      "moto g56 5g 256gb",
+      1199
+    ],
+    [
+      "Moto G86 5G 256GB",
+      "Motorola",
+      "moto g86 5g 256gb",
+      1449
+    ],
+    [
+      "Oppo A6X 5G 256GB",
+      "Oppo",
+      "oppo a6x 5g 256gb",
+      1155
+    ],
+    [
+      "iPhone SE 5G 128GB",
+      "Apple",
+      "iphone se 5g 128gb",
+      2099
+    ],
+    [
+      "Jovi X300 FE 256GB",
+      "Jovi",
+      "jovi x300 fe 256gb",
+      5999
+    ],
+    [
+      "Oppo Reno 14 512GB",
+      "Oppo",
+      "oppo reno 14 512gb",
+      3299
+    ],
+    [
+      "Oppo Reno 16 512GB",
+      "Oppo",
+      "oppo reno 16 512gb",
+      3999
+    ],
+    [
+      "Samsung Galaxy A11",
+      "Samsung",
+      "samsung galaxy a11",
+      149
+    ],
+    [
+      "Samsung Galaxy A12",
+      "Samsung",
+      "samsung galaxy a12",
+      169
+    ],
+    [
+      "Samsung Galaxy A13",
+      "Samsung",
+      "samsung galaxy a13",
+      149
+    ],
+    [
+      "iPhone 13 Pro 128GB",
+      "Apple",
+      "iphone 13 pro 128gb",
+      3699
+    ],
+    [
+      "iPhone 14 Pro 128GB",
+      "Apple",
+      "iphone 14 pro 128gb",
+      4799
+    ],
+    [
+      "iPhone 14 Pro 256GB",
+      "Apple",
+      "iphone 14 pro 256gb",
+      5099
+    ],
+    [
+      "iPhone 14 Pro 512GB",
+      "Apple",
+      "iphone 14 pro 512gb",
+      5899
+    ],
+    [
+      "iPhone 15 Pro 128GB",
+      "Apple",
+      "iphone 15 pro 128gb",
+      5599
+    ],
+    [
+      "iPhone 15 Pro 256GB",
+      "Apple",
+      "iphone 15 pro 256gb",
+      5899
+    ],
+    [
+      "iPhone 15 Pro 512GB",
+      "Apple",
+      "iphone 15 pro 512gb",
+      5999
+    ],
+    [
+      "iPhone 16 Pro 128GB",
+      "Apple",
+      "iphone 16 pro 128gb",
+      5299
+    ],
+    [
+      "iPhone 16 Pro 256GB",
+      "Apple",
+      "iphone 16 pro 256gb",
+      5699
+    ],
+    [
+      "iPhone 16 Pro 512GB",
+      "Apple",
+      "iphone 16 pro 512gb",
+      7099
+    ],
+    [
+      "iPhone 17 Pro 256GB",
+      "Apple",
+      "iphone 17 pro 256gb",
+      8799
+    ],
+    [
+      "iPhone 17 Pro 512GB",
+      "Apple",
+      "iphone 17 pro 512gb",
+      9699
+    ],
+    [
+      "Moto G Max 5G 256GB",
+      "Motorola",
+      "moto g max 5g 256gb",
+      1849
+    ],
+    [
+      "Oppo Reno 14F 256GB",
+      "Oppo",
+      "oppo reno 14f 256gb",
+      2499
+    ],
+    [
+      "Oppo Reno 16F 256GB",
+      "Oppo",
+      "oppo reno 16f 256gb",
+      3299
+    ],
+    [
+      "Samsung Galaxy A02S",
+      "Samsung",
+      "samsung galaxy a02s",
+      69
+    ],
+    [
+      "Samsung Galaxy A20S",
+      "Samsung",
+      "samsung galaxy a20s",
+      399
+    ],
+    [
+      "Samsung Galaxy A21S",
+      "Samsung",
+      "samsung galaxy a21s",
+      149
+    ],
+    [
+      "iPhone 13 Mini 256GB",
+      "Apple",
+      "iphone 13 mini 256gb",
+      3399
+    ],
+    [
+      "iPhone 13 Mini 512GB",
+      "Apple",
+      "iphone 13 mini 512gb",
+      7199
+    ],
+    [
+      "iPhone 14 Plus 128GB",
+      "Apple",
+      "iphone 14 plus 128gb",
+      2999
+    ],
+    [
+      "iPhone 14 Plus 256GB",
+      "Apple",
+      "iphone 14 plus 256gb",
+      3099
+    ],
+    [
+      "iPhone 14 Plus 512GB",
+      "Apple",
+      "iphone 14 plus 512gb",
+      3199
+    ],
+    [
+      "iPhone 15 Plus 128GB",
+      "Apple",
+      "iphone 15 plus 128gb",
+      3399
+    ],
+    [
+      "iPhone 15 Plus 256GB",
+      "Apple",
+      "iphone 15 plus 256gb",
+      3499
+    ],
+    [
+      "iPhone 15 Plus 512GB",
+      "Apple",
+      "iphone 15 plus 512gb",
+      3599
+    ],
+    [
+      "iPhone 16 Plus 128GB",
+      "Apple",
+      "iphone 16 plus 128gb",
+      5039
+    ],
+    [
+      "iPhone 16 Plus 256GB",
+      "Apple",
+      "iphone 16 plus 256gb",
+      6199
+    ],
+    [
+      "iPhone 16 Plus 512GB",
+      "Apple",
+      "iphone 16 plus 512gb",
+      6599
+    ],
+    [
+      "Motorola Edge 20 Pro",
+      "Motorola",
+      "motorola edge 20 pro",
+      1799
+    ],
+    [
+      "Motorola Edge 30 Neo",
+      "Motorola",
+      "motorola edge 30 neo",
+      599
+    ],
+    [
+      "Motorola Edge 40 Neo",
+      "Motorola",
+      "motorola edge 40 neo",
+      599
+    ],
+    [
+      "Motorola Edge 50 Neo",
+      "Motorola",
+      "motorola edge 50 neo",
+      1079
+    ],
+    [
+      "iPhone 13 Pro Max 1TB",
+      "Apple",
+      "iphone 13 pro max 1tb",
+      5599
+    ],
+    [
+      "iPhone 14 Pro Max 1TB",
+      "Apple",
+      "iphone 14 pro max 1tb",
+      5899
+    ],
+    [
+      "iPhone 15 Pro Max 1TB",
+      "Apple",
+      "iphone 15 pro max 1tb",
+      6799
+    ],
+    [
+      "iPhone 16 Pro Max 1TB",
+      "Apple",
+      "iphone 16 pro max 1tb",
+      9599
+    ],
+    [
+      "iPhone 17 Pro Max 1TB",
+      "Apple",
+      "iphone 17 pro max 1tb",
+      11199
+    ],
+    [
+      "iPhone 17 Pro Max 2TB",
+      "Apple",
+      "iphone 17 pro max 2tb",
+      13099
+    ],
+    [
+      "Jovi X300 Ultra 512GB",
+      "Jovi",
+      "jovi x300 ultra 512gb",
+      14999
+    ],
+    [
+      "Samsung Galaxy A22 5G",
+      "Samsung",
+      "samsung galaxy a22 5g",
+      249
+    ],
+    [
+      "Samsung Galaxy A23 5G",
+      "Samsung",
+      "samsung galaxy a23 5g",
+      279
+    ],
+    [
+      "Samsung Galaxy A53 5G",
+      "Samsung",
+      "samsung galaxy a53 5g",
+      399
+    ],
+    [
+      "Samsung Galaxy A73 5G",
+      "Samsung",
+      "samsung galaxy a73 5g",
+      1499
+    ],
+    [
+      "Motorola Edge 30 Ultra",
+      "Motorola",
+      "motorola edge 30 ultra",
+      2499
+    ],
+    [
+      "Motorola Edge 50 Ultra",
+      "Motorola",
+      "motorola edge 50 ultra",
+      2199
+    ],
+    [
+      "Motorola Edge 70 512GB",
+      "Motorola",
+      "motorola edge 70 512gb",
+      3150
+    ],
+    [
+      "Motorola Razr 40 Ultra",
+      "Motorola",
+      "motorola razr 40 ultra",
+      1699
+    ],
+    [
+      "Motorola Razr 50 Ultra",
+      "Motorola",
+      "motorola razr 50 ultra",
+      3299
+    ],
+    [
+      "Motorola Razr Fold 1TB",
+      "Motorola",
+      "motorola razr fold 1tb",
+      8899
+    ],
+    [
+      "Oppo Find X9 Pro 512GB",
+      "Oppo",
+      "oppo find x9 pro 512gb",
+      8099
+    ],
+    [
+      "iPhone 13 Pro Max 128GB",
+      "Apple",
+      "iphone 13 pro max 128gb",
+      4899
+    ],
+    [
+      "iPhone 13 Pro Max 256GB",
+      "Apple",
+      "iphone 13 pro max 256gb",
+      5299
+    ],
+    [
+      "iPhone 13 Pro Max 512GB",
+      "Apple",
+      "iphone 13 pro max 512gb",
+      5499
+    ],
+    [
+      "iPhone 14 Pro Max 256GB",
+      "Apple",
+      "iphone 14 pro max 256gb",
+      5399
+    ],
+    [
+      "iPhone 14 Pro Max 512GB",
+      "Apple",
+      "iphone 14 pro max 512gb",
+      5599
+    ],
+    [
+      "iPhone 15 Pro Max 256GB",
+      "Apple",
+      "iphone 15 pro max 256gb",
+      5999
+    ],
+    [
+      "iPhone 15 Pro Max 512GB",
+      "Apple",
+      "iphone 15 pro max 512gb",
+      6199
+    ],
+    [
+      "iPhone 16 Pro Max 256GB",
+      "Apple",
+      "iphone 16 pro max 256gb",
+      6599
+    ],
+    [
+      "iPhone 16 Pro Max 512GB",
+      "Apple",
+      "iphone 16 pro max 512gb",
+      7899
+    ],
+    [
+      "iPhone 17 Pro Max 256GB",
+      "Apple",
+      "iphone 17 pro max 256gb",
+      9599
+    ],
+    [
+      "iPhone 17 Pro Max 512GB",
+      "Apple",
+      "iphone 17 pro max 512gb",
+      10799
+    ],
+    [
+      "Motorola Edge 50 Fusion",
+      "Motorola",
+      "motorola edge 50 fusion",
+      1009
+    ],
+    [
+      "Samsung Galaxy A03 Core",
+      "Samsung",
+      "samsung galaxy a03 core",
+      49
+    ],
+    [
+      "Motorola Signature 512GB",
+      "Motorola",
+      "motorola signature 512gb",
+      4899
+    ],
+    [
+      "Samsung Galaxy A05 128GB",
+      "Samsung",
+      "samsung galaxy a05 128gb",
+      299
+    ],
+    [
+      "Samsung Galaxy A50 128GB",
+      "Samsung",
+      "samsung galaxy a50 128gb",
+      149
+    ],
+    [
+      "Samsung Galaxy S22 128GB",
+      "Samsung",
+      "samsung galaxy s22 128gb",
+      1299
+    ],
+    [
+      "Samsung Galaxy S22 256GB",
+      "Samsung",
+      "samsung galaxy s22 256gb",
+      1899
+    ],
+    [
+      "Samsung Galaxy S23 128GB",
+      "Samsung",
+      "samsung galaxy s23 128gb",
+      1999
+    ],
+    [
+      "Samsung Galaxy S23 256GB",
+      "Samsung",
+      "samsung galaxy s23 256gb",
+      2499
+    ],
+    [
+      "Samsung Galaxy S24 128GB",
+      "Samsung",
+      "samsung galaxy s24 128gb",
+      1509
+    ],
+    [
+      "Samsung Galaxy S24 256GB",
+      "Samsung",
+      "samsung galaxy s24 256gb",
+      1539
+    ],
+    [
+      "Samsung Galaxy S25 128GB",
+      "Samsung",
+      "samsung galaxy s25 128gb",
+      3399
+    ],
+    [
+      "Samsung Galaxy S25 256GB",
+      "Samsung",
+      "samsung galaxy s25 256gb",
+      3099
+    ],
+    [
+      "Samsung Galaxy S26 256GB",
+      "Samsung",
+      "samsung galaxy s26 256gb",
+      3299
+    ],
+    [
+      "Samsung Galaxy S26 512GB",
+      "Samsung",
+      "samsung galaxy s26 512gb",
+      3899
+    ],
+    [
+      "Infinix Note 10 Pro 256GB",
+      "Infinix",
+      "infinix note 10 pro 256gb",
+      649
+    ],
+    [
+      "Samsung Galaxy A05S 128GB",
+      "Samsung",
+      "samsung galaxy a05s 128gb",
+      499
+    ],
+    [
+      "Samsung Galaxy S23+ 256GB",
+      "Samsung",
+      "samsung galaxy s23+ 256gb",
+      2699
+    ],
+    [
+      "Samsung Galaxy S23+ 512GB",
+      "Samsung",
+      "samsung galaxy s23+ 512gb",
+      2999
+    ],
+    [
+      "Samsung Galaxy S24+ 256GB",
+      "Samsung",
+      "samsung galaxy s24+ 256gb",
+      2659
+    ],
+    [
+      "Samsung Galaxy S24+ 512GB",
+      "Samsung",
+      "samsung galaxy s24+ 512gb",
+      2569
+    ],
+    [
+      "Samsung Galaxy S25+ 256GB",
+      "Samsung",
+      "samsung galaxy s25+ 256gb",
+      4099
+    ],
+    [
+      "Samsung Galaxy S25+ 512GB",
+      "Samsung",
+      "samsung galaxy s25+ 512gb",
+      4119
+    ],
+    [
+      "Samsung Galaxy S26+ 256GB",
+      "Samsung",
+      "samsung galaxy s26+ 256gb",
+      4899
+    ],
+    [
+      "Samsung Galaxy S26+ 512GB",
+      "Samsung",
+      "samsung galaxy s26+ 512gb",
+      5199
+    ],
+    [
+      "Motorola Edge 60 Pro 256GB",
+      "Motorola",
+      "motorola edge 60 pro 256gb",
+      2099
+    ],
+    [
+      "Motorola Edge 60 Pro 512GB",
+      "Motorola",
+      "motorola edge 60 pro 512gb",
+      2499
+    ],
+    [
+      "Motorola Moto G67 5G 128GB",
+      "Motorola",
+      "motorola moto g67 5g 128gb",
+      1049
+    ],
+    [
+      "Motorola Moto G67 5G 256GB",
+      "Motorola",
+      "motorola moto g67 5g 256gb",
+      1155
+    ],
+    [
+      "Motorola Moto G77 5G 256GB",
+      "Motorola",
+      "motorola moto g77 5g 256gb",
+      1365
+    ],
+    [
+      "Motorola Razr 60 Ultra 1TB",
+      "Motorola",
+      "motorola razr 60 ultra 1tb",
+      6299
+    ],
+    [
+      "Samsung Galaxy A06 4G 128GB",
+      "Samsung",
+      "samsung galaxy a06 4g 128gb",
+      629
+    ],
+    [
+      "Samsung Galaxy A06 5G 128GB",
+      "Samsung",
+      "samsung galaxy a06 5g 128gb",
+      499
+    ],
+    [
+      "Samsung Galaxy A07 5G 128GB",
+      "Samsung",
+      "samsung galaxy a07 5g 128gb",
+      735
+    ],
+    [
+      "Samsung Galaxy A14 5G 128GB",
+      "Samsung",
+      "samsung galaxy a14 5g 128gb",
+      379
+    ],
+    [
+      "Samsung Galaxy A15 4G 128GB",
+      "Samsung",
+      "samsung galaxy a15 4g 128gb",
+      479
+    ],
+    [
+      "Samsung Galaxy A15 5G 128GB",
+      "Samsung",
+      "samsung galaxy a15 5g 128gb",
+      499
+    ],
+    [
+      "Samsung Galaxy A15 5G 256GB",
+      "Samsung",
+      "samsung galaxy a15 5g 256gb",
+      1149
+    ],
+    [
+      "Samsung Galaxy A16 4G 128GB",
+      "Samsung",
+      "samsung galaxy a16 4g 128gb",
+      499
+    ],
+    [
+      "Samsung Galaxy A16 5G 128GB",
+      "Samsung",
+      "samsung galaxy a16 5g 128gb",
+      679
+    ],
+    [
+      "Samsung Galaxy A17 5G 128GB",
+      "Samsung",
+      "samsung galaxy a17 5g 128gb",
+      945
+    ],
+    [
+      "Samsung Galaxy A17 5G 256GB",
+      "Samsung",
+      "samsung galaxy a17 5g 256gb",
+      1149
+    ],
+    [
+      "Samsung Galaxy A25 5G 256GB",
+      "Samsung",
+      "samsung galaxy a25 5g 256gb",
+      449
+    ],
+    [
+      "Samsung Galaxy A26 5G 256GB",
+      "Samsung",
+      "samsung galaxy a26 5g 256gb",
+      1249
+    ],
+    [
+      "Samsung Galaxy A27 5G 256GB",
+      "Samsung",
+      "samsung galaxy a27 5g 256gb",
+      1575
+    ],
+    [
+      "Samsung Galaxy A34 5G 256GB",
+      "Samsung",
+      "samsung galaxy a34 5g 256gb",
+      899
+    ],
+    [
+      "Samsung Galaxy A35 5G 256GB",
+      "Samsung",
+      "samsung galaxy a35 5g 256gb",
+      849
+    ],
+    [
+      "Samsung Galaxy A36 5G 256GB",
+      "Samsung",
+      "samsung galaxy a36 5g 256gb",
+      1449
+    ],
+    [
+      "Samsung Galaxy A37 5G 256GB",
+      "Samsung",
+      "samsung galaxy a37 5g 256gb",
+      1549
+    ],
+    [
+      "Samsung Galaxy A54 5G 256GB",
+      "Samsung",
+      "samsung galaxy a54 5g 256gb",
+      659
+    ],
+    [
+      "Samsung Galaxy A55 5G 256GB",
+      "Samsung",
+      "samsung galaxy a55 5g 256gb",
+      1029
+    ],
+    [
+      "Samsung Galaxy A56 5G 256GB",
+      "Samsung",
+      "samsung galaxy a56 5g 256gb",
+      1499
+    ],
+    [
+      "Samsung Galaxy A57 5G 256GB",
+      "Samsung",
+      "samsung galaxy a57 5g 256gb",
+      1785
+    ],
+    [
+      "Samsung Galaxy S23 FE 256GB",
+      "Samsung",
+      "samsung galaxy s23 fe 256gb",
+      1349
+    ],
+    [
+      "Samsung Galaxy S24 FE 256GB",
+      "Samsung",
+      "samsung galaxy s24 fe 256gb",
+      1599
+    ],
+    [
+      "Samsung Galaxy Z Fold 5 1TB",
+      "Samsung",
+      "samsung galaxy z fold 5 1tb",
+      4199
+    ],
+    [
+      "Samsung Galaxy Z Fold 7 1TB",
+      "Samsung",
+      "samsung galaxy z fold 7 1tb",
+      6199
+    ],
+    [
+      "Motorola Razr 70 Ultra 512GB",
+      "Motorola",
+      "motorola razr 70 ultra 512gb",
+      6499
+    ],
+    [
+      "Samsung Galaxy S26 Ultra 1TB",
+      "Samsung",
+      "samsung galaxy s26 ultra 1tb",
+      7299
+    ],
+    [
+      "Motorola Edge 60 Fusion 256GB",
+      "Motorola",
+      "motorola edge 60 fusion 256gb",
+      1749
+    ],
+    [
+      "Motorola Edge 70 Fusion 256GB",
+      "Motorola",
+      "motorola edge 70 fusion 256gb",
+      1869
+    ],
+    [
+      "Samsung Galaxy S25 Edge 256GB",
+      "Samsung",
+      "samsung galaxy s25 edge 256gb",
+      3999
+    ],
+    [
+      "Samsung Galaxy S25 Edge 512GB",
+      "Samsung",
+      "samsung galaxy s25 edge 512gb",
+      3999
+    ],
+    [
+      "Samsung Galaxy Z Flip 4 128GB",
+      "Samsung",
+      "samsung galaxy z flip 4 128gb",
+      1699
+    ],
+    [
+      "Samsung Galaxy Z Flip 5 512GB",
+      "Samsung",
+      "samsung galaxy z flip 5 512gb",
+      1829
+    ],
+    [
+      "Samsung Galaxy Z Flip 6 256GB",
+      "Samsung",
+      "samsung galaxy z flip 6 256gb",
+      1649
+    ],
+    [
+      "Samsung Galaxy Z Flip 6 512GB",
+      "Samsung",
+      "samsung galaxy z flip 6 512gb",
+      1999
+    ],
+    [
+      "Samsung Galaxy Z Flip 7 256GB",
+      "Samsung",
+      "samsung galaxy z flip 7 256gb",
+      2399
+    ],
+    [
+      "Samsung Galaxy Z Flip 7 512GB",
+      "Samsung",
+      "samsung galaxy z flip 7 512gb",
+      2599
+    ],
+    [
+      "Samsung Galaxy Z Flip 8 256GB",
+      "Samsung",
+      "samsung galaxy z flip 8 256gb",
+      5699
+    ],
+    [
+      "Samsung Galaxy Z Flip 8 512GB",
+      "Samsung",
+      "samsung galaxy z flip 8 512gb",
+      6199
+    ],
+    [
+      "Samsung Galaxy Z Fold 5 512GB",
+      "Samsung",
+      "samsung galaxy z fold 5 512gb",
+      3699
+    ],
+    [
+      "Samsung Galaxy Z Fold 6 512GB",
+      "Samsung",
+      "samsung galaxy z fold 6 512gb",
+      4199
+    ],
+    [
+      "Samsung Galaxy Z Fold 7 512GB",
+      "Samsung",
+      "samsung galaxy z fold 7 512gb",
+      5199
+    ],
+    [
+      "Samsung Galaxy Z Fold 8 256GB",
+      "Samsung",
+      "samsung galaxy z fold 8 256gb",
+      7399
+    ],
+    [
+      "Samsung Galaxy Z Fold 8 512GB",
+      "Samsung",
+      "samsung galaxy z fold 8 512gb",
+      7899
+    ],
+    [
+      "Samsung Galaxy S23 Ultra 256GB",
+      "Samsung",
+      "samsung galaxy s23 ultra 256gb",
+      3499
+    ],
+    [
+      "Samsung Galaxy S24 Ultra 256GB",
+      "Samsung",
+      "samsung galaxy s24 ultra 256gb",
+      2699
+    ],
+    [
+      "Samsung Galaxy S24 Ultra 512GB",
+      "Samsung",
+      "samsung galaxy s24 ultra 512gb",
+      4299
+    ],
+    [
+      "Samsung Galaxy S25 FE 5G 128GB",
+      "Samsung",
+      "samsung galaxy s25 fe 5g 128gb",
+      2149
+    ],
+    [
+      "Samsung Galaxy S25 FE 5G 256GB",
+      "Samsung",
+      "samsung galaxy s25 fe 5g 256gb",
+      2499
+    ],
+    [
+      "Samsung Galaxy S25 Ultra 256GB",
+      "Samsung",
+      "samsung galaxy s25 ultra 256gb",
+      4999
+    ],
+    [
+      "Samsung Galaxy S25 Ultra 512GB",
+      "Samsung",
+      "samsung galaxy s25 ultra 512gb",
+      5799
+    ],
+    [
+      "Samsung Galaxy S26 Ultra 256GB",
+      "Samsung",
+      "samsung galaxy s26 ultra 256gb",
+      5499
+    ],
+    [
+      "Samsung Galaxy S26 Ultra 512GB",
+      "Samsung",
+      "samsung galaxy s26 ultra 512gb",
+      6699
+    ],
+    [
+      "Oppo Reno 14F Dark Side Edition",
+      "Oppo",
+      "oppo reno 14f dark side edition",
+      2949
+    ],
+    [
+      "Motorola Razr 60 Swarovski 256GB",
+      "Motorola",
+      "motorola razr 60 swarovski 256gb",
+      3299
+    ],
+    [
+      "Samsung Galaxy Z Flip 7 FE 256GB",
+      "Samsung",
+      "samsung galaxy z flip 7 fe 256gb",
+      1749
+    ],
+    [
+      "Samsung Galaxy Z Fold 8 Ultra 1TB",
+      "Samsung",
+      "samsung galaxy z fold 8 ultra 1tb",
+      10599
+    ],
+    [
+      "Motorola Edge 70 Swarovski 5G 512GB",
+      "Motorola",
+      "motorola edge 70 swarovski 5g 512gb",
+      3199
+    ],
+    [
+      "Samsung Galaxy Z Fold 8 Ultra 256GB",
+      "Samsung",
+      "samsung galaxy z fold 8 ultra 256gb",
+      8399
+    ],
+    [
+      "Samsung Galaxy Z Fold 8 Ultra 512GB",
+      "Samsung",
+      "samsung galaxy z fold 8 ultra 512gb",
+      8899
+    ],
+    [
+      "Motorola Razr Fold Fifa World Cup 26 1TB",
+      "Motorola",
+      "motorola razr fold fifa world cup 26 1tb",
+      8999
+    ]
+  ]
+}

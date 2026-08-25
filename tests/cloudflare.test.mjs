@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration45] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -108,6 +108,7 @@ before(async () => {
     readFile(new URL('../migrations/0038_renova_boosts_2026_08_17.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0039_pricing_refresh_2026_08_18.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0040_waaw_second_item_news.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0045_pricing_refresh_2026_08_25.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -215,6 +216,7 @@ before(async () => {
   await applyMigration(migration38);
   await applyMigration(migration39);
   await applyMigration(migration40);
+  await applyMigration(migration45);
 });
 
 after(async () => mf?.dispose());
@@ -490,11 +492,11 @@ describe('Controle de estoque por código material', () => {
 
     const iphone = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP27943000');
     assert.equal(iphone.name, 'APPLE IPHONE 17 PRO MAX 1TB PRATA');
-    assert.equal(catalog.payload.pricing.tableDate, '2026-08-18');
+    assert.equal(catalog.payload.pricing.tableDate, '2026-08-25');
     assert.equal(catalog.payload.pricing.retailTableDate, '2026-08-04');
     assert.equal(catalog.payload.pricing.categories.length, 9);
     assert.equal(catalog.payload.products.filter((product) => product.pricing).length, 76);
-    assert.equal(catalog.payload.products.filter((product) => product.retailPrice).length, 226);
+    assert.equal(catalog.payload.products.filter((product) => product.retailPrice).length, 227);
     const sellerCatalog = await seller.request('/api/catalog');
     assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 65);
     assert.equal(iphone.pricing.model, 'iPhone 17 Pro Max 1TB');
@@ -503,9 +505,9 @@ describe('Controle de estoque por código material', () => {
     assert.equal(iphone15.pricing.model, 'iPhone 15 256GB');
     assert.equal(iphone15.pricing.prices['PRÉ'], 479900);
     assert.equal(iphone15.pricing.prices['CONTROLE BTL'], 479900);
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_profiles')).count), 46);
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_values')).count), 414);
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM product_retail_prices')).count), 226);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_profiles')).count), 47);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_values')).count), 423);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM product_retail_prices')).count), 227);
     assert.equal((await row(`SELECT price_cents FROM product_retail_prices WHERE material_code = '22023768'`)).price_cents, 12900);
     assert.equal((await row(`SELECT price_cents FROM product_retail_prices WHERE material_code = '22023386'`)).price_cents, 6900);
     assert.equal((await row(`SELECT price_cents FROM product_retail_prices WHERE material_code = '22023388'`)).price_cents, 8900);
@@ -520,7 +522,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(motoG56.pricing.prices['VIVO V'], 119900);
     const motoG67 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'TGMO586C2000');
     assert.equal(motoG67.pricing.model, 'Motorola Moto G67 5G 128GB');
-    assert.equal(motoG67.pricing.tableDate, '2026-08-18');
+    assert.equal(motoG67.pricing.tableDate, '2026-08-25');
     assert.deepEqual(motoG67.pricing.prices, {
       'PRÉ': 149900,
       'CONTROLE BTL': 149900,
@@ -538,8 +540,8 @@ describe('Controle de estoque por código material', () => {
       assert.equal(accessoryWithoutSimulatorPrice.pricing, null);
       assert.equal(accessoryWithoutSimulatorPrice.retailPrice, null);
     }
-    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_date'`)).value, '2026-08-18');
-    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_source_table_date'`)).value, '2026-08-18');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_date'`)).value, '2026-08-25');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_source_table_date'`)).value, '2026-08-25');
     const iphone14 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP17622000');
     assert.equal(iphone14.pricing.model, 'iPhone 14 256GB');
     assert.equal(iphone14.pricing.prices['VIVO V'], 269900);
@@ -567,10 +569,10 @@ describe('Controle de estoque por código material', () => {
     assert.equal((await manager.request('/api/devices')).status, 404);
   });
 
-  test('mantém os 414 preços de aparelhos iguais à auditoria integral', async () => {
+  test('mantém os 423 preços de aparelhos iguais à auditoria integral', async () => {
     const [audit, source] = await Promise.all([
-      readFile(new URL('../scripts/pricing-audit-2026-08-18.json', import.meta.url), 'utf8').then(JSON.parse),
-      readFile(new URL('../scripts/pricing-source-2026-08-18.json', import.meta.url), 'utf8').then(JSON.parse),
+      readFile(new URL('../scripts/pricing-audit-2026-08-25.json', import.meta.url), 'utf8').then(JSON.parse),
+      readFile(new URL('../scripts/pricing-source-2026-08-25-final.json', import.meta.url), 'utf8').then(JSON.parse),
     ]);
     const result = await database.prepare(`
       SELECT price_key, category, price_cents
@@ -596,11 +598,10 @@ describe('Controle de estoque por código material', () => {
         assert.equal(moneyToCents(sourceModel.prices[category]), expected, `${model.name} · ${category} na fonte`);
         checked += 1;
       }
-      assert.equal(model.prices['B2B - 10x'], null);
     }
-    assert.equal(checked, 414);
-    assert.equal(databasePrices.size, 414);
-    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_audit_value_count'`)).value, '414');
+    assert.equal(checked, 423);
+    assert.equal(databasePrices.size, 423);
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_audit_value_count'`)).value, '423');
   });
 
   test('organiza os produtos no painel do vendedor sem revelar dados gerenciais', async () => {
@@ -737,7 +738,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(created.payload.request.items[0].unitPriceCents, 349900);
     assert.equal(created.payload.request.items[0].lineTotalCents, 349900);
     assert.deepEqual(created.payload.request.pricing, {
-      category: 'VIVO V', deviceTotalCents: 349900, orderTotalCents: 349900, tableDate: '2026-08-18',
+      category: 'VIVO V', deviceTotalCents: 349900, orderTotalCents: 349900, tableDate: '2026-08-25',
     });
     assert.deepEqual(created.payload.request.items[0].serialNumbers, [expectedSerial.serial_number]);
     assert.equal((await manager.request(`/api/requests/${created.payload.request.id}/serial-options`)).status, 404);
@@ -1601,7 +1602,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.5');
+    assert.equal(JSON.parse(packageSource).version, '6.8.6');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1797,8 +1798,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.5/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.5/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.6/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.6/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /data-incoming-catalog/);
     assert.match(appSource, /incomingDepositsText/);
@@ -1833,7 +1834,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.5');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.6');
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
     const newsImage = await mf.dispatchFetch('https://controleestoque.app.br/news/semana-gamer-2026-08.jpeg');

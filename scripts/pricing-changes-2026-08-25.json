@@ -1,0 +1,87 @@
+[
+  {
+    "name": "Motorola Edge 70 512GB",
+    "brand": "Motorola",
+    "prices": {
+      "PRÉ": 3999,
+      "CONTROLE BTL": 3999,
+      "CONTROLE ENTRADA": 3599,
+      "CONTROLE ALTO VALOR": 3499,
+      "PÓS INDIVIDUAL": 3399,
+      "FAMILIA 2": 3349,
+      "FAMILIA 3": 3299,
+      "FAMILIA 4/5": 3249,
+      "VIVO V": 3199
+    },
+    "key": "motorola edge 70 512gb",
+    "listedFrom": 3150
+  },
+  {
+    "name": "Motorola Moto G67 5G 256GB",
+    "brand": "Motorola",
+    "prices": {
+      "PRÉ": 1699,
+      "CONTROLE BTL": 1699,
+      "CONTROLE ENTRADA": 1499,
+      "CONTROLE ALTO VALOR": 1459,
+      "PÓS INDIVIDUAL": 1429,
+      "FAMILIA 2": 1399,
+      "FAMILIA 3": 1369,
+      "FAMILIA 4/5": 1339,
+      "VIVO V": 1309
+    },
+    "key": "motorola moto g67 5g 256gb",
+    "listedFrom": 1155
+  },
+  {
+    "name": "Motorola Moto G77 5G 256GB",
+    "brand": "Motorola",
+    "prices": {
+      "PRÉ": 1799,
+      "CONTROLE BTL": 1799,
+      "CONTROLE ENTRADA": 1699,
+      "CONTROLE ALTO VALOR": 1649,
+      "PÓS INDIVIDUAL": 1599,
+      "FAMILIA 2": 1549,
+      "FAMILIA 3": 1499,
+      "FAMILIA 4/5": 1449,
+      "VIVO V": 1399
+    },
+    "key": "motorola moto g77 5g 256gb",
+    "listedFrom": 1365
+  },
+  {
+    "name": "Samsung Galaxy A57 5G 256GB",
+    "brand": "Samsung",
+    "prices": {
+      "PRÉ": 2499,
+      "CONTROLE BTL": 2499,
+      "CONTROLE ENTRADA": 2199,
+      "CONTROLE ALTO VALOR": 2099,
+      "PÓS INDIVIDUAL": 1999,
+      "FAMILIA 2": 1979,
+      "FAMILIA 3": 1929,
+      "FAMILIA 4/5": 1879,
+      "VIVO V": 1829
+    },
+    "key": "samsung galaxy a57 5g 256gb",
+    "listedFrom": 1785
+  },
+  {
+    "name": "Samsung Galaxy A36 5G 256GB",
+    "brand": "Samsung",
+    "prices": {
+      "PRÉ": 1799,
+      "CONTROLE BTL": 1799,
+      "CONTROLE ENTRADA": 1699,
+      "CONTROLE ALTO VALOR": 1679,
+      "PÓS INDIVIDUAL": 1649,
+      "FAMILIA 2": 1599,
+      "FAMILIA 3": 1549,
+      "FAMILIA 4/5": 1499,
+      "VIVO V": 1449
+    },
+    "key": "samsung galaxy a36 5g 256gb",
+    "listedFrom": 1449
+  }
+]

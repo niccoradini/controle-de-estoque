@@ -2643,6 +2643,27 @@ async function routeApi(request, env) {
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
   if (method === 'GET' && path === '/api/catalog') return listCatalog(env, user);
   if (method === 'GET' && path === '/api/stock/summary') return stockSummary(env, user);
+  if (method === 'GET' && path === '/api/repairs') {
+    requireRole(user, ['manager', 'stocker']);
+    const items = (await env.DB.prepare(`
+      SELECT serial_number, material_code, technical_name, center, deposit, snapshot_date
+      FROM repair_inventory
+      ORDER BY technical_name COLLATE NOCASE, material_code COLLATE NOCASE, serial_number COLLATE NOCASE
+    `).all()).results || [];
+    const materialCount = Number((await env.DB.prepare(
+      'SELECT COUNT(DISTINCT material_code) AS count FROM repair_inventory'
+    ).first()).count || 0);
+    return json({
+      summary: { units: items.length, materials: materialCount, snapshotDate: items[0]?.snapshot_date || '' },
+      items: items.map((item) => ({
+        serialNumber: item.serial_number,
+        materialCode: item.material_code,
+        name: item.technical_name,
+        center: item.center,
+        deposit: item.deposit,
+      })),
+    });
+  }
   if (method === 'GET' && path === '/api/news') return listNews(env, user);
   if (method === 'POST' && path === '/api/news') {
     requireRole(user, 'manager');

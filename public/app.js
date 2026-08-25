@@ -20,6 +20,7 @@ const state = {
   news: [],
   chips: [],
   renovaItems: [],
+  repairItems: [],
   renovaSearch: '',
   renovaStatus: 'awaiting_pickup',
   chipSellers: [],
@@ -57,6 +58,7 @@ const viewTitles = {
   news: 'Notícias',
   chips: 'Chips',
   'renova-intake': 'Renova',
+  repairs: 'Produtos em reparo',
   stock: 'Loja e estoque',
   'new-request': 'Novo pedido',
   requests: 'Pedidos de retirada',
@@ -504,13 +506,13 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
-      ['dashboard', 'home', 'Visão do estoque'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['renova-intake', 'renova', 'Renova'],
+      ['dashboard', 'home', 'Visão do estoque'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
       ['requests', 'orders', 'Pedidos para separar'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
@@ -1944,11 +1946,28 @@ async function renderAudit() {
   content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Rastreabilidade</p><h2>Histórico detalhado</h2><p>Acessos, produtos escolhidos, pedidos automáticos e alterações administrativas.</p></div></div><section class="card"><div class="timeline">${state.logs.length ? state.logs.map((log) => `<article class="timeline-item"><div class="timeline-dot"></div><div><strong>${escapeHtml(log.actorName)} ${escapeHtml(actionLabels[log.action] || log.action)}</strong><span>${formatDate(log.createdAt)}${log.entityType === 'request' && log.entityId ? ` · Pedido #${escapeHtml(requestCode(log.entityId))}` : ''}</span>${auditDetails(log)}</div></article>`).join('') : emptyState('Histórico vazio', 'As novas ações realizadas no sistema aparecerão aqui.')}</div></section>`;
 }
 
+async function renderRepairs() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/repairs');
+  state.repairItems = data.items;
+  const rows = data.items.map((item) => `<tr>
+    <td><strong>${escapeHtml(item.name)}</strong></td>
+    <td class="mono">${escapeHtml(item.materialCode)}</td>
+    <td class="mono">${escapeHtml(item.serialNumber)}</td>
+    <td>${escapeHtml(item.center)}</td>
+    <td><span class="badge badge--pending">${escapeHtml(item.deposit)}</span></td>
+  </tr>`).join('');
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Controle restrito</p><h2>Produtos em reparo</h2><p>Itens do depósito RPAR, separados do estoque disponível e dos produtos em entrega.</p></div></div>
+    <section class="repair-metrics"><article><span>Unidades em reparo</span><strong>${data.summary.units}</strong></article><article><span>Materiais diferentes</span><strong>${data.summary.materials}</strong></article><article><span>Posição do relatório</span><strong>${escapeHtml(formatDateOnly(data.summary.snapshotDate))}</strong></article></section>
+    <section class="card"><div class="card__head"><div><h3>Relação completa</h3><span>Série/IMEI, material e produto para conferência</span></div></div><div class="repair-table-wrap"><table class="repair-table"><thead><tr><th>Produto</th><th>Material</th><th>Série / IMEI</th><th>Centro</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+}
+
 async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
   if (state.user.role === 'stocker' && ['new-request', 'chips'].includes(view)) return;
   if (view === 'renova-intake' && !canAccessRenovaIntake()) return;
+  if (view === 'repairs' && !canAccessRenovaIntake()) return;
   state.cartDrawerOpen = false;
   document.body.classList.remove('cart-drawer-open');
   state.view = view;
@@ -1961,6 +1980,7 @@ async function navigate(view) {
     if (view === 'news') await renderNews();
     if (view === 'chips') await renderChips();
     if (view === 'renova-intake') await renderRenovaIntake();
+    if (view === 'repairs') await renderRepairs();
     if (view === 'stock') await renderStock();
     if (view === 'new-request') await renderNewRequest();
     if (view === 'requests') await renderRequests();

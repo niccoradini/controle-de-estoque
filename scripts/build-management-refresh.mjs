@@ -11,7 +11,7 @@ if (!sourcePath) {
 }
 
 const source = JSON.parse(await readFile(resolve(sourcePath), 'utf8'));
-if (!Array.isArray(source.rows) || !Array.isArray(source.incomingRows)) {
+if (!Array.isArray(source.rows) || !Array.isArray(source.incomingRows) || !Array.isArray(source.repairRows)) {
   throw new Error('O arquivo de origem não contém as listas de estoque.');
 }
 if (!source.excludedDeposits?.includes('RPAR')) {
@@ -160,12 +160,33 @@ const productValues = inventory.map((item, index) => `  (${sqlText(item.material
 const serialValues = inventory
   .flatMap((item) => item.serialNumbers.map((serialNumber) => `  (${sqlText(item.materialCode)}, ${sqlText(serialNumber)})`))
   .join(',\n');
+const repairValues = source.repairRows.map((row) => `  (${sqlText(String(row.serialNumber).trim())}, ${sqlText(String(row.material).trim())}, ${sqlText(String(row.technicalName).trim())}, ${sqlText(String(row.center).trim())}, 'RPAR', '${snapshotDate}')`).join(',\n');
 
 const migrationTemplate = `PRAGMA foreign_keys = ON;
 
 -- Atualização do retrato do estoque em ${snapshotDate.split('-').reverse().join('/')}.
 -- Exclui RPAR, separa DEPS/NREM como itens em entrega e preserva usuários, sessões,
 -- pedidos, cancelamentos, números de série já retirados e todo o histórico.
+
+CREATE TABLE IF NOT EXISTS repair_inventory (
+  serial_number TEXT PRIMARY KEY COLLATE NOCASE,
+  material_code TEXT NOT NULL COLLATE NOCASE,
+  technical_name TEXT NOT NULL,
+  center TEXT NOT NULL,
+  deposit TEXT NOT NULL CHECK (deposit = 'RPAR'),
+  snapshot_date TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_repair_inventory_material
+ON repair_inventory (material_code, technical_name);
+
+DELETE FROM repair_inventory;
+
+INSERT INTO repair_inventory
+  (serial_number, material_code, technical_name, center, deposit, snapshot_date)
+VALUES
+${repairValues};
 
 DROP TRIGGER IF EXISTS quantity_stock_cannot_cross_reservations;
 

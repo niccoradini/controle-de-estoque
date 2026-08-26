@@ -1611,7 +1611,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.13');
+    assert.equal(JSON.parse(packageSource).version, '6.8.14');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1809,8 +1809,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.13/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.13/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.14/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.14/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /Produtos em reparo/);
     assert.match(workerSource, /\/api\/repairs/);
@@ -1835,6 +1835,12 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /\.product-image-media__image[\s\S]*max-width:\s*100%/);
     assert.match(stylesSource, /\.product-image-media__image[\s\S]*object-fit:\s*contain/);
     assert.match(stylesSource, /\.picker-product__image[\s\S]*object-fit:\s*contain/);
+    assert.match(appSource, /Etiquetas de capas/);
+    assert.match(appSource, /function caseLabelName/);
+    assert.match(appSource, /45 x 30 mm/);
+    assert.match(appSource, /window\.print\(\)/);
+    assert.match(stylesSource, /\.label-print-sheet/);
+    assert.match(stylesSource, /grid-template-columns:\s*repeat\(4, 45mm\)/);
     assert.match(appSource, /const representativeProduct = option\?\.product \|\| group\.products\[0\]/);
     assert.match(appSource, /document\.addEventListener\('DOMContentLoaded'/);
     assert.match(appSource, /getElementById\('cart-root'\)\?\.addEventListener\('click', handleCartRootClick\)/);
@@ -1847,7 +1853,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.13');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.14');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

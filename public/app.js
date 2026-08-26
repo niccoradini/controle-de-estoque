@@ -22,6 +22,8 @@ const state = {
   renovaItems: [],
   repairItems: [],
   incomingItems: [],
+  labelSelection: new Map(),
+  labelSearch: '',
   renovaSearch: '',
   renovaStatus: 'awaiting_pickup',
   chipSellers: [],
@@ -61,6 +63,7 @@ const viewTitles = {
   'renova-intake': 'Renova',
   repairs: 'Produtos em reparo',
   incoming: 'Produtos a caminho',
+  labels: 'Etiquetas de capas',
   stock: 'Loja e estoque',
   'new-request': 'Novo pedido',
   requests: 'Pedidos de retirada',
@@ -508,13 +511,13 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
-      ['dashboard', 'home', 'Visão do estoque'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
+      ['dashboard', 'home', 'Visão do estoque'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
       ['requests', 'orders', 'Pedidos para separar'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
@@ -2007,6 +2010,70 @@ async function renderIncoming() {
   });
 }
 
+function caseLabelName(product) {
+  const source = String(product.name || product.technicalName || '').toUpperCase()
+    .replaceAll('5G', ' ').replace(/\s+/g, ' ').trim();
+  const patterns = [
+    /IPHONE\s+(\d+(?:\s+(?:PRO MAX|PRO|PLUS|MINI))?)/,
+    /GALAXY\s+(A\d{2,3}|S\d{2,3}(?:\s+(?:ULTRA|PLUS|FE))?|Z\s*(?:FLIP|FOLD)\s*\d*)/,
+    /(?:SAMSUNG\s+)?(A\d{2,3}|S\d{2,3}(?:\s+(?:ULTRA|PLUS|FE))?)/,
+    /MOTO\s+(G\d{2,3}(?:\s+(?:PLUS|POWER|PLAY))?|EDGE\s+\d+(?:\s+(?:PRO|FUSION|NEO))?)/,
+    /REDMI\s+([A-Z0-9 ]{2,16})/,
+  ];
+  for (const pattern of patterns) {
+    const match = source.match(pattern);
+    if (match) return `CAPA ${match[1].replace(/\s+PLUS$/, '+').replace(/\s+/g, ' ').trim()}`;
+  }
+  const compact = source.replace(/\b(OVVI|CASE[- ]?MATE|CAPA|CP|SOFT|SERIES|SILICONE|MAGN[EÉ]TICA|TRANSPARENTE|PRETO|BRANCO|AZUL|ROSA|CINZA|ROXO|IMPACTO|TEXTURIZADA|ANTIBACTERIANA)\b/g, ' ').replace(/\s+/g, ' ').trim();
+  return `CAPA ${compact.split(' ').slice(0, 3).join(' ') || materialCode(product)}`;
+}
+
+function labelCatalogRows() {
+  return state.catalog.filter((product) => product.cluster === 'cases').flatMap((product) => product.variants
+    .filter((variant) => Number(variant.available || 0) > 0)
+    .map((variant) => ({
+      key: String(variant.id), product, variant,
+      name: caseLabelName(product),
+      price: selectedProductPrice(product, variant),
+      material: variant.materialCode || materialCode(product),
+      available: Number(variant.available || 0),
+    })));
+}
+
+function visibleLabelRows() {
+  const search = state.labelSearch.trim().toLocaleLowerCase('pt-BR');
+  return labelCatalogRows().filter((item) => !search || [item.name, item.product.name, item.material]
+    .some((value) => String(value || '').toLocaleLowerCase('pt-BR').includes(search)));
+}
+
+function printableCaseLabel(item) {
+  return `<article class="shelf-label"><div class="shelf-label__brand">ESTOQUE · CAPAS</div><strong>${escapeHtml(item.name)}</strong><div class="shelf-label__price"><small>VALOR</small><b>${item.price == null ? 'SEM PREÇO' : formatMoney(item.price)}</b></div><div class="shelf-label__foot"><span class="mono">${escapeHtml(item.material)}</span><span>${item.available} em estoque</span></div></article>`;
+}
+
+function renderLabelWorkspace() {
+  const grid = document.querySelector('[data-label-products]');
+  const selection = document.querySelector('[data-label-selection]');
+  const printSheet = document.querySelector('[data-label-print-sheet]');
+  if (!grid || !selection || !printSheet) return;
+  const products = visibleLabelRows();
+  grid.innerHTML = products.length ? products.map((item) => {
+    const selected = state.labelSelection.has(item.key);
+    return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || 'Capa')}</small><strong>${escapeHtml(item.name)}</strong><code class="mono">${escapeHtml(item.material)}</code></span><span class="label-product-card__price"><strong>${item.price == null ? 'Sem preço' : formatMoney(item.price)}</strong><small>${item.available} disponíveis</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
+  }).join('') : emptyState('Nenhuma capa encontrada', 'Altere a busca para localizar outro modelo.');
+  const selected = [...state.labelSelection.values()];
+  selection.innerHTML = selected.length ? `<div class="label-selection__head"><div><small>Folha de impressão</small><strong>${selected.length} ${selected.length === 1 ? 'etiqueta selecionada' : 'etiquetas selecionadas'}</strong></div><button class="btn btn--ghost btn--small" data-action="clear-labels">Limpar tudo</button></div><div class="label-preview-list">${selected.slice(0, 6).map((item) => `<div>${printableCaseLabel(item)}<button data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></div>`).join('')}${selected.length > 6 ? `<p>+ ${selected.length - 6} etiquetas selecionadas</p>` : ''}</div><div class="label-format"><span>Formato</span><strong>45 x 30 mm · 32 por folha A4</strong></div><button class="btn label-print-button" data-action="print-labels">${uiIcon('copy')} Imprimir etiquetas</button>` : `<div class="label-selection__empty">${uiIcon('copy')}<strong>Nenhuma etiqueta selecionada</strong><span>Escolha as capas na lista ao lado.</span></div>`;
+  printSheet.innerHTML = selected.map(printableCaseLabel).join('');
+  document.querySelector('[data-label-visible-count]').textContent = products.length;
+}
+
+async function renderLabels() {
+  if (!canAccessRenovaIntake()) return navigate('dashboard');
+  if (!state.catalog.length) await loadCatalog();
+  const content = document.querySelector('#view-content');
+  content.innerHTML = `<section class="label-hero"><div><p class="page-eyebrow">Organização das prateleiras</p><h2>Etiquetas de capas</h2><p>Selecione as capas disponíveis e imprima identificações pequenas com nome, valor e código material.</p></div><div class="label-hero__sample"><span>EXEMPLO</span><strong>CAPA A36</strong><small>R$ 49,00</small></div></section><section class="label-builder"><div class="label-products"><header><div><p class="page-eyebrow">Capas disponíveis</p><h3>Escolha os modelos</h3><span><b data-label-visible-count>0</b> materiais encontrados</span></div><button class="btn btn--secondary btn--small" data-action="select-visible-labels">Selecionar exibidas</button></header><label class="incoming-search label-search">${uiIcon('search')}<input type="search" data-action="label-search" value="${escapeHtml(state.labelSearch)}" placeholder="Buscar modelo ou código material" aria-label="Buscar capa para etiqueta"></label><div class="label-product-grid" data-label-products></div></div><aside class="label-selection" data-label-selection></aside></section><section class="label-print-sheet" data-label-print-sheet aria-hidden="true"></section>`;
+  renderLabelWorkspace();
+}
+
 async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
@@ -2014,6 +2081,7 @@ async function navigate(view) {
   if (view === 'renova-intake' && !canAccessRenovaIntake()) return;
   if (view === 'repairs' && !canAccessRenovaIntake()) return;
   if (view === 'incoming' && !canAccessRenovaIntake()) return;
+  if (view === 'labels' && !canAccessRenovaIntake()) return;
   state.cartDrawerOpen = false;
   document.body.classList.remove('cart-drawer-open');
   state.view = view;
@@ -2028,6 +2096,7 @@ async function navigate(view) {
     if (view === 'renova-intake') await renderRenovaIntake();
     if (view === 'repairs') await renderRepairs();
     if (view === 'incoming') await renderIncoming();
+    if (view === 'labels') await renderLabels();
     if (view === 'stock') await renderStock();
     if (view === 'new-request') await renderNewRequest();
     if (view === 'requests') await renderRequests();
@@ -2462,6 +2531,8 @@ async function enterApp(user) {
   state.user = user;
   state.view = 'dashboard';
   state.catalog = [];
+  state.labelSelection.clear();
+  state.labelSearch = '';
   state.news = [];
   state.chips = [];
   state.renovaItems = [];
@@ -2524,6 +2595,21 @@ root.addEventListener('click', async (event) => {
     }
     if (action === 'add-device-bundle') addDeviceBundle(button.dataset.familyKey);
     if (action === 'copy-material') { await copyText(button.dataset.code); showToast('Código material copiado.'); }
+    if (action === 'toggle-label-product' && canAccessRenovaIntake()) {
+      const key = button.dataset.key;
+      if (state.labelSelection.has(key)) state.labelSelection.delete(key);
+      else {
+        const item = labelCatalogRows().find((row) => row.key === key);
+        if (item) state.labelSelection.set(key, item);
+      }
+      renderLabelWorkspace();
+    }
+    if (action === 'clear-labels' && canAccessRenovaIntake()) { state.labelSelection.clear(); renderLabelWorkspace(); }
+    if (action === 'select-visible-labels' && canAccessRenovaIntake()) {
+      visibleLabelRows().forEach((item) => state.labelSelection.set(item.key, item));
+      renderLabelWorkspace();
+    }
+    if (action === 'print-labels' && canAccessRenovaIntake() && state.labelSelection.size) window.print();
     if (action === 'filter-category') { state.catalogCategory = button.dataset.category; renderCatalogGrid(); }
     if (action === 'filter-stock-category') { state.stockCluster = button.dataset.category; renderStockTable(); }
     if (action === 'open-stock-group') {
@@ -2657,6 +2743,7 @@ root.addEventListener('change', (event) => {
 });
 
 root.addEventListener('input', (event) => {
+  if (event.target.dataset.action === 'label-search') { state.labelSearch = event.target.value; renderLabelWorkspace(); }
   if (event.target.dataset.action === 'search-renova-intake') { state.renovaSearch = event.target.value; renderRenovaIntakeResults(); }
   if (event.target.dataset.action === 'chip-search') { state.chipSearch = event.target.value; renderChipResults(); }
   if (event.target.dataset.action === 'stock-search') { state.stockSearch = event.target.value; renderStockTable(); }

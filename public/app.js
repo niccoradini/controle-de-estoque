@@ -2031,17 +2031,21 @@ function caseLabelName(product) {
 function labelCatalogRows() {
   const rows = state.catalog.filter((product) => product.cluster === 'cases').flatMap((product) => product.variants
     .filter((variant) => Number(variant.available || 0) > 0)
-    .map((variant) => ({
-      name: caseLabelName(product),
+    .map((variant) => {
+      const transparent = /\b(TRANSPARENTE|TRANSPARENT|CRISTAL|CLEAR)\b/i.test(`${product.name || ''} ${product.technicalName || ''}`);
+      const baseName = caseLabelName(product);
+      return {
+      name: transparent ? `${baseName} TRANSPARENTE` : baseName,
+      transparent,
       price: selectedProductPrice(product, variant),
       product, variant,
       material: variant.materialCode || materialCode(product),
       available: Number(variant.available || 0),
-    })));
+    }; }));
   const grouped = new Map();
   rows.forEach((row) => {
     const priceKey = row.price == null ? 'no-price' : String(row.price);
-    const key = `${row.name}|${priceKey}`;
+    const key = `${row.name}|${row.transparent ? 'transparent' : 'other'}|${priceKey}`;
     const current = grouped.get(key);
     if (!current) {
       grouped.set(key, { ...row, key, materials: [row.material], productNames: [row.product.name], variations: 1 });
@@ -2087,7 +2091,7 @@ async function renderLabels() {
   if (!canAccessRenovaIntake()) return navigate('dashboard');
   if (!state.catalog.length) await loadCatalog();
   const content = document.querySelector('#view-content');
-  content.innerHTML = `<section class="label-hero"><div><p class="page-eyebrow">Organização das prateleiras</p><h2>Etiquetas de capas</h2><p>Capas do mesmo aparelho e com o mesmo valor são unificadas automaticamente em uma única etiqueta.</p></div><div class="label-hero__sample"><span>EXEMPLO</span><strong>CAPA A36</strong><small>R$ 49,00</small></div></section><section class="label-builder"><div class="label-products"><header><div><p class="page-eyebrow">Capas disponíveis</p><h3>Escolha os modelos</h3><span><b data-label-visible-count>0</b> modelos e valores encontrados</span></div><button class="btn btn--secondary btn--small" data-action="select-visible-labels">Selecionar exibidas</button></header><label class="incoming-search label-search">${uiIcon('search')}<input type="search" data-action="label-search" value="${escapeHtml(state.labelSearch)}" placeholder="Buscar modelo ou código material" aria-label="Buscar capa para etiqueta"></label><div class="label-product-grid" data-label-products></div></div><aside class="label-selection" data-label-selection></aside></section><section class="label-print-sheet" data-label-print-sheet aria-hidden="true"></section>`;
+  content.innerHTML = `<section class="label-hero"><div><p class="page-eyebrow">Organização das prateleiras</p><h2>Etiquetas de capas</h2><p>Capas do mesmo aparelho e com o mesmo valor são unificadas, mantendo as transparentes separadas das demais.</p></div><div class="label-hero__sample"><span>EXEMPLO</span><strong>CAPA A36</strong><small>R$ 49,00</small></div></section><section class="label-builder"><div class="label-products"><header><div><p class="page-eyebrow">Capas disponíveis</p><h3>Escolha os modelos</h3><span><b data-label-visible-count>0</b> modelos e valores encontrados</span></div><button class="btn btn--secondary btn--small" data-action="select-visible-labels">Selecionar exibidas</button></header><label class="incoming-search label-search">${uiIcon('search')}<input type="search" data-action="label-search" value="${escapeHtml(state.labelSearch)}" placeholder="Buscar modelo ou código material" aria-label="Buscar capa para etiqueta"></label><div class="label-product-grid" data-label-products></div></div><aside class="label-selection" data-label-selection></aside></section><section class="label-print-sheet" data-label-print-sheet aria-hidden="true"></section>`;
   renderLabelWorkspace();
 }
 

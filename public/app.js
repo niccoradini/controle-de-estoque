@@ -495,7 +495,7 @@ function renderLogin(message = '') {
         <form data-form="login" novalidate>
           <div class="form-error" data-form-error ${message ? '' : 'hidden'}>${escapeHtml(message)}</div>
           <div class="form-grid form-grid--single">
-            <div class="field"><label for="login-email">E-mail</label><input class="input" id="login-email" name="email" type="email" autocomplete="email" maxlength="160" required></div>
+            <div class="field"><label for="login-identifier">E-mail ou RE</label><input class="input" id="login-identifier" name="identifier" type="text" autocomplete="username" maxlength="160" required placeholder="seuemail@empresa.com ou 81000000"><p class="field-hint">Funcionários podem usar o código RE fornecido pela gerência.</p></div>
             <div class="field"><label for="login-password">Senha</label><input class="input" id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" required></div>
           </div>
           <button class="btn" type="submit">Entrar no sistema</button>
@@ -1706,7 +1706,7 @@ async function renderUsers() {
   const content = document.querySelector('#view-content');
   const data = await api('/api/users');
   state.users = data.users;
-  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Acessos</p><h2>Usuários</h2><p>Edite todos os dados ou exclua acessos que não são mais utilizados.</p></div><button class="btn" data-action="open-user">+ Novo usuário</button></div><section class="card"><div class="card__body--flush"><div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Criado em</th><th></th></tr></thead><tbody>${state.users.map((user) => `<tr><td data-label="Nome"><div class="cell-main">${escapeHtml(user.name)}</div></td><td data-label="E-mail">${escapeHtml(user.email)}</td><td data-label="Perfil">${escapeHtml(roleLabel(user.role))}</td><td data-label="Status"><span class="status status--${user.active ? 'available' : 'cancelled'}">${user.active ? 'Ativo' : 'Inativo'}</span></td><td data-label="Criado em">${formatDate(user.createdAt, false)}</td><td data-label="Ações"><div class="table-actions"><button class="btn btn--secondary btn--small" data-action="edit-user" data-id="${user.id}">Editar</button>${user.id === state.user.id ? '' : `<button class="btn btn--danger btn--small" data-action="delete-user" data-id="${user.id}">Excluir</button>`}</div></td></tr>`).join('')}</tbody></table></div></div></section>`;
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Acessos</p><h2>Usuários</h2><p>Edite todos os dados ou exclua acessos que não são mais utilizados.</p></div><button class="btn" data-action="open-user">+ Novo usuário</button></div><section class="card"><div class="card__body--flush"><div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Nome</th><th>RE</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Criado em</th><th></th></tr></thead><tbody>${state.users.map((user) => `<tr><td data-label="Nome"><div class="cell-main">${escapeHtml(user.name)}</div></td><td data-label="RE">${user.employeeRe ? `<code class="material-pill mono">${escapeHtml(user.employeeRe)}</code>` : '—'}</td><td data-label="E-mail">${escapeHtml(user.email)}</td><td data-label="Perfil">${escapeHtml(roleLabel(user.role))}</td><td data-label="Status"><span class="status status--${user.active ? 'available' : 'cancelled'}">${user.active ? 'Ativo' : 'Inativo'}</span></td><td data-label="Criado em">${formatDate(user.createdAt, false)}</td><td data-label="Ações"><div class="table-actions"><button class="btn btn--secondary btn--small" data-action="edit-user" data-id="${user.id}">Editar</button>${user.id === state.user.id ? '' : `<button class="btn btn--danger btn--small" data-action="delete-user" data-id="${user.id}">Excluir</button>`}</div></td></tr>`).join('')}</tbody></table></div></div></section>`;
 }
 
 function alignmentNavigationItem(topic) {
@@ -2385,6 +2385,7 @@ function userModal(user = null) {
     <div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid">
       <div class="field"><label for="user-name">Nome completo</label><input class="input" id="user-name" name="name" maxlength="100" required value="${escapeHtml(user?.name || '')}"></div>
       <div class="field"><label for="user-email">E-mail</label><input class="input" id="user-email" name="email" type="email" autocomplete="email" maxlength="160" required value="${escapeHtml(user?.email || '')}"></div>
+      <div class="field"><label for="user-re">RE <span class="request-meta">(opcional)</span></label><input class="input mono" id="user-re" name="employeeRe" inputmode="numeric" pattern="[0-9]{8}" minlength="8" maxlength="8" value="${escapeHtml(user?.employeeRe || '')}" placeholder="81000000"><p class="field-hint">Código de 8 números usado como alternativa ao e-mail.</p></div>
       <div class="field"><label for="user-role">Perfil</label><select class="select" id="user-role" name="role"><option value="seller" ${!user || user.role === 'seller' ? 'selected' : ''}>Vendedor</option><option value="stocker" ${user?.role === 'stocker' ? 'selected' : ''}>Estoquista</option><option value="manager" ${user?.role === 'manager' ? 'selected' : ''}>Gerente</option></select><p class="field-hint">O estoquista vê somente os pedidos liberados.</p></div>
       ${user ? `<div class="field"><label for="user-active">Acesso</label><select class="select" id="user-active" name="active"><option value="true" ${user.active ? 'selected' : ''}>Ativo</option><option value="false" ${!user.active ? 'selected' : ''}>Inativo</option></select></div>` : '<div class="field"><label for="user-password">Senha provisória</label><input class="input" id="user-password" name="password" type="password" minlength="8" maxlength="128" required></div>'}
       ${user ? '<div class="field"><label for="user-password">Nova senha <span class="request-meta">(opcional)</span></label><input class="input" id="user-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128"><p class="field-hint">Deixe em branco para manter a senha atual.</p></div><div class="field"><label for="user-confirm-password">Confirmar nova senha</label><input class="input" id="user-confirm-password" name="confirmUserPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128"><p class="field-hint">Não é necessário informar a senha antiga.</p></div>' : ''}
@@ -2695,7 +2696,7 @@ document.addEventListener('submit', async (event) => {
         await enterApp(result.user);
       }
       if (form.dataset.form === 'login') {
-        const result = await api('/api/auth/login', { method: 'POST', body: { email: data.email, password: data.password }, keepSession: true });
+        const result = await api('/api/auth/login', { method: 'POST', body: { identifier: data.identifier, password: data.password }, keepSession: true });
         await enterApp(result.user);
       }
       if (form.dataset.form === 'quantity-stock') {
@@ -2824,7 +2825,7 @@ document.addEventListener('submit', async (event) => {
         await renderChips();
       }
       if (form.dataset.form === 'create-user') {
-        await api('/api/users', { method: 'POST', body: { name: data.name, email: data.email, password: data.password, role: data.role } });
+        await api('/api/users', { method: 'POST', body: { name: data.name, email: data.email, employeeRe: data.employeeRe, password: data.password, role: data.role } });
         closeModal(true);
         showToast('Usuário criado. Envie a senha provisória para a pessoa.');
         if (state.view === 'users') await renderUsers(); else await navigate('users');
@@ -2834,7 +2835,7 @@ document.addEventListener('submit', async (event) => {
         const userId = Number(form.dataset.id);
         const result = await api(`/api/users/${userId}`, {
           method: 'PUT',
-          body: { name: data.name, email: data.email, role: data.role, active: data.active === 'true', password: data.password },
+          body: { name: data.name, email: data.email, employeeRe: data.employeeRe, role: data.role, active: data.active === 'true', password: data.password },
         });
         closeModal(true);
         showToast('Usuário atualizado.');

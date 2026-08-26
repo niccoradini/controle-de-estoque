@@ -156,6 +156,13 @@ function emailRule(value) {
   return { value: email };
 }
 
+function employeeReRule(value) {
+  const employeeRe = typeof value === 'string' ? value.trim() : '';
+  if (!employeeRe) return { value: '' };
+  if (!/^\d{8}$/.test(employeeRe)) return { error: 'O RE deve conter exatamente 8 números.' };
+  return { value: employeeRe };
+}
+
 function passwordRule(value) {
   if (typeof value !== 'string' || value.length < 8 || value.length > 128) return { error: 'A senha deve ter pelo menos 8 caracteres.' };
   return { value };
@@ -313,6 +320,7 @@ function publicUser(user) {
     id: user.id,
     name: user.name,
     email: user.email,
+    employeeRe: user.employee_re || '',
     role: effectiveRole(user),
     active: Boolean(user.active),
     mustChangePassword: Boolean(user.must_change_password),
@@ -576,12 +584,22 @@ async function login(request, env) {
   const key = clientKey(request);
   await enforceLoginLimit(env, key);
   const input = await readJson(request);
-  const data = validateFields(input, { email: emailRule, password: (value) => ({ value: typeof value === 'string' ? value.slice(0, 128) : '' }) });
-  const user = await env.DB.prepare('SELECT * FROM users WHERE email = ? COLLATE NOCASE AND deleted_at IS NULL').bind(data.email).first();
-  const valid = await verifyPassword(data.password, user?.password_hash || DUMMY_PASSWORD_HASH);
+  const identifier = typeof (input.identifier ?? input.email) === 'string' ? (input.identifier ?? input.email).trim() : '';
+  const emailResult = identifier.includes('@') ? emailRule(identifier) : null;
+  if ((!emailResult || emailResult.error) && !/^\d{8}$/.test(identifier)) {
+    throw new HttpError(400, 'Informe um e-mail ou RE válido.', { identifier: 'Informe um e-mail ou RE válido.' });
+  }
+  const password = typeof input.password === 'string' ? input.password.slice(0, 128) : '';
+  const user = await env.DB.prepare(`
+    SELECT * FROM users
+    WHERE deleted_at IS NULL
+      AND (email = ? COLLATE NOCASE OR employee_re = ?)
+    LIMIT 1
+  `).bind(emailResult?.value || '', identifier).first();
+  const valid = await verifyPassword(password, user?.password_hash || DUMMY_PASSWORD_HASH);
   if (!user?.active || !valid) {
     await recordLoginFailure(env, key);
-    throw new HttpError(401, 'E-mail ou senha incorretos.');
+    throw new HttpError(401, 'E-mail, RE ou senha incorretos.');
   }
   await clearLoginFailures(env, key);
   const token = await createSession(env, user.id);
@@ -2488,7 +2506,7 @@ async function restoreChip(env, manager, id) {
 
 async function listUsers(env) {
   const rows = (await env.DB.prepare(`
-    SELECT id, name, email, role, access_profile, active, must_change_password, created_at
+    SELECT id, name, email, employee_re, role, access_profile, active, must_change_password, created_at
     FROM users
     WHERE deleted_at IS NULL
     ORDER BY active DESC, access_profile, role, name COLLATE NOCASE
@@ -2512,6 +2530,7 @@ async function createUser(request, env, manager) {
   const data = validateFields(await readJson(request), {
     name: textRule('o nome completo', { min: 2, max: 100 }),
     email: emailRule,
+    employeeRe: employeeReRule,
     password: passwordRule,
     role: roleRule,
   });
@@ -2520,14 +2539,15 @@ async function createUser(request, env, manager) {
   try {
     const result = await env.DB.prepare(`
       INSERT INTO users
-        (name, email, password_hash, role, access_profile, must_change_password)
-      VALUES (?, ?, ?, ?, ?, 1)
-    `).bind(data.name, data.email, passwordHash, storage.role, storage.accessProfile).run();
+        (name, email, employee_re, password_hash, role, access_profile, must_change_password)
+      VALUES (?, ?, ?, ?, ?, ?, 1)
+    `).bind(data.name, data.email, data.employeeRe || null, passwordHash, storage.role, storage.accessProfile).run();
     const id = Number(result.meta.last_row_id);
     await env.DB.batch([auditStatement(env, manager.id, 'user.created', 'user', id, { email: data.email, role: data.role })]);
     return json({ user: publicUser(await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first()) }, 201);
   } catch (error) {
     if (String(error.message).includes('users.email')) throw new HttpError(409, 'Este e-mail já está em uso.');
+    if (String(error.message).includes('employee_re')) throw new HttpError(409, 'Este RE já está vinculado a outro usuário.');
     throw error;
   }
 }
@@ -2538,6 +2558,7 @@ async function updateUser(request, env, manager, id) {
   const data = validateFields(await readJson(request), {
     name: textRule('o nome completo', { min: 2, max: 100 }),
     email: emailRule,
+    employeeRe: employeeReRule,
     role: roleRule,
     active: booleanRule,
     password: optionalPasswordRule,
@@ -2560,18 +2581,19 @@ async function updateUser(request, env, manager, id) {
     data.password
       ? env.DB.prepare(`
           UPDATE users
-          SET name = ?, email = ?, role = ?, access_profile = ?, active = ?, password_hash = ?,
+          SET name = ?, email = ?, employee_re = ?, role = ?, access_profile = ?, active = ?, password_hash = ?,
               must_change_password = 0, updated_at = ?
           WHERE id = ? AND deleted_at IS NULL
-        `).bind(data.name, data.email, storage.role, storage.accessProfile, data.active ? 1 : 0, passwordHash, timestamp, id)
+        `).bind(data.name, data.email, data.employeeRe || null, storage.role, storage.accessProfile, data.active ? 1 : 0, passwordHash, timestamp, id)
       : env.DB.prepare(`
           UPDATE users
-          SET name = ?, email = ?, role = ?, access_profile = ?, active = ?, updated_at = ?
+          SET name = ?, email = ?, employee_re = ?, role = ?, access_profile = ?, active = ?, updated_at = ?
           WHERE id = ? AND deleted_at IS NULL
-        `).bind(data.name, data.email, storage.role, storage.accessProfile, data.active ? 1 : 0, timestamp, id),
+        `).bind(data.name, data.email, data.employeeRe || null, storage.role, storage.accessProfile, data.active ? 1 : 0, timestamp, id),
     auditStatement(env, manager.id, 'user.updated', 'user', id, {
       name: data.name,
       email: data.email,
+      employeeRe: data.employeeRe,
       role: data.role,
       active: data.active,
       passwordChanged: Boolean(data.password),
@@ -2585,6 +2607,7 @@ async function updateUser(request, env, manager, id) {
   } catch (error) {
     const message = String(error.message);
     if (message.includes('users.email')) throw new HttpError(409, 'Este e-mail já está em uso.');
+    if (message.includes('employee_re')) throw new HttpError(409, 'Este RE já está vinculado a outro usuário.');
     if (message.includes('LAST_ACTIVE_MANAGER')) throw new HttpError(400, 'O sistema precisa manter pelo menos um gerente ativo.');
     if (message.includes('CHIP_WALLET_NOT_EMPTY')) {
       throw new HttpError(409, 'Transfira ou retire os chips disponíveis antes de alterar o acesso deste vendedor.');
@@ -2629,7 +2652,7 @@ async function deleteUser(env, manager, id) {
     await env.DB.batch([
       env.DB.prepare(`
         UPDATE users
-        SET name = 'Usuário excluído', email = ?, password_hash = ?, active = 0,
+        SET name = 'Usuário excluído', email = ?, employee_re = NULL, password_hash = ?, active = 0,
             must_change_password = 0, deleted_at = ?, updated_at = ?
         WHERE id = ? AND deleted_at IS NULL
       `).bind(anonymizedEmail, disabledPasswordHash, timestamp, timestamp, id),

@@ -2088,6 +2088,19 @@ function printableCaseLabel(item) {
   return `<article class="shelf-label shelf-label--price-list"><div class="shelf-label__brand">ESTOQUE · CAPAS</div><strong>${escapeHtml(item.name)}</strong><ul class="shelf-label__prices">${prices}</ul><div class="shelf-label__foot"><span>${item.variations} ${item.variations === 1 ? 'material' : 'materiais'}</span><span>${item.available} em estoque</span></div></article>`;
 }
 
+function printSelectedLabels() {
+  const source = document.querySelector('[data-label-print-sheet]');
+  if (!source || !state.labelSelection.size) return;
+  document.querySelectorAll('.label-print-portal').forEach((element) => element.remove());
+  const portal = source.cloneNode(true);
+  portal.classList.add('label-print-portal');
+  portal.removeAttribute('aria-hidden');
+  portal.removeAttribute('data-label-print-sheet');
+  document.body.append(portal);
+  window.addEventListener('afterprint', () => portal.remove(), { once: true });
+  requestAnimationFrame(() => window.print());
+}
+
 function renderLabelWorkspace() {
   const grid = document.querySelector('[data-label-products]');
   const selection = document.querySelector('[data-label-selection]');
@@ -2650,7 +2663,7 @@ root.addEventListener('click', async (event) => {
       visibleLabelRows().forEach((item) => state.labelSelection.set(item.key, item));
       renderLabelWorkspace();
     }
-    if (action === 'print-labels' && canAccessRenovaIntake() && state.labelSelection.size) window.print();
+    if (action === 'print-labels' && canAccessRenovaIntake()) printSelectedLabels();
     if (action === 'filter-category') { state.catalogCategory = button.dataset.category; renderCatalogGrid(); }
     if (action === 'filter-stock-category') { state.stockCluster = button.dataset.category; renderStockTable(); }
     if (action === 'open-stock-group') {

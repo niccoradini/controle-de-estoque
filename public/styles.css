@@ -5562,10 +5562,10 @@ body.cart-drawer-open { overflow: hidden; }
 }
 @media print {
   @page { size: A4 portrait; margin: 10mm 15mm; }
-  body { margin: 0 !important; background: #fff !important; }
-  body * { visibility: hidden !important; }
-  .label-print-sheet, .label-print-sheet * { visibility: visible !important; }
-  .label-print-sheet { position: absolute !important; inset: 0 auto auto 0 !important; width: 180mm !important; display: grid !important; grid-template-columns: repeat(4, 45mm) !important; grid-auto-rows: 30mm !important; margin: 0 !important; padding: 0 !important; }
+  html, body { width: 210mm !important; min-height: 297mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  body > *:not(.label-print-portal) { display: none !important; }
+  body > .label-print-portal { position: static !important; width: 180mm !important; display: grid !important; grid-template-columns: repeat(4, 45mm) !important; grid-auto-rows: 30mm !important; margin: 0 !important; padding: 0 !important; visibility: visible !important; }
+  .label-print-portal, .label-print-portal * { visibility: visible !important; }
   .label-print-sheet .shelf-label { width: 45mm; height: 30mm; padding: 3mm 3.5mm; border: .25mm dashed #8b858e; break-inside: avoid; page-break-inside: avoid; }
   .label-print-sheet .shelf-label__brand { font-size: 6pt; }
   .label-print-sheet .shelf-label > strong { margin: 2mm 0 1mm; font-size: 13pt; }

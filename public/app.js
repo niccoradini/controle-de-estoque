@@ -2029,25 +2029,41 @@ function caseLabelName(product) {
 }
 
 function labelCatalogRows() {
-  return state.catalog.filter((product) => product.cluster === 'cases').flatMap((product) => product.variants
+  const rows = state.catalog.filter((product) => product.cluster === 'cases').flatMap((product) => product.variants
     .filter((variant) => Number(variant.available || 0) > 0)
     .map((variant) => ({
-      key: String(variant.id), product, variant,
       name: caseLabelName(product),
       price: selectedProductPrice(product, variant),
+      product, variant,
       material: variant.materialCode || materialCode(product),
       available: Number(variant.available || 0),
     })));
+  const grouped = new Map();
+  rows.forEach((row) => {
+    const priceKey = row.price == null ? 'no-price' : String(row.price);
+    const key = `${row.name}|${priceKey}`;
+    const current = grouped.get(key);
+    if (!current) {
+      grouped.set(key, { ...row, key, materials: [row.material], productNames: [row.product.name], variations: 1 });
+      return;
+    }
+    current.available += row.available;
+    current.variations += 1;
+    if (!current.materials.includes(row.material)) current.materials.push(row.material);
+    if (!current.productNames.includes(row.product.name)) current.productNames.push(row.product.name);
+  });
+  return [...grouped.values()].sort((left, right) => left.name.localeCompare(right.name, 'pt-BR') || Number(left.price || 0) - Number(right.price || 0));
 }
 
 function visibleLabelRows() {
   const search = state.labelSearch.trim().toLocaleLowerCase('pt-BR');
-  return labelCatalogRows().filter((item) => !search || [item.name, item.product.name, item.material]
+  return labelCatalogRows().filter((item) => !search || [item.name, ...item.productNames, ...item.materials]
     .some((value) => String(value || '').toLocaleLowerCase('pt-BR').includes(search)));
 }
 
 function printableCaseLabel(item) {
-  return `<article class="shelf-label"><div class="shelf-label__brand">ESTOQUE · CAPAS</div><strong>${escapeHtml(item.name)}</strong><div class="shelf-label__price"><small>VALOR</small><b>${item.price == null ? 'SEM PREÇO' : formatMoney(item.price)}</b></div><div class="shelf-label__foot"><span class="mono">${escapeHtml(item.material)}</span><span>${item.available} em estoque</span></div></article>`;
+  const details = item.materials.length === 1 ? item.material : `${item.variations} variações`;
+  return `<article class="shelf-label"><div class="shelf-label__brand">ESTOQUE · CAPAS</div><strong>${escapeHtml(item.name)}</strong><div class="shelf-label__price"><small>VALOR</small><b>${item.price == null ? 'SEM PREÇO' : formatMoney(item.price)}</b></div><div class="shelf-label__foot"><span>${escapeHtml(details)}</span><span>${item.available} em estoque</span></div></article>`;
 }
 
 function renderLabelWorkspace() {
@@ -2058,7 +2074,8 @@ function renderLabelWorkspace() {
   const products = visibleLabelRows();
   grid.innerHTML = products.length ? products.map((item) => {
     const selected = state.labelSelection.has(item.key);
-    return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || 'Capa')}</small><strong>${escapeHtml(item.name)}</strong><code class="mono">${escapeHtml(item.material)}</code></span><span class="label-product-card__price"><strong>${item.price == null ? 'Sem preço' : formatMoney(item.price)}</strong><small>${item.available} disponíveis</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
+    const variationText = item.variations === 1 ? item.material : `${item.variations} materiais unificados`;
+    return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || 'Capa')}</small><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(variationText)}</code></span><span class="label-product-card__price"><strong>${item.price == null ? 'Sem preço' : formatMoney(item.price)}</strong><small>${item.available} disponíveis</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
   }).join('') : emptyState('Nenhuma capa encontrada', 'Altere a busca para localizar outro modelo.');
   const selected = [...state.labelSelection.values()];
   selection.innerHTML = selected.length ? `<div class="label-selection__head"><div><small>Folha de impressão</small><strong>${selected.length} ${selected.length === 1 ? 'etiqueta selecionada' : 'etiquetas selecionadas'}</strong></div><button class="btn btn--ghost btn--small" data-action="clear-labels">Limpar tudo</button></div><div class="label-preview-list">${selected.slice(0, 6).map((item) => `<div>${printableCaseLabel(item)}<button data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></div>`).join('')}${selected.length > 6 ? `<p>+ ${selected.length - 6} etiquetas selecionadas</p>` : ''}</div><div class="label-format"><span>Formato</span><strong>45 x 30 mm · 32 por folha A4</strong></div><button class="btn label-print-button" data-action="print-labels">${uiIcon('copy')} Imprimir etiquetas</button>` : `<div class="label-selection__empty">${uiIcon('copy')}<strong>Nenhuma etiqueta selecionada</strong><span>Escolha as capas na lista ao lado.</span></div>`;
@@ -2070,7 +2087,7 @@ async function renderLabels() {
   if (!canAccessRenovaIntake()) return navigate('dashboard');
   if (!state.catalog.length) await loadCatalog();
   const content = document.querySelector('#view-content');
-  content.innerHTML = `<section class="label-hero"><div><p class="page-eyebrow">Organização das prateleiras</p><h2>Etiquetas de capas</h2><p>Selecione as capas disponíveis e imprima identificações pequenas com nome, valor e código material.</p></div><div class="label-hero__sample"><span>EXEMPLO</span><strong>CAPA A36</strong><small>R$ 49,00</small></div></section><section class="label-builder"><div class="label-products"><header><div><p class="page-eyebrow">Capas disponíveis</p><h3>Escolha os modelos</h3><span><b data-label-visible-count>0</b> materiais encontrados</span></div><button class="btn btn--secondary btn--small" data-action="select-visible-labels">Selecionar exibidas</button></header><label class="incoming-search label-search">${uiIcon('search')}<input type="search" data-action="label-search" value="${escapeHtml(state.labelSearch)}" placeholder="Buscar modelo ou código material" aria-label="Buscar capa para etiqueta"></label><div class="label-product-grid" data-label-products></div></div><aside class="label-selection" data-label-selection></aside></section><section class="label-print-sheet" data-label-print-sheet aria-hidden="true"></section>`;
+  content.innerHTML = `<section class="label-hero"><div><p class="page-eyebrow">Organização das prateleiras</p><h2>Etiquetas de capas</h2><p>Capas do mesmo aparelho e com o mesmo valor são unificadas automaticamente em uma única etiqueta.</p></div><div class="label-hero__sample"><span>EXEMPLO</span><strong>CAPA A36</strong><small>R$ 49,00</small></div></section><section class="label-builder"><div class="label-products"><header><div><p class="page-eyebrow">Capas disponíveis</p><h3>Escolha os modelos</h3><span><b data-label-visible-count>0</b> modelos e valores encontrados</span></div><button class="btn btn--secondary btn--small" data-action="select-visible-labels">Selecionar exibidas</button></header><label class="incoming-search label-search">${uiIcon('search')}<input type="search" data-action="label-search" value="${escapeHtml(state.labelSearch)}" placeholder="Buscar modelo ou código material" aria-label="Buscar capa para etiqueta"></label><div class="label-product-grid" data-label-products></div></div><aside class="label-selection" data-label-selection></aside></section><section class="label-print-sheet" data-label-print-sheet aria-hidden="true"></section>`;
   renderLabelWorkspace();
 }
 

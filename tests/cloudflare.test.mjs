@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -118,6 +118,8 @@ before(async () => {
     readFile(new URL('../migrations/0050_inventory_refresh_2026_08_26.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0051_incoming_inventory_details_2026_08_26.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0052_employee_re_login.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0053_s26_case_retail_prices.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0054_employee_point_qr.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -235,6 +237,8 @@ before(async () => {
   await applyMigration(migration50);
   await applyMigration(migration51);
   await applyMigration(migration52);
+  await applyMigration(migration53);
+  await applyMigration(migration54);
 });
 
 after(async () => mf?.dispose());
@@ -504,6 +508,37 @@ describe('Controle de estoque por código material', () => {
     assert.equal((await seller.request('/api/catalog')).status, 200);
   });
 
+  test('entrega a cada funcionário somente o próprio QR Code do ponto', async () => {
+    const sellerUser = await row(`SELECT id FROM users WHERE email = 'vendedor.novo@exemplo.com'`);
+    const emptyPoint = await seller.request('/api/point/me');
+    assert.equal(emptyPoint.status, 200);
+    assert.equal(emptyPoint.payload.qrCode, null);
+    assert.equal(emptyPoint.headers.get('cache-control'), 'private, no-store, max-age=0');
+
+    const pngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+    const forbiddenUpload = await seller.request(`/api/users/${sellerUser.id}/point-qr`, {
+      method: 'PUT', body: { mimeType: 'image/png', imageBase64: pngBase64 },
+    });
+    assert.equal(forbiddenUpload.status, 403);
+
+    const uploaded = await manager.request(`/api/users/${sellerUser.id}/point-qr`, {
+      method: 'PUT', body: { mimeType: 'image/png', imageBase64: pngBase64 },
+    });
+    assert.equal(uploaded.status, 200);
+    assert.equal(uploaded.payload.hasPointQr, true);
+
+    const ownPoint = await seller.request('/api/point/me');
+    assert.equal(ownPoint.status, 200);
+    assert.equal(ownPoint.payload.employee.employeeRe, '81234568');
+    assert.equal(ownPoint.payload.qrCode.imageDataUrl, `data:image/png;base64,${pngBase64}`);
+    assert.equal((await seller.request('/api/users')).status, 403);
+    assert.equal((await seller.request(`/api/users/${sellerUser.id}/point-qr`)).status, 404);
+
+    const users = await manager.request('/api/users');
+    assert.equal(users.payload.users.find((user) => user.id === Number(sellerUser.id)).hasPointQr, true);
+    assert.ok(users.payload.users.filter((user) => user.id !== Number(sellerUser.id)).every((user) => !user.hasPointQr));
+  });
+
   test('expõe o catálogo sem vazar séries e bloqueia movimentação manual', async () => {
     assert.equal((await seller.request('/api/repairs')).status, 403);
     const catalog = await manager.request('/api/catalog');
@@ -532,7 +567,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(catalog.payload.pricing.retailTableDate, '2026-08-04');
     assert.equal(catalog.payload.pricing.categories.length, 9);
     assert.equal(catalog.payload.products.filter((product) => product.pricing).length, 79);
-    assert.equal(catalog.payload.products.filter((product) => product.retailPrice).length, 227);
+    assert.equal(catalog.payload.products.filter((product) => product.retailPrice).length, 234);
     const sellerCatalog = await seller.request('/api/catalog');
     assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 58);
     assert.equal(iphone.pricing.model, 'iPhone 17 Pro Max 1TB');
@@ -543,7 +578,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(iphone15.pricing.prices['CONTROLE BTL'], 479900);
     assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_profiles')).count), 47);
     assert.equal(Number((await row('SELECT COUNT(*) AS count FROM device_price_values')).count), 423);
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM product_retail_prices')).count), 227);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM product_retail_prices')).count), 234);
     assert.equal((await row(`SELECT price_cents FROM product_retail_prices WHERE material_code = '22023768'`)).price_cents, 12900);
     assert.equal((await row(`SELECT price_cents FROM product_retail_prices WHERE material_code = '22023386'`)).price_cents, 6900);
     assert.equal((await row(`SELECT price_cents FROM product_retail_prices WHERE material_code = '22023388'`)).price_cents, 8900);
@@ -570,12 +605,15 @@ describe('Controle de estoque por código material', () => {
       'FAMILIA 4/5': 109900,
       'VIVO V': 104900,
     });
-    for (const code of ['22022936', '22024837', '22024888']) {
+    for (const code of ['22022936', '22024888']) {
       const accessoryWithoutSimulatorPrice = catalog.payload.products
         .find((product) => product.variants[0].materialCode === code);
       assert.equal(accessoryWithoutSimulatorPrice.pricing, null);
       assert.equal(accessoryWithoutSimulatorPrice.retailPrice, null);
     }
+    const pricedS26Case = catalog.payload.products.find((product) => product.variants[0].materialCode === '22024837');
+    assert.equal(pricedS26Case.pricing, null);
+    assert.equal(pricedS26Case.retailPrice.priceCents, 19900);
     assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_date'`)).value, '2026-08-25');
     assert.equal((await row(`SELECT value FROM system_state WHERE key = 'pricing_last_verification_source_table_date'`)).value, '2026-08-25');
     const iphone14 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP17622000');
@@ -1611,7 +1649,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.18');
+    assert.equal(JSON.parse(packageSource).version, '6.8.19');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1678,8 +1716,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /Joice[\s\S]*13:06[\s\S]*14:42/);
     assert.match(appSource, /Pedro[\s\S]*14:12[\s\S]*15:48/);
     assert.match(appSource, /Próxima saída somente após o retorno confirmado do funcionário anterior/);
-    assert.match(appSource, /else if \(state\.user\.role === 'stocker'\)[\s\S]*teamBreakSchedule\('dashboard'\)/);
-    assert.match(appSource, /teamBreakSchedule\('alignment'\)/);
+    assert.match(appSource, /point-schedule[\s\S]*teamBreakSchedule\('point'\)/);
+    assert.doesNotMatch(appSource, /teamBreakSchedule\('alignment'\)/);
     assert.match(stylesSource, /\.team-schedule/);
     assert.match(stylesSource, /\.team-schedule__bar/);
     assert.match(stylesSource, /\.management-dashboard-grid/);
@@ -1809,8 +1847,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.18/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.18/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.19/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.19/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /Produtos em reparo/);
     assert.match(workerSource, /\/api\/repairs/);
@@ -1849,6 +1887,12 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /\.label-print-sheet/);
     assert.match(stylesSource, /grid-template-columns:\s*repeat\(4, 45mm\)/);
     assert.match(stylesSource, /body > \*:not\(\.label-print-portal\)/);
+    assert.match(appSource, /async function renderPoint/);
+    assert.match(appSource, /user\.role === 'seller' \? 'point' : 'dashboard'/);
+    assert.match(appSource, /data-action="upload-point-qr"/);
+    assert.match(stylesSource, /\.point-qr__frame/);
+    assert.match(workerSource, /async function myPoint/);
+    assert.match(workerSource, /Cache-Control.*private, no-store/);
     assert.match(appSource, /const representativeProduct = option\?\.product \|\| group\.products\[0\]/);
     assert.match(appSource, /document\.addEventListener\('DOMContentLoaded'/);
     assert.match(appSource, /getElementById\('cart-root'\)\?\.addEventListener\('click', handleCartRootClick\)/);
@@ -1861,7 +1905,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.18');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.19');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

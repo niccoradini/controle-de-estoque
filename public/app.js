@@ -57,6 +57,7 @@ function canAccessRenovaIntake() {
 }
 
 const viewTitles = {
+  point: 'Meu ponto',
   dashboard: 'Visão geral',
   news: 'Notícias',
   chips: 'Chips',
@@ -511,18 +512,18 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
-      ['dashboard', 'home', 'Visão do estoque'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
+      ['dashboard', 'home', 'Visão do estoque'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
       ['requests', 'orders', 'Pedidos para separar'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
   return [
-    ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Loja / estoque'],
+    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Loja / estoque'],
     ['new-request', 'plus', 'Novo pedido'], ['chips', 'sim', 'Meus chips'], ['requests', 'orders', 'Meus pedidos'],
     ['alignment', 'briefing', 'Alinhamento rápido'],
   ];
@@ -574,7 +575,7 @@ const teamBreakScheduleEntries = [
 ];
 
 function teamBreakSchedule(variant = 'dashboard') {
-  const safeVariant = variant === 'alignment' ? 'alignment' : 'dashboard';
+  const safeVariant = ['alignment', 'point'].includes(variant) ? variant : 'dashboard';
   const timelineMinutes = 300;
   const timeLabels = ['11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'];
   const rows = teamBreakScheduleEntries.map((entry) => {
@@ -602,6 +603,16 @@ function teamBreakSchedule(variant = 'dashboard') {
       <p>${uiIcon('check')}<strong>Próxima saída somente após o retorno confirmado do funcionário anterior.</strong></p>
     </footer>
   </section>`;
+}
+
+async function renderPoint() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/point/me');
+  const firstName = String(data.employee?.name || state.user.name).split(' ')[0];
+  const qrContent = data.qrCode
+    ? `<div class="point-qr__frame"><img src="${escapeHtml(data.qrCode.imageDataUrl)}" alt="Seu QR Code individual para registro de ponto" width="640" height="640"></div><div class="point-qr__status">${uiIcon('check')}<span><strong>QR Code individual</strong><small>Vinculado somente ao seu acesso</small></span></div>`
+    : `<div class="point-qr__empty">${uiIcon('history')}<strong>QR Code aguardando cadastro</strong><span>A gerência ainda não vinculou seu código de ponto.</span></div>`;
+  content.innerHTML = `<section class="point-hero"><div><p class="page-eyebrow">Área individual · acesso protegido</p><h2>Olá, ${escapeHtml(firstName)}</h2><p>Seu QR Code e os horários da equipe ficam reunidos aqui para facilitar o registro diário.</p><div class="point-identity"><span>Funcionário</span><strong>${escapeHtml(data.employee?.name || state.user.name)}</strong>${data.employee?.employeeRe ? `<code class="mono">RE ${escapeHtml(data.employee.employeeRe)}</code>` : ''}</div></div><div class="point-hero__lock">${uiIcon('check')}<span><strong>Somente você</strong><small>Este código não aparece para outros funcionários.</small></span></div></section><div class="point-layout"><section class="point-qr-card"><header><div><p class="page-eyebrow">Registro de ponto</p><h3>Meu QR Code</h3><span>Apresente este código no leitor para registrar seu ponto.</span></div></header>${qrContent}<p class="point-qr__notice">Não compartilhe este código. Ele está associado ao seu cadastro pessoal.</p></section><div class="point-schedule">${teamBreakSchedule('point')}</div></div>`;
 }
 
 function managerInventoryGroupCard(group, totalAvailable) {
@@ -784,7 +795,6 @@ async function renderDashboard() {
       : 'Atualizado pela planilha de estoque';
     content.innerHTML = `
       <div class="page-heading"><div><p class="page-eyebrow">Central administrativa</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>${escapeHtml(snapshotText)}. Pedidos e IMEIs são liberados automaticamente.</p></div><div class="page-actions"><button class="btn" data-action="navigate" data-view="stock">Consultar estoque</button></div></div>
-      ${teamBreakSchedule('dashboard')}
       <div class="metrics-grid">${metric('Itens disponíveis', data.stock.available, `${data.modelsAvailable} materiais com saldo`, 'metric-card--success')}${metric('Materiais em falta', management.outOfStockMaterials || 0, 'Sem saldo e sem chegada prevista', 'metric-card--warning')}${metric('Saldo baixo', management.lowStockMaterials || 0, 'Materiais com até 2 unidades', 'metric-card--info')}${metric('Em chegada', management.incomingUnits || 0, `Depósitos ${management.snapshot?.incomingDeposits || 'DEPS e NREM'}`)}</div>
       <div class="admin-strip"><span><b>${Number(data.activeSellers || 0)}</b> vendedores ativos</span><span><b>${Number(data.activeStockers || 0)}</b> estoquistas ativos</span><span><b>${Number(management.orderStats?.approved || 0)}</b> pedidos liberados</span><span><b>${Number(data.stock.reserved || 0)}</b> unidades reservadas</span></div>
       <div class="management-dashboard-grid">
@@ -799,7 +809,6 @@ async function renderDashboard() {
     const outOfStock = (data.inventoryGroups || []).reduce((sum, group) => sum + Number(group.outOfStockCount || 0), 0);
     content.innerHTML = `
       <div class="page-heading"><div><p class="page-eyebrow">Central operacional</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>Confira disponibilidade, preços e pedidos antes de movimentar qualquer item.</p></div><div class="page-actions"><button class="btn" data-action="navigate" data-view="stock">Conferir estoque</button><button class="btn btn--secondary" data-action="navigate" data-view="requests">Ver pedidos</button></div></div>
-      ${teamBreakSchedule('dashboard')}
       <div class="metrics-grid">${metric('Disponíveis agora', data.stock.available, `${data.modelsAvailable} materiais com saldo`, 'metric-card--success')}${metric('Pedidos para separar', data.readyRequests || 0, 'Podem ser cancelados com devolução automática', 'metric-card--info')}${metric('Unidades reservadas', data.stock.reserved || 0, 'Saldo comprometido em pedidos')}${metric('Em chegada', data.stock.incoming || 0, `${outOfStock} materiais sem saldo · DEPS/NREM`, 'metric-card--warning')}</div>
       ${stockerInventoryOverview(data.inventoryGroups, data.stock.available)}
       <section class="card management-list-card"><div class="card__head"><div><h3>Produtos a caminho</h3><span>Consulta detalhada exclusiva para gerência e estoque</span></div><button class="btn btn--ghost btn--small" data-action="navigate" data-view="incoming">Abrir aba</button></div><div class="card__body">${managementProductList(data.incomingProducts, 'Nenhum item a caminho', 'A planilha atual não possui unidades em entrega.', 'incoming')}</div></section>
@@ -807,7 +816,6 @@ async function renderDashboard() {
   } else {
     content.innerHTML = `
       <div class="page-heading"><div><p class="page-eyebrow">Sua área</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>Escolha os produtos disponíveis e envie seu pedido.</p></div><button class="btn" data-action="navigate" data-view="new-request">+ Novo pedido</button></div>
-      ${teamBreakSchedule('dashboard')}
       <div class="metrics-grid">${metric('Itens disponíveis', data.stock.available, `${data.modelsAvailable} materiais disponíveis`, 'metric-card--success')}${metric('Pedidos liberados', data.requests.approved, 'Com IMEI definido automaticamente', 'metric-card--info')}${metric('Pedidos recusados', data.requests.rejected, 'Somente quando não há estoque', 'metric-card--warning')}${metric('Meus pedidos', Object.values(data.requests).reduce((sum, value) => sum + Number(value || 0), 0), 'Histórico completo')}</div>
       ${sellerInventoryOverview(data.inventoryGroups, data.stock.available)}
       <section class="card"><div class="card__head"><h3>Meus pedidos recentes</h3><button class="btn btn--ghost btn--small" data-action="navigate" data-view="requests">Ver todos</button></div><div class="card-list">${data.recentRequests.length ? data.recentRequests.map((item) => requestCard(item, true)).join('') : emptyState('Nenhum pedido', 'Crie seu primeiro pedido para começar.')}</div></section>`;
@@ -1455,8 +1463,7 @@ async function renderRequests() {
     : state.user.role === 'stocker'
       ? ['Separação e conferência', 'Pedidos para separar', 'Confira códigos, IMEIs e valores. Se houver divergência, cancele e devolva os itens ao estoque.']
       : ['Seus pedidos', 'Meus pedidos', 'Os pedidos são liberados automaticamente e o IMEI aparece logo após o envio.'];
-  const stockerSchedule = state.user.role === 'stocker' ? teamBreakSchedule('dashboard') : '';
-  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">${heading[0]}</p><h2>${heading[1]}</h2><p>${heading[2]}</p></div>${state.user.role === 'seller' ? '<button class="btn" data-action="navigate" data-view="new-request">+ Novo pedido</button>' : ''}</div>${stockerSchedule}<div class="filter-tabs">${filters.map(([value, label]) => `<button class="chip ${state.requestFilter === value ? 'is-active' : ''}" data-action="filter-requests" data-status="${value}">${label}</button>`).join('')}</div><div class="requests-list ${state.user.role === 'stocker' ? 'requests-list--stocker' : ''}">${state.requests.length ? state.requests.map((item) => requestCard(item)).join('') : emptyState('Nenhum pedido encontrado', 'Não há solicitações com este status.')}</div>`;
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">${heading[0]}</p><h2>${heading[1]}</h2><p>${heading[2]}</p></div>${state.user.role === 'seller' ? '<button class="btn" data-action="navigate" data-view="new-request">+ Novo pedido</button>' : ''}</div><div class="filter-tabs">${filters.map(([value, label]) => `<button class="chip ${state.requestFilter === value ? 'is-active' : ''}" data-action="filter-requests" data-status="${value}">${label}</button>`).join('')}</div><div class="requests-list ${state.user.role === 'stocker' ? 'requests-list--stocker' : ''}">${state.requests.length ? state.requests.map((item) => requestCard(item)).join('') : emptyState('Nenhum pedido encontrado', 'Não há solicitações com este status.')}</div>`;
 }
 
 function chipStatusBadge(chip) {
@@ -1709,7 +1716,35 @@ async function renderUsers() {
   const content = document.querySelector('#view-content');
   const data = await api('/api/users');
   state.users = data.users;
-  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Acessos</p><h2>Usuários</h2><p>Edite todos os dados ou exclua acessos que não são mais utilizados.</p></div><button class="btn" data-action="open-user">+ Novo usuário</button></div><section class="card"><div class="card__body--flush"><div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Nome</th><th>RE</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Criado em</th><th></th></tr></thead><tbody>${state.users.map((user) => `<tr><td data-label="Nome"><div class="cell-main">${escapeHtml(user.name)}</div></td><td data-label="RE">${user.employeeRe ? `<code class="material-pill mono">${escapeHtml(user.employeeRe)}</code>` : '—'}</td><td data-label="E-mail">${escapeHtml(user.email)}</td><td data-label="Perfil">${escapeHtml(roleLabel(user.role))}</td><td data-label="Status"><span class="status status--${user.active ? 'available' : 'cancelled'}">${user.active ? 'Ativo' : 'Inativo'}</span></td><td data-label="Criado em">${formatDate(user.createdAt, false)}</td><td data-label="Ações"><div class="table-actions"><button class="btn btn--secondary btn--small" data-action="edit-user" data-id="${user.id}">Editar</button>${user.id === state.user.id ? '' : `<button class="btn btn--danger btn--small" data-action="delete-user" data-id="${user.id}">Excluir</button>`}</div></td></tr>`).join('')}</tbody></table></div></div></section>`;
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Acessos</p><h2>Usuários</h2><p>Edite os acessos e vincule o QR Code individual do ponto.</p></div><button class="btn" data-action="open-user">+ Novo usuário</button></div><section class="card"><div class="card__body--flush"><div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Nome</th><th>RE</th><th>E-mail</th><th>Perfil</th><th>QR do ponto</th><th>Status</th><th>Criado em</th><th></th></tr></thead><tbody>${state.users.map((user) => `<tr><td data-label="Nome"><div class="cell-main">${escapeHtml(user.name)}</div></td><td data-label="RE">${user.employeeRe ? `<code class="material-pill mono">${escapeHtml(user.employeeRe)}</code>` : '—'}</td><td data-label="E-mail">${escapeHtml(user.email)}</td><td data-label="Perfil">${escapeHtml(roleLabel(user.role))}</td><td data-label="QR do ponto"><button class="point-qr-admin ${user.hasPointQr ? 'is-ready' : ''}" data-action="upload-point-qr" data-id="${user.id}">${uiIcon(user.hasPointQr ? 'check' : 'plus')} ${user.hasPointQr ? 'Substituir QR' : 'Cadastrar QR'}</button></td><td data-label="Status"><span class="status status--${user.active ? 'available' : 'cancelled'}">${user.active ? 'Ativo' : 'Inativo'}</span></td><td data-label="Criado em">${formatDate(user.createdAt, false)}</td><td data-label="Ações"><div class="table-actions"><button class="btn btn--secondary btn--small" data-action="edit-user" data-id="${user.id}">Editar</button>${user.id === state.user.id ? '' : `<button class="btn btn--danger btn--small" data-action="delete-user" data-id="${user.id}">Excluir</button>`}</div></td></tr>`).join('')}</tbody></table></div></div></section>`;
+}
+
+function uploadPointQr(user) {
+  if (!user || state.user.role !== 'manager') return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/jpeg,image/png,image/webp';
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new ApiError('Selecione uma imagem JPG, PNG ou WebP.', 400);
+      if (file.size > 450000) throw new ApiError('A imagem deve ter no máximo 450 KB.', 400);
+      const imageDataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new ApiError('Não foi possível ler a imagem.', 400));
+        reader.readAsDataURL(file);
+      });
+      const imageBase64 = imageDataUrl.split(',', 2)[1] || '';
+      await api(`/api/users/${user.id}/point-qr`, { method: 'PUT', body: { mimeType: file.type, imageBase64 } });
+      showToast(`QR Code de ${user.name.split(' ')[0]} cadastrado com segurança.`);
+      await renderUsers();
+    } catch (error) {
+      showToast(error.message, 'error');
+    }
+  }, { once: true });
+  input.click();
 }
 
 function alignmentNavigationItem(topic) {
@@ -1804,7 +1839,6 @@ function responsibilitiesAlignment() {
       <div class="alignment-employment-limit"><div><span class="alignment-panel__label">Responsabilidade pessoal</span><h5>Erro, fraude e dolo são situações diferentes.</h5></div><p>Desconto salarial por dano exige as condições do art. 462 da CLT e análise do caso concreto.</p><a href="https://www.planalto.gov.br/ccivil_03/decreto-lei/del5452compilado.htm" target="_blank" rel="noopener noreferrer">CLT · art. 462 ${uiIcon('chevron')}</a></div>
     </section>
     <div class="alignment-commitment-grid"><section><span class="alignment-panel__label">Compromisso com horários</span><h4>Pontualidade protege a operação.</h4><ul class="alignment-checklist"><li>Esteja pronto para iniciar o trabalho no horário combinado.</li><li>Cumpra corretamente os horários de intervalo e retorno.</li><li>Avise com antecedência sempre que houver atraso, ausência ou imprevisto.</li><li>Não deixe a equipe descobrir o problema apenas no início do turno.</li></ul></section><section><span class="alignment-panel__label">Quando houver dúvida</span><h4>Pedir apoio faz parte. Abandonar a demanda, não.</h4><p>Consulte o procedimento, envolva o gerente e continue acompanhando o caso. O cliente deve saber quem está cuidando da solicitação e qual será o próximo passo.</p><div class="alignment-note">Sinal de profissionalismo: reconhecer o limite, buscar ajuda e permanecer responsável pelo acompanhamento.</div></section></div>
-    ${teamBreakSchedule('alignment')}
   </div>`;
 }
 
@@ -2144,6 +2178,7 @@ async function navigate(view) {
   const content = document.querySelector('#view-content');
   content.innerHTML = '<div class="loading-block"><span class="loading-inline">Carregando</span></div>';
   try {
+    if (view === 'point') await renderPoint();
     if (view === 'dashboard') await renderDashboard();
     if (view === 'news') await renderNews();
     if (view === 'chips') await renderChips();
@@ -2583,7 +2618,7 @@ function cancelModal(requestId) {
 
 async function enterApp(user) {
   state.user = user;
-  state.view = 'dashboard';
+  state.view = user.role === 'seller' ? 'point' : 'dashboard';
   state.catalog = [];
   state.labelSelection.clear();
   state.labelSearch = '';
@@ -2613,7 +2648,7 @@ async function enterApp(user) {
   state.pendingCount = 0;
   renderShell();
   if (user.mustChangePassword) return passwordModal(true);
-  await navigate('dashboard');
+  await navigate(user.role === 'seller' ? 'point' : 'dashboard');
 }
 
 root.addEventListener('click', async (event) => {
@@ -2725,6 +2760,7 @@ root.addEventListener('click', async (event) => {
     if (action === 'open-user') userModal();
     if (action === 'edit-user') userModal(state.users.find((user) => user.id === Number(button.dataset.id)));
     if (action === 'delete-user') deleteUserModal(state.users.find((user) => user.id === Number(button.dataset.id)));
+    if (action === 'upload-point-qr') uploadPointQr(state.users.find((user) => user.id === Number(button.dataset.id)));
     if (action === 'filter-requests') { state.requestFilter = button.dataset.status; await renderRequests(); }
     if (action === 'cancel-request') cancelModal(button.dataset.id);
   } catch (error) {

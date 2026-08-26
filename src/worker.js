@@ -2506,12 +2506,59 @@ async function restoreChip(env, manager, id) {
 
 async function listUsers(env) {
   const rows = (await env.DB.prepare(`
-    SELECT id, name, email, employee_re, role, access_profile, active, must_change_password, created_at
+    SELECT users.id, users.name, users.email, users.employee_re, users.role, users.access_profile,
+           users.active, users.must_change_password, users.created_at,
+           EXISTS(SELECT 1 FROM employee_point_qr qr WHERE qr.user_id = users.id) AS has_point_qr
     FROM users
     WHERE deleted_at IS NULL
     ORDER BY active DESC, access_profile, role, name COLLATE NOCASE
   `).all()).results || [];
-  return json({ users: rows.map(publicUser) });
+  return json({ users: rows.map((row) => ({ ...publicUser(row), hasPointQr: Boolean(row.has_point_qr) })) });
+}
+
+async function myPoint(env, user) {
+  const qr = await env.DB.prepare(`
+    SELECT mime_type, image_base64, updated_at
+    FROM employee_point_qr
+    WHERE user_id = ?
+  `).bind(user.id).first();
+  return json({
+    employee: { name: user.name, employeeRe: user.employee_re || '' },
+    qrCode: qr ? {
+      imageDataUrl: `data:${qr.mime_type};base64,${qr.image_base64}`,
+      updatedAt: qr.updated_at,
+    } : null,
+  }, 200, { 'Cache-Control': 'private, no-store, max-age=0' });
+}
+
+async function savePointQr(request, env, manager, userId) {
+  const target = await env.DB.prepare(`
+    SELECT id, name FROM users WHERE id = ? AND active = 1 AND deleted_at IS NULL
+  `).bind(userId).first();
+  if (!target) throw new HttpError(404, 'Funcionário não encontrado.');
+  const input = await readJson(request);
+  const mimeType = String(input.mimeType || '').trim().toLowerCase();
+  const imageBase64 = String(input.imageBase64 || '').replace(/\s/g, '');
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) {
+    throw new HttpError(400, 'Envie o QR Code em JPG, PNG ou WebP.');
+  }
+  if (!imageBase64 || imageBase64.length > 600000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(imageBase64)) {
+    throw new HttpError(400, 'O arquivo do QR Code é inválido ou muito grande.');
+  }
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO employee_point_qr (user_id, mime_type, image_base64, updated_by, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(user_id) DO UPDATE SET
+        mime_type = excluded.mime_type,
+        image_base64 = excluded.image_base64,
+        updated_by = excluded.updated_by,
+        updated_at = excluded.updated_at
+    `).bind(userId, mimeType, imageBase64, manager.id, timestamp),
+    auditStatement(env, manager.id, 'user.point_qr_updated', 'user', userId, { employeeName: target.name }),
+  ]);
+  return json({ message: 'QR Code do ponto salvo com segurança.', hasPointQr: true });
 }
 
 async function requireClearedChipWallet(env, user, { active, role }) {
@@ -2722,6 +2769,7 @@ async function routeApi(request, env) {
   if (method === 'PATCH' && path === '/api/auth/password') return changePassword(request, env, user);
   if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
+  if (method === 'GET' && path === '/api/point/me') return myPoint(env, user);
   if (method === 'GET' && path === '/api/catalog') return listCatalog(env, user);
   if (method === 'GET' && path === '/api/stock/summary') return stockSummary(env, user);
   if (method === 'GET' && path === '/api/incoming') {
@@ -2845,6 +2893,11 @@ async function routeApi(request, env) {
   if (method === 'DELETE' && userMatch) {
     requireRole(user, 'manager');
     return deleteUser(env, user, Number(userMatch[1]));
+  }
+  const pointQrMatch = path.match(/^\/api\/users\/(\d+)\/point-qr$/);
+  if (method === 'PUT' && pointQrMatch) {
+    requireRole(user, 'manager');
+    return savePointQr(request, env, user, Number(pointQrMatch[1]));
   }
   const resetMatch = path.match(/^\/api\/users\/(\d+)\/reset-password$/);
   if (method === 'POST' && resetMatch) {

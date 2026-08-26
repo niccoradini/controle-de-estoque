@@ -5482,6 +5482,43 @@ body.cart-drawer-open { overflow: hidden; }
   .incoming-grid { grid-template-columns: 1fr; padding: 10px; }
 }
 
+/* Meu ponto: área individual do funcionário */
+.point-hero { position: relative; min-height: 220px; display: flex; align-items: center; justify-content: space-between; gap: 28px; overflow: hidden; padding: 34px; border: 1px solid rgba(181, 140, 255, .18); border-radius: 27px; background: radial-gradient(circle at 88% 5%, rgba(171, 125, 255, .22), transparent 36%), linear-gradient(135deg, #282034, #151319 68%); }
+.point-hero::after { content: ""; position: absolute; width: 260px; height: 260px; right: -95px; bottom: -170px; border: 1px solid rgba(211, 188, 255, .12); border-radius: 50%; box-shadow: 0 0 0 38px rgba(181, 140, 255, .025), 0 0 0 76px rgba(181, 140, 255, .018); }
+.point-hero > * { position: relative; z-index: 1; }
+.point-hero h2 { margin: 5px 0 9px; color: #faf7ff; font-size: clamp(32px, 4vw, 46px); font-weight: 590; letter-spacing: -.05em; }
+.point-hero > div > p:not(.page-eyebrow) { max-width: 610px; margin: 0; color: rgba(232, 226, 238, .6); font-size: 13px; line-height: 1.6; }
+.point-identity { display: flex; align-items: center; gap: 9px; margin-top: 20px; color: rgba(230, 222, 237, .56); font-size: 9px; }
+.point-identity strong { color: #f3edf8; font-size: 11px; }
+.point-identity code { padding: 5px 8px; border: 1px solid rgba(181, 140, 255, .2); border-radius: 8px; color: #d5c0f7; background: rgba(181, 140, 255, .07); font-size: 8px; }
+.point-hero__lock { width: 210px; display: flex; align-items: center; gap: 12px; flex: 0 0 auto; padding: 16px; border: 1px solid rgba(120, 231, 183, .15); border-radius: 17px; color: #78e7b7; background: rgba(16, 46, 35, .4); }
+.point-hero__lock .ui-icon { width: 23px; }
+.point-hero__lock span { display: grid; gap: 3px; }
+.point-hero__lock strong { color: #d9f7e9; font-size: 11px; }
+.point-hero__lock small { color: rgba(198, 235, 218, .48); font-size: 8px; line-height: 1.4; }
+.point-layout { display: grid; grid-template-columns: 360px minmax(0, 1fr); align-items: start; gap: 14px; margin-top: 15px; }
+.point-qr-card { overflow: hidden; padding: 18px; border: 1px solid rgba(255, 255, 255, .08); border-radius: 23px; background: #121215; }
+.point-qr-card header h3 { margin: 4px 0 3px; color: #f3edf8; font-size: 21px; font-weight: 590; }
+.point-qr-card header span { color: rgba(225, 218, 231, .42); font-size: 9px; }
+.point-qr__frame { display: grid; place-items: center; margin-top: 15px; padding: 17px; border-radius: 18px; background: #fff; box-shadow: inset 0 0 0 1px rgba(15, 12, 18, .08); }
+.point-qr__frame img { width: min(100%, 280px); height: auto; display: block; image-rendering: auto; }
+.point-qr__status { display: flex; align-items: center; gap: 9px; margin-top: 11px; padding: 10px 11px; border: 1px solid rgba(89, 222, 159, .13); border-radius: 12px; color: #66dea5; background: rgba(89, 222, 159, .05); }
+.point-qr__status .ui-icon { width: 17px; }
+.point-qr__status span { display: grid; gap: 2px; }
+.point-qr__status strong { color: #d9f5e8; font-size: 9px; }
+.point-qr__status small { color: rgba(196, 232, 214, .45); font-size: 7px; }
+.point-qr__notice { margin: 11px 2px 0; color: rgba(225, 216, 231, .35); font-size: 8px; line-height: 1.5; text-align: center; }
+.point-qr__empty { min-height: 310px; display: grid; place-items: center; align-content: center; gap: 8px; margin-top: 15px; border: 1px dashed rgba(181, 140, 255, .2); border-radius: 18px; color: #a887dc; background: rgba(181, 140, 255, .025); text-align: center; }
+.point-qr__empty .ui-icon { width: 32px; }
+.point-qr__empty strong { color: #e9dff3; font-size: 12px; }
+.point-qr__empty span { max-width: 220px; color: rgba(225, 217, 231, .42); font-size: 9px; }
+.point-schedule .team-schedule { margin: 0; }
+.point-qr-admin { display: inline-flex; align-items: center; gap: 5px; padding: 6px 8px; border: 1px solid rgba(181, 140, 255, .18); border-radius: 9px; color: #cdb4f5; background: rgba(181, 140, 255, .06); cursor: pointer; font: inherit; font-size: 8px; white-space: nowrap; }
+.point-qr-admin.is-ready { border-color: rgba(80, 211, 151, .2); color: #78e4b2; background: rgba(80, 211, 151, .055); }
+.point-qr-admin .ui-icon { width: 12px; }
+@media (max-width: 900px) { .point-layout { grid-template-columns: 1fr; } .point-qr-card { max-width: none; } }
+@media (max-width: 620px) { .point-hero { align-items: stretch; flex-direction: column; padding: 25px 20px; } .point-hero__lock { width: auto; } .point-identity { align-items: flex-start; flex-direction: column; } .point-qr-card { padding: 14px; } }
+
 /* Gerador de etiquetas para prateleiras de capas */
 .label-hero { position: relative; min-height: 210px; display: flex; align-items: center; justify-content: space-between; gap: 30px; overflow: hidden; padding: 32px; border: 1px solid rgba(181, 140, 255, .18); border-radius: 26px; background: radial-gradient(circle at 88% 10%, rgba(181, 140, 255, .2), transparent 35%), linear-gradient(135deg, #282034, #151319 65%); }
 .label-hero::after { content: ""; position: absolute; width: 240px; height: 240px; right: -85px; bottom: -155px; border: 1px solid rgba(205, 180, 255, .13); border-radius: 50%; box-shadow: 0 0 0 32px rgba(181, 140, 255, .025), 0 0 0 64px rgba(181, 140, 255, .018); }

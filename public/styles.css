@@ -5539,6 +5539,10 @@ body.cart-drawer-open { overflow: hidden; }
 .shelf-label__price { display: flex; align-items: baseline; justify-content: space-between; gap: 5px; }
 .shelf-label__price small { color: #736d78; font-size: 5px; font-weight: 700; }
 .shelf-label__price b { font-size: 11px; }
+.shelf-label__prices { display: grid; gap: 1px; margin: 4px 0 0; padding: 0; list-style: none; }
+.shelf-label__prices li { display: flex; align-items: baseline; justify-content: space-between; gap: 5px; color: #4f4953; font-size: 6px; line-height: 1.12; }
+.shelf-label__prices li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shelf-label__prices li b { flex: 0 0 auto; color: #17141a; font-size: 7px; }
 .shelf-label__foot { display: flex; justify-content: space-between; gap: 6px; margin-top: 5px; padding-top: 4px; border-top: 1px solid #e1dde4; color: #716b75; font-size: 5px; }
 .label-print-sheet { display: none; }
 @media (max-width: 900px) {
@@ -5567,5 +5571,9 @@ body.cart-drawer-open { overflow: hidden; }
   .label-print-sheet .shelf-label > strong { margin: 2mm 0 1mm; font-size: 13pt; }
   .label-print-sheet .shelf-label__price small { font-size: 6pt; }
   .label-print-sheet .shelf-label__price b { font-size: 12pt; }
+  .label-print-sheet .shelf-label--price-list > strong { margin: 1.4mm 0 .8mm; font-size: 11pt; }
+  .label-print-sheet .shelf-label__prices { gap: .35mm; margin: 0; }
+  .label-print-sheet .shelf-label__prices li { font-size: 6.2pt; line-height: 1; }
+  .label-print-sheet .shelf-label__prices li b { font-size: 6.5pt; }
   .label-print-sheet .shelf-label__foot { margin-top: 1.5mm; padding-top: 1mm; font-size: 6pt; }
 }

@@ -2015,8 +2015,8 @@ function caseLabelName(product) {
     .replaceAll('5G', ' ').replace(/\s+/g, ' ').trim();
   const patterns = [
     /IPHONE\s+(\d+(?:\s+(?:PRO MAX|PRO|PLUS|MINI))?)/,
-    /GALAXY\s+(A\d{2,3}|S\d{2,3}(?:\s+(?:ULTRA|PLUS|FE))?|Z\s*(?:FLIP|FOLD)\s*\d*)/,
-    /(?:SAMSUNG\s+)?(A\d{2,3}|S\d{2,3}(?:\s+(?:ULTRA|PLUS|FE))?)/,
+    /GALAXY\s+(A\d{2,3}|S\d{2,3}(?:\+|\s+(?:ULTRA|PLUS|FE))?|Z\s*(?:FLIP|FOLD)\s*\d*)/,
+    /(?:SAMSUNG\s+)?(A\d{2,3}|S\d{2,3}(?:\+|\s+(?:ULTRA|PLUS|FE))?)/,
     /MOTO\s+(G\d{2,3}(?:\s+(?:PLUS|POWER|PLAY))?|EDGE\s+\d+(?:\s+(?:PRO|FUSION|NEO))?)/,
     /REDMI\s+([A-Z0-9 ]{2,16})/,
   ];
@@ -2026,6 +2026,20 @@ function caseLabelName(product) {
   }
   const compact = source.replace(/\b(OVVI|CASE[- ]?MATE|CAPA|CP|SOFT|SERIES|SILICONE|MAGN[EÉ]TICA|TRANSPARENTE|PRETO|BRANCO|AZUL|ROSA|CINZA|ROXO|IMPACTO|TEXTURIZADA|ANTIBACTERIANA)\b/g, ' ').replace(/\s+/g, ' ').trim();
   return `CAPA ${compact.split(' ').slice(0, 3).join(' ') || materialCode(product)}`;
+}
+
+function caseMaterialLabel(product) {
+  const source = String(product.name || product.technicalName || '').toUpperCase();
+  if (/FLEX\s*ECO/.test(source)) return 'Flex Eco';
+  if (/HOLO/.test(source)) return 'Holo magnética';
+  if (/TEXTURIZADA/.test(source)) return 'Texturizada magnética';
+  if (/TECIDO/.test(source)) return 'Tecido magnética';
+  if (/SILICONE/.test(source)) return /MAGN[EÉ]T|MAGSAFE/.test(source) ? 'Silicone magnética' : 'Silicone';
+  if (/ANTIBACTERIANA/.test(source)) return 'Antibacteriana';
+  if (/IMPACTOR/.test(source)) return 'Impactor';
+  if (/SOFT\s*(?:SERIES)?/.test(source)) return 'Soft Series';
+  if (/TRANSPARENTE|TRANSPARENT|CRISTAL|CLEAR/.test(source)) return /MAGN[EÉ]T|MAGSAFE/.test(source) ? 'Transparente magnética' : 'Transparente';
+  return 'Outros materiais';
 }
 
 function labelCatalogRows() {
@@ -2038,25 +2052,29 @@ function labelCatalogRows() {
       name: transparent ? `${baseName} TRANSPARENTE` : baseName,
       transparent,
       price: selectedProductPrice(product, variant),
+      materialType: caseMaterialLabel(product),
       product, variant,
       material: variant.materialCode || materialCode(product),
       available: Number(variant.available || 0),
     }; }));
   const grouped = new Map();
   rows.forEach((row) => {
-    const priceKey = row.price == null ? 'no-price' : String(row.price);
-    const key = `${row.name}|${row.transparent ? 'transparent' : 'other'}|${priceKey}`;
+    const key = `${row.name}|${row.transparent ? 'transparent' : 'other'}`;
     const current = grouped.get(key);
     if (!current) {
-      grouped.set(key, { ...row, key, materials: [row.material], productNames: [row.product.name], variations: 1 });
+      grouped.set(key, { ...row, key, materials: [row.material], productNames: [row.product.name], variations: 1, priceLines: [{ label: row.materialType, price: row.price, available: row.available }] });
       return;
     }
     current.available += row.available;
     current.variations += 1;
+    const priceLine = current.priceLines.find((line) => line.label === row.materialType && line.price === row.price);
+    if (priceLine) priceLine.available += row.available;
+    else current.priceLines.push({ label: row.materialType, price: row.price, available: row.available });
     if (!current.materials.includes(row.material)) current.materials.push(row.material);
     if (!current.productNames.includes(row.product.name)) current.productNames.push(row.product.name);
   });
-  return [...grouped.values()].sort((left, right) => left.name.localeCompare(right.name, 'pt-BR') || Number(left.price || 0) - Number(right.price || 0));
+  return [...grouped.values()].map((item) => ({ ...item, priceLines: item.priceLines.sort((left, right) => Number(left.price ?? Number.MAX_SAFE_INTEGER) - Number(right.price ?? Number.MAX_SAFE_INTEGER) || left.label.localeCompare(right.label, 'pt-BR')) }))
+    .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'));
 }
 
 function visibleLabelRows() {
@@ -2066,8 +2084,8 @@ function visibleLabelRows() {
 }
 
 function printableCaseLabel(item) {
-  const details = item.materials.length === 1 ? item.material : `${item.variations} variações`;
-  return `<article class="shelf-label"><div class="shelf-label__brand">ESTOQUE · CAPAS</div><strong>${escapeHtml(item.name)}</strong><div class="shelf-label__price"><small>VALOR</small><b>${item.price == null ? 'SEM PREÇO' : formatMoney(item.price)}</b></div><div class="shelf-label__foot"><span>${escapeHtml(details)}</span><span>${item.available} em estoque</span></div></article>`;
+  const prices = item.priceLines.map((line) => `<li><span>${escapeHtml(line.label)}</span><b>${line.price == null ? 'CONSULTAR' : formatMoney(line.price)}</b></li>`).join('');
+  return `<article class="shelf-label shelf-label--price-list"><div class="shelf-label__brand">ESTOQUE · CAPAS</div><strong>${escapeHtml(item.name)}</strong><ul class="shelf-label__prices">${prices}</ul><div class="shelf-label__foot"><span>${item.variations} ${item.variations === 1 ? 'material' : 'materiais'}</span><span>${item.available} em estoque</span></div></article>`;
 }
 
 function renderLabelWorkspace() {
@@ -2078,8 +2096,10 @@ function renderLabelWorkspace() {
   const products = visibleLabelRows();
   grid.innerHTML = products.length ? products.map((item) => {
     const selected = state.labelSelection.has(item.key);
-    const variationText = item.variations === 1 ? item.material : `${item.variations} materiais unificados`;
-    return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || 'Capa')}</small><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(variationText)}</code></span><span class="label-product-card__price"><strong>${item.price == null ? 'Sem preço' : formatMoney(item.price)}</strong><small>${item.available} disponíveis</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
+    const variationText = `${item.variations} ${item.variations === 1 ? 'material' : 'materiais'} · ${item.priceLines.length} ${item.priceLines.length === 1 ? 'valor' : 'valores'}`;
+    const knownPrices = item.priceLines.map((line) => line.price).filter((price) => price != null);
+    const priceSummary = knownPrices.length ? (Math.min(...knownPrices) === Math.max(...knownPrices) ? formatMoney(knownPrices[0]) : `${formatMoney(Math.min(...knownPrices))} a ${formatMoney(Math.max(...knownPrices))}`) : 'Consultar';
+    return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || 'Capa')}</small><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(variationText)}</code></span><span class="label-product-card__price"><strong>${escapeHtml(priceSummary)}</strong><small>${item.available} disponíveis</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
   }).join('') : emptyState('Nenhuma capa encontrada', 'Altere a busca para localizar outro modelo.');
   const selected = [...state.labelSelection.values()];
   selection.innerHTML = selected.length ? `<div class="label-selection__head"><div><small>Folha de impressão</small><strong>${selected.length} ${selected.length === 1 ? 'etiqueta selecionada' : 'etiquetas selecionadas'}</strong></div><button class="btn btn--ghost btn--small" data-action="clear-labels">Limpar tudo</button></div><div class="label-preview-list">${selected.slice(0, 6).map((item) => `<div>${printableCaseLabel(item)}<button data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></div>`).join('')}${selected.length > 6 ? `<p>+ ${selected.length - 6} etiquetas selecionadas</p>` : ''}</div><div class="label-format"><span>Formato</span><strong>45 x 30 mm · 32 por folha A4</strong></div><button class="btn label-print-button" data-action="print-labels">${uiIcon('copy')} Imprimir etiquetas</button>` : `<div class="label-selection__empty">${uiIcon('copy')}<strong>Nenhuma etiqueta selecionada</strong><span>Escolha as capas na lista ao lado.</span></div>`;

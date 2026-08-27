@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-08-27",
+  "pricingSource": "Gramcell · Simulador Produtos",
+  "pricingSourceTableDate": "27/08/2026",
+  "pricingProfileCount": 47,
+  "pricingValueCount": 423,
+  "pricingChanges": 0,
+  "voucherSource": "new_9187_tabela-voucher-renova-agosto-2026-portal-ana-paula-dos-santosxlsxvnd-1785786053 (2).xlsx",
+  "voucherSheet": "SAP",
+  "voucherTableDate": "2026-08-04",
+  "voucherCount": 1042,
+  "voucherChanges": 0,
+  "boostSource": "new_9187_tabela-boost-renova-agosto2026-versao-25082-ana-paula-dos-santosxlsxvnd-1787604149.xlsx",
+  "boostCount": 74,
+  "boostChanges": [
+    {
+      "name": "JOVI X300 Ultra 512GB",
+      "bonusCents": 120000,
+      "startsOn": "2026-08-25",
+      "endsOn": "2026-09-30"
+    },
+    {
+      "name": "JOVI X300 FE 256GB",
+      "bonusCents": 60000,
+      "startsOn": "2026-08-25",
+      "endsOn": "2026-09-30"
+    }
+  ]
+}

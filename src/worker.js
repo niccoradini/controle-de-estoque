@@ -2517,18 +2517,56 @@ async function listUsers(env) {
 }
 
 async function myPoint(env, user) {
-  const qr = await env.DB.prepare(`
-    SELECT mime_type, image_base64, updated_at
-    FROM employee_point_qr
-    WHERE user_id = ?
-  `).bind(user.id).first();
+  const [qr, punchesResult] = await Promise.all([
+    env.DB.prepare(`
+      SELECT mime_type, image_base64, updated_at
+      FROM employee_point_qr
+      WHERE user_id = ?
+    `).bind(user.id).first(),
+    env.DB.prepare(`
+      SELECT id, punched_at
+      FROM employee_point_punches
+      WHERE user_id = ?
+      ORDER BY punched_at DESC, id DESC
+      LIMIT 30
+    `).bind(user.id).all(),
+  ]);
   return json({
     employee: { name: user.name, employeeRe: user.employee_re || '' },
     qrCode: qr ? {
       imageDataUrl: `data:${qr.mime_type};base64,${qr.image_base64}`,
       updatedAt: qr.updated_at,
     } : null,
+    punches: (punchesResult.results || []).map((punch) => ({
+      id: Number(punch.id),
+      punchedAt: punch.punched_at,
+    })),
   }, 200, { 'Cache-Control': 'private, no-store, max-age=0' });
+}
+
+async function punchMyPoint(env, user) {
+  const timestamp = nowIso();
+  const previous = await env.DB.prepare(`
+    SELECT punched_at
+    FROM employee_point_punches
+    WHERE user_id = ?
+    ORDER BY punched_at DESC, id DESC
+    LIMIT 1
+  `).bind(user.id).first();
+  if (previous && Date.parse(timestamp) - Date.parse(previous.punched_at) < 60000) {
+    throw new HttpError(409, 'Seu ponto já foi registrado há menos de um minuto.');
+  }
+  const results = await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO employee_point_punches (user_id, punched_at)
+      VALUES (?, ?)
+    `).bind(user.id, timestamp),
+    auditStatement(env, user.id, 'point.punched', 'user', user.id, { punchedAt: timestamp }),
+  ]);
+  return json({
+    punch: { id: Number(results[0].meta.last_row_id), punchedAt: timestamp },
+    message: 'Ponto registrado com sucesso.',
+  }, 201, { 'Cache-Control': 'private, no-store, max-age=0' });
 }
 
 async function savePointQr(request, env, manager, userId) {
@@ -2770,6 +2808,7 @@ async function routeApi(request, env) {
   if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
   if (method === 'GET' && path === '/api/point/me') return myPoint(env, user);
+  if (method === 'POST' && path === '/api/point/me/punch') return punchMyPoint(env, user);
   if (method === 'GET' && path === '/api/catalog') return listCatalog(env, user);
   if (method === 'GET' && path === '/api/stock/summary') return stockSummary(env, user);
   if (method === 'GET' && path === '/api/incoming') {

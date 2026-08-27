@@ -612,7 +612,19 @@ async function renderPoint() {
   const qrContent = data.qrCode
     ? `<div class="point-qr__frame"><img src="${escapeHtml(data.qrCode.imageDataUrl)}" alt="Seu QR Code individual para registro de ponto" width="640" height="640"></div><div class="point-qr__status">${uiIcon('check')}<span><strong>QR Code individual</strong><small>Vinculado somente ao seu acesso</small></span></div>`
     : `<div class="point-qr__empty">${uiIcon('history')}<strong>QR Code aguardando cadastro</strong><span>A gerência ainda não vinculou seu código de ponto.</span></div>`;
-  content.innerHTML = `<section class="point-hero"><div><p class="page-eyebrow">Área individual · acesso protegido</p><h2>Olá, ${escapeHtml(firstName)}</h2><p>Seu QR Code e os horários da equipe ficam reunidos aqui para facilitar o registro diário.</p><div class="point-identity"><span>Funcionário</span><strong>${escapeHtml(data.employee?.name || state.user.name)}</strong>${data.employee?.employeeRe ? `<code class="mono">RE ${escapeHtml(data.employee.employeeRe)}</code>` : ''}</div></div><div class="point-hero__lock">${uiIcon('check')}<span><strong>Somente você</strong><small>Este código não aparece para outros funcionários.</small></span></div></section><div class="point-layout"><section class="point-qr-card"><header><div><p class="page-eyebrow">Registro de ponto</p><h3>Meu QR Code</h3><span>Apresente este código no leitor para registrar seu ponto.</span></div></header>${qrContent}<p class="point-qr__notice">Não compartilhe este código. Ele está associado ao seu cadastro pessoal.</p></section><div class="point-schedule">${teamBreakSchedule('point')}</div></div>`;
+  const punches = Array.isArray(data.punches) ? data.punches : [];
+  const punchHistory = punches.length
+    ? `<ol class="point-history__list">${punches.map((punch, index) => `<li><span>${uiIcon('check')}</span><div><strong>${index === 0 ? 'Último registro' : 'Ponto registrado'}</strong><time datetime="${escapeHtml(punch.punchedAt)}">${escapeHtml(formatDate(punch.punchedAt))}</time></div></li>`).join('')}</ol>`
+    : `<div class="point-history__empty">${uiIcon('history')}<div><strong>Nenhum ponto registrado</strong><span>Seus horários aparecerão aqui depois do primeiro registro.</span></div></div>`;
+  content.innerHTML = `<section class="point-hero"><div><p class="page-eyebrow">Área individual · acesso protegido</p><h2>Olá, ${escapeHtml(firstName)}</h2><p>Seu QR Code, seus registros e os horários da equipe ficam reunidos aqui para facilitar o dia.</p><div class="point-identity"><span>Funcionário</span><strong>${escapeHtml(data.employee?.name || state.user.name)}</strong>${data.employee?.employeeRe ? `<code class="mono">RE ${escapeHtml(data.employee.employeeRe)}</code>` : ''}</div></div><div class="point-hero__lock">${uiIcon('check')}<span><strong>Somente você</strong><small>Seu QR e seu histórico não aparecem para outros funcionários.</small></span></div></section><div class="point-layout"><div class="point-personal"><section class="point-qr-card"><header><div><p class="page-eyebrow">Registro de ponto</p><h3>Meu QR Code</h3><span>Apresente este código no leitor para registrar seu ponto.</span></div></header>${qrContent}<button class="point-punch-button" data-action="punch-point">${uiIcon('check')}<span>BATI MEU PONTO</span></button><p class="point-punch-help">Ao tocar, o horário atual do servidor será salvo no seu histórico.</p><p class="point-qr__notice">Não compartilhe este código. Ele está associado ao seu cadastro pessoal.</p></section><section class="point-history"><header><div><p class="page-eyebrow">Histórico individual</p><h3>Meus registros</h3></div><span>${punches.length} ${punches.length === 1 ? 'registro' : 'registros'}</span></header>${punchHistory}</section></div><div class="point-schedule">${teamBreakSchedule('point')}</div></div>`;
+}
+
+async function punchPoint(button) {
+  await withBusy(button, async () => {
+    const result = await api('/api/point/me/punch', { method: 'POST' });
+    showToast(result.message || 'Ponto registrado com sucesso.');
+    await renderPoint();
+  });
 }
 
 function managerInventoryGroupCard(group, totalAvailable) {
@@ -2761,6 +2773,7 @@ root.addEventListener('click', async (event) => {
     if (action === 'edit-user') userModal(state.users.find((user) => user.id === Number(button.dataset.id)));
     if (action === 'delete-user') deleteUserModal(state.users.find((user) => user.id === Number(button.dataset.id)));
     if (action === 'upload-point-qr') uploadPointQr(state.users.find((user) => user.id === Number(button.dataset.id)));
+    if (action === 'punch-point') await punchPoint(button);
     if (action === 'filter-requests') { state.requestFilter = button.dataset.status; await renderRequests(); }
     if (action === 'cancel-request') cancelModal(button.dataset.id);
   } catch (error) {

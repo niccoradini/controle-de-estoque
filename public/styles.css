@@ -5497,6 +5497,7 @@ body.cart-drawer-open { overflow: hidden; }
 .point-hero__lock strong { color: #d9f7e9; font-size: 11px; }
 .point-hero__lock small { color: rgba(198, 235, 218, .48); font-size: 8px; line-height: 1.4; }
 .point-layout { display: grid; grid-template-columns: 360px minmax(0, 1fr); align-items: start; gap: 14px; margin-top: 15px; }
+.point-personal { min-width: 0; display: grid; gap: 14px; }
 .point-qr-card { overflow: hidden; padding: 18px; border: 1px solid rgba(255, 255, 255, .08); border-radius: 23px; background: #121215; }
 .point-qr-card header h3 { margin: 4px 0 3px; color: #f3edf8; font-size: 21px; font-weight: 590; }
 .point-qr-card header span { color: rgba(225, 218, 231, .42); font-size: 9px; }
@@ -5508,6 +5509,27 @@ body.cart-drawer-open { overflow: hidden; }
 .point-qr__status strong { color: #d9f5e8; font-size: 9px; }
 .point-qr__status small { color: rgba(196, 232, 214, .45); font-size: 7px; }
 .point-qr__notice { margin: 11px 2px 0; color: rgba(225, 216, 231, .35); font-size: 8px; line-height: 1.5; text-align: center; }
+.point-punch-button { width: 100%; min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 14px; border: 1px solid rgba(114, 239, 180, .32); border-radius: 15px; color: #10281d; background: linear-gradient(135deg, #8ff1bf, #58d89a); box-shadow: 0 12px 28px rgba(56, 205, 134, .18); font-size: 12px; font-weight: 800; letter-spacing: .05em; transition: transform .16s, filter .16s, box-shadow .16s; }
+.point-punch-button:hover { filter: brightness(1.04); transform: translateY(-1px); box-shadow: 0 15px 34px rgba(56, 205, 134, .24); }
+.point-punch-button:disabled { cursor: wait; filter: saturate(.65); opacity: .72; transform: none; }
+.point-punch-button .ui-icon { width: 18px; }
+.point-punch-help { margin: 8px 4px 0; color: rgba(219, 232, 225, .48); font-size: 8px; line-height: 1.45; text-align: center; }
+.point-history { padding: 17px; border: 1px solid rgba(255, 255, 255, .08); border-radius: 21px; background: #121215; }
+.point-history header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.point-history header h3 { margin: 3px 0 0; color: #f3edf8; font-size: 17px; font-weight: 590; }
+.point-history header > span { padding: 5px 8px; border: 1px solid rgba(181, 140, 255, .14); border-radius: 8px; color: #c7aaf2; background: rgba(181, 140, 255, .05); font-size: 8px; }
+.point-history__list { max-height: 310px; display: grid; gap: 7px; overflow: auto; margin: 13px 0 0; padding: 0; list-style: none; }
+.point-history__list li { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid rgba(255, 255, 255, .055); border-radius: 12px; background: rgba(255, 255, 255, .02); }
+.point-history__list li > span { width: 28px; height: 28px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 9px; color: #6fe0a9; background: rgba(89, 222, 159, .07); }
+.point-history__list .ui-icon { width: 14px; }
+.point-history__list li div { min-width: 0; display: grid; gap: 2px; }
+.point-history__list strong { color: #e9e2ed; font-size: 9px; }
+.point-history__list time { color: rgba(225, 216, 231, .47); font-size: 8px; }
+.point-history__empty { display: flex; align-items: center; gap: 11px; margin-top: 13px; padding: 16px; border: 1px dashed rgba(181, 140, 255, .16); border-radius: 13px; color: #a887dc; }
+.point-history__empty .ui-icon { width: 23px; }
+.point-history__empty div { display: grid; gap: 3px; }
+.point-history__empty strong { color: #e7ddf0; font-size: 10px; }
+.point-history__empty span { color: rgba(225, 217, 231, .4); font-size: 8px; line-height: 1.4; }
 .point-qr__empty { min-height: 310px; display: grid; place-items: center; align-content: center; gap: 8px; margin-top: 15px; border: 1px dashed rgba(181, 140, 255, .2); border-radius: 18px; color: #a887dc; background: rgba(181, 140, 255, .025); text-align: center; }
 .point-qr__empty .ui-icon { width: 32px; }
 .point-qr__empty strong { color: #e9dff3; font-size: 12px; }

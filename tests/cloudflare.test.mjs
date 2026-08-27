@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -120,6 +120,7 @@ before(async () => {
     readFile(new URL('../migrations/0052_employee_re_login.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0053_s26_case_retail_prices.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0054_employee_point_qr.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0055_employee_point_punches.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -239,6 +240,7 @@ before(async () => {
   await applyMigration(migration52);
   await applyMigration(migration53);
   await applyMigration(migration54);
+  await applyMigration(migration55);
 });
 
 after(async () => mf?.dispose());
@@ -537,6 +539,29 @@ describe('Controle de estoque por código material', () => {
     const users = await manager.request('/api/users');
     assert.equal(users.payload.users.find((user) => user.id === Number(sellerUser.id)).hasPointQr, true);
     assert.ok(users.payload.users.filter((user) => user.id !== Number(sellerUser.id)).every((user) => !user.hasPointQr));
+  });
+
+  test('registra o horário do ponto no servidor e mantém o histórico individual', async () => {
+    const before = Date.now();
+    const punched = await seller.request('/api/point/me/punch', { method: 'POST' });
+    assert.equal(punched.status, 201);
+    assert.equal(punched.payload.message, 'Ponto registrado com sucesso.');
+    assert.ok(Date.parse(punched.payload.punch.punchedAt) >= before);
+
+    const duplicate = await seller.request('/api/point/me/punch', { method: 'POST' });
+    assert.equal(duplicate.status, 409);
+
+    const ownPoint = await seller.request('/api/point/me');
+    assert.equal(ownPoint.status, 200);
+    assert.equal(ownPoint.payload.punches.length, 1);
+    assert.equal(ownPoint.payload.punches[0].punchedAt, punched.payload.punch.punchedAt);
+    assert.equal(ownPoint.headers.get('cache-control'), 'private, no-store, max-age=0');
+
+    const otherPoint = await manager.request('/api/point/me');
+    assert.deepEqual(otherPoint.payload.punches, []);
+    const audit = await row(`SELECT actor_user_id, action, details_json FROM audit_logs WHERE action = 'point.punched'`);
+    assert.equal(audit.action, 'point.punched');
+    assert.equal(JSON.parse(audit.details_json).punchedAt, punched.payload.punch.punchedAt);
   });
 
   test('expõe o catálogo sem vazar séries e bloqueia movimentação manual', async () => {
@@ -1649,7 +1674,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.19');
+    assert.equal(JSON.parse(packageSource).version, '6.8.20');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1847,8 +1872,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.19/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.19/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.20/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.20/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /Produtos em reparo/);
     assert.match(workerSource, /\/api\/repairs/);
@@ -1890,7 +1915,10 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /async function renderPoint/);
     assert.match(appSource, /user\.role === 'seller' \? 'point' : 'dashboard'/);
     assert.match(appSource, /data-action="upload-point-qr"/);
+    assert.match(appSource, /data-action="punch-point"/);
+    assert.match(appSource, /BATI MEU PONTO/);
     assert.match(stylesSource, /\.point-qr__frame/);
+    assert.match(stylesSource, /\.point-punch-button/);
     assert.match(workerSource, /async function myPoint/);
     assert.match(workerSource, /Cache-Control.*private, no-store/);
     assert.match(appSource, /const representativeProduct = option\?\.product \|\| group\.products\[0\]/);
@@ -1905,7 +1933,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.19');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.20');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

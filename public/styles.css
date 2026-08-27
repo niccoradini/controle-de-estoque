@@ -5540,6 +5540,50 @@ body.cart-drawer-open { overflow: hidden; }
 .point-qr-admin .ui-icon { width: 12px; }
 @media (max-width: 900px) { .point-layout { grid-template-columns: 1fr; } .point-qr-card { max-width: none; } }
 @media (max-width: 620px) { .point-hero { align-items: stretch; flex-direction: column; padding: 25px 20px; } .point-hero__lock { width: auto; } .point-identity { align-items: flex-start; flex-direction: column; } .point-qr-card { padding: 14px; } }
+.team-point-hero { min-height: 205px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 32px; border: 1px solid rgba(181, 140, 255, .18); border-radius: 27px; background: radial-gradient(circle at 88% 8%, rgba(171, 125, 255, .2), transparent 36%), linear-gradient(135deg, #282034, #151319 68%); }
+.team-point-hero h2 { margin: 5px 0 8px; color: #faf7ff; font-size: clamp(31px, 4vw, 45px); font-weight: 590; letter-spacing: -.05em; }
+.team-point-hero > div:first-child > p:last-child { max-width: 620px; margin: 0; color: rgba(232, 226, 238, .59); font-size: 13px; line-height: 1.6; }
+.team-point-hero__date { min-width: 175px; display: grid; gap: 5px; padding: 16px; border: 1px solid rgba(181, 140, 255, .16); border-radius: 16px; background: rgba(181, 140, 255, .055); }
+.team-point-hero__date span { color: rgba(225, 217, 231, .43); font-size: 8px; }
+.team-point-hero__date strong { color: #e7d9fb; font-size: 11px; }
+.team-point-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.team-point-metrics article { display: grid; gap: 4px; padding: 17px; border: 1px solid rgba(255, 255, 255, .075); border-radius: 17px; background: #151518; }
+.team-point-metrics span { color: rgba(225, 217, 231, .43); font-size: 8px; }
+.team-point-metrics strong { color: #f1eaf5; font-size: 27px; font-weight: 590; }
+.team-point-metrics small { color: rgba(225, 217, 231, .35); font-size: 8px; }
+.team-point-metrics .is-success strong { color: #68dfa7; }
+.team-point-metrics .is-warning strong { color: #f2bb67; }
+.team-point-board { margin-top: 14px; padding: 20px; border: 1px solid rgba(255, 255, 255, .075); border-radius: 23px; background: #111114; }
+.team-point-board > header { display: flex; align-items: flex-end; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
+.team-point-board > header h3 { margin: 3px 0 0; color: #f2ebf6; font-size: 21px; font-weight: 590; }
+.team-point-board > header > span { color: rgba(225, 217, 231, .43); font-size: 9px; }
+.team-point-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.team-point-card { overflow: hidden; border: 1px solid rgba(255, 255, 255, .07); border-radius: 17px; background: rgba(255, 255, 255, .022); }
+.team-point-card.is-recorded { border-color: rgba(89, 222, 159, .15); }
+.team-point-card.is-pending { border-color: rgba(242, 187, 103, .14); }
+.team-point-card > header { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 14px; }
+.team-point-card__avatar { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; color: #d9c5f7; background: linear-gradient(135deg, rgba(181, 140, 255, .18), rgba(181, 140, 255, .07)); font-size: 11px; font-weight: 750; }
+.team-point-card header span { color: rgba(225, 217, 231, .35); font-size: 7px; text-transform: uppercase; }
+.team-point-card header h3 { overflow: hidden; margin: 2px 0; color: #eee7f2; font-size: 12px; font-weight: 620; text-overflow: ellipsis; white-space: nowrap; }
+.team-point-card header code { color: #ae91d9; font-size: 7px; }
+.team-point-card header b { padding: 6px 8px; border-radius: 8px; color: #66dca4; background: rgba(89, 222, 159, .065); font-size: 7px; white-space: nowrap; }
+.team-point-card.is-pending header b { color: #ebb76b; background: rgba(242, 187, 103, .06); }
+.team-point-card__today { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 14px 12px; padding: 10px; border: 1px solid rgba(255, 255, 255, .05); border-radius: 11px; background: rgba(0, 0, 0, .13); }
+.team-point-card__today > span { color: rgba(225, 217, 231, .4); font-size: 8px; }
+.team-point-card__today > div { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 5px; }
+.team-point-card__today time { padding: 4px 6px; border-radius: 6px; color: #cbf2df; background: rgba(89, 222, 159, .07); font-size: 8px; font-weight: 700; }
+.team-point-card__today em { color: rgba(240, 190, 116, .7); font-size: 8px; font-style: normal; }
+.team-point-card__history { border-top: 1px solid rgba(255, 255, 255, .05); }
+.team-point-card__history summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; color: #bca8cf; cursor: pointer; font-size: 8px; list-style: none; }
+.team-point-card__history summary::-webkit-details-marker { display: none; }
+.team-point-card__history summary small { color: rgba(225, 217, 231, .35); font-size: 7px; }
+.team-point-card__history ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 0; padding: 0 14px 13px; list-style: none; }
+.team-point-card__history li { display: grid; gap: 2px; padding: 7px; border-radius: 8px; background: rgba(255, 255, 255, .025); }
+.team-point-card__history li span { color: rgba(225, 217, 231, .35); font-size: 7px; }
+.team-point-card__history li strong { color: #e4d9eb; font-size: 9px; }
+.team-point-card__history > p { margin: 0; padding: 0 14px 13px; color: rgba(225, 217, 231, .38); font-size: 8px; }
+@media (max-width: 900px) { .team-point-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .team-point-grid { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .team-point-hero { align-items: stretch; flex-direction: column; padding: 25px 20px; } .team-point-hero__date { min-width: 0; } .team-point-metrics { grid-template-columns: 1fr 1fr; } .team-point-board { padding: 14px; } .team-point-card > header { grid-template-columns: 38px minmax(0, 1fr); } .team-point-card header b { grid-column: 1 / -1; text-align: center; } }
 
 /* Gerador de etiquetas para prateleiras de capas */
 .label-hero { position: relative; min-height: 210px; display: flex; align-items: center; justify-content: space-between; gap: 30px; overflow: hidden; padding: 32px; border: 1px solid rgba(181, 140, 255, .18); border-radius: 26px; background: radial-gradient(circle at 88% 10%, rgba(181, 140, 255, .2), transparent 35%), linear-gradient(135deg, #282034, #151319 65%); }

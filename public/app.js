@@ -606,6 +606,7 @@ function teamBreakSchedule(variant = 'dashboard') {
 }
 
 async function renderPoint() {
+  if (state.user.role === 'manager') return renderTeamPoint();
   const content = document.querySelector('#view-content');
   const data = await api('/api/point/me');
   const firstName = String(data.employee?.name || state.user.name).split(' ')[0];
@@ -617,6 +618,48 @@ async function renderPoint() {
     ? `<ol class="point-history__list">${punches.map((punch, index) => `<li><span>${uiIcon('check')}</span><div><strong>${index === 0 ? 'Último registro' : 'Ponto registrado'}</strong><time datetime="${escapeHtml(punch.punchedAt)}">${escapeHtml(formatDate(punch.punchedAt))}</time></div></li>`).join('')}</ol>`
     : `<div class="point-history__empty">${uiIcon('history')}<div><strong>Nenhum ponto registrado</strong><span>Seus horários aparecerão aqui depois do primeiro registro.</span></div></div>`;
   content.innerHTML = `<section class="point-hero"><div><p class="page-eyebrow">Área individual · acesso protegido</p><h2>Olá, ${escapeHtml(firstName)}</h2><p>Seu QR Code, seus registros e os horários da equipe ficam reunidos aqui para facilitar o dia.</p><div class="point-identity"><span>Funcionário</span><strong>${escapeHtml(data.employee?.name || state.user.name)}</strong>${data.employee?.employeeRe ? `<code class="mono">RE ${escapeHtml(data.employee.employeeRe)}</code>` : ''}</div></div><div class="point-hero__lock">${uiIcon('check')}<span><strong>Somente você</strong><small>Seu QR e seu histórico não aparecem para outros funcionários.</small></span></div></section><div class="point-layout"><div class="point-personal"><section class="point-qr-card"><header><div><p class="page-eyebrow">Registro de ponto</p><h3>Meu QR Code</h3><span>Apresente este código no leitor para registrar seu ponto.</span></div></header>${qrContent}<button class="point-punch-button" data-action="punch-point">${uiIcon('check')}<span>BATI MEU PONTO</span></button><p class="point-punch-help">Ao tocar, o horário atual do servidor será salvo no seu histórico.</p><p class="point-qr__notice">Não compartilhe este código. Ele está associado ao seu cadastro pessoal.</p></section><section class="point-history"><header><div><p class="page-eyebrow">Histórico individual</p><h3>Meus registros</h3></div><span>${punches.length} ${punches.length === 1 ? 'registro' : 'registros'}</span></header>${punchHistory}</section></div><div class="point-schedule">${teamBreakSchedule('point')}</div></div>`;
+}
+
+function pointDayKey(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function pointTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit',
+  }).format(date);
+}
+
+function teamPointCard(member, todayKey) {
+  const todayPunches = member.punches.filter((punch) => pointDayKey(punch.punchedAt) === todayKey);
+  const latest = member.punches[0];
+  const statusClass = todayPunches.length ? 'is-recorded' : 'is-pending';
+  const history = member.punches.slice(0, 12);
+  return `<article class="team-point-card ${statusClass}">
+    <header><div class="team-point-card__avatar">${escapeHtml(initials(member.name))}</div><div><span>${escapeHtml(roleLabel(member.role))}</span><h3>${escapeHtml(member.name)}</h3>${member.employeeRe ? `<code>RE ${escapeHtml(member.employeeRe)}</code>` : ''}</div><b>${todayPunches.length ? `${todayPunches.length} ${todayPunches.length === 1 ? 'registro hoje' : 'registros hoje'}` : 'Pendente hoje'}</b></header>
+    <div class="team-point-card__today"><span>Horários de hoje</span><div>${todayPunches.length ? todayPunches.slice().reverse().map((punch) => `<time datetime="${escapeHtml(punch.punchedAt)}">${escapeHtml(pointTime(punch.punchedAt))}</time>`).join('') : '<em>Nenhum ponto registrado</em>'}</div></div>
+    <details class="team-point-card__history"><summary><span>Histórico recente</span><small>${latest ? `Último: ${escapeHtml(formatDate(latest.punchedAt))}` : 'Sem registros'}</small></summary>${history.length ? `<ol>${history.map((punch) => `<li><span>${escapeHtml(pointDayKey(punch.punchedAt).split('-').reverse().join('/'))}</span><strong>${escapeHtml(pointTime(punch.punchedAt))}</strong></li>`).join('')}</ol>` : '<p>Este funcionário ainda não registrou nenhum ponto.</p>'}</details>
+  </article>`;
+}
+
+async function renderTeamPoint() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/point/team');
+  const todayKey = pointDayKey(data.generatedAt || new Date().toISOString());
+  const members = Array.isArray(data.members) ? data.members : [];
+  const recorded = members.filter((member) => member.punches.some((punch) => pointDayKey(punch.punchedAt) === todayKey)).length;
+  const totalPunches = members.reduce((sum, member) => sum + member.punches.filter((punch) => pointDayKey(punch.punchedAt) === todayKey).length, 0);
+  content.innerHTML = `<section class="team-point-hero"><div><p class="page-eyebrow">Acompanhamento gerencial</p><h2>Ponto da equipe</h2><p>Acompanhe quem já registrou o ponto hoje e consulte o histórico individual de vendedores e estoquistas.</p></div><div class="team-point-hero__date"><span>Atualizado agora</span><strong>${escapeHtml(formatDate(data.generatedAt, false))}</strong></div></section>
+    <div class="team-point-metrics"><article><span>Equipe ativa</span><strong>${members.length}</strong><small>vendedores e estoquistas</small></article><article class="is-success"><span>Registraram hoje</span><strong>${recorded}</strong><small>${members.length ? Math.round((recorded / members.length) * 100) : 0}% da equipe</small></article><article class="is-warning"><span>Pendentes hoje</span><strong>${Math.max(0, members.length - recorded)}</strong><small>ainda sem registro</small></article><article><span>Batidas hoje</span><strong>${totalPunches}</strong><small>horários registrados</small></article></div>
+    <section class="team-point-board"><header><div><p class="page-eyebrow">Situação de hoje</p><h3>Funcionários</h3></div><span>${recorded} de ${members.length} com registro</span></header><div class="team-point-grid">${members.length ? members.map((member) => teamPointCard(member, todayKey)).join('') : emptyState('Nenhum funcionário ativo', 'Crie ou ative vendedores e estoquistas para acompanhar os pontos.')}</div></section>`;
 }
 
 async function punchPoint(button) {

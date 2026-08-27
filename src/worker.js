@@ -2569,6 +2569,44 @@ async function punchMyPoint(env, user) {
   }, 201, { 'Cache-Control': 'private, no-store, max-age=0' });
 }
 
+async function teamPointOverview(env) {
+  const [membersResult, punchesResult] = await Promise.all([
+    env.DB.prepare(`
+      SELECT id, name, employee_re, role, access_profile
+      FROM users
+      WHERE active = 1 AND deleted_at IS NULL
+        AND NOT (role = 'manager' AND access_profile = 'default')
+      ORDER BY name COLLATE NOCASE
+    `).all(),
+    env.DB.prepare(`
+      SELECT p.id, p.user_id, p.punched_at
+      FROM employee_point_punches p
+      JOIN users u ON u.id = p.user_id
+      WHERE u.active = 1 AND u.deleted_at IS NULL
+        AND NOT (u.role = 'manager' AND u.access_profile = 'default')
+        AND p.punched_at >= datetime('now', '-31 days')
+      ORDER BY p.punched_at DESC, p.id DESC
+      LIMIT 1000
+    `).all(),
+  ]);
+  const punchesByUser = new Map();
+  for (const punch of punchesResult.results || []) {
+    const userId = Number(punch.user_id);
+    if (!punchesByUser.has(userId)) punchesByUser.set(userId, []);
+    punchesByUser.get(userId).push({ id: Number(punch.id), punchedAt: punch.punched_at });
+  }
+  return json({
+    members: (membersResult.results || []).map((member) => ({
+      id: Number(member.id),
+      name: member.name,
+      employeeRe: member.employee_re || '',
+      role: effectiveRole(member),
+      punches: punchesByUser.get(Number(member.id)) || [],
+    })),
+    generatedAt: nowIso(),
+  }, 200, { 'Cache-Control': 'private, no-store, max-age=0' });
+}
+
 async function savePointQr(request, env, manager, userId) {
   const target = await env.DB.prepare(`
     SELECT id, name FROM users WHERE id = ? AND active = 1 AND deleted_at IS NULL
@@ -2808,7 +2846,14 @@ async function routeApi(request, env) {
   if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
   if (method === 'GET' && path === '/api/point/me') return myPoint(env, user);
-  if (method === 'POST' && path === '/api/point/me/punch') return punchMyPoint(env, user);
+  if (method === 'POST' && path === '/api/point/me/punch') {
+    requireRole(user, ['seller', 'stocker']);
+    return punchMyPoint(env, user);
+  }
+  if (method === 'GET' && path === '/api/point/team') {
+    requireRole(user, 'manager');
+    return teamPointOverview(env);
+  }
   if (method === 'GET' && path === '/api/catalog') return listCatalog(env, user);
   if (method === 'GET' && path === '/api/stock/summary') return stockSummary(env, user);
   if (method === 'GET' && path === '/api/incoming') {

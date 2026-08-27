@@ -564,6 +564,21 @@ describe('Controle de estoque por código material', () => {
     assert.equal(JSON.parse(audit.details_json).punchedAt, punched.payload.punch.punchedAt);
   });
 
+  test('gerente acompanha o ponto da equipe sem registrar o próprio ponto', async () => {
+    assert.equal((await manager.request('/api/point/me/punch', { method: 'POST' })).status, 403);
+    assert.equal((await seller.request('/api/point/team')).status, 403);
+
+    const overview = await manager.request('/api/point/team');
+    assert.equal(overview.status, 200);
+    assert.equal(overview.headers.get('cache-control'), 'private, no-store, max-age=0');
+    assert.ok(overview.payload.generatedAt);
+    assert.ok(overview.payload.members.length >= 1);
+    assert.ok(overview.payload.members.every((member) => member.role !== 'manager'));
+    const sellerMember = overview.payload.members.find((member) => member.employeeRe === '81234568');
+    assert.ok(sellerMember);
+    assert.equal(sellerMember.punches.length, 1);
+  });
+
   test('expõe o catálogo sem vazar séries e bloqueia movimentação manual', async () => {
     assert.equal((await seller.request('/api/repairs')).status, 403);
     const catalog = await manager.request('/api/catalog');
@@ -1674,7 +1689,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.20');
+    assert.equal(JSON.parse(packageSource).version, '6.8.21');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1872,8 +1887,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.20/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.20/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.21/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.21/);
     assert.match(appSource, /Produtos a caminho/);
     assert.match(appSource, /Produtos em reparo/);
     assert.match(workerSource, /\/api\/repairs/);
@@ -1917,6 +1932,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /data-action="upload-point-qr"/);
     assert.match(appSource, /data-action="punch-point"/);
     assert.match(appSource, /BATI MEU PONTO/);
+    assert.match(appSource, /async function renderTeamPoint/);
+    assert.match(appSource, /Ponto da equipe/);
     assert.match(stylesSource, /\.point-qr__frame/);
     assert.match(stylesSource, /\.point-punch-button/);
     assert.match(workerSource, /async function myPoint/);
@@ -1933,7 +1950,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.20');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.21');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

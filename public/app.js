@@ -22,6 +22,10 @@ const state = {
   renovaItems: [],
   repairItems: [],
   incomingItems: [],
+  replenishmentItems: [],
+  replenishmentSearch: '',
+  replenishmentFilter: 'all',
+  replenishmentThreshold: 2,
   labelSelection: new Map(),
   labelSearch: '',
   renovaSearch: '',
@@ -64,6 +68,7 @@ const viewTitles = {
   'renova-intake': 'Renova',
   repairs: 'Produtos em reparo',
   incoming: 'Produtos a caminho',
+  replenishment: 'Reposição de estoque',
   labels: 'Etiquetas de capas',
   stock: 'Loja e estoque',
   'new-request': 'Novo pedido',
@@ -512,13 +517,13 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
-      ['dashboard', 'home', 'Visão do estoque'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
+      ['dashboard', 'home', 'Visão do estoque'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
       ['requests', 'orders', 'Pedidos para separar'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
@@ -2217,6 +2222,52 @@ async function renderLabels() {
   renderLabelWorkspace();
 }
 
+function visibleReplenishmentItems() {
+  const query = normalizeSearch(state.replenishmentSearch);
+  return state.replenishmentItems.filter((item) => {
+    if (state.replenishmentFilter === 'missing' && item.available !== 0) return false;
+    if (state.replenishmentFilter === 'low' && (item.available === 0 || item.available > state.replenishmentThreshold)) return false;
+    if (state.replenishmentFilter === 'selected' && !item.selected) return false;
+    return !query || normalizeSearch(`${item.name} ${item.technicalName} ${item.materialCode} ${item.brand}`).includes(query);
+  });
+}
+
+function replenishmentCard(item) {
+  const status = item.available === 0 ? ['Sem estoque', 'missing'] : [`${item.available} em loja`, 'low'];
+  const incoming = item.incoming ? `<span class="replenishment-card__incoming">${item.incoming} a caminho</span>` : '';
+  return `<article class="replenishment-card ${item.selected ? 'is-selected' : ''}">
+    ${productImageMarkup({ name: item.name, imagem_url: item.imagePath }, 'replenishment-card__image', 86, 86)}
+    <div class="replenishment-card__main"><div class="replenishment-card__head"><span class="replenishment-status replenishment-status--${status[1]}">${status[0]}</span>${incoming}</div><h3>${escapeHtml(item.name)}</h3>${materialCodeBox(item.materialCode)}<small>${escapeHtml(clusterLabels[item.cluster] || clusterLabels.misc)} · limite atual ${state.replenishmentThreshold}</small></div>
+    <div class="replenishment-card__action"><label>Quantidade para pedir<input class="input" type="number" min="1" max="100000" step="1" value="${item.requestedQuantity || Math.max(1, state.replenishmentThreshold + 1 - item.available)}" data-action="replenishment-quantity" data-variant-id="${item.variantId}"></label><button class="btn ${item.selected ? 'btn--secondary' : ''}" data-action="save-replenishment" data-variant-id="${item.variantId}">${item.selected ? 'Atualizar lista' : 'Adicionar à lista'}</button></div>
+  </article>`;
+}
+
+function renderReplenishmentWorkspace() {
+  const grid = document.querySelector('[data-replenishment-grid]');
+  const list = document.querySelector('[data-replenishment-list]');
+  if (!grid || !list) return;
+  const visible = visibleReplenishmentItems();
+  grid.innerHTML = visible.length ? visible.map(replenishmentCard).join('') : emptyState('Nenhum produto encontrado', 'Altere a busca, o filtro ou o limite de estoque baixo.');
+  const selected = state.replenishmentItems.filter((item) => item.selected);
+  list.innerHTML = selected.length ? `<div class="replenishment-list__head"><div><small>Lista atual</small><strong>${selected.length} ${selected.length === 1 ? 'produto' : 'produtos'}</strong></div><button class="btn btn--ghost btn--small" data-action="copy-replenishment">Copiar lista</button></div><div class="replenishment-list__items">${selected.map((item) => `<article><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.materialCode)}</small></div><b>${item.requestedQuantity} un.</b><button data-action="remove-replenishment" data-variant-id="${item.variantId}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></article>`).join('')}</div><button class="btn replenishment-print" data-action="print-replenishment">${uiIcon('copy')} Imprimir lista de pedido</button>` : `<div class="label-selection__empty">${uiIcon('orders')}<strong>Sua lista está vazia</strong><span>Adicione os produtos que precisam ser pedidos.</span></div>`;
+  const count = document.querySelector('[data-replenishment-count]');
+  if (count) count.textContent = visible.length;
+}
+
+async function renderReplenishment() {
+  if (!canAccessRenovaIntake()) return navigate('dashboard');
+  const data = await api(`/api/replenishment?threshold=${state.replenishmentThreshold}`);
+  state.replenishmentItems = data.items || [];
+  const content = document.querySelector('#view-content');
+  content.innerHTML = `<section class="replenishment-hero"><div><p class="page-eyebrow">Planejamento de compras</p><h2>Reposição de estoque</h2><p>Veja rapidamente o que acabou ou está abaixo do limite e monte a próxima lista de pedido.</p></div><div class="replenishment-hero__metrics"><article><span>Em falta</span><strong>${state.replenishmentItems.filter((item) => item.available === 0).length}</strong></article><article><span>Estoque baixo</span><strong>${state.replenishmentItems.filter((item) => item.available > 0 && item.available <= state.replenishmentThreshold).length}</strong></article><article><span>Na lista</span><strong>${state.replenishmentItems.filter((item) => item.selected).length}</strong></article></div></section><section class="replenishment-layout"><div class="replenishment-products"><header><div><p class="page-eyebrow">Sugestões de compra</p><h3>Produtos para repor</h3><span><b data-replenishment-count>0</b> resultados</span></div><label class="replenishment-threshold">Considerar baixo até <select class="select" data-action="replenishment-threshold">${[1,2,3,5,10].map((value) => `<option value="${value}" ${value === state.replenishmentThreshold ? 'selected' : ''}>${value} un.</option>`).join('')}</select></label></header><label class="incoming-search">${uiIcon('search')}<input type="search" data-action="replenishment-search" value="${escapeHtml(state.replenishmentSearch)}" placeholder="Buscar produto ou código material"></label><div class="filter-tabs"><button class="chip ${state.replenishmentFilter === 'all' ? 'is-active' : ''}" data-action="filter-replenishment" data-filter="all">Todos</button><button class="chip ${state.replenishmentFilter === 'missing' ? 'is-active' : ''}" data-action="filter-replenishment" data-filter="missing">Sem estoque</button><button class="chip ${state.replenishmentFilter === 'low' ? 'is-active' : ''}" data-action="filter-replenishment" data-filter="low">Estoque baixo</button><button class="chip ${state.replenishmentFilter === 'selected' ? 'is-active' : ''}" data-action="filter-replenishment" data-filter="selected">Minha lista</button></div><div class="replenishment-grid" data-replenishment-grid></div></div><aside class="replenishment-list" data-replenishment-list></aside></section>`;
+  renderReplenishmentWorkspace();
+}
+
+function replenishmentText() {
+  const selected = state.replenishmentItems.filter((item) => item.selected);
+  return ['LISTA DE REPOSIÇÃO', `Gerada em ${new Date().toLocaleString('pt-BR')}`, '', ...selected.map((item) => `${item.requestedQuantity}x · ${item.name} · ${item.materialCode}`)].join('\n');
+}
+
 async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
@@ -2225,6 +2276,7 @@ async function navigate(view) {
   if (view === 'repairs' && !canAccessRenovaIntake()) return;
   if (view === 'incoming' && !canAccessRenovaIntake()) return;
   if (view === 'labels' && !canAccessRenovaIntake()) return;
+  if (view === 'replenishment' && !canAccessRenovaIntake()) return;
   state.cartDrawerOpen = false;
   document.body.classList.remove('cart-drawer-open');
   state.view = view;
@@ -2241,6 +2293,7 @@ async function navigate(view) {
     if (view === 'repairs') await renderRepairs();
     if (view === 'incoming') await renderIncoming();
     if (view === 'labels') await renderLabels();
+    if (view === 'replenishment') await renderReplenishment();
     if (view === 'stock') await renderStock();
     if (view === 'new-request') await renderNewRequest();
     if (view === 'requests') await renderRequests();
@@ -2680,6 +2733,10 @@ async function enterApp(user) {
   state.news = [];
   state.chips = [];
   state.renovaItems = [];
+  state.replenishmentItems = [];
+  state.replenishmentSearch = '';
+  state.replenishmentFilter = 'all';
+  state.replenishmentThreshold = 2;
   state.renovaSearch = '';
   state.renovaStatus = 'awaiting_pickup';
   state.chipSellers = [];
@@ -2754,6 +2811,24 @@ root.addEventListener('click', async (event) => {
       renderLabelWorkspace();
     }
     if (action === 'print-labels' && canAccessRenovaIntake()) printSelectedLabels();
+    if (action === 'filter-replenishment' && canAccessRenovaIntake()) { state.replenishmentFilter = button.dataset.filter; renderReplenishmentWorkspace(); }
+    if (action === 'save-replenishment' && canAccessRenovaIntake()) {
+      const variantId = Number(button.dataset.variantId);
+      const input = document.querySelector(`[data-action="replenishment-quantity"][data-variant-id="${variantId}"]`);
+      const requestedQuantity = Number(input?.value);
+      await withBusy(button, async () => {
+        await api('/api/replenishment', { method: 'POST', body: { variantId, requestedQuantity } });
+        showToast('Produto salvo na lista de reposição.');
+        await renderReplenishment();
+      });
+    }
+    if (action === 'remove-replenishment' && canAccessRenovaIntake()) {
+      await api(`/api/replenishment/${Number(button.dataset.variantId)}`, { method: 'DELETE' });
+      showToast('Produto removido da lista.');
+      await renderReplenishment();
+    }
+    if (action === 'copy-replenishment' && canAccessRenovaIntake()) { await copyText(replenishmentText()); showToast('Lista de reposição copiada.'); }
+    if (action === 'print-replenishment' && canAccessRenovaIntake()) { document.body.classList.add('printing-replenishment'); window.print(); window.setTimeout(() => document.body.classList.remove('printing-replenishment'), 500); }
     if (action === 'filter-category') { state.catalogCategory = button.dataset.category; renderCatalogGrid(); }
     if (action === 'filter-stock-category') { state.stockCluster = button.dataset.category; renderStockTable(); }
     if (action === 'open-stock-group') {
@@ -2854,6 +2929,7 @@ modalRoot.addEventListener('input', (event) => {
 
 root.addEventListener('change', (event) => {
   const action = event.target.dataset.action;
+  if (action === 'replenishment-threshold') { state.replenishmentThreshold = Number(event.target.value || 2); renderReplenishment(); return; }
   if (action === 'filter-chip-seller') { state.chipSellerId = Number(event.target.value || 0); renderChipResults(); return; }
   if (action === 'renova-enabled') {
     state.renova.enabled = event.target.checked;
@@ -2889,6 +2965,7 @@ root.addEventListener('change', (event) => {
 });
 
 root.addEventListener('input', (event) => {
+  if (event.target.dataset.action === 'replenishment-search') { state.replenishmentSearch = event.target.value; renderReplenishmentWorkspace(); }
   if (event.target.dataset.action === 'label-search') { state.labelSearch = event.target.value; renderLabelWorkspace(); }
   if (event.target.dataset.action === 'search-renova-intake') { state.renovaSearch = event.target.value; renderRenovaIntakeResults(); }
   if (event.target.dataset.action === 'chip-search') { state.chipSearch = event.target.value; renderChipResults(); }

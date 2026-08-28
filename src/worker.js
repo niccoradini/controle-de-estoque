@@ -1100,6 +1100,91 @@ async function incomingInventoryDetails(env) {
   });
 }
 
+async function replenishmentOverview(env, user, url) {
+  const threshold = Math.min(99, Math.max(0, Number.parseInt(url.searchParams.get('threshold') || '2', 10) || 2));
+  const [products, savedResult] = await Promise.all([
+    catalogData(env, { ...user, role: 'manager' }),
+    env.DB.prepare(`
+      SELECT variant_id, requested_quantity, note, created_at, updated_at
+      FROM replenishment_items
+      ORDER BY updated_at DESC
+    `).all(),
+  ]);
+  const saved = new Map((savedResult.results || []).map((item) => [Number(item.variant_id), item]));
+  const items = products.flatMap((product) => product.variants.map((variant) => {
+    const selected = saved.get(Number(variant.id));
+    return {
+      variantId: Number(variant.id),
+      productId: Number(product.id),
+      name: product.name,
+      technicalName: product.technicalName,
+      brand: product.brand,
+      cluster: product.cluster,
+      imagePath: product.imagem_url,
+      materialCode: variant.materialCode,
+      available: Number(variant.available),
+      incoming: Number(variant.incoming || 0),
+      selected: Boolean(selected),
+      requestedQuantity: Number(selected?.requested_quantity || 0),
+      note: selected?.note || '',
+      updatedAt: selected?.updated_at || '',
+    };
+  })).filter((item) => item.selected || item.available <= threshold)
+    .sort((left, right) => Number(right.selected) - Number(left.selected)
+      || left.available - right.available
+      || left.name.localeCompare(right.name, 'pt-BR'));
+  return json({ threshold, items });
+}
+
+async function saveReplenishmentItem(request, env, user) {
+  const data = await readJson(request);
+  const variantId = Number(data.variantId);
+  const requestedQuantity = Number(data.requestedQuantity);
+  const note = String(data.note || '').trim().slice(0, 240);
+  if (!Number.isInteger(variantId) || variantId <= 0) throw new HttpError(400, 'Produto inválido.');
+  if (!Number.isInteger(requestedQuantity) || requestedQuantity <= 0 || requestedQuantity > 100000) {
+    throw new HttpError(400, 'Informe uma quantidade válida para o pedido.');
+  }
+  const variant = await env.DB.prepare(`
+    SELECT v.id, v.sku, COALESCE(p.display_name, p.name) AS product_name
+    FROM product_variants v JOIN products p ON p.id = v.product_id
+    WHERE v.id = ? AND p.active = 1
+  `).bind(variantId).first();
+  if (!variant) throw new HttpError(404, 'Produto não encontrado.');
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO replenishment_items
+        (variant_id, requested_quantity, note, created_by, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(variant_id) DO UPDATE SET
+        requested_quantity = excluded.requested_quantity,
+        note = excluded.note,
+        updated_at = excluded.updated_at
+    `).bind(variantId, requestedQuantity, note, user.id, timestamp, timestamp),
+    auditStatement(env, user.id, 'replenishment.saved', 'variant', variantId, {
+      materialCode: variant.sku,
+      product: variant.product_name,
+      requestedQuantity,
+    }),
+  ]);
+  return json({ ok: true }, 201);
+}
+
+async function deleteReplenishmentItem(env, user, variantId) {
+  const existing = await env.DB.prepare(
+    'SELECT variant_id, requested_quantity FROM replenishment_items WHERE variant_id = ?'
+  ).bind(variantId).first();
+  if (!existing) throw new HttpError(404, 'Item não encontrado na lista de pedido.');
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM replenishment_items WHERE variant_id = ?').bind(variantId),
+    auditStatement(env, user.id, 'replenishment.removed', 'variant', variantId, {
+      requestedQuantity: Number(existing.requested_quantity),
+    }),
+  ]);
+  return noContent();
+}
+
 async function stockSummary(env, user) {
   const products = await catalogData(env, user);
   return json({ summary: products.map((product) => ({
@@ -2859,6 +2944,19 @@ async function routeApi(request, env) {
   if (method === 'GET' && path === '/api/incoming') {
     requireRole(user, ['manager', 'stocker']);
     return incomingInventoryDetails(env);
+  }
+  if (method === 'GET' && path === '/api/replenishment') {
+    requireRole(user, ['manager', 'stocker']);
+    return replenishmentOverview(env, user, url);
+  }
+  if (method === 'POST' && path === '/api/replenishment') {
+    requireRole(user, ['manager', 'stocker']);
+    return saveReplenishmentItem(request, env, user);
+  }
+  const replenishmentMatch = path.match(/^\/api\/replenishment\/(\d+)$/);
+  if (method === 'DELETE' && replenishmentMatch) {
+    requireRole(user, ['manager', 'stocker']);
+    return deleteReplenishmentItem(env, user, Number(replenishmentMatch[1]));
   }
   if (method === 'GET' && path === '/api/repairs') {
     requireRole(user, ['manager', 'stocker']);

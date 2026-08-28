@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -122,6 +122,7 @@ before(async () => {
     readFile(new URL('../migrations/0054_employee_point_qr.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0055_employee_point_punches.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0056_pricing_and_renova_refresh_2026_08_27.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0057_replenishment_orders.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -243,6 +244,7 @@ before(async () => {
   await applyMigration(migration54);
   await applyMigration(migration55);
   await applyMigration(migration56);
+  await applyMigration(migration57);
 });
 
 after(async () => mf?.dispose());
@@ -762,6 +764,28 @@ describe('Controle de estoque por código material', () => {
     assert.equal(Object.hasOwn(sellerDashboard.payload, 'incomingProducts'), false);
     const sellerCatalog = await seller.request('/api/catalog');
     assert.ok(sellerCatalog.payload.products.every((product) => product.available > 0));
+  });
+
+  test('monta e mantém a lista compartilhada de reposição', async () => {
+    const overview = await manager.request('/api/replenishment?threshold=2');
+    assert.equal(overview.status, 200);
+    assert.ok(overview.payload.items.length > 0);
+    assert.ok(overview.payload.items.every((item) => item.available <= 2 || item.selected));
+    assert.ok(overview.payload.items.some((item) => item.available === 0));
+    const target = overview.payload.items[0];
+    const saved = await manager.request('/api/replenishment', {
+      method: 'POST', body: { variantId: target.variantId, requestedQuantity: 12 },
+    });
+    assert.equal(saved.status, 201);
+    const sharedOverview = await manager.request('/api/replenishment?threshold=2');
+    assert.equal(sharedOverview.status, 200, JSON.stringify(sharedOverview.payload));
+    const selected = sharedOverview.payload.items.find((item) => item.variantId === target.variantId);
+    assert.equal(selected.selected, true);
+    assert.equal(selected.requestedQuantity, 12);
+    assert.equal((await seller.request('/api/replenishment')).status, 403);
+    assert.equal((await manager.request(`/api/replenishment/${target.variantId}`, { method: 'DELETE' })).status, 204);
+    const cleared = await manager.request('/api/replenishment?threshold=2');
+    assert.equal(cleared.payload.items.find((item) => item.variantId === target.variantId)?.selected || false, false);
   });
 
   test('agrupa aparelhos por modelo e relaciona somente capas compatíveis', async () => {
@@ -1693,7 +1717,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.23');
+    assert.equal(JSON.parse(packageSource).version, '6.8.24');
     assert.match(appSource, /código material/i);
     assert.match(appSource, /function clusterGraphic/);
     assert.match(appSource, /material-code-box/);
@@ -1891,8 +1915,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.23/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.23/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.24/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.24/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -1958,7 +1982,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.23');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.24');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

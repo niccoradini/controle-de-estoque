@@ -256,6 +256,15 @@ function normalizeRenovaModelKey(value = '') {
     .replace(/[^A-Z0-9]+/g, '');
 }
 
+function normalizeSearch(value = '') {
+  return String(value)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function manufacturerRenovaBonus(productName = '') {
   const productKey = normalizeRenovaModelKey(productName);
   const matchingBoost = [...(state.renovaCatalog.boosts || [])]

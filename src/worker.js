@@ -1136,10 +1136,78 @@ async function replenishmentOverview(env, user, url) {
   return json({ threshold, items });
 }
 
-function csvCell(value) {
-  let text = String(value ?? '');
-  if (/^[=+\-@]/.test(text)) text = `'${text}`;
-  return `"${text.replaceAll('"', '""')}"`;
+function xmlCell(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
+}
+
+function crc32(bytes) {
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function zipWorkbook(files) {
+  const encoder = new TextEncoder();
+  const chunks = [];
+  const directory = [];
+  let offset = 0;
+  const u16 = (value) => [value & 255, (value >>> 8) & 255];
+  const u32 = (value) => [value & 255, (value >>> 8) & 255, (value >>> 16) & 255, (value >>> 24) & 255];
+  for (const [name, content] of Object.entries(files)) {
+    const filename = encoder.encode(name);
+    const data = encoder.encode(content);
+    const checksum = crc32(data);
+    const local = new Uint8Array([
+      ...u32(0x04034b50), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0),
+      ...u32(checksum), ...u32(data.length), ...u32(data.length), ...u16(filename.length), ...u16(0), ...filename,
+    ]);
+    chunks.push(local, data);
+    directory.push(new Uint8Array([
+      ...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(0), ...u16(0),
+      ...u32(checksum), ...u32(data.length), ...u32(data.length), ...u16(filename.length), ...u16(0), ...u16(0),
+      ...u16(0), ...u16(0), ...u32(0), ...u32(offset), ...filename,
+    ]));
+    offset += local.length + data.length;
+  }
+  const directorySize = directory.reduce((sum, item) => sum + item.length, 0);
+  const end = new Uint8Array([
+    ...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(directory.length), ...u16(directory.length),
+    ...u32(directorySize), ...u32(offset), ...u16(0),
+  ]);
+  const output = new Uint8Array(offset + directorySize + end.length);
+  let position = 0;
+  for (const chunk of [...chunks, ...directory, end]) { output.set(chunk, position); position += chunk.length; }
+  return output;
+}
+
+function replenishmentWorkbook(items, generatedOn) {
+  const lastDataRow = Math.max(7, items.length + 7);
+  const rows = items.map((item, index) => {
+    const row = index + 8;
+    const style = index % 2 ? 4 : 3;
+    return `<row r="${row}" ht="24"><c r="A${row}" s="${style}" t="inlineStr"><is><t>${xmlCell(item.material_code)}</t></is></c><c r="B${row}" s="${style}" t="inlineStr"><is><t>${xmlCell(item.product_name)}</t></is></c><c r="C${row}" s="${style + 2}" t="n"><v>${Number(item.requested_quantity)}</v></c></row>`;
+  }).join('');
+  const totalRow = items.length + 9;
+  const total = items.reduce((sum, item) => sum + Number(item.requested_quantity), 0);
+  const signatureRow = totalRow + 3;
+  const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="7" topLeftCell="A8" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="1" width="20" customWidth="1"/><col min="2" max="2" width="58" customWidth="1"/><col min="3" max="3" width="18" customWidth="1"/></cols><sheetData><row r="1" ht="42"><c r="A1" s="1" t="inlineStr"><is><t>LISTA DE REPOSIÇÃO</t></is></c><c r="C1" s="11" t="inlineStr"><is><t>✦ vivo</t></is></c></row><row r="2" ht="23"><c r="A2" s="2" t="inlineStr"><is><t>CONTROLE DE ESTOQUE • PEDIDO INTERNO</t></is></c><c r="C2" s="12" t="inlineStr"><is><t>GERÊNCIA</t></is></c></row><row r="4" ht="20"><c r="A4" s="13" t="inlineStr"><is><t>DATA DE GERAÇÃO</t></is></c><c r="B4" s="13" t="inlineStr"><is><t>PRODUTOS NA LISTA</t></is></c><c r="C4" s="13" t="inlineStr"><is><t>TOTAL DE UNIDADES</t></is></c></row><row r="5" ht="31"><c r="A5" s="14" t="inlineStr"><is><t>${xmlCell(generatedOn)}</t></is></c><c r="B5" s="14" t="n"><v>${items.length}</v></c><c r="C5" s="14" t="n"><v>${total}</v></c></row><row r="7" ht="28"><c r="A7" s="7" t="inlineStr"><is><t>MATERIAL</t></is></c><c r="B7" s="7" t="inlineStr"><is><t>NOME DO PRODUTO</t></is></c><c r="C7" s="8" t="inlineStr"><is><t>QUANTIDADE</t></is></c></row>${rows}<row r="${totalRow}" ht="29"><c r="A${totalRow}" s="9"/><c r="B${totalRow}" s="9" t="inlineStr"><is><t>TOTAL DO PEDIDO</t></is></c><c r="C${totalRow}" s="10" t="n"><v>${total}</v></c></row><row r="${signatureRow}" ht="34"><c r="A${signatureRow}" s="15" t="inlineStr"><is><t>RESPONSÁVEL PELO PEDIDO</t></is></c><c r="C${signatureRow}" s="15" t="inlineStr"><is><t>DATA / CONFERÊNCIA</t></is></c></row><row r="${signatureRow + 1}" ht="31"><c r="A${signatureRow + 1}" s="16" t="inlineStr"><is><t>________________________________________</t></is></c><c r="C${signatureRow + 1}" s="16" t="inlineStr"><is><t>____ / ____ / ______</t></is></c></row></sheetData><mergeCells count="4"><mergeCell ref="A1:B1"/><mergeCell ref="A2:B2"/><mergeCell ref="A${signatureRow}:B${signatureRow}"/><mergeCell ref="A${signatureRow + 1}:B${signatureRow + 1}"/></mergeCells><autoFilter ref="A7:C${lastDataRow}"/><pageMargins left="0.25" right="0.25" top="0.35" bottom="0.35" header="0.2" footer="0.2"/><pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="7"><font><sz val="11"/><name val="Aptos"/><color rgb="FF25212B"/></font><font><b/><sz val="20"/><name val="Aptos Display"/><color rgb="FFFFFFFF"/></font><font><b/><sz val="9"/><name val="Aptos"/><color rgb="FFEADFF5"/></font><font><b/><sz val="11"/><name val="Aptos"/><color rgb="FFFFFFFF"/></font><font><b/><sz val="17"/><name val="Aptos Display"/><color rgb="FFFFFFFF"/></font><font><b/><sz val="9"/><name val="Aptos"/><color rgb="FF6A3B89"/></font><font><b/><sz val="14"/><name val="Aptos Display"/><color rgb="FF4C216B"/></font></fonts><fills count="8"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF55217A"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF4EDFA"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF8A47BD"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE9D8F5"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF0E5F8"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFDCCCE8"/></left><right style="thin"><color rgb="FFDCCCE8"/></right><top style="thin"><color rgb="FFDCCCE8"/></top><bottom style="thin"><color rgb="FFDCCCE8"/></bottom><diagonal/></border><border><left/><right/><top/><bottom style="thin"><color rgb="FF8A47BD"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="17"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center" indent="1"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center" indent="2"/></xf><xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" indent="1"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" indent="1"/></xf><xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" indent="1"/></xf><xf numFmtId="0" fontId="3" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="4" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="5" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="6" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="5" fillId="0" borderId="2" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment vertical="bottom"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  return zipWorkbook({
+    '[Content_Types].xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
+    '_rels/.rels': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+    'xl/workbook.xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Pedido de reposição" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+    'xl/_rels/workbook.xml.rels': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
+    'xl/worksheets/sheet1.xml': sheet,
+    'xl/styles.xml': styles,
+  });
 }
 
 async function exportReplenishmentSpreadsheet(env) {
@@ -1152,17 +1220,13 @@ async function exportReplenishmentSpreadsheet(env) {
     JOIN products p ON p.id = v.product_id
     ORDER BY product_name COLLATE NOCASE, material_code COLLATE NOCASE
   `).all();
-  const rows = (result.results || []).map((item) => [
-    item.material_code,
-    item.product_name,
-    Number(item.requested_quantity),
-  ]);
-  const csv = ['Material;Nome do produto;Quantidade', ...rows.map((row) => row.map(csvCell).join(';'))].join('\r\n');
   const date = new Date().toISOString().slice(0, 10);
-  return new Response(`\uFEFF${csv}\r\n`, {
+  const displayDate = date.split('-').reverse().join('/');
+  const workbook = replenishmentWorkbook(result.results || [], displayDate);
+  return new Response(workbook, {
     headers: {
-      'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="lista-reposicao-${date}.csv"`,
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="lista-reposicao-${date}.xlsx"`,
       'Cache-Control': 'private, no-store',
     },
   });

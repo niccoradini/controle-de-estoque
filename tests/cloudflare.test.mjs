@@ -786,12 +786,10 @@ describe('Controle de estoque por código material', () => {
       headers: { Cookie: manager.cookie, 'CF-Connecting-IP': manager.ip },
     });
     assert.equal(exported.status, 200);
-    assert.match(exported.headers.get('content-type'), /^text\/csv; charset=utf-8/i);
-    assert.match(exported.headers.get('content-disposition'), /lista-reposicao-\d{4}-\d{2}-\d{2}\.csv/);
-    const csv = await exported.text();
-    assert.match(csv, /^Material;Nome do produto;Quantidade\r\n/);
-    assert.match(csv, new RegExp(`"${target.materialCode}";`));
-    assert.match(csv, /;"12"\r\n/);
+    assert.match(exported.headers.get('content-type'), /spreadsheetml\.sheet/i);
+    assert.match(exported.headers.get('content-disposition'), /lista-reposicao-\d{4}-\d{2}-\d{2}\.xlsx/);
+    const workbook = new Uint8Array(await exported.arrayBuffer());
+    assert.deepEqual([...workbook.slice(0, 4)], [0x50, 0x4b, 0x03, 0x04]);
     assert.equal((await seller.request('/api/replenishment')).status, 403);
     assert.equal((await manager.request(`/api/replenishment/${target.variantId}`, { method: 'DELETE' })).status, 204);
     const cleared = await manager.request('/api/replenishment?threshold=2');
@@ -1727,7 +1725,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.26');
+    assert.equal(JSON.parse(packageSource).version, '6.8.27');
     assert.match(appSource, /\/api\/replenishment\/export/);
     assert.doesNotMatch(appSource, /print-replenishment|printing-replenishment/);
     assert.match(appSource, /function normalizeSearch\(value = ''\)/);
@@ -1928,8 +1926,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.26/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.26/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.27/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.27/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -1995,7 +1993,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.26');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.27');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

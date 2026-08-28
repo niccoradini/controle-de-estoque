@@ -1136,6 +1136,38 @@ async function replenishmentOverview(env, user, url) {
   return json({ threshold, items });
 }
 
+function csvCell(value) {
+  let text = String(value ?? '');
+  if (/^[=+\-@]/.test(text)) text = `'${text}`;
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
+async function exportReplenishmentSpreadsheet(env) {
+  const result = await env.DB.prepare(`
+    SELECT v.sku AS material_code,
+           COALESCE(p.display_name, p.name) AS product_name,
+           r.requested_quantity
+    FROM replenishment_items r
+    JOIN product_variants v ON v.id = r.variant_id
+    JOIN products p ON p.id = v.product_id
+    ORDER BY product_name COLLATE NOCASE, material_code COLLATE NOCASE
+  `).all();
+  const rows = (result.results || []).map((item) => [
+    item.material_code,
+    item.product_name,
+    Number(item.requested_quantity),
+  ]);
+  const csv = ['Material;Nome do produto;Quantidade', ...rows.map((row) => row.map(csvCell).join(';'))].join('\r\n');
+  const date = new Date().toISOString().slice(0, 10);
+  return new Response(`\uFEFF${csv}\r\n`, {
+    headers: {
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="lista-reposicao-${date}.csv"`,
+      'Cache-Control': 'private, no-store',
+    },
+  });
+}
+
 async function saveReplenishmentItem(request, env, user) {
   const data = await readJson(request);
   const variantId = Number(data.variantId);
@@ -2948,6 +2980,10 @@ async function routeApi(request, env) {
   if (method === 'GET' && path === '/api/replenishment') {
     requireRole(user, ['manager', 'stocker']);
     return replenishmentOverview(env, user, url);
+  }
+  if (method === 'GET' && path === '/api/replenishment/export') {
+    requireRole(user, ['manager', 'stocker']);
+    return exportReplenishmentSpreadsheet(env);
   }
   if (method === 'POST' && path === '/api/replenishment') {
     requireRole(user, ['manager', 'stocker']);

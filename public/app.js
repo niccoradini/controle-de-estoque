@@ -2258,7 +2258,7 @@ function renderReplenishmentWorkspace() {
   const visible = visibleReplenishmentItems();
   grid.innerHTML = visible.length ? visible.map(replenishmentCard).join('') : emptyState('Nenhum produto encontrado', 'Altere a busca, o filtro ou o limite de estoque baixo.');
   const selected = state.replenishmentItems.filter((item) => item.selected);
-  list.innerHTML = selected.length ? `<div class="replenishment-list__head"><div><small>Lista atual</small><strong>${selected.length} ${selected.length === 1 ? 'produto' : 'produtos'}</strong></div><button class="btn btn--ghost btn--small" data-action="copy-replenishment">Copiar lista</button></div><div class="replenishment-list__items">${selected.map((item) => `<article><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.materialCode)}</small></div><b>${item.requestedQuantity} un.</b><button data-action="remove-replenishment" data-variant-id="${item.variantId}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></article>`).join('')}</div><button class="btn replenishment-print" data-action="print-replenishment">${uiIcon('copy')} Imprimir lista de pedido</button>` : `<div class="label-selection__empty">${uiIcon('orders')}<strong>Sua lista está vazia</strong><span>Adicione os produtos que precisam ser pedidos.</span></div>`;
+  list.innerHTML = selected.length ? `<div class="replenishment-list__head"><div><small>Lista atual</small><strong>${selected.length} ${selected.length === 1 ? 'produto' : 'produtos'}</strong></div><button class="btn btn--ghost btn--small" data-action="copy-replenishment">Copiar lista</button></div><div class="replenishment-list__items">${selected.map((item) => `<article><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.materialCode)}</small></div><b>${item.requestedQuantity} un.</b><button data-action="remove-replenishment" data-variant-id="${item.variantId}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></article>`).join('')}</div><a class="btn replenishment-export" href="/api/replenishment/export">${uiIcon('copy')} Baixar planilha (.csv)</a>` : `<div class="label-selection__empty">${uiIcon('orders')}<strong>Sua lista está vazia</strong><span>Adicione os produtos que precisam ser pedidos.</span></div>`;
   const count = document.querySelector('[data-replenishment-count]');
   if (count) count.textContent = visible.length;
 }
@@ -2837,7 +2837,6 @@ root.addEventListener('click', async (event) => {
       await renderReplenishment();
     }
     if (action === 'copy-replenishment' && canAccessRenovaIntake()) { await copyText(replenishmentText()); showToast('Lista de reposição copiada.'); }
-    if (action === 'print-replenishment' && canAccessRenovaIntake()) { document.body.classList.add('printing-replenishment'); window.print(); window.setTimeout(() => document.body.classList.remove('printing-replenishment'), 500); }
     if (action === 'filter-category') { state.catalogCategory = button.dataset.category; renderCatalogGrid(); }
     if (action === 'filter-stock-category') { state.stockCluster = button.dataset.category; renderStockTable(); }
     if (action === 'open-stock-group') {

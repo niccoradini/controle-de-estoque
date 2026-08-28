@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -123,6 +123,8 @@ before(async () => {
     readFile(new URL('../migrations/0055_employee_point_punches.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0056_pricing_and_renova_refresh_2026_08_27.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0057_replenishment_orders.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0058_inventory_refresh_2026_08_28.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0059_incoming_inventory_details_2026_08_28.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -245,6 +247,8 @@ before(async () => {
   await applyMigration(migration55);
   await applyMigration(migration56);
   await applyMigration(migration57);
+  await applyMigration(migration58);
+  await applyMigration(migration59);
 });
 
 after(async () => mf?.dispose());
@@ -254,14 +258,14 @@ describe('Controle de estoque por código material', () => {
   const seller = new Client('198.51.100.11');
   const stocker = new Client('198.51.100.12');
 
-  test('atualiza o relatório de 26/08, exclui RPAR e preserva pedidos e chips distribuídos', async () => {
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM products')).count), 336);
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM products WHERE active = 1')).count), 328);
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM product_variants')).count), 336);
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM product_variants WHERE active = 1')).count), 328);
-    assert.equal(Number((await row('SELECT SUM(quantity_on_hand) AS total FROM product_variants')).total), 942);
-    assert.equal(Number((await row('SELECT SUM(quantity_on_hand) AS total FROM product_variants WHERE active = 1')).total), 942);
-    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM inventory_serials WHERE status = 'available'`)).count), 942);
+  test('atualiza o relatório de 28/08, exclui RPAR e preserva pedidos e chips distribuídos', async () => {
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM products')).count), 338);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM products WHERE active = 1')).count), 330);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM product_variants')).count), 338);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM product_variants WHERE active = 1')).count), 330);
+    assert.equal(Number((await row('SELECT SUM(quantity_on_hand) AS total FROM product_variants')).total), 928);
+    assert.equal(Number((await row('SELECT SUM(quantity_on_hand) AS total FROM product_variants WHERE active = 1')).total), 928);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM inventory_serials WHERE status = 'available'`)).count), 928);
     assert.equal(Number((await row('SELECT COUNT(*) AS count FROM repair_inventory')).count), 110);
     assert.equal(Number((await row('SELECT COUNT(DISTINCT material_code) AS count FROM repair_inventory')).count), 14);
     assert.equal(Number((await row('SELECT COUNT(*) AS count FROM users WHERE id = 99')).count), 1);
@@ -275,11 +279,11 @@ describe('Controle de estoque por código material', () => {
     assert.equal(await row(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'devices'`), null);
     assert.equal(await row(`SELECT id FROM product_variants WHERE sku = '33'`), null);
     assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_excluded_depots'`)).value, 'RPAR');
-    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-08-26');
-    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, 'ESTOQUE26.08.xlsx');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-08-28');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, 'ESTOQUE28.08.xlsx');
     assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_incoming_depots'`)).value, 'DEPS,NREM');
-    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_incoming_units'`)).value, '63');
-    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM incoming_inventory')).count), 36);
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_incoming_units'`)).value, '203');
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM incoming_inventory')).count), 57);
     const preservedChip = await row(`
       SELECT c.status, c.active, i.status AS inventory_status
       FROM chips c JOIN inventory_serials i ON i.id = c.inventory_serial_id
@@ -305,7 +309,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(iphone.technical_name, 'APPLE IPHONE 17 PRO MAX 256GB PR');
     assert.equal(Number(iphone.quantity_on_hand), 0);
     assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22022613'`)).quantity_on_hand), 3);
-    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22022526'`)).quantity_on_hand), 16);
+    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22022526'`)).quantity_on_hand), 14);
     assert.equal((await row(`SELECT status FROM inventory_serials WHERE serial_number = '22022526370124'`)).status, 'available');
     assert.equal((await row(`SELECT status FROM inventory_serials WHERE serial_number = '22022526351919'`)).status, 'withdrawn');
     assert.equal((await row(`SELECT status FROM inventory_serials WHERE serial_number = '220233860385832'`)).status, 'withdrawn');
@@ -320,14 +324,14 @@ describe('Controle de estoque por código material', () => {
     `).all()).results;
     const clusters = Object.fromEntries(clusterRows.map((item) => [item.cluster, { products: Number(item.products), units: Number(item.units) }]));
     assert.deepEqual(clusters, {
-      cables: { products: 22, units: 63 },
-      cases: { products: 117, units: 178 },
-      chargers: { products: 24, units: 73 },
-      devices: { products: 95, units: 146 },
-      misc: { products: 49, units: 258 },
+      cables: { products: 22, units: 61 },
+      cases: { products: 117, units: 167 },
+      chargers: { products: 24, units: 71 },
+      devices: { products: 97, units: 139 },
+      misc: { products: 49, units: 257 },
       notebooks: { products: 2, units: 1 },
-      screen_protectors: { products: 7, units: 197 },
-      speakers: { products: 10, units: 14 },
+      screen_protectors: { products: 7, units: 207 },
+      speakers: { products: 10, units: 13 },
       tvs: { products: 2, units: 12 },
     });
     assert.equal(Number((await row(`SELECT active FROM product_variants WHERE sku = 'YBSC001A1000'`)).active), 1);
@@ -426,32 +430,32 @@ describe('Controle de estoque por código material', () => {
     assert.deepEqual(dashboard.payload.inventoryGroups.map((group) => group.cluster), [
       'devices', 'cases', 'screen_protectors', 'speakers', 'notebooks', 'tvs', 'chargers', 'cables', 'misc',
     ]);
-    assert.equal(dashboard.payload.inventoryGroups.reduce((sum, group) => sum + group.materialCount, 0), 328);
-    assert.equal(dashboard.payload.inventoryGroups.reduce((sum, group) => sum + group.onHand, 0), 942);
+    assert.equal(dashboard.payload.inventoryGroups.reduce((sum, group) => sum + group.materialCount, 0), 330);
+    assert.equal(dashboard.payload.inventoryGroups.reduce((sum, group) => sum + group.onHand, 0), 928);
     assert.equal(
       dashboard.payload.inventoryGroups.reduce((sum, group) => sum + group.available, 0),
       dashboard.payload.stock.available,
     );
     assert.ok(dashboard.payload.inventoryGroups.every((group) => group.topProducts.length <= 3));
     assert.doesNotMatch(JSON.stringify(dashboard.payload.inventoryGroups), /serialNumber|serialNumbers|serial_number/i);
-    assert.equal(dashboard.payload.management.outOfStockMaterials, 34);
-    assert.equal(dashboard.payload.management.incomingUnits, 63);
-    assert.equal(dashboard.payload.management.incomingMaterials, 36);
+    assert.equal(dashboard.payload.management.outOfStockMaterials, 37);
+    assert.equal(dashboard.payload.management.incomingUnits, 203);
+    assert.equal(dashboard.payload.management.incomingMaterials, 57);
     assert.equal(dashboard.payload.management.shortageProducts.length, 12);
-    assert.equal(dashboard.payload.management.incomingProducts.length, 36);
+    assert.equal(dashboard.payload.management.incomingProducts.length, 57);
     assert.ok(dashboard.payload.management.incomingProducts.some((product) => (
-      product.materialCode === 'DGAP277U3000'
-      && product.incoming === 2
-      && product.incomingDeposits['DEPS NREM'] === 2
+      product.materialCode === '22018137'
+      && product.incoming === 1
+      && product.incomingDeposits['DEPS NREM'] === 1
     )));
-    assert.equal(dashboard.payload.management.snapshot.source, 'ESTOQUE26.08.xlsx');
+    assert.equal(dashboard.payload.management.snapshot.source, 'ESTOQUE28.08.xlsx');
 
     const devices = dashboard.payload.inventoryGroups.find((group) => group.cluster === 'devices');
-    assert.equal(devices.materialCount, 95);
-    assert.equal(devices.onHand, 146);
+    assert.equal(devices.materialCount, 97);
+    assert.equal(devices.onHand, 139);
     const repairs = await manager.request('/api/repairs');
     assert.equal(repairs.status, 200);
-    assert.deepEqual(repairs.payload.summary, { units: 110, materials: 14, snapshotDate: '2026-08-26' });
+    assert.deepEqual(repairs.payload.summary, { units: 110, materials: 14, snapshotDate: '2026-08-28' });
     assert.equal(repairs.payload.items.length, 110);
     assert.ok(repairs.payload.items.every((item) => item.deposit === 'RPAR'));
     assert.equal((await seller.request('/api/repairs')).status, 401);
@@ -587,8 +591,8 @@ describe('Controle de estoque por código material', () => {
     assert.equal((await seller.request('/api/repairs')).status, 403);
     const catalog = await manager.request('/api/catalog');
     assert.equal(catalog.status, 200);
-    assert.equal(catalog.payload.products.length, 328);
-    assert.equal(catalog.payload.products.reduce((sum, product) => sum + product.onHand, 0), 942);
+    assert.equal(catalog.payload.products.length, 330);
+    assert.equal(catalog.payload.products.reduce((sum, product) => sum + product.onHand, 0), 928);
     assert.ok(catalog.payload.products.every((product) => Object.hasOwn(product, 'imagem_url')));
     const currentProductsWithImages = catalog.payload.products.filter((product) => (
       product.variants.some((variant) => variant.materialCode === 'DGAP20312000')
@@ -613,7 +617,7 @@ describe('Controle de estoque por código material', () => {
     assert.equal(catalog.payload.products.filter((product) => product.pricing).length, 79);
     assert.equal(catalog.payload.products.filter((product) => product.retailPrice).length, 234);
     const sellerCatalog = await seller.request('/api/catalog');
-    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 58);
+    assert.equal(sellerCatalog.payload.products.filter((product) => product.pricing).length, 56);
     assert.equal(iphone.pricing.model, 'iPhone 17 Pro Max 1TB');
     assert.equal(iphone.pricing.prices['VIVO V'], 1119900);
     const iphone15 = catalog.payload.products.find((product) => product.variants[0].materialCode === 'DGAP20312000');
@@ -749,9 +753,9 @@ describe('Controle de estoque por código material', () => {
     const managerIncoming = await manager.request('/api/incoming');
     assert.equal(managerIncoming.status, 200);
     assert.deepEqual(managerIncoming.payload.summary, {
-      units: 63, materials: 36, snapshotDate: '2026-08-26', source: 'ESTOQUE26.08.xlsx', status: 'DEPS NREM',
+      units: 203, materials: 57, snapshotDate: '2026-08-28', source: 'ESTOQUE28.08.xlsx', status: 'DEPS NREM',
     });
-    assert.equal(managerIncoming.payload.products.reduce((sum, product) => sum + product.quantity, 0), 63);
+    assert.equal(managerIncoming.payload.products.reduce((sum, product) => sum + product.quantity, 0), 203);
     assert.ok(managerIncoming.payload.products.every((product) => product.serials.length === product.quantity));
     assert.ok(managerIncoming.payload.products.flatMap((product) => product.serials).every((serial) => serial.status === 'DEPS NREM'));
     const incomingSerials = managerIncoming.payload.products.flatMap((product) => product.serials);
@@ -799,8 +803,8 @@ describe('Controle de estoque por código material', () => {
   test('agrupa aparelhos por modelo e relaciona somente capas compatíveis', async () => {
     const catalog = (await seller.request('/api/catalog')).payload.products;
     const groups = groupDeviceProducts(catalog);
-    assert.equal(groups.reduce((sum, group) => sum + group.products.length, 0), 71);
-    assert.equal(groups.length, 45);
+    assert.equal(groups.reduce((sum, group) => sum + group.products.length, 0), 69);
+    assert.equal(groups.length, 43);
 
     const iphoneProMax = groups.find((group) => group.familyName === 'APPLE IPHONE 17 PRO MAX');
     assert.deepEqual(iphoneProMax.memories, ['256GB', '512GB', '1TB']);
@@ -1082,8 +1086,8 @@ describe('Controle de estoque por código material', () => {
       screen_protectors: 1,
     });
     assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = 'DGAP27022000'`)).quantity_on_hand), 0);
-    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22023768'`)).quantity_on_hand), 2);
-    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22023386'`)).quantity_on_hand), 35);
+    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22023768'`)).quantity_on_hand), 1);
+    assert.equal(Number((await row(`SELECT quantity_on_hand FROM product_variants WHERE sku = '22023386'`)).quantity_on_hand), 29);
   });
 
   test('registra preço fixo de acessórios sem exigir categoria de plano', async () => {
@@ -1725,7 +1729,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.27');
+    assert.equal(JSON.parse(packageSource).version, '6.8.28');
     assert.match(appSource, /\/api\/replenishment\/export/);
     assert.doesNotMatch(appSource, /print-replenishment|printing-replenishment/);
     assert.match(appSource, /function normalizeSearch\(value = ''\)/);
@@ -1926,8 +1930,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.27/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.27/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.28/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.28/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -1993,7 +1997,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.27');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.28');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

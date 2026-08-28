@@ -9,30 +9,44 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 
-if len(sys.argv) != 2:
-    raise SystemExit('Uso: python scripts/parse-stock-report-2026-08-26.py caminho/ESTOQUE26.08.xlsx')
+if len(sys.argv) not in (2, 3):
+    raise SystemExit('Uso: python scripts/parse-stock-report-2026-08-26.py caminho/ESTOQUEdd.mm.xlsx [numero_migracao]')
 
 source_path = Path(sys.argv[1]).resolve()
+migration_number = int(sys.argv[2]) if len(sys.argv) == 3 else 58
+date_match = re.search(r'(\d{2})\.(\d{2})', source_path.name)
+if not date_match:
+    raise SystemExit('O nome do arquivo precisa conter a data no formato dd.mm.')
+snapshot_date = f'2026-{date_match.group(2)}-{date_match.group(1)}'
 workbook = load_workbook(source_path, read_only=True, data_only=True)
 sheet = workbook.active
 headers = [str(value or '').strip() for value in next(sheet.iter_rows(values_only=True))]
-expected_headers = ['Material', 'Denominação', 'Nº de série', 'Centro', 'Depósito', 'Modificado por', 'Modificado em']
-if headers != expected_headers:
+legacy_headers = ['Material', 'Denominação', 'Nº de série', 'Centro', 'Depósito', 'Modificado por', 'Modificado em']
+current_headers = ['Material', 'Denominação', 'Nº de série', 'Centro', 'Depósito', 'Tipo de estoque', 'Status sistema', 'Modificado por', 'Modificado em']
+if headers not in (legacy_headers, current_headers):
     raise SystemExit(f'Cabeçalhos inesperados: {headers!r}')
 
 available_rows = []
 incoming_rows = []
 repair_rows = []
+excluded_status_rows = []
 status_summary = Counter()
 serials = set()
 
 for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
-    material, technical_name, serial_number, center, deposit, modified_by, modified_value = values
+    if headers == current_headers:
+        material, technical_name, serial_number, center, deposit, stock_type, system_status, modified_by, modified_value = values
+    else:
+        material, technical_name, serial_number, center, deposit, modified_by, modified_value = values
+        stock_type = '01'
+        system_status = 'DEPS NREM' if not deposit else 'DEPS'
     material = str(material or '').strip()
     technical_name = str(technical_name or '').strip()
     serial_number = str(serial_number or '').strip()
     center = str(center or '').strip()
     deposit = str(deposit or '').strip().upper()
+    stock_type = str(stock_type or '').strip()
+    system_status = str(system_status or '').strip().upper()
     modified_by = str(modified_by or '').strip()
     if isinstance(modified_value, datetime):
         modified_on = modified_value.date().isoformat()
@@ -62,7 +76,6 @@ for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True)
         })
         continue
 
-    system_status = 'DEPS NREM' if not deposit else 'DEPS'
     row = {
         'sourceRow': source_row,
         'material': material,
@@ -70,19 +83,24 @@ for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True)
         'serialNumber': serial_number,
         'center': center,
         'deposit': deposit or 'NREM',
-        'stockType': '01',
+        'stockType': stock_type,
         'systemStatus': system_status,
         'modifiedBy': modified_by,
         'modifiedOn': modified_on,
     }
-    (incoming_rows if system_status == 'DEPS NREM' else available_rows).append(row)
+    if system_status == 'DEPS':
+        available_rows.append(row)
+    elif system_status == 'DEPS NREM':
+        incoming_rows.append(row)
+    else:
+        excluded_status_rows.append(row)
     status_summary[system_status] += 1
 
 material_count = len({row['material'] for row in available_rows + incoming_rows})
 result = {
     'source': source_path.name,
-    'importedAt': '2026-08-26',
-    'migrationNumber': 50,
+    'importedAt': snapshot_date,
+    'migrationNumber': migration_number,
     'headers': headers,
     'sourceRowCount': len(serials),
     'availableDeposits': ['EXPO', 'LOJA', 'LVUT'],
@@ -90,12 +108,12 @@ result = {
     'excludedDeposits': ['RPAR'],
     'availableStatuses': ['DEPS'],
     'incomingStatuses': ['DEPS NREM'],
-    'excludedStatuses': [],
+    'excludedStatuses': sorted({row['systemStatus'] for row in excluded_status_rows}),
     'normalizedBlankDeposit': 'NREM',
     'normalizedBlankDepositCount': len(incoming_rows),
     'statusSummary': dict(status_summary),
     'excludedRowCount': len(repair_rows),
-    'excludedStatusRowCount': 0,
+    'excludedStatusRowCount': len(excluded_status_rows),
     'expectedExcludedRowCount': len(repair_rows),
     'expectedProductCount': material_count,
     'expectedAvailableQuantity': len(available_rows),
@@ -105,7 +123,7 @@ result = {
     'repairRows': repair_rows,
 }
 
-output_path = Path('data/basis-serial-stock-2026-08-26-excluding-rpar-with-incoming.json')
+output_path = Path(f'data/basis-serial-stock-{snapshot_date}-excluding-rpar-with-incoming.json')
 output_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 print(json.dumps({
     'sourceRows': len(serials),

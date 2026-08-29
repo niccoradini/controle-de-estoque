@@ -2,6 +2,8 @@ import {
   compatibleCaseChoices,
   groupAccessoryChoices,
   groupDeviceProducts,
+  normalizeCatalogName,
+  parseDeviceName,
 } from './catalog-groups.js';
 
 const root = document.querySelector('#root');
@@ -26,6 +28,11 @@ const state = {
   replenishmentSearch: '',
   replenishmentFilter: 'all',
   replenishmentThreshold: 2,
+  networkStores: [],
+  networkItems: [],
+  networkStore: 'all',
+  networkSearch: '',
+  networkBrand: 'all',
   labelSelection: new Map(),
   labelSearch: '',
   renovaSearch: '',
@@ -71,6 +78,7 @@ const viewTitles = {
   replenishment: 'Reposição de estoque',
   labels: 'Etiquetas de capas',
   stock: 'Loja e estoque',
+  'network-stock': 'Estoque da rede',
   'new-request': 'Novo pedido',
   requests: 'Pedidos de retirada',
   alignment: 'Central de Alinhamento',
@@ -526,7 +534,7 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
@@ -727,6 +735,93 @@ function managerInventoryOverview(groups = [], totalAvailable = 0) {
   </section>`;
 }
 
+function friendlyBrand(value = '') {
+  const brand = normalizeCatalogName(value);
+  if (brand.includes('APPLE')) return 'Apple';
+  if (brand.includes('SAMSUNG') || brand === 'SSG') return 'Samsung';
+  if (brand.includes('MOTOROLA') || brand === 'MOTO') return 'Motorola';
+  if (brand.includes('XIAOMI')) return 'Xiaomi';
+  return String(value || 'Outros').trim();
+}
+
+function managerDeviceOverview(products = []) {
+  const families = groupDeviceProducts(products);
+  if (!families.length) return '';
+  const brands = new Map();
+  for (const family of families) {
+    const brand = friendlyBrand(family.brand);
+    if (!brands.has(brand)) brands.set(brand, []);
+    brands.get(brand).push(family);
+  }
+  return `<section class="manager-devices">
+    <div class="manager-inventory__head"><div><p class="page-eyebrow">Aparelhos da loja</p><h3>Telefones agrupados por modelo</h3><p>Memórias e cores do mesmo aparelho aparecem juntas para facilitar a conferência.</p></div><button class="btn btn--secondary" data-action="navigate" data-view="network-stock">Comparar outras lojas</button></div>
+    ${[...brands.entries()].sort(([a], [b]) => a.localeCompare(b, 'pt-BR')).map(([brand, items]) => `<div class="manager-device-brand"><header><h4>${escapeHtml(brand)}</h4><span>${items.reduce((sum, item) => sum + item.available, 0)} unidades · ${items.length} modelos</span></header><div class="manager-device-grid">${items.map((family) => {
+      const representative = family.products[0];
+      const colors = new Set(family.options.map((option) => option.color)).size;
+      return `<button class="manager-device-card" data-action="open-device-family" data-family="${escapeHtml(family.familyName)}"><span class="manager-device-card__image">${productImageMarkup(representative, 'manager-device-card__photo', 120, 120)}</span><span class="manager-device-card__body"><small>${escapeHtml(brand)}</small><strong>${escapeHtml(family.familyName)}</strong><span>${escapeHtml(family.memories.join(' · '))}</span><em>${colors} ${colors === 1 ? 'cor' : 'cores'}</em></span><b>${family.available}<small> un.</small></b></button>`;
+    }).join('')}</div></div>`).join('')}
+  </section>`;
+}
+
+function networkVisibleItems() {
+  const query = normalizeCatalogName(state.networkSearch);
+  return state.networkItems.filter((item) => {
+    if (state.networkStore !== 'all' && item.storeCode !== state.networkStore) return false;
+    if (state.networkBrand !== 'all' && friendlyBrand(item.brand) !== state.networkBrand) return false;
+    return !query || normalizeCatalogName(`${item.name} ${item.technicalName} ${item.materialCode}`).includes(query);
+  });
+}
+
+function networkDeviceGroups(items) {
+  const groups = new Map();
+  for (const item of items.filter((entry) => entry.cluster === 'devices')) {
+    const parsed = parseDeviceName(item.name);
+    const key = `${friendlyBrand(item.brand)}|${normalizeCatalogName(parsed.familyName)}`;
+    if (!groups.has(key)) groups.set(key, { brand: friendlyBrand(item.brand), name: parsed.familyName, available: 0, incoming: 0, stores: new Map() });
+    const group = groups.get(key);
+    group.available += item.available;
+    group.incoming += item.incoming;
+    const store = group.stores.get(item.storeCode) || { available: 0, incoming: 0 };
+    store.available += item.available;
+    store.incoming += item.incoming;
+    group.stores.set(item.storeCode, store);
+  }
+  return [...groups.values()].sort((a, b) => a.brand.localeCompare(b.brand, 'pt-BR') || a.name.localeCompare(b.name, 'pt-BR'));
+}
+
+function renderNetworkStockWorkspace() {
+  const target = document.querySelector('[data-network-results]');
+  if (!target) return;
+  const items = networkVisibleItems();
+  const storeNames = new Map(state.networkStores.map((store) => [store.code, store.name]));
+  const devices = networkDeviceGroups(items);
+  const otherGroups = new Map();
+  for (const item of items.filter((entry) => entry.cluster !== 'devices')) {
+    const current = otherGroups.get(item.cluster) || { available: 0, incoming: 0, materials: new Set() };
+    current.available += item.available; current.incoming += item.incoming; current.materials.add(item.materialCode);
+    otherGroups.set(item.cluster, current);
+  }
+  target.innerHTML = `<section class="network-section"><div class="network-section__head"><div><p class="page-eyebrow">Aparelhos</p><h3>${devices.length} modelos encontrados</h3></div></div>${devices.length ? `<div class="network-device-grid">${devices.map((group) => `<article class="network-device-card"><div><small>${escapeHtml(group.brand)}</small><h4>${escapeHtml(group.name)}</h4></div><div class="network-device-card__total"><b>${group.available}</b><span>disponíveis</span>${group.incoming ? `<em>+${group.incoming} chegando</em>` : ''}</div><div class="network-store-lines">${[...group.stores.entries()].map(([code, balance]) => `<div><span>${escapeHtml(storeNames.get(code) || code)}</span><b>${balance.available} un.${balance.incoming ? ` <small>+${balance.incoming}</small>` : ''}</b></div>`).join('')}</div></article>`).join('')}</div>` : emptyState('Nenhum aparelho encontrado', 'Altere a loja, marca ou texto da busca.')}</section>
+    <section class="network-section"><div class="network-section__head"><div><p class="page-eyebrow">Demais produtos</p><h3>Resumo por categoria</h3></div></div><div class="network-category-grid">${[...otherGroups.entries()].sort(([a], [b]) => (clusterLabels[a] || a).localeCompare(clusterLabels[b] || b, 'pt-BR')).map(([cluster, group]) => `<article><span>${escapeHtml(clusterLabels[cluster] || 'Outros')}</span><strong>${group.available}</strong><small>${group.materials.size} materiais${group.incoming ? ` · +${group.incoming} chegando` : ''}</small></article>`).join('')}</div></section>`;
+}
+
+async function renderNetworkStock() {
+  if (state.user.role !== 'manager') return navigate('dashboard');
+  if (!state.networkStores.length) {
+    const data = await api('/api/network-inventory');
+    state.networkStores = data.stores || [];
+    state.networkItems = data.items || [];
+  }
+  const content = document.querySelector('#view-content');
+  const totals = state.networkStores.reduce((sum, store) => ({ available: sum.available + store.available, incoming: sum.incoming + store.incoming, repair: sum.repair + store.repair }), { available: 0, incoming: 0, repair: 0 });
+  const brands = [...new Set(state.networkItems.filter((item) => item.cluster === 'devices').map((item) => friendlyBrand(item.brand)))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Consulta gerencial</p><h2>Estoque da rede</h2><p>Compare saldos das outras lojas sem misturar ou movimentar o estoque local.</p></div><button class="btn btn--secondary" data-action="navigate" data-view="dashboard">Voltar à visão geral</button></div>
+    <div class="metrics-grid">${metric('Disponíveis na rede', totals.available, 'Somente nas lojas comparadas', 'metric-card--success')}${metric('Em entrega', totals.incoming, 'Unidades a caminho', 'metric-card--info')}${metric('Em reparo', totals.repair, 'Separadas do saldo disponível', 'metric-card--warning')}${metric('Lojas', state.networkStores.length, 'BQ Lucas, Pátio e Avenida')}</div>
+    <div class="network-store-grid"><button class="network-store-card ${state.networkStore === 'all' ? 'is-active' : ''}" data-action="network-store" data-store="all"><span>Todas as lojas</span><strong>${totals.available}</strong><small>unidades disponíveis</small></button>${state.networkStores.map((store) => `<button class="network-store-card ${state.networkStore === store.code ? 'is-active' : ''}" data-action="network-store" data-store="${escapeHtml(store.code)}"><span>${escapeHtml(store.name)}</span><strong>${store.available}</strong><small>${store.incoming} chegando · ${store.repair} em reparo</small><em>Base ${escapeHtml(formatDate(`${store.snapshotDate}T12:00:00.000Z`, false))}</em></button>`).join('')}</div>
+    <section class="network-toolbar"><label>${uiIcon('search')}<input type="search" data-action="network-search" value="${escapeHtml(state.networkSearch)}" placeholder="Buscar modelo ou código material"></label><div class="filter-tabs"><button class="chip ${state.networkBrand === 'all' ? 'is-active' : ''}" data-action="network-brand" data-brand="all">Todas as marcas</button>${brands.map((brand) => `<button class="chip ${state.networkBrand === brand ? 'is-active' : ''}" data-action="network-brand" data-brand="${escapeHtml(brand)}">${escapeHtml(brand)}</button>`).join('')}</div></section><div data-network-results></div>`;
+  renderNetworkStockWorkspace();
+}
+
 function sellerInventoryGroupCard(group, totalAvailable) {
   const cluster = clusterLabels[group.cluster] ? group.cluster : 'misc';
   const share = totalAvailable > 0 && group.available > 0
@@ -866,6 +961,7 @@ async function renderDashboard() {
       <div class="page-heading"><div><p class="page-eyebrow">Central administrativa</p><h2>Olá, ${escapeHtml(state.user.name.split(' ')[0])}</h2><p>${escapeHtml(snapshotText)}. Pedidos e IMEIs são liberados automaticamente.</p></div><div class="page-actions"><button class="btn" data-action="navigate" data-view="stock">Consultar estoque</button></div></div>
       <div class="metrics-grid">${metric('Itens disponíveis', data.stock.available, `${data.modelsAvailable} materiais com saldo`, 'metric-card--success')}${metric('Materiais em falta', management.outOfStockMaterials || 0, 'Sem saldo e sem chegada prevista', 'metric-card--warning')}${metric('Saldo baixo', management.lowStockMaterials || 0, 'Materiais com até 2 unidades', 'metric-card--info')}${metric('Em chegada', management.incomingUnits || 0, `Depósitos ${management.snapshot?.incomingDeposits || 'DEPS e NREM'}`)}</div>
       <div class="admin-strip"><span><b>${Number(data.activeSellers || 0)}</b> vendedores ativos</span><span><b>${Number(data.activeStockers || 0)}</b> estoquistas ativos</span><span><b>${Number(management.orderStats?.approved || 0)}</b> pedidos liberados</span><span><b>${Number(data.stock.reserved || 0)}</b> unidades reservadas</span></div>
+      ${managerDeviceOverview(management.deviceProducts)}
       <div class="management-dashboard-grid">
         <section class="card management-chart-card"><div class="card__head"><div><h3>Disponibilidade por grupo</h3><span>Comparação do saldo pronto e em entrega</span></div></div><div class="card__body">${managementClusterChart(data.inventoryGroups)}</div></section>
         <section class="card management-chart-card"><div class="card__head"><div><h3>Fluxo de pedidos</h3><span>Distribuição de todo o histórico</span></div></div><div class="card__body">${orderDonut(management.orderStats)}</div></section>
@@ -2280,6 +2376,7 @@ function replenishmentText() {
 async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
+  if (view === 'network-stock' && state.user.role !== 'manager') return;
   if (state.user.role === 'stocker' && ['new-request', 'chips'].includes(view)) return;
   if (view === 'renova-intake' && !canAccessRenovaIntake()) return;
   if (view === 'repairs' && !canAccessRenovaIntake()) return;
@@ -2303,6 +2400,7 @@ async function navigate(view) {
     if (view === 'incoming') await renderIncoming();
     if (view === 'labels') await renderLabels();
     if (view === 'replenishment') await renderReplenishment();
+    if (view === 'network-stock') await renderNetworkStock();
     if (view === 'stock') await renderStock();
     if (view === 'new-request') await renderNewRequest();
     if (view === 'requests') await renderRequests();
@@ -2746,6 +2844,11 @@ async function enterApp(user) {
   state.replenishmentSearch = '';
   state.replenishmentFilter = 'all';
   state.replenishmentThreshold = 2;
+  state.networkStores = [];
+  state.networkItems = [];
+  state.networkStore = 'all';
+  state.networkSearch = '';
+  state.networkBrand = 'all';
   state.renovaSearch = '';
   state.renovaStatus = 'awaiting_pickup';
   state.chipSellers = [];
@@ -2843,6 +2946,19 @@ root.addEventListener('click', async (event) => {
       state.stockSearch = '';
       state.stockCluster = button.dataset.cluster;
       await navigate('stock');
+    }
+    if (action === 'open-device-family') {
+      state.stockSearch = button.dataset.family || '';
+      state.stockCluster = 'devices';
+      await navigate('stock');
+    }
+    if (action === 'network-store' && state.user.role === 'manager') {
+      state.networkStore = button.dataset.store;
+      await renderNetworkStock();
+    }
+    if (action === 'network-brand' && state.user.role === 'manager') {
+      state.networkBrand = button.dataset.brand;
+      await renderNetworkStock();
     }
     if (action === 'open-store-group') {
       state.catalogSearch = '';
@@ -2978,6 +3094,7 @@ root.addEventListener('input', (event) => {
   if (event.target.dataset.action === 'search-renova-intake') { state.renovaSearch = event.target.value; renderRenovaIntakeResults(); }
   if (event.target.dataset.action === 'chip-search') { state.chipSearch = event.target.value; renderChipResults(); }
   if (event.target.dataset.action === 'stock-search') { state.stockSearch = event.target.value; renderStockTable(); }
+  if (event.target.dataset.action === 'network-search') { state.networkSearch = event.target.value; renderNetworkStockWorkspace(); }
   if (event.target.dataset.action === 'catalog-search') { state.catalogSearch = event.target.value; renderCatalogGrid(); }
   if (event.target.dataset.action === 'renova-used-device-search') {
     state.renova.deviceId = Number(renovaTradeInByName(event.target.value)?.id || 0);

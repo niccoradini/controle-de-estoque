@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -125,6 +125,7 @@ before(async () => {
     readFile(new URL('../migrations/0057_replenishment_orders.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0058_inventory_refresh_2026_08_28.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0059_incoming_inventory_details_2026_08_28.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0060_network_inventory_2026_08_29.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -249,6 +250,7 @@ before(async () => {
   await applyMigration(migration57);
   await applyMigration(migration58);
   await applyMigration(migration59);
+  await applyMigration(migration60);
 });
 
 after(async () => mf?.dispose());
@@ -449,6 +451,9 @@ describe('Controle de estoque por código material', () => {
       && product.incomingDeposits['DEPS NREM'] === 1
     )));
     assert.equal(dashboard.payload.management.snapshot.source, 'ESTOQUE28.08.xlsx');
+    assert.ok(dashboard.payload.management.deviceProducts.length > 0);
+    assert.ok(dashboard.payload.management.deviceProducts.every((product) => product.cluster === 'devices'));
+    assert.doesNotMatch(JSON.stringify(dashboard.payload.management.deviceProducts), /serialNumber|serialNumbers|serial_number/i);
 
     const devices = dashboard.payload.inventoryGroups.find((group) => group.cluster === 'devices');
     assert.equal(devices.materialCount, 97);
@@ -459,6 +464,20 @@ describe('Controle de estoque por código material', () => {
     assert.equal(repairs.payload.items.length, 110);
     assert.ok(repairs.payload.items.every((item) => item.deposit === 'RPAR'));
     assert.equal((await seller.request('/api/repairs')).status, 401);
+  });
+
+  test('mostra ao gerente o estoque comparativo das outras lojas sem expor séries', async () => {
+    const response = await manager.request('/api/network-inventory');
+    assert.equal(response.status, 200);
+    assert.deepEqual(response.payload.stores.map((store) => store.name).sort(), ['Avenida', 'BQ Lucas', 'Pátio'].sort());
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.totalUnits, 0), 3511);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.available, 0), 3132);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.incoming, 0), 328);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.repair, 0), 51);
+    assert.equal(response.payload.items.length, 790);
+    assert.ok(response.payload.items.some((item) => item.cluster === 'devices' && item.available > 0));
+    assert.doesNotMatch(JSON.stringify(response.payload), /serialNumber|serialNumbers|serial_number/i);
+    assert.equal((await new Client('198.51.100.55').request('/api/network-inventory')).status, 401);
   });
 
   test('cria vendedor, exige a troca provisória e permite ao gerente editar todos os dados', async () => {
@@ -1731,7 +1750,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.29');
+    assert.equal(JSON.parse(packageSource).version, '6.8.30');
     assert.match(appSource, /\/api\/replenishment\/export/);
     assert.doesNotMatch(appSource, /print-replenishment|printing-replenishment/);
     assert.match(appSource, /function normalizeSearch\(value = ''\)/);
@@ -1932,8 +1951,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.29/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.29/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.30/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.30/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -1999,7 +2018,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.29');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.30');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

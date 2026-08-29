@@ -920,6 +920,70 @@ function incomingProductSummaries(products) {
     }));
 }
 
+function managerDeviceProducts(products) {
+  return products.filter((product) => product.cluster === 'devices').map((product) => ({
+    id: product.id,
+    name: product.name,
+    brand: product.brand || '',
+    cluster: product.cluster,
+    imagem_url: product.imagem_url || '',
+    available: Number(product.available || 0),
+    incoming: Number(product.incoming || 0),
+    variants: product.variants.map((variant) => ({
+      id: variant.id,
+      materialCode: variant.materialCode,
+      available: Number(variant.available || 0),
+      incoming: Number(variant.incoming || 0),
+    })),
+  }));
+}
+
+async function networkInventoryDashboard(env) {
+  const [storesResult, itemsResult] = await env.DB.batch([
+    env.DB.prepare(`
+      SELECT code, name, center, snapshot_date, source_file, total_units, material_count,
+             available_units, incoming_units, repair_units, ignored_units
+      FROM network_stores
+      ORDER BY name COLLATE NOCASE
+    `),
+    env.DB.prepare(`
+      SELECT store_code, material_code, display_name, technical_name, brand, cluster,
+             available_quantity, incoming_quantity, repair_quantity, ignored_quantity,
+             latest_modified_on
+      FROM network_inventory
+      ORDER BY cluster, brand COLLATE NOCASE, display_name COLLATE NOCASE, material_code
+    `),
+  ]);
+  return json({
+    stores: (storesResult.results || []).map((store) => ({
+      code: store.code,
+      name: store.name,
+      center: store.center,
+      snapshotDate: store.snapshot_date,
+      sourceFile: store.source_file,
+      totalUnits: Number(store.total_units),
+      materialCount: Number(store.material_count),
+      available: Number(store.available_units),
+      incoming: Number(store.incoming_units),
+      repair: Number(store.repair_units),
+      ignored: Number(store.ignored_units),
+    })),
+    items: (itemsResult.results || []).map((item) => ({
+      storeCode: item.store_code,
+      materialCode: item.material_code,
+      name: item.display_name,
+      technicalName: item.technical_name,
+      brand: item.brand,
+      cluster: item.cluster,
+      available: Number(item.available_quantity),
+      incoming: Number(item.incoming_quantity),
+      repair: Number(item.repair_quantity),
+      ignored: Number(item.ignored_quantity),
+      latestModifiedOn: item.latest_modified_on,
+    })),
+  });
+}
+
 async function dashboard(env, user) {
   const products = await catalogData(env, user.role === 'manager' ? user : { ...user, role: 'manager' });
   const stock = products.reduce((totals, product) => ({
@@ -994,6 +1058,7 @@ async function dashboard(env, user) {
         incomingUnits: stock.incoming,
         shortageProducts,
         incomingProducts,
+        deviceProducts: managerDeviceProducts(products),
         recentAccesses: (accessesResult.results || []).map((row) => ({
           name: row.name || 'Usuário excluído',
           email: row.email || '',
@@ -3027,6 +3092,10 @@ async function routeApi(request, env) {
   if (method === 'PATCH' && path === '/api/auth/password') return changePassword(request, env, user);
   if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
+  if (method === 'GET' && path === '/api/network-inventory') {
+    requireRole(user, 'manager');
+    return networkInventoryDashboard(env);
+  }
   if (method === 'GET' && path === '/api/point/me') return myPoint(env, user);
   if (method === 'POST' && path === '/api/point/me/punch') {
     requireRole(user, ['seller', 'stocker']);

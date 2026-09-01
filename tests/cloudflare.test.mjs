@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60, migration61] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -126,6 +126,7 @@ before(async () => {
     readFile(new URL('../migrations/0058_inventory_refresh_2026_08_28.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0059_incoming_inventory_details_2026_08_28.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0060_network_inventory_2026_08_29.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0061_renova_boosts_2026_09_01.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -251,6 +252,7 @@ before(async () => {
   await applyMigration(migration58);
   await applyMigration(migration59);
   await applyMigration(migration60);
+  await applyMigration(migration61);
 });
 
 after(async () => mf?.dispose());
@@ -952,13 +954,16 @@ describe('Controle de estoque por código material', () => {
     assert.equal(catalogResponse.payload.renova.boosts.length, Number(activeBoostCount.count));
     assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM renova_manufacturer_boosts`)).count), 74);
     assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'Motorola Signature 512GB'`)).bonus_cents), 160000);
-    assert.equal((await row(`SELECT ends_on FROM renova_manufacturer_boosts WHERE device_name = 'iPhone 15 256GB'`)).ends_on, '2026-08-31');
+    assert.equal((await row(`SELECT ends_on FROM renova_manufacturer_boosts WHERE device_name = 'iPhone 15 256GB'`)).ends_on, '2026-09-14');
     assert.equal((await row(`SELECT ends_on FROM renova_manufacturer_boosts WHERE device_name = 'Samsung Galaxy S26 Ultra 256GB'`)).ends_on, '2026-09-08');
     assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'Samsung Galaxy Z Fold 6 512GB'`)).bonus_cents), 40000);
     assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'JOVI X300 Ultra 512GB'`)).bonus_cents), 120000);
     assert.equal(Number((await row(`SELECT bonus_cents FROM renova_manufacturer_boosts WHERE device_name = 'JOVI X300 FE 256GB'`)).bonus_cents), 60000);
     assert.equal((await row(`SELECT starts_on FROM renova_manufacturer_boosts WHERE device_name = 'JOVI X300 Ultra 512GB'`)).starts_on, '2026-08-25');
     assert.equal((await row(`SELECT ends_on FROM renova_manufacturer_boosts WHERE device_name = 'JOVI X300 FE 256GB'`)).ends_on, '2026-09-30');
+    assert.equal((await row(`SELECT ends_on FROM renova_manufacturer_boosts WHERE device_name = 'Motorola Edge 70 512GB'`)).ends_on, '2026-09-14');
+    assert.equal((await row(`SELECT ends_on FROM renova_manufacturer_boosts WHERE device_name = 'JOVI V70 5G 512GB'`)).ends_on, '2026-09-14');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'renova_boost_table_date'`)).value, '2026-09-01');
     const samsungBoost = catalogResponse.payload.renova.boosts.find((boost) => boost.name === 'Samsung Galaxy S26 Ultra 256GB');
     if (samsungBoost) assert.equal(samsungBoost.bonusCents, 120000);
     const iphone15BoostCents = Number(catalogResponse.payload.renova.boosts.find((boost) => boost.name === 'iPhone 15 256GB')?.bonusCents || 0);
@@ -1750,7 +1755,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.30');
+    assert.equal(JSON.parse(packageSource).version, '6.8.31');
     assert.match(appSource, /\/api\/replenishment\/export/);
     assert.doesNotMatch(appSource, /print-replenishment|printing-replenishment/);
     assert.match(appSource, /function normalizeSearch\(value = ''\)/);
@@ -1951,8 +1956,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.30/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.30/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.31/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.31/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -2018,7 +2023,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.30');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.31');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

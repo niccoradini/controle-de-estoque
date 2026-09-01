@@ -86,6 +86,7 @@ SELECT CASE WHEN (SELECT COUNT(*) FROM network_stores) = ${source.stores.length}
 DROP TABLE _migration_${migrationNumber}_guard;
 `;
 
-const migrationPath = `migrations/${migrationNumber}_network_inventory_2026_08_29.sql`;
+const snapshotDatePath = String(source.snapshotDate || '').replaceAll('-', '_');
+const migrationPath = `migrations/${migrationNumber}_network_inventory_${snapshotDatePath}.sql`;
 await writeFile(migrationPath, migration);
 console.log(JSON.stringify({ stores: source.stores.length, items: itemValues.length, migrationPath }));

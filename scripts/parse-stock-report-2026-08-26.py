@@ -22,9 +22,11 @@ workbook = load_workbook(source_path, read_only=True, data_only=True)
 sheet = workbook.active
 headers = [str(value or '').strip() for value in next(sheet.iter_rows(values_only=True))]
 legacy_headers = ['Material', 'Denominação', 'Nº de série', 'Centro', 'Depósito', 'Modificado por', 'Modificado em']
-current_headers = ['Material', 'Denominação', 'Nº de série', 'Centro', 'Depósito', 'Tipo de estoque', 'Status sistema', 'Modificado por', 'Modificado em']
-if headers not in (legacy_headers, current_headers):
+required_headers = ['Material', 'Denominação', 'Nº de série', 'Centro', 'Depósito']
+if not all(header in headers for header in required_headers):
     raise SystemExit(f'Cabeçalhos inesperados: {headers!r}')
+header_index = {header: index for index, header in enumerate(headers)}
+is_current = 'Status sistema' in header_index
 
 available_rows = []
 incoming_rows = []
@@ -34,12 +36,15 @@ status_summary = Counter()
 serials = set()
 
 for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
-    if headers == current_headers:
-        material, technical_name, serial_number, center, deposit, stock_type, system_status, modified_by, modified_value = values
-    else:
-        material, technical_name, serial_number, center, deposit, modified_by, modified_value = values
-        stock_type = '01'
-        system_status = 'DEPS NREM' if not deposit else 'DEPS'
+    material = values[header_index['Material']]
+    technical_name = values[header_index['Denominação']]
+    serial_number = values[header_index['Nº de série']]
+    center = values[header_index['Centro']]
+    deposit = values[header_index['Depósito']]
+    stock_type = values[header_index['Tipo de estoque']] if 'Tipo de estoque' in header_index else '01'
+    system_status = values[header_index['Status sistema']] if is_current else ('DEPS NREM' if not deposit else 'DEPS')
+    modified_by = values[header_index['Modificado por']] if 'Modificado por' in header_index else ''
+    modified_value = values[header_index['Modificado em']] if 'Modificado em' in header_index else None
     material = str(material or '').strip()
     technical_name = str(technical_name or '').strip()
     serial_number = str(serial_number or '').strip()

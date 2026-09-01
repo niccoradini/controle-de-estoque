@@ -7,29 +7,47 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-EXPECTED = ['Material', 'Denominação', 'Nº de série', 'Centro', 'Depósito', 'Tipo de estoque', 'Status sistema', 'Modificado por', 'Modificado em']
+REQUIRED = ['Material', 'Denominação', 'Nº de série', 'Centro', 'Depósito', 'Tipo de estoque', 'Status sistema', 'Modificado por', 'Modificado em']
 STORE_NAMES = {
     'ESTOQUE LOJA BQ LUCAS.xlsx': 'BQ Lucas',
     'ESTOQUE LOJA PATIO.xlsx': 'Pátio',
     'ESTOQUE LOJA AVENIDA.xlsx': 'Avenida',
+    'ESTOQUE 89MN.xlsx': 'BQ Lucas',
+    'ESTOQUE 283H.xlsx': 'Pátio',
+    'ESTOQUE 210H.xlsx': 'Avenida',
 }
 
 if len(sys.argv) < 2:
     raise SystemExit('Informe uma ou mais planilhas de estoque.')
 
 stores = []
-for filename in sys.argv[1:]:
+snapshot_date = '2026-09-01'
+filenames = [value for value in sys.argv[1:] if not value.startswith('--snapshot-date=')]
+for value in sys.argv[1:]:
+    if value.startswith('--snapshot-date='):
+        snapshot_date = value.split('=', 1)[1]
+
+for filename in filenames:
     path = Path(filename).resolve()
     workbook = load_workbook(path, read_only=True, data_only=True)
     sheet = workbook.active
     headers = [str(value or '').strip() for value in next(sheet.iter_rows(values_only=True))]
-    if headers != EXPECTED:
+    if not all(header in headers for header in REQUIRED):
         raise SystemExit(f'Cabeçalhos inesperados em {path.name}: {headers!r}')
+    header_index = {header: index for index, header in enumerate(headers)}
     grouped = defaultdict(lambda: {'available': 0, 'incoming': 0, 'repair': 0, 'ignored': 0, 'latestModifiedOn': ''})
     centers = set()
     serials = set()
     for source_row, values in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
-        material, technical_name, serial, center, deposit, stock_type, status, modified_by, modified_value = values
+        material = values[header_index['Material']]
+        technical_name = values[header_index['Denominação']]
+        serial = values[header_index['Nº de série']]
+        center = values[header_index['Centro']]
+        deposit = values[header_index['Depósito']]
+        stock_type = values[header_index['Tipo de estoque']]
+        status = values[header_index['Status sistema']]
+        modified_by = values[header_index['Modificado por']]
+        modified_value = values[header_index['Modificado em']]
         material = str(material or '').strip()
         technical_name = str(technical_name or '').strip()
         serial = str(serial or '').strip()
@@ -71,11 +89,11 @@ for filename in sys.argv[1:]:
         'name': store_name,
         'center': next(iter(centers)),
         'sourceFile': path.name,
-        'snapshotDate': '2026-08-29',
+        'snapshotDate': snapshot_date,
         'sourceRows': len(serials),
         'items': items,
     })
 
-output = Path('data/network-inventory-2026-08-29.json')
-output.write_text(json.dumps({'snapshotDate': '2026-08-29', 'stores': stores}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+output = Path(f'data/network-inventory-{snapshot_date}.json')
+output.write_text(json.dumps({'snapshotDate': snapshot_date, 'stores': stores}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 print(json.dumps({store['name']: {'rows': store['sourceRows'], 'materials': len(store['items'])} for store in stores}, ensure_ascii=False))

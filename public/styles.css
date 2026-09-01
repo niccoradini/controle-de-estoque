@@ -5604,6 +5604,7 @@ body.cart-drawer-open { overflow: hidden; }
 .label-hero > * { position: relative; z-index: 1; }
 .label-hero h2 { margin: 5px 0 9px; color: #faf7ff; font-size: clamp(31px, 4vw, 45px); font-weight: 590; letter-spacing: -.05em; }
 .label-hero p:not(.page-eyebrow) { max-width: 650px; margin: 0; color: rgba(230, 224, 236, .6); font-size: 13px; line-height: 1.6; }
+.label-mode-tabs { display: flex; gap: 7px; margin-top: 18px; }
 .label-hero__sample { width: 180px; min-height: 112px; display: grid; align-content: center; flex: 0 0 180px; padding: 14px 16px; border: 1px solid rgba(20, 18, 24, .16); border-radius: 13px; color: #1b1720; background: #fff; box-shadow: 0 18px 45px rgba(0, 0, 0, .3); transform: rotate(3deg); }
 .label-hero__sample span { color: #765aa4; font-size: 7px; font-weight: 800; letter-spacing: .1em; }
 .label-hero__sample strong { margin: 8px 0 5px; font-size: 21px; letter-spacing: -.025em; }
@@ -5660,6 +5661,17 @@ body.cart-drawer-open { overflow: hidden; }
 .shelf-label__prices li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .shelf-label__prices li b { flex: 0 0 auto; color: #17141a; font-size: 7px; }
 .shelf-label__foot { display: flex; justify-content: space-between; gap: 6px; margin-top: 5px; padding-top: 4px; border-top: 1px solid #e1dde4; color: #716b75; font-size: 5px; }
+.store-shelf-label { display: grid; grid-template-rows: auto 1fr auto auto; align-content: stretch; padding: 7px 9px; border: 1px solid #17141a; }
+.store-shelf-label > strong { margin: 0 0 4px; font-size: 10px; line-height: 1.05; text-align: center; }
+.store-shelf-label__installment { display: grid; grid-template-columns: auto auto auto 1fr; align-items: baseline; justify-content: center; gap: 3px; }
+.store-shelf-label__installment > span { font-size: 7px; }
+.store-shelf-label__installment small, .store-shelf-label__cash small { font-size: 5px; }
+.store-shelf-label__installment b { font-size: 14px; }
+.store-shelf-label__installment em { align-self: center; font-size: 5px; font-style: normal; line-height: .9; }
+.store-shelf-label__cash { display: flex; align-items: baseline; justify-content: center; gap: 4px; }
+.store-shelf-label__cash > span { font-size: 7px; }
+.store-shelf-label__cash b { font-size: 12px; }
+.store-shelf-label > p { margin: 4px 0 0; font-size: 4.5px; text-align: center; }
 .label-print-sheet { display: none; }
 @media (max-width: 900px) {
   .label-builder { grid-template-columns: 1fr; }
@@ -5850,4 +5862,14 @@ body.cart-drawer-open { overflow: hidden; }
   .label-print-sheet .shelf-label__prices li { font-size: 6.2pt; line-height: 1; }
   .label-print-sheet .shelf-label__prices li b { font-size: 6.5pt; }
   .label-print-sheet .shelf-label__foot { margin-top: 1.5mm; padding-top: 1mm; font-size: 6pt; }
+  .label-print-sheet .store-shelf-label { padding: 2.8mm 3mm 1.5mm; border: .25mm solid #17141a; }
+  .label-print-sheet .store-shelf-label > strong { margin: 0 0 1.2mm; font-size: 10pt; }
+  .label-print-sheet .store-shelf-label__installment { gap: 1mm; }
+  .label-print-sheet .store-shelf-label__installment > span { font-size: 8pt; }
+  .label-print-sheet .store-shelf-label__installment small, .label-print-sheet .store-shelf-label__cash small { font-size: 6pt; }
+  .label-print-sheet .store-shelf-label__installment b { font-size: 16pt; }
+  .label-print-sheet .store-shelf-label__installment em { font-size: 6pt; }
+  .label-print-sheet .store-shelf-label__cash > span { font-size: 8pt; }
+  .label-print-sheet .store-shelf-label__cash b { font-size: 14pt; }
+  .label-print-sheet .store-shelf-label > p { margin-top: 1.2mm; font-size: 5.5pt; }
 }

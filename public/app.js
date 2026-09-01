@@ -35,6 +35,7 @@ const state = {
   networkBrand: 'all',
   labelSelection: new Map(),
   labelSearch: '',
+  labelMode: 'cases',
   renovaSearch: '',
   renovaStatus: 'awaiting_pickup',
   chipSellers: [],
@@ -76,7 +77,7 @@ const viewTitles = {
   repairs: 'Produtos em reparo',
   incoming: 'Produtos a caminho',
   replenishment: 'Reposição de estoque',
-  labels: 'Etiquetas de capas',
+  labels: 'Etiquetas do estoque',
   stock: 'Loja e estoque',
   'network-stock': 'Estoque da rede',
   'new-request': 'Novo pedido',
@@ -534,13 +535,13 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
-      ['dashboard', 'home', 'Visão do estoque'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas de capas'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
+      ['dashboard', 'home', 'Visão do estoque'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
       ['requests', 'orders', 'Pedidos para separar'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
@@ -2278,13 +2279,40 @@ function labelCatalogRows() {
 
 function visibleLabelRows() {
   const search = state.labelSearch.trim().toLocaleLowerCase('pt-BR');
-  return labelCatalogRows().filter((item) => !search || [item.name, ...item.productNames, ...item.materials]
+  const rows = state.labelMode === 'store' ? storeLabelCatalogRows() : labelCatalogRows();
+  return rows.filter((item) => !search || [item.name, item.product?.brand, ...(item.productNames || []), ...(item.materials || [item.material])]
     .some((value) => String(value || '').toLocaleLowerCase('pt-BR').includes(search)));
+}
+
+function storeLabelCatalogRows() {
+  return state.catalog.filter((product) => product.cluster !== 'cases').flatMap((product) => product.variants
+    .filter((variant) => Number(variant.available || 0) > 0)
+    .map((variant) => ({ product, variant, price: selectedProductPrice(product, variant) }))
+    .filter((item) => item.price != null && productPriceKind(item.product, item.variant) !== 'no_charge')
+    .map((item) => ({
+      ...item,
+      key: `store|${item.variant.id}`,
+      name: item.product.name,
+      material: item.variant.materialCode || materialCode(item.product),
+      available: Number(item.variant.available || 0),
+      installments: installmentCount(item.price),
+    })))
+    .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR') || left.material.localeCompare(right.material, 'pt-BR'));
 }
 
 function printableCaseLabel(item) {
   const prices = item.priceLines.map((line) => `<li><span>${escapeHtml(line.label)}</span><b>${line.price == null ? 'CONSULTAR' : formatMoney(line.price)}</b></li>`).join('');
   return `<article class="shelf-label shelf-label--price-list"><div class="shelf-label__brand">ESTOQUE · CAPAS</div><strong>${escapeHtml(item.name)}</strong><ul class="shelf-label__prices">${prices}</ul><div class="shelf-label__foot"><span>${item.variations} ${item.variations === 1 ? 'material' : 'materiais'}</span><span>${item.available} em estoque</span></div></article>`;
+}
+
+function printableStoreLabel(item) {
+  const installments = Math.max(1, Number(item.installments || 1));
+  const installmentPrice = Math.round(Number(item.price) / installments);
+  return `<article class="shelf-label store-shelf-label"><strong>${escapeHtml(item.name)}</strong><div class="store-shelf-label__installment"><span>${installments}x</span><small>R$</small><b>${escapeHtml(formatMoney(installmentPrice).replace('R$ ', '').replace('R$ ', ''))}</b><em>sem<br>juros</em></div><div class="store-shelf-label__cash"><span>À vista</span><small>R$</small><b>${escapeHtml(formatMoney(item.price).replace('R$ ', '').replace('R$ ', ''))}</b></div><p>Consulte as condições de parcelamento do seu cartão.</p></article>`;
+}
+
+function printableLabel(item) {
+  return state.labelMode === 'store' ? printableStoreLabel(item) : printableCaseLabel(item);
 }
 
 function printSelectedLabels() {
@@ -2308,14 +2336,15 @@ function renderLabelWorkspace() {
   const products = visibleLabelRows();
   grid.innerHTML = products.length ? products.map((item) => {
     const selected = state.labelSelection.has(item.key);
-    const variationText = `${item.variations} ${item.variations === 1 ? 'material' : 'materiais'} · ${item.priceLines.length} ${item.priceLines.length === 1 ? 'valor' : 'valores'}`;
-    const knownPrices = item.priceLines.map((line) => line.price).filter((price) => price != null);
+    const isStore = state.labelMode === 'store';
+    const variationText = isStore ? `${item.material} · ${item.available} disponíveis` : `${item.variations} ${item.variations === 1 ? 'material' : 'materiais'} · ${item.priceLines.length} ${item.priceLines.length === 1 ? 'valor' : 'valores'}`;
+    const knownPrices = isStore ? [item.price] : item.priceLines.map((line) => line.price).filter((price) => price != null);
     const priceSummary = knownPrices.length ? (Math.min(...knownPrices) === Math.max(...knownPrices) ? formatMoney(knownPrices[0]) : `${formatMoney(Math.min(...knownPrices))} a ${formatMoney(Math.max(...knownPrices))}`) : 'Consultar';
-    return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || 'Capa')}</small><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(variationText)}</code></span><span class="label-product-card__price"><strong>${escapeHtml(priceSummary)}</strong><small>${item.available} disponíveis</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
-  }).join('') : emptyState('Nenhuma capa encontrada', 'Altere a busca para localizar outro modelo.');
+    return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || (isStore ? 'Produto' : 'Capa'))}</small><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(variationText)}</code></span><span class="label-product-card__price"><strong>${escapeHtml(priceSummary)}</strong><small>${isStore ? `${item.installments}x sem juros` : `${item.available} disponíveis`}</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
+  }).join('') : emptyState(state.labelMode === 'store' ? 'Nenhum produto com preço encontrado' : 'Nenhuma capa encontrada', 'Altere a busca para localizar outro produto.');
   const selected = [...state.labelSelection.values()];
-  selection.innerHTML = selected.length ? `<div class="label-selection__head"><div><small>Folha de impressão</small><strong>${selected.length} ${selected.length === 1 ? 'etiqueta selecionada' : 'etiquetas selecionadas'}</strong></div><button class="btn btn--ghost btn--small" data-action="clear-labels">Limpar tudo</button></div><div class="label-preview-list">${selected.slice(0, 6).map((item) => `<div>${printableCaseLabel(item)}<button data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></div>`).join('')}${selected.length > 6 ? `<p>+ ${selected.length - 6} etiquetas selecionadas</p>` : ''}</div><div class="label-format"><span>Formato</span><strong>45 x 30 mm · 32 por folha A4</strong></div><button class="btn label-print-button" data-action="print-labels">${uiIcon('copy')} Imprimir etiquetas</button>` : `<div class="label-selection__empty">${uiIcon('copy')}<strong>Nenhuma etiqueta selecionada</strong><span>Escolha as capas na lista ao lado.</span></div>`;
-  printSheet.innerHTML = selected.map(printableCaseLabel).join('');
+  selection.innerHTML = selected.length ? `<div class="label-selection__head"><div><small>Folha de impressão</small><strong>${selected.length} ${selected.length === 1 ? 'etiqueta selecionada' : 'etiquetas selecionadas'}</strong></div><button class="btn btn--ghost btn--small" data-action="clear-labels">Limpar tudo</button></div><div class="label-preview-list">${selected.slice(0, 6).map((item) => `<div>${printableLabel(item)}<button data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></div>`).join('')}${selected.length > 6 ? `<p>+ ${selected.length - 6} etiquetas selecionadas</p>` : ''}</div><div class="label-format"><span>Formato</span><strong>45 x 30 mm · 32 por folha A4</strong></div><button class="btn label-print-button" data-action="print-labels">${uiIcon('copy')} Imprimir etiquetas</button>` : `<div class="label-selection__empty">${uiIcon('copy')}<strong>Nenhuma etiqueta selecionada</strong><span>Escolha os produtos na lista ao lado.</span></div>`;
+  printSheet.innerHTML = selected.map(printableLabel).join('');
   document.querySelector('[data-label-visible-count]').textContent = products.length;
 }
 
@@ -2323,7 +2352,7 @@ async function renderLabels() {
   if (!canAccessRenovaIntake()) return navigate('dashboard');
   if (!state.catalog.length) await loadCatalog();
   const content = document.querySelector('#view-content');
-  content.innerHTML = `<section class="label-hero"><div><p class="page-eyebrow">Organização das prateleiras</p><h2>Etiquetas de capas</h2><p>Capas do mesmo aparelho e com o mesmo valor são unificadas, mantendo as transparentes separadas das demais.</p></div><div class="label-hero__sample"><span>EXEMPLO</span><strong>CAPA A36</strong><small>R$ 49,00</small></div></section><section class="label-builder"><div class="label-products"><header><div><p class="page-eyebrow">Capas disponíveis</p><h3>Escolha os modelos</h3><span><b data-label-visible-count>0</b> modelos e valores encontrados</span></div><button class="btn btn--secondary btn--small" data-action="select-visible-labels">Selecionar exibidas</button></header><label class="incoming-search label-search">${uiIcon('search')}<input type="search" data-action="label-search" value="${escapeHtml(state.labelSearch)}" placeholder="Buscar modelo ou código material" aria-label="Buscar capa para etiqueta"></label><div class="label-product-grid" data-label-products></div></div><aside class="label-selection" data-label-selection></aside></section><section class="label-print-sheet" data-label-print-sheet aria-hidden="true"></section>`;
+  content.innerHTML = `<section class="label-hero"><div><p class="page-eyebrow">Organização das prateleiras</p><h2>Etiquetas do estoque</h2><p>Crie etiquetas para capas ou para os demais produtos da loja usando os preços já cadastrados no sistema.</p><div class="label-mode-tabs" role="tablist" aria-label="Tipo de etiqueta"><button class="chip ${state.labelMode === 'cases' ? 'is-active' : ''}" data-action="label-mode" data-mode="cases" role="tab" aria-selected="${state.labelMode === 'cases'}">Etiquetas de capas</button><button class="chip ${state.labelMode === 'store' ? 'is-active' : ''}" data-action="label-mode" data-mode="store" role="tab" aria-selected="${state.labelMode === 'store'}">Etiquetas da loja</button></div></div><div class="label-hero__sample"><span>${state.labelMode === 'store' ? '15X SEM JUROS' : 'EXEMPLO'}</span><strong>${state.labelMode === 'store' ? 'NINTENDO SWITCH 2' : 'CAPA A36'}</strong><small>${state.labelMode === 'store' ? 'À vista R$ 3.999,00' : 'R$ 49,00'}</small></div></section><section class="label-builder"><div class="label-products"><header><div><p class="page-eyebrow">${state.labelMode === 'store' ? 'Produtos com preço cadastrado' : 'Capas disponíveis'}</p><h3>Escolha os produtos</h3><span><b data-label-visible-count>0</b> produtos e valores encontrados</span></div><button class="btn btn--secondary btn--small" data-action="select-visible-labels">Selecionar exibidas</button></header><label class="incoming-search label-search">${uiIcon('search')}<input type="search" data-action="label-search" value="${escapeHtml(state.labelSearch)}" placeholder="Buscar produto ou código material" aria-label="Buscar produto para etiqueta"></label><div class="label-product-grid" data-label-products></div></div><aside class="label-selection" data-label-selection></aside></section><section class="label-print-sheet" data-label-print-sheet aria-hidden="true"></section>`;
   renderLabelWorkspace();
 }
 
@@ -2916,6 +2945,12 @@ root.addEventListener('click', async (event) => {
         if (item) state.labelSelection.set(key, item);
       }
       renderLabelWorkspace();
+    }
+    if (action === 'label-mode' && canAccessRenovaIntake()) {
+      state.labelMode = button.dataset.mode === 'store' ? 'store' : 'cases';
+      state.labelSelection.clear();
+      state.labelSearch = '';
+      await renderLabels();
     }
     if (action === 'clear-labels' && canAccessRenovaIntake()) { state.labelSelection.clear(); renderLabelWorkspace(); }
     if (action === 'select-visible-labels' && canAccessRenovaIntake()) {

@@ -2941,7 +2941,7 @@ root.addEventListener('click', async (event) => {
       const key = button.dataset.key;
       if (state.labelSelection.has(key)) state.labelSelection.delete(key);
       else {
-        const item = labelCatalogRows().find((row) => row.key === key);
+        const item = visibleLabelRows().find((row) => row.key === key);
         if (item) state.labelSelection.set(key, item);
       }
       renderLabelWorkspace();

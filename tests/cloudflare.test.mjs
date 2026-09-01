@@ -1761,7 +1761,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.8.34');
+    assert.equal(JSON.parse(packageSource).version, '6.8.35');
     assert.match(appSource, /\/api\/replenishment\/export/);
     assert.doesNotMatch(appSource, /print-replenishment|printing-replenishment/);
     assert.match(appSource, /function normalizeSearch\(value = ''\)/);
@@ -1962,8 +1962,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.8\.34/);
-    assert.match(indexSource, /app\.js\?v=6\.8\.34/);
+    assert.match(indexSource, /styles\.css\?v=6\.8\.35/);
+    assert.match(indexSource, /app\.js\?v=6\.8\.35/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -2009,6 +2009,9 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /function printSelectedLabels/);
     assert.match(appSource, /label-print-portal/);
     assert.match(stylesSource, /\.label-print-sheet/);
+    assert.match(stylesSource, /font-family:\s*"Vivo Type"/);
+    assert.match(stylesSource, /vivo-type-regular\.woff/);
+    assert.match(stylesSource, /vivo-type-bold\.woff/);
     assert.match(stylesSource, /grid-template-columns:\s*repeat\(4, 45mm\)/);
     assert.match(stylesSource, /body > \*:not\(\.label-print-portal\)/);
     assert.match(appSource, /async function renderPoint/);
@@ -2034,7 +2037,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.34');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.8.35');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

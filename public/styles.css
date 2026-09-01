@@ -1,3 +1,19 @@
+@font-face {
+  font-family: "Vivo Type";
+  src: url("/fonts/vivo-type-regular.woff") format("woff");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vivo Type";
+  src: url("/fonts/vivo-type-bold.woff") format("woff");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 :root {
   --brand: #b58cff;
   --brand-dark: #d8c7ff;
@@ -5661,7 +5677,7 @@ body.cart-drawer-open { overflow: hidden; }
 .shelf-label__prices li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .shelf-label__prices li b { flex: 0 0 auto; color: #17141a; font-size: 7px; }
 .shelf-label__foot { display: flex; justify-content: space-between; gap: 6px; margin-top: 5px; padding-top: 4px; border-top: 1px solid #e1dde4; color: #716b75; font-size: 5px; }
-.store-shelf-label { display: grid; grid-template-rows: auto 1fr auto auto; align-content: stretch; padding: 7px 9px; border: 1px solid #17141a; }
+.store-shelf-label { display: grid; grid-template-rows: auto 1fr auto auto; align-content: stretch; padding: 7px 9px; border: 1px solid #17141a; font-family: "Vivo Type", Arial, sans-serif; }
 .store-shelf-label > strong { margin: 0 0 4px; font-size: 10px; line-height: 1.05; text-align: center; }
 .store-shelf-label__installment { display: grid; grid-template-columns: auto auto auto 1fr; align-items: baseline; justify-content: center; gap: 3px; }
 .store-shelf-label__installment > span { font-size: 7px; }

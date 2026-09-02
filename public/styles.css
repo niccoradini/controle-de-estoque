@@ -5963,4 +5963,24 @@ html[data-theme="light"] .btn--secondary { border-color:#d8d0dd; color:#3b3240; 
 html[data-theme="light"] .table th,html[data-theme="light"] .stock-toolbar,html[data-theme="light"] .modal__footer { border-color:#ded8e3; color:#6d6472; background:#f7f5f8; }
 html[data-theme="light"] .modal { color:#201923; background:#fff; } html[data-theme="light"] .modal__head { border-color:#ded8e3; }
 html[data-theme="light"] .role-pill { color:#642c86; background:#efe2f7; }
+html[data-theme="light"] * { scrollbar-color:#b99aca #eee8f2; }
+html[data-theme="light"] .manager-devices,html[data-theme="light"] .network-section { border-color:#ddd3e3; background:linear-gradient(145deg,#fff,#f6f1f8); box-shadow:0 14px 36px rgba(62,38,75,.08); }
+html[data-theme="light"] .manager-device-card,html[data-theme="light"] .network-device-card,html[data-theme="light"] .network-category-grid article { border-color:#e1d9e6; color:#28202d; background:#fff; box-shadow:0 5px 16px rgba(52,31,64,.06); }
+html[data-theme="light"] .manager-device-card:hover { border-color:#a96fd0; background:#fbf7fd; box-shadow:0 12px 28px rgba(91,48,116,.13); }
+html[data-theme="light"] .manager-device-card__body small,html[data-theme="light"] .network-device-card small { color:#74409b; }
+html[data-theme="light"] .manager-device-card__body strong,html[data-theme="light"] .manager-device-brand h4,html[data-theme="light"] .network-device-card h4 { color:#251d29; }
+html[data-theme="light"] .manager-device-card__body span,html[data-theme="light"] .manager-device-card__body em,html[data-theme="light"] .manager-device-card>b small { color:#756c7b; }
+html[data-theme="light"] .manager-device-card>b,html[data-theme="light"] .network-device-card__total b,html[data-theme="light"] .network-category-grid strong { color:#087a51; }
+html[data-theme="light"] .metric-card,html[data-theme="light"] .inventory-group-card,html[data-theme="light"] .request-card,html[data-theme="light"] .management-product,html[data-theme="light"] .quick-action { border-color:#e1dbe5; color:#281f2c; background:#fff; box-shadow:0 5px 18px rgba(49,30,59,.055); }
+html[data-theme="light"] .metric-card__label,html[data-theme="light"] .metric-card__hint { color:#6f6675; }
+html[data-theme="light"] .inventory-group-card__head>div:last-child>span { color:#72518a; }
+html[data-theme="light"] .inventory-group-card__head h4,html[data-theme="light"] .inventory-group-card dd { color:#28202d; }
+html[data-theme="light"] .inventory-group-card__available { background:#e8f7f0; } html[data-theme="light"] .inventory-group-card__available strong { color:#08784d; } html[data-theme="light"] .inventory-group-card__available span { color:#47715f; }
+html[data-theme="light"] .inventory-group-card__materials { background:#f0e6f7; } html[data-theme="light"] .inventory-group-card__materials strong { color:#6f35a5; } html[data-theme="light"] .inventory-group-card__materials span { color:#705f7c; }
+html[data-theme="light"] .inventory-group-card__action { border-color:#e6dfea; color:#67318f; background:#fbf9fc; }
+html[data-theme="light"] .management-product__name,html[data-theme="light"] .cell-main,html[data-theme="light"] .card__head h3 { color:#281f2c; }
+html[data-theme="light"] .chip-roster,html[data-theme="light"] .renova-intake-metrics article,html[data-theme="light"] .replenishment-card,html[data-theme="light"] .incoming-card,html[data-theme="light"] .label-product-card { border-color:#e1dae6; color:#281f2c; background:#fff; }
+html[data-theme="light"] .material-pill,html[data-theme="light"] .chip-material,html[data-theme="light"] .renova-intake-code { border-color:#d7c7e2; color:#633288; background:#f1e8f7; }
+html[data-theme="light"] .empty-icon { color:#725684; background:#f0e8f5; }
+html[data-theme="light"] .page-heading h2,html[data-theme="light"] .page-head h2,html[data-theme="light"] .content h3,html[data-theme="light"] .content h4 { color:#251d29; }
 @media(max-width:720px){.theme-toggle span:last-child{display:none}.theme-toggle{padding:6px}.topbar__right .role-pill{display:none}}

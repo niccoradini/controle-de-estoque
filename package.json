@@ -1,6 +1,6 @@
 {
   "name": "controle-estoque-aparelhos",
-  "version": "6.10.1",
+  "version": "6.10.2",
   "private": true,
   "type": "module",
   "description": "Loja interna e controle online de produtos por código material em Cloudflare Workers e D1.",

@@ -568,6 +568,7 @@ function renderShell() {
       <aside class="sidebar">
         <div class="sidebar__brand"><div class="brand-mark" aria-hidden="true"><img src="/estoque-symbol.svg" alt=""></div><div><strong>Estoque</strong><small>Loja interna</small></div></div>
         <div class="nav-label">Menu principal</div><nav class="nav-list" aria-label="Menu principal">${links}</nav>
+        <button class="sidebar-theme" data-action="toggle-theme" aria-label="Mudar para tema ${state.user.theme === 'light' ? 'escuro' : 'claro'}"><span>${state.user.theme === 'light' ? '☀' : '☾'}</span><div><small>Aparência</small><strong>Tema ${state.user.theme === 'light' ? 'claro' : 'escuro'}</strong></div><b>Alterar</b></button>
         <div class="sidebar__spacer"></div>
         <div class="sidebar-user"><div class="avatar">${escapeHtml(initials(state.user.name))}</div><div class="sidebar-user__text"><strong>${escapeHtml(state.user.name)}</strong><span>${escapeHtml(roleLabel(state.user.role))}</span></div><button class="btn btn--ghost btn--icon btn--small" data-action="logout" title="Sair" aria-label="Sair">${uiIcon('logout')}</button></div>
       </aside>

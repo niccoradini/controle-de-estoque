@@ -3072,6 +3072,97 @@ async function auditLog(env) {
   });
 }
 
+function plannerDate(value) {
+  const date = typeof value === 'string' ? value.trim() : '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(`${date}T12:00:00Z`))) {
+    throw new HttpError(400, 'Informe uma data válida.');
+  }
+  return date;
+}
+
+function plannerTime(value) {
+  const time = typeof value === 'string' ? value.trim() : '';
+  if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) throw new HttpError(400, 'Informe um horário válido.');
+  return time;
+}
+
+function plannerItemJson(row) {
+  return {
+    id: Number(row.id), title: row.title, details: row.details, type: row.item_type,
+    priority: row.priority, date: row.item_date, time: row.item_time,
+    completed: Boolean(row.completed), createdAt: row.created_at, updatedAt: row.updated_at,
+  };
+}
+
+async function personalPlanner(env, user, url) {
+  requireRole(user, 'manager');
+  const date = plannerDate(url.searchParams.get('date') || nowIso().slice(0, 10));
+  const [day, items] = await Promise.all([
+    env.DB.prepare('SELECT * FROM personal_planner_days WHERE user_id = ? AND plan_date = ?').bind(user.id, date).first(),
+    env.DB.prepare(`SELECT * FROM personal_planner_items WHERE user_id = ? AND item_date BETWEEN date(?, '-7 days') AND date(?, '+14 days') ORDER BY item_date, CASE WHEN item_time = '' THEN 1 ELSE 0 END, item_time, id`).bind(user.id, date, date).all(),
+  ]);
+  return json({
+    date,
+    day: day ? { mainFocus: day.main_focus, intention: day.intention, notes: day.notes, energy: Number(day.energy) } : { mainFocus: '', intention: '', notes: '', energy: 3 },
+    items: (items.results || []).map(plannerItemJson),
+  });
+}
+
+async function savePersonalPlannerDay(request, env, user) {
+  requireRole(user, 'manager');
+  const input = await readJson(request);
+  const date = plannerDate(input.date);
+  const data = validateFields(input, {
+    mainFocus: textRule('o foco principal', { max: 180, optional: true }),
+    intention: textRule('a intenção do dia', { max: 240, optional: true }),
+    notes: textRule('as anotações', { max: 4000, optional: true }),
+  });
+  const energy = Number(input.energy);
+  if (!Number.isInteger(energy) || energy < 1 || energy > 5) throw new HttpError(400, 'Selecione um nível de energia válido.');
+  const timestamp = nowIso();
+  await env.DB.prepare(`INSERT INTO personal_planner_days (user_id, plan_date, main_focus, intention, notes, energy, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(user_id, plan_date) DO UPDATE SET main_focus = excluded.main_focus, intention = excluded.intention, notes = excluded.notes, energy = excluded.energy, updated_at = excluded.updated_at`)
+    .bind(user.id, date, data.mainFocus, data.intention, data.notes, energy, timestamp, timestamp).run();
+  return json({ saved: true });
+}
+
+async function createPersonalPlannerItem(request, env, user) {
+  requireRole(user, 'manager');
+  const input = await readJson(request);
+  const data = validateFields(input, {
+    title: textRule('o título', { max: 180 }), details: textRule('os detalhes', { max: 1000, optional: true }),
+  });
+  const type = ['task', 'appointment', 'reminder'].includes(input.type) ? input.type : 'task';
+  const priority = ['high', 'medium', 'low'].includes(input.priority) ? input.priority : 'medium';
+  const date = plannerDate(input.date);
+  const time = plannerTime(input.time);
+  const timestamp = nowIso();
+  const result = await env.DB.prepare(`INSERT INTO personal_planner_items (user_id, title, details, item_type, priority, item_date, item_time, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(user.id, data.title, data.details, type, priority, date, time, timestamp, timestamp).run();
+  return json({ item: plannerItemJson(await env.DB.prepare('SELECT * FROM personal_planner_items WHERE id = ? AND user_id = ?').bind(result.meta.last_row_id, user.id).first()) }, 201);
+}
+
+async function updatePersonalPlannerItem(request, env, user, id) {
+  requireRole(user, 'manager');
+  const existing = await env.DB.prepare('SELECT * FROM personal_planner_items WHERE id = ? AND user_id = ?').bind(id, user.id).first();
+  if (!existing) throw new HttpError(404, 'Item não encontrado.');
+  const input = await readJson(request);
+  const completed = input.completed === undefined ? Boolean(existing.completed) : Boolean(input.completed);
+  const title = input.title === undefined ? existing.title : validateFields(input, { title: textRule('o título', { max: 180 }) }).title;
+  const timestamp = nowIso();
+  await env.DB.prepare('UPDATE personal_planner_items SET title = ?, completed = ?, updated_at = ? WHERE id = ? AND user_id = ?')
+    .bind(title, completed ? 1 : 0, timestamp, id, user.id).run();
+  return json({ item: plannerItemJson(await env.DB.prepare('SELECT * FROM personal_planner_items WHERE id = ? AND user_id = ?').bind(id, user.id).first()) });
+}
+
+async function deletePersonalPlannerItem(env, user, id) {
+  requireRole(user, 'manager');
+  const result = await env.DB.prepare('DELETE FROM personal_planner_items WHERE id = ? AND user_id = ?').bind(id, user.id).run();
+  if (!result.meta.changes) throw new HttpError(404, 'Item não encontrado.');
+  return noContent();
+}
+
 async function routeApi(request, env) {
   validateRequestSource(request);
   const url = new URL(request.url);
@@ -3092,6 +3183,12 @@ async function routeApi(request, env) {
   if (method === 'PATCH' && path === '/api/auth/password') return changePassword(request, env, user);
   if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
+  if (method === 'GET' && path === '/api/personal-planner') return personalPlanner(env, user, url);
+  if (method === 'PUT' && path === '/api/personal-planner/day') return savePersonalPlannerDay(request, env, user);
+  if (method === 'POST' && path === '/api/personal-planner/items') return createPersonalPlannerItem(request, env, user);
+  const personalPlannerItemMatch = path.match(/^\/api\/personal-planner\/items\/(\d+)$/);
+  if (method === 'PATCH' && personalPlannerItemMatch) return updatePersonalPlannerItem(request, env, user, Number(personalPlannerItemMatch[1]));
+  if (method === 'DELETE' && personalPlannerItemMatch) return deletePersonalPlannerItem(env, user, Number(personalPlannerItemMatch[1]));
   if (method === 'GET' && path === '/api/network-inventory') {
     requireRole(user, 'manager');
     return networkInventoryDashboard(env);

@@ -60,6 +60,9 @@ const state = {
   requestFilter: '',
   alignmentTopic: '',
   pendingCount: 0,
+  plannerDate: localDateValue(),
+  plannerDay: { mainFocus: '', intention: '', notes: '', energy: 3 },
+  plannerItems: [],
 };
 
 const RENOVA_INTAKE_ROLES = new Set(['manager', 'stocker']);
@@ -71,6 +74,7 @@ function canAccessRenovaIntake() {
 const viewTitles = {
   point: 'Meu ponto',
   dashboard: 'Visão geral',
+  'my-day': 'Meu Dia',
   news: 'Notícias',
   chips: 'Chips',
   'renova-intake': 'Renova',
@@ -535,7 +539,7 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Meu Dia'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
@@ -2397,6 +2401,61 @@ async function renderReplenishment() {
   renderReplenishmentWorkspace();
 }
 
+function plannerDateLabel(date) {
+  const parsed = new Date(`${date}T12:00:00`);
+  return new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }).format(parsed);
+}
+
+function plannerItemsFor(date) {
+  return state.plannerItems.filter((item) => item.date === date);
+}
+
+function plannerItemCard(item) {
+  const labels = { task: 'Tarefa', appointment: 'Compromisso', reminder: 'Lembrete' };
+  const priorities = { high: 'Alta', medium: 'Média', low: 'Baixa' };
+  return `<article class="planner-item ${item.completed ? 'is-complete' : ''} planner-item--${escapeHtml(item.priority)}">
+    <button class="planner-check" data-action="toggle-planner-item" data-id="${item.id}" aria-label="${item.completed ? 'Reabrir' : 'Concluir'} ${escapeHtml(item.title)}">${item.completed ? uiIcon('check') : ''}</button>
+    <div class="planner-item__main"><div class="planner-item__meta"><span>${escapeHtml(labels[item.type] || 'Tarefa')}</span><span>${escapeHtml(priorities[item.priority] || 'Média')}</span>${item.time ? `<time>${escapeHtml(item.time)}</time>` : ''}</div><strong>${escapeHtml(item.title)}</strong>${item.details ? `<p>${escapeHtml(item.details)}</p>` : ''}</div>
+    <button class="planner-delete" data-action="delete-planner-item" data-id="${item.id}" aria-label="Excluir ${escapeHtml(item.title)}">&times;</button>
+  </article>`;
+}
+
+function plannerItemModal() {
+  showModal(`<div class="modal__head"><div><p class="page-eyebrow">Novo registro</p><h2>Adicionar ao meu dia</h2></div><button class="btn btn--ghost btn--icon" data-action="close-modal" aria-label="Fechar">${uiIcon('close')}</button></div>
+    <form data-form="planner-item" novalidate><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid">
+      <div class="field field--full"><label for="planner-title">O que você precisa lembrar?</label><input class="input" id="planner-title" name="title" maxlength="180" required autofocus placeholder="Ex.: Retornar para o cliente"></div>
+      <div class="field"><label for="planner-type">Tipo</label><select class="select" id="planner-type" name="type"><option value="task">Tarefa</option><option value="appointment">Compromisso</option><option value="reminder">Lembrete</option></select></div>
+      <div class="field"><label for="planner-priority">Prioridade</label><select class="select" id="planner-priority" name="priority"><option value="high">Alta</option><option value="medium" selected>Média</option><option value="low">Baixa</option></select></div>
+      <div class="field"><label for="planner-date">Data</label><input class="input" id="planner-date" name="date" type="date" value="${escapeHtml(state.plannerDate)}" required></div>
+      <div class="field"><label for="planner-time">Horário (opcional)</label><input class="input" id="planner-time" name="time" type="time"></div>
+      <div class="field field--full"><label for="planner-details">Detalhes</label><textarea class="textarea" id="planner-details" name="details" maxlength="1000" rows="3" placeholder="Informações, telefone, assunto ou próximos passos"></textarea></div>
+    </div></div><div class="modal__footer"><button class="btn btn--secondary" type="button" data-action="close-modal">Cancelar</button><button class="btn" type="submit">Adicionar</button></div></form>`);
+}
+
+async function renderMyDay() {
+  if (state.user.role !== 'manager') return navigate('dashboard');
+  const data = await api(`/api/personal-planner?date=${encodeURIComponent(state.plannerDate)}`);
+  state.plannerDay = data.day;
+  state.plannerItems = data.items || [];
+  const todayItems = plannerItemsFor(state.plannerDate);
+  const pending = todayItems.filter((item) => !item.completed);
+  const completed = todayItems.filter((item) => item.completed);
+  const timed = pending.filter((item) => item.time).sort((a, b) => a.time.localeCompare(b.time));
+  const upcoming = state.plannerItems.filter((item) => item.date > state.plannerDate && !item.completed).slice(0, 6);
+  const content = document.querySelector('#view-content');
+  content.innerHTML = `<section class="planner-hero"><div><p class="page-eyebrow">Área pessoal e privada</p><h2>Meu Dia</h2><p>${escapeHtml(plannerDateLabel(state.plannerDate))}</p></div><div class="planner-date-actions"><input class="input" type="date" data-action="planner-date" value="${escapeHtml(state.plannerDate)}"><button class="btn" data-action="open-planner-item">${uiIcon('plus')} Adicionar</button></div></section>
+    <section class="planner-metrics"><article><span>Pendentes</span><strong>${pending.length}</strong><small>para este dia</small></article><article><span>Concluídas</span><strong>${completed.length}</strong><small>progresso de ${todayItems.length ? Math.round((completed.length / todayItems.length) * 100) : 0}%</small></article><article><span>Com horário</span><strong>${timed.length}</strong><small>na agenda de hoje</small></article><article><span>Próximos dias</span><strong>${upcoming.length}</strong><small>itens já planejados</small></article></section>
+    <div class="planner-layout"><main class="planner-main">
+      <form class="planner-focus" data-form="planner-day"><input type="hidden" name="date" value="${escapeHtml(state.plannerDate)}"><div class="planner-section-head"><div><p class="page-eyebrow">Direção do dia</p><h3>Prioridades e intenção</h3></div><button class="btn btn--secondary btn--small" type="submit">Salvar planejamento</button></div><div class="form-error" data-form-error hidden></div><div class="planner-focus__grid">
+        <div class="field"><label for="main-focus">Foco principal</label><input class="input" id="main-focus" name="mainFocus" maxlength="180" value="${escapeHtml(state.plannerDay.mainFocus)}" placeholder="A coisa mais importante de hoje"></div>
+        <div class="field"><label for="energy">Como está sua energia?</label><select class="select" id="energy" name="energy">${[[1,'Muito baixa'],[2,'Baixa'],[3,'Normal'],[4,'Boa'],[5,'Excelente']].map(([value,label]) => `<option value="${value}" ${Number(state.plannerDay.energy) === value ? 'selected' : ''}>${value} · ${label}</option>`).join('')}</select></div>
+        <div class="field field--full"><label for="intention">Intenção do dia</label><input class="input" id="intention" name="intention" maxlength="240" value="${escapeHtml(state.plannerDay.intention)}" placeholder="Ex.: Resolver o urgente sem perder o foco"></div>
+        <div class="field field--full"><label for="planner-notes">Bloco de notas</label><textarea class="textarea" id="planner-notes" name="notes" maxlength="4000" rows="5" placeholder="Ideias, recados, pessoas para procurar e informações soltas">${escapeHtml(state.plannerDay.notes)}</textarea></div>
+      </div></form>
+      <section class="planner-list-card"><div class="planner-section-head"><div><p class="page-eyebrow">Plano de ação</p><h3>Tarefas, compromissos e lembretes</h3></div><button class="btn btn--ghost btn--small" data-action="open-planner-item">+ Novo item</button></div><div class="planner-items">${pending.length ? pending.map(plannerItemCard).join('') : emptyState('Dia livre por enquanto', 'Adicione o que precisa fazer, lembrar ou acompanhar.')}</div>${completed.length ? `<details class="planner-completed"><summary>${completed.length} concluída(s)</summary><div class="planner-items">${completed.map(plannerItemCard).join('')}</div></details>` : ''}</section>
+    </main><aside class="planner-side"><section><p class="page-eyebrow">Agenda</p><h3>Horários do dia</h3><div class="planner-timeline">${timed.length ? timed.map((item) => `<article><time>${escapeHtml(item.time)}</time><div><strong>${escapeHtml(item.title)}</strong><span>${item.type === 'appointment' ? 'Compromisso' : item.type === 'reminder' ? 'Lembrete' : 'Tarefa'}</span></div></article>`).join('') : '<p class="planner-muted">Nenhum horário definido.</p>'}</div></section><section><p class="page-eyebrow">Visão adiante</p><h3>Próximos itens</h3><div class="planner-upcoming">${upcoming.length ? upcoming.map((item) => `<article><time>${formatDateOnly(item.date)}</time><strong>${escapeHtml(item.title)}</strong>${item.time ? `<span>${escapeHtml(item.time)}</span>` : ''}</article>`).join('') : '<p class="planner-muted">Nada agendado nos próximos dias.</p>'}</div></section></aside></div>`;
+}
+
 function replenishmentText() {
   const selected = state.replenishmentItems.filter((item) => item.selected);
   return ['LISTA DE REPOSIÇÃO', `Gerada em ${new Date().toLocaleString('pt-BR')}`, '', ...selected.map((item) => `${item.requestedQuantity}x · ${item.name} · ${item.materialCode}`)].join('\n');
@@ -2405,6 +2464,7 @@ function replenishmentText() {
 async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
+  if (view === 'my-day' && state.user.role !== 'manager') return;
   if (view === 'network-stock' && state.user.role !== 'manager') return;
   if (state.user.role === 'stocker' && ['new-request', 'chips'].includes(view)) return;
   if (view === 'renova-intake' && !canAccessRenovaIntake()) return;
@@ -2422,6 +2482,7 @@ async function navigate(view) {
   try {
     if (view === 'point') await renderPoint();
     if (view === 'dashboard') await renderDashboard();
+    if (view === 'my-day') await renderMyDay();
     if (view === 'news') await renderNews();
     if (view === 'chips') await renderChips();
     if (view === 'renova-intake') await renderRenovaIntake();
@@ -2925,6 +2986,15 @@ root.addEventListener('click', async (event) => {
     if (action === 'close-menu') document.body.classList.remove('menu-open');
     if (action === 'logout') await withBusy(button, async () => { await api('/api/auth/logout', { method: 'POST' }); state.user = null; closeModal(true); renderLogin(); });
     if (action === 'password') passwordModal(false);
+    if (action === 'open-planner-item' && state.user.role === 'manager') plannerItemModal();
+    if (action === 'toggle-planner-item' && state.user.role === 'manager') {
+      const item = state.plannerItems.find((entry) => entry.id === Number(button.dataset.id));
+      if (item) { await api(`/api/personal-planner/items/${item.id}`, { method: 'PATCH', body: { completed: !item.completed } }); await renderMyDay(); }
+    }
+    if (action === 'delete-planner-item' && state.user.role === 'manager') {
+      await api(`/api/personal-planner/items/${Number(button.dataset.id)}`, { method: 'DELETE' });
+      showToast('Item removido do seu planejamento.'); await renderMyDay();
+    }
     if (action === 'open-quantity') { if (!state.catalog.length) await loadCatalog(); quantityModal(); }
     if (action === 'adjust-quantity') quantityModal(Number(button.dataset.variantId));
     if (action === 'choose-product') pickerModal(Number(button.dataset.productId));
@@ -3089,6 +3159,7 @@ modalRoot.addEventListener('input', (event) => {
 root.addEventListener('change', (event) => {
   const action = event.target.dataset.action;
   if (action === 'replenishment-threshold') { state.replenishmentThreshold = Number(event.target.value || 2); renderReplenishment(); return; }
+  if (action === 'planner-date' && state.user.role === 'manager') { state.plannerDate = event.target.value || localDateValue(); renderMyDay(); return; }
   if (action === 'filter-chip-seller') { state.chipSellerId = Number(event.target.value || 0); renderChipResults(); return; }
   if (action === 'renova-enabled') {
     state.renova.enabled = event.target.checked;
@@ -3164,6 +3235,14 @@ document.addEventListener('submit', async (event) => {
         const result = await api('/api/setup', { method: 'POST', body: { name: data.name, email: data.email, password: data.password } });
         showToast('Acesso gerencial criado com sucesso.');
         await enterApp(result.user);
+      }
+      if (form.dataset.form === 'planner-day') {
+        await api('/api/personal-planner/day', { method: 'PUT', body: { date: data.date, mainFocus: data.mainFocus, intention: data.intention, notes: data.notes, energy: Number(data.energy) } });
+        showToast('Planejamento do dia salvo.'); await renderMyDay();
+      }
+      if (form.dataset.form === 'planner-item') {
+        await api('/api/personal-planner/items', { method: 'POST', body: { title: data.title, details: data.details, type: data.type, priority: data.priority, date: data.date, time: data.time } });
+        closeModal(true); showToast('Item adicionado ao seu dia.'); state.plannerDate = data.date; await renderMyDay();
       }
       if (form.dataset.form === 'login') {
         const result = await api('/api/auth/login', { method: 'POST', body: { identifier: data.identifier, password: data.password }, keepSession: true });

@@ -572,7 +572,7 @@ function renderShell() {
         <div class="sidebar-user"><div class="avatar">${escapeHtml(initials(state.user.name))}</div><div class="sidebar-user__text"><strong>${escapeHtml(state.user.name)}</strong><span>${escapeHtml(roleLabel(state.user.role))}</span></div><button class="btn btn--ghost btn--icon btn--small" data-action="logout" title="Sair" aria-label="Sair">${uiIcon('logout')}</button></div>
       </aside>
       <main class="main">
-        <header class="topbar"><div class="topbar__left"><button class="btn btn--secondary btn--icon mobile-menu" data-action="open-menu" aria-label="Abrir menu">${uiIcon('menu')}</button><h1 data-page-title>${escapeHtml(viewTitles[state.view])}</h1></div><div class="topbar__right"><span class="role-pill">${escapeHtml(roleLabel(state.user.role))}</span><button class="btn btn--secondary btn--small" data-action="password" title="Alterar senha">Senha</button></div></header>
+        <header class="topbar"><div class="topbar__left"><button class="btn btn--secondary btn--icon mobile-menu" data-action="open-menu" aria-label="Abrir menu">${uiIcon('menu')}</button><h1 data-page-title>${escapeHtml(viewTitles[state.view])}</h1></div><div class="topbar__right"><button class="theme-toggle" data-action="toggle-theme" title="Alternar entre tema claro e escuro" aria-label="Alternar tema"><span class="theme-toggle__icon">${state.user.theme === 'light' ? '☀' : '☾'}</span><span>${state.user.theme === 'light' ? 'Claro' : 'Escuro'}</span></button><span class="role-pill">${escapeHtml(roleLabel(state.user.role))}</span><button class="btn btn--secondary btn--small" data-action="password" title="Alterar senha">Senha</button></div></header>
         <section class="content" id="view-content"><div class="loading-block"><span class="loading-inline">Carregando</span></div></section>
       </main>
     </div>`;
@@ -2410,6 +2410,24 @@ function plannerItemsFor(date) {
   return state.plannerItems.filter((item) => item.date === date);
 }
 
+function plannerMonthCalendar() {
+  const selected = new Date(`${state.plannerDate}T12:00:00`);
+  const year = selected.getFullYear();
+  const month = selected.getMonth();
+  const first = new Date(year, month, 1, 12);
+  const start = new Date(first);
+  start.setDate(1 - first.getDay());
+  const today = localDateValue();
+  const monthLabel = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(first);
+  const cells = Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(start); day.setDate(start.getDate() + index);
+    const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    const items = plannerItemsFor(date);
+    return `<button class="planner-calendar__day ${day.getMonth() === month ? '' : 'is-outside'} ${date === state.plannerDate ? 'is-selected' : ''} ${date === today ? 'is-today' : ''}" data-action="planner-calendar-day" data-date="${date}" aria-label="${day.toLocaleDateString('pt-BR')}, ${items.length} itens"><span>${day.getDate()}</span>${items.length ? `<b>${items.length}</b><i>${items.slice(0,3).map((item) => `<em class="is-${item.type}"></em>`).join('')}</i>` : ''}</button>`;
+  }).join('');
+  return `<section class="planner-calendar"><header><button data-action="planner-month" data-offset="-1" aria-label="Mês anterior">‹</button><div><p class="page-eyebrow">Calendário</p><h3>${escapeHtml(monthLabel)}</h3></div><button data-action="planner-month" data-offset="1" aria-label="Próximo mês">›</button></header><div class="planner-calendar__week"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div><div class="planner-calendar__grid">${cells}</div><footer><span><i class="is-appointment"></i> Compromisso</span><span><i class="is-task"></i> Tarefa</span><span><i class="is-reminder"></i> Lembrete</span></footer></section>`;
+}
+
 function plannerItemCard(item) {
   const labels = { task: 'Tarefa', appointment: 'Compromisso', reminder: 'Lembrete' };
   const priorities = { high: 'Alta', medium: 'Média', low: 'Baixa' };
@@ -2445,7 +2463,7 @@ async function renderMyDay() {
   const content = document.querySelector('#view-content');
   content.innerHTML = `<section class="planner-hero"><div><p class="page-eyebrow">Área pessoal e privada</p><h2>Meu Dia</h2><p>${escapeHtml(plannerDateLabel(state.plannerDate))}</p></div><div class="planner-date-actions"><input class="input" type="date" data-action="planner-date" value="${escapeHtml(state.plannerDate)}"><button class="btn" data-action="open-planner-item">${uiIcon('plus')} Adicionar</button></div></section>
     <section class="planner-metrics"><article><span>Pendentes</span><strong>${pending.length}</strong><small>para este dia</small></article><article><span>Concluídas</span><strong>${completed.length}</strong><small>progresso de ${todayItems.length ? Math.round((completed.length / todayItems.length) * 100) : 0}%</small></article><article><span>Com horário</span><strong>${timed.length}</strong><small>na agenda de hoje</small></article><article><span>Próximos dias</span><strong>${upcoming.length}</strong><small>itens já planejados</small></article></section>
-    <div class="planner-layout"><main class="planner-main">
+    ${plannerMonthCalendar()}<div class="planner-layout"><main class="planner-main">
       <form class="planner-focus" data-form="planner-day"><input type="hidden" name="date" value="${escapeHtml(state.plannerDate)}"><div class="planner-section-head"><div><p class="page-eyebrow">Direção do dia</p><h3>Prioridades e intenção</h3></div><button class="btn btn--secondary btn--small" type="submit">Salvar planejamento</button></div><div class="form-error" data-form-error hidden></div><div class="planner-focus__grid">
         <div class="field"><label for="main-focus">Foco principal</label><input class="input" id="main-focus" name="mainFocus" maxlength="180" value="${escapeHtml(state.plannerDay.mainFocus)}" placeholder="A coisa mais importante de hoje"></div>
         <div class="field"><label for="energy">Como está sua energia?</label><select class="select" id="energy" name="energy">${[[1,'Muito baixa'],[2,'Baixa'],[3,'Normal'],[4,'Boa'],[5,'Excelente']].map(([value,label]) => `<option value="${value}" ${Number(state.plannerDay.energy) === value ? 'selected' : ''}>${value} · ${label}</option>`).join('')}</select></div>
@@ -2923,6 +2941,7 @@ function cancelModal(requestId) {
 
 async function enterApp(user) {
   state.user = user;
+  document.documentElement.dataset.theme = user.theme === 'light' ? 'light' : 'dark';
   state.view = user.role === 'seller' ? 'point' : 'dashboard';
   state.catalog = [];
   state.labelSelection.clear();
@@ -2986,6 +3005,16 @@ root.addEventListener('click', async (event) => {
     if (action === 'close-menu') document.body.classList.remove('menu-open');
     if (action === 'logout') await withBusy(button, async () => { await api('/api/auth/logout', { method: 'POST' }); state.user = null; closeModal(true); renderLogin(); });
     if (action === 'password') passwordModal(false);
+    if (action === 'toggle-theme') {
+      const theme = state.user.theme === 'light' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = theme; state.user.theme = theme; renderShell();
+      await api('/api/preferences/theme', { method: 'PATCH', body: { theme } }); await navigate(state.view);
+    }
+    if (action === 'planner-calendar-day' && state.user.role === 'manager') { state.plannerDate = button.dataset.date; await renderMyDay(); }
+    if (action === 'planner-month' && state.user.role === 'manager') {
+      const date = new Date(`${state.plannerDate}T12:00:00`); date.setMonth(date.getMonth() + Number(button.dataset.offset), 1);
+      state.plannerDate = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-01`; await renderMyDay();
+    }
     if (action === 'open-planner-item' && state.user.role === 'manager') plannerItemModal();
     if (action === 'toggle-planner-item' && state.user.role === 'manager') {
       const item = state.plannerItems.find((entry) => entry.id === Number(button.dataset.id));

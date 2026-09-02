@@ -325,6 +325,7 @@ function publicUser(user) {
     active: Boolean(user.active),
     mustChangePassword: Boolean(user.must_change_password),
     createdAt: user.created_at,
+    theme: user.ui_theme === 'light' ? 'light' : 'dark',
   };
 }
 
@@ -3099,13 +3100,21 @@ async function personalPlanner(env, user, url) {
   const date = plannerDate(url.searchParams.get('date') || nowIso().slice(0, 10));
   const [day, items] = await Promise.all([
     env.DB.prepare('SELECT * FROM personal_planner_days WHERE user_id = ? AND plan_date = ?').bind(user.id, date).first(),
-    env.DB.prepare(`SELECT * FROM personal_planner_items WHERE user_id = ? AND item_date BETWEEN date(?, '-7 days') AND date(?, '+14 days') ORDER BY item_date, CASE WHEN item_time = '' THEN 1 ELSE 0 END, item_time, id`).bind(user.id, date, date).all(),
+    env.DB.prepare(`SELECT * FROM personal_planner_items WHERE user_id = ? AND item_date BETWEEN date(?, 'start of month', '-7 days') AND date(?, 'start of month', '+45 days') ORDER BY item_date, CASE WHEN item_time = '' THEN 1 ELSE 0 END, item_time, id`).bind(user.id, date, date).all(),
   ]);
   return json({
     date,
     day: day ? { mainFocus: day.main_focus, intention: day.intention, notes: day.notes, energy: Number(day.energy) } : { mainFocus: '', intention: '', notes: '', energy: 3 },
     items: (items.results || []).map(plannerItemJson),
   });
+}
+
+async function saveUserTheme(request, env, user) {
+  const input = await readJson(request);
+  const theme = input.theme === 'light' ? 'light' : input.theme === 'dark' ? 'dark' : '';
+  if (!theme) throw new HttpError(400, 'Selecione um tema válido.');
+  await env.DB.prepare('UPDATE users SET ui_theme = ?, updated_at = ? WHERE id = ?').bind(theme, nowIso(), user.id).run();
+  return json({ theme });
 }
 
 async function savePersonalPlannerDay(request, env, user) {
@@ -3181,6 +3190,7 @@ async function routeApi(request, env) {
   const user = await authenticatedUser(env, request);
   if (method === 'GET' && path === '/api/auth/me') return json({ user: publicUser(user) });
   if (method === 'PATCH' && path === '/api/auth/password') return changePassword(request, env, user);
+  if (method === 'PATCH' && path === '/api/preferences/theme') return saveUserTheme(request, env, user);
   if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
   if (method === 'GET' && path === '/api/personal-planner') return personalPlanner(env, user, url);

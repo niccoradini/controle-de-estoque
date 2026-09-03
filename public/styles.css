@@ -5983,4 +5983,29 @@ html[data-theme="light"] .chip-roster,html[data-theme="light"] .renova-intake-me
 html[data-theme="light"] .material-pill,html[data-theme="light"] .chip-material,html[data-theme="light"] .renova-intake-code { border-color:#d7c7e2; color:#633288; background:#f1e8f7; }
 html[data-theme="light"] .empty-icon { color:#725684; background:#f0e8f5; }
 html[data-theme="light"] .page-heading h2,html[data-theme="light"] .page-head h2,html[data-theme="light"] .content h3,html[data-theme="light"] .content h4 { color:#251d29; }
+html[data-theme="light"] .pricing-selector { border-color:#d8cde0; color:#251d29; background:radial-gradient(circle at 12% 0,rgba(130,62,177,.1),transparent 42%),linear-gradient(135deg,#fff,#f4eef8); box-shadow:0 12px 30px rgba(54,31,67,.1); }
+html[data-theme="light"] .pricing-selector__eyebrow { color:#783690; font-weight:800; }
+html[data-theme="light"] .pricing-selector h3 { color:#251d29; font-weight:750; }
+html[data-theme="light"] .pricing-selector p { color:#655c6b; font-weight:550; }
+html[data-theme="light"] .pricing-selector__control label { color:#45384c; font-weight:750; }
+html[data-theme="light"] .pricing-selector__control small { color:#6e6474; font-weight:550; }
+html[data-theme="light"] .pricing-selector .select { border-color:#cfc5d5; color:#28202d; background:#fff; }
+html[data-theme="light"] .stock-toolbar .search-box { border-color:#cec5d4; background:#fff; }
+html[data-theme="light"] .stock-toolbar .search-box .input { color:#251d29; background:#fff; }
+html[data-theme="light"] .stock-toolbar .search-box .input::placeholder { color:#817687; opacity:1; }
+html[data-theme="light"] .stock-toolbar .search-box svg { color:#6c6172; }
+html[data-theme="light"] .chip { border-color:#d7cedd; color:#5d5263; background:#fff; font-weight:700; }
+html[data-theme="light"] .chip:hover,html[data-theme="light"] .chip.is-active { border-color:#c4a1dc; color:#622d87; background:#efe3f7; }
+html[data-theme="light"] .stock-section .table th { border-color:#ded7e2; color:#5f5665; background:#f5f2f6; font-weight:800; }
+html[data-theme="light"] .stock-section .table td { border-color:#e5dfe8; color:#2b232f; }
+html[data-theme="light"] .stock-cluster-row td { color:#653087; background:#f0e5f7; }
+html[data-theme="light"] .stock-cluster-row strong { color:#653087; font-weight:850; }
+html[data-theme="light"] .stock-cluster-row span { color:#625968; font-weight:700; }
+html[data-theme="light"] .stock-price strong { color:#66318e; font-weight:850; }
+html[data-theme="light"] .stock-price span,html[data-theme="light"] .price-unavailable { color:#716777; font-weight:600; }
+html[data-theme="light"] .stock-product-cell .cell-main { color:#29212e; font-weight:750; }
+html[data-theme="light"] .stock-product-cell .cell-sub { color:#6e6474; font-weight:550; }
+html[data-theme="light"] .available-value { color:#08784d; font-weight:850; }
+html[data-theme="light"] .unavailable-value { color:#b3263b; font-weight:750; }
+html[data-theme="light"] .material-pill { font-weight:800; }
 @media(max-width:720px){.theme-toggle span:last-child{display:none}.theme-toggle{padding:6px}.topbar__right .role-pill{display:none}}

@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60, migration61, migration62, migration63, migration64] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60, migration61, migration62, migration63, migration64, migration65, migration66, migration67] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -130,6 +130,9 @@ before(async () => {
     readFile(new URL('../migrations/0062_inventory_refresh_2026_09_01.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0063_incoming_inventory_details_2026_09_01.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0064_network_inventory_2026_09_01.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0065_personal_planner.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0066_user_theme_preference.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0067_site_feedback.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -259,6 +262,9 @@ before(async () => {
   await applyMigration(migration62);
   await applyMigration(migration63);
   await applyMigration(migration64);
+  await applyMigration(migration65);
+  await applyMigration(migration66);
+  await applyMigration(migration67);
 });
 
 after(async () => mf?.dispose());
@@ -1691,6 +1697,55 @@ describe('Controle de estoque por código material', () => {
     `, created.payload.news.id)).count), 4);
   });
 
+  test('recebe sugestões de vendedores e estoquistas e permite acompanhamento gerencial', async () => {
+    const sellerCreated = await seller.request('/api/site-feedback', {
+      method: 'POST',
+      body: { type: 'suggestion', title: 'Melhorar a busca', details: 'Seria útil buscar também pelo nome da marca.', pageName: 'Estoque da loja' },
+    });
+    assert.equal(sellerCreated.status, 201);
+    assert.equal(sellerCreated.payload.feedback.type, 'suggestion');
+    assert.equal(sellerCreated.payload.feedback.authorRole, 'seller');
+
+    const stockerCreated = await stocker.request('/api/site-feedback', {
+      method: 'POST',
+      body: { type: 'complaint', title: 'Filtro perde seleção', details: 'Ao voltar para a página o filtro selecionado desaparece.', pageName: 'Reposição' },
+    });
+    assert.equal(stockerCreated.status, 201);
+    assert.equal(stockerCreated.payload.feedback.type, 'complaint');
+    assert.equal(stockerCreated.payload.feedback.authorRole, 'stocker');
+
+    assert.equal((await manager.request('/api/site-feedback', {
+      method: 'POST', body: { type: 'suggestion', title: 'Não permitido', details: 'Gerente não deve enviar esta mensagem.' },
+    })).status, 403);
+
+    const sellerView = await seller.request('/api/site-feedback');
+    assert.equal(sellerView.status, 200);
+    assert.equal(sellerView.payload.feedback.length, 1);
+    assert.equal(sellerView.payload.feedback[0].id, sellerCreated.payload.feedback.id);
+    const stockerView = await stocker.request('/api/site-feedback');
+    assert.equal(stockerView.payload.feedback.length, 1);
+    assert.equal(stockerView.payload.feedback[0].id, stockerCreated.payload.feedback.id);
+
+    const managerView = await manager.request('/api/site-feedback');
+    assert.equal(managerView.status, 200);
+    assert.deepEqual(managerView.payload.summary, { total: 2, new: 2, inReview: 0, resolved: 0 });
+    assert.equal(managerView.payload.feedback.length, 2);
+    assert.equal((await seller.request(`/api/site-feedback/${sellerCreated.payload.feedback.id}`, {
+      method: 'PATCH', body: { status: 'resolved', managerNote: 'Tentativa sem permissão.' },
+    })).status, 403);
+
+    const reviewed = await manager.request(`/api/site-feedback/${sellerCreated.payload.feedback.id}`, {
+      method: 'PATCH', body: { status: 'in_review', managerNote: 'Vamos incluir essa busca na próxima melhoria.' },
+    });
+    assert.equal(reviewed.status, 200);
+    assert.equal(reviewed.payload.feedback.status, 'in_review');
+    assert.match(reviewed.payload.feedback.managerNote, /próxima melhoria/);
+    const sellerAfterReview = await seller.request('/api/site-feedback');
+    assert.equal(sellerAfterReview.payload.feedback[0].status, 'in_review');
+    assert.match(sellerAfterReview.payload.feedback[0].managerNote, /Vamos incluir/);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE entity_type = 'site_feedback'`)).count), 3);
+  });
+
   test('exclui acessos, encerra sessões e preserva pedidos e histórico anonimizados', async () => {
     const removable = await manager.request('/api/users', {
       method: 'POST',
@@ -1761,7 +1816,11 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.11.3');
+    assert.equal(JSON.parse(packageSource).version, '6.12.0');
+    assert.match(appSource, /async function renderFeedback/);
+    assert.match(appSource, /data-form="site-feedback"/);
+    assert.match(stylesSource, /\.feedback-card/);
+    assert.match(workerSource, /\/api\/site-feedback/);
     assert.match(appSource, /\/api\/replenishment\/export/);
     assert.doesNotMatch(appSource, /print-replenishment|printing-replenishment/);
     assert.match(appSource, /function normalizeSearch\(value = ''\)/);
@@ -1962,8 +2021,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.11\.3/);
-    assert.match(indexSource, /app\.js\?v=6\.11\.3/);
+    assert.match(indexSource, /styles\.css\?v=6\.12\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.12\.0/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -2037,7 +2096,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.11.3');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.12.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

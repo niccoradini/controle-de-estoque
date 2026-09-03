@@ -63,6 +63,8 @@ const state = {
   plannerDate: localDateValue(),
   plannerDay: { mainFocus: '', intention: '', notes: '', energy: 3 },
   plannerItems: [],
+  feedback: [],
+  feedbackFilter: 'all',
 };
 
 const RENOVA_INTAKE_ROLES = new Set(['manager', 'stocker']);
@@ -87,6 +89,7 @@ const viewTitles = {
   'new-request': 'Novo pedido',
   requests: 'Pedidos de retirada',
   alignment: 'Central de Alinhamento',
+  feedback: 'Sugestões e reclamações',
   users: 'Usuários',
   audit: 'Histórico',
 };
@@ -540,19 +543,19 @@ function navItems() {
   if (state.user.role === 'manager') {
     return [
       ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
-      ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
+      ['feedback', 'briefing', 'Sugestões recebidas'], ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
       ['dashboard', 'home', 'Visão do estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
-      ['requests', 'orders', 'Pedidos para separar'], ['alignment', 'briefing', 'Alinhamento rápido'],
+      ['requests', 'orders', 'Pedidos para separar'], ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
   return [
     ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Loja / estoque'],
     ['new-request', 'plus', 'Novo pedido'], ['chips', 'sim', 'Meus chips'], ['requests', 'orders', 'Meus pedidos'],
-    ['alignment', 'briefing', 'Alinhamento rápido'],
+    ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
   ];
 }
 
@@ -2479,6 +2482,60 @@ function replenishmentText() {
   return ['LISTA DE REPOSIÇÃO', `Gerada em ${new Date().toLocaleString('pt-BR')}`, '', ...selected.map((item) => `${item.requestedQuantity}x · ${item.name} · ${item.materialCode}`)].join('\n');
 }
 
+const feedbackTypeInfo = {
+  suggestion: { label: 'Sugestão', className: 'suggestion' },
+  complaint: { label: 'Reclamação', className: 'complaint' },
+};
+
+const feedbackStatusInfo = {
+  new: { label: 'Nova', className: 'new' },
+  in_review: { label: 'Em análise', className: 'review' },
+  resolved: { label: 'Resolvida', className: 'resolved' },
+};
+
+function feedbackCard(item) {
+  const type = feedbackTypeInfo[item.type] || feedbackTypeInfo.suggestion;
+  const status = feedbackStatusInfo[item.status] || feedbackStatusInfo.new;
+  const managerActions = state.user.role === 'manager' ? `<button class="btn btn--secondary btn--small" data-action="review-feedback" data-id="${item.id}">Analisar</button>` : '';
+  return `<article class="feedback-card">
+    <header class="feedback-card__head"><div class="feedback-card__badges"><span class="feedback-type is-${type.className}">${type.label}</span><span class="feedback-status is-${status.className}">${status.label}</span></div>${managerActions}</header>
+    <div class="feedback-card__title"><div><h3>${escapeHtml(item.title)}</h3><p>${state.user.role === 'manager' ? `${escapeHtml(item.authorName)} · ${escapeHtml(roleLabel(item.authorRole))}` : 'Sua mensagem'}${item.pageName ? ` · ${escapeHtml(item.pageName)}` : ''}</p></div><time>${escapeHtml(formatDate(item.createdAt))}</time></div>
+    <p class="feedback-card__details">${escapeHtml(item.details)}</p>
+    ${item.managerNote ? `<aside class="feedback-card__note"><strong>Retorno da gerência</strong><p>${escapeHtml(item.managerNote)}</p></aside>` : ''}
+  </article>`;
+}
+
+function feedbackReviewModal(item) {
+  if (!item || state.user.role !== 'manager') return;
+  showModal(`<div class="modal__head"><div><p class="page-eyebrow">Acompanhamento</p><h2>Analisar mensagem</h2></div>${modalCloseButton()}</div>
+    <form data-form="review-feedback" data-id="${item.id}" novalidate><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="feedback-review-summary"><span>${escapeHtml(feedbackTypeInfo[item.type]?.label || 'Mensagem')} de ${escapeHtml(item.authorName)}</span><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.details)}</p></div><div class="form-grid">
+      <div class="field"><label for="feedback-review-status">Status</label><select class="select" id="feedback-review-status" name="status"><option value="new" ${item.status === 'new' ? 'selected' : ''}>Nova</option><option value="in_review" ${item.status === 'in_review' ? 'selected' : ''}>Em análise</option><option value="resolved" ${item.status === 'resolved' ? 'selected' : ''}>Resolvida</option></select></div>
+      <div class="field field--full"><label for="feedback-manager-note">Retorno para o funcionário</label><textarea class="textarea" id="feedback-manager-note" name="managerNote" maxlength="1000" rows="4" placeholder="Informe o que foi analisado ou qual providência será tomada">${escapeHtml(item.managerNote || '')}</textarea></div>
+    </div></div><div class="modal__footer"><button class="btn btn--secondary" type="button" data-action="close-modal">Cancelar</button><button class="btn" type="submit">Salvar acompanhamento</button></div></form>`);
+}
+
+async function renderFeedback() {
+  const query = state.feedbackFilter === 'all' ? '' : `?status=${encodeURIComponent(state.feedbackFilter)}`;
+  const data = await api(`/api/site-feedback${query}`);
+  state.feedback = data.feedback || [];
+  const summary = data.summary || { total: 0, new: 0, inReview: 0, resolved: 0 };
+  const manager = state.user.role === 'manager';
+  const filters = [['all', 'Todas'], ['new', 'Novas'], ['in_review', 'Em análise'], ['resolved', 'Resolvidas']].map(([value, label]) => `<button class="chip ${state.feedbackFilter === value ? 'is-active' : ''}" data-action="filter-feedback" data-status="${value}">${label}</button>`).join('');
+  const feed = state.feedback.length ? state.feedback.map(feedbackCard).join('') : emptyState(manager ? 'Nenhuma mensagem nesta etapa' : 'Você ainda não enviou mensagens', manager ? 'Altere o filtro ou aguarde uma nova contribuição da equipe.' : 'Use o formulário para compartilhar uma sugestão ou reclamação.');
+  const content = document.querySelector('#view-content');
+  content.innerHTML = `<section class="feedback-hero"><div><p class="page-eyebrow">${manager ? 'Voz da equipe' : 'Sua opinião melhora o trabalho'}</p><h2>${manager ? 'Sugestões e reclamações recebidas' : 'Ajude a melhorar o sistema'}</h2><p>${manager ? 'Acompanhe as mensagens enviadas por vendedores e estoquistas e registre o retorno da gerência.' : 'Conte o que incomodou, o que pode ser simplificado ou uma ideia que deixaria o site melhor.'}</p></div><div class="feedback-hero__symbol">${uiIcon('briefing')}</div></section>
+    ${manager ? `<section class="feedback-metrics"><article><span>Total recebido</span><strong>${summary.total}</strong></article><article><span>Novas</span><strong>${summary.new}</strong></article><article><span>Em análise</span><strong>${summary.inReview}</strong></article><article><span>Resolvidas</span><strong>${summary.resolved}</strong></article></section>` : ''}
+    <section class="feedback-layout ${manager ? 'is-manager' : ''}">
+      ${manager ? '' : `<form class="feedback-form" data-form="site-feedback" novalidate><div><p class="page-eyebrow">Nova mensagem</p><h3>O que você gostaria de compartilhar?</h3><p>Seu nome e perfil acompanham a mensagem para facilitar o retorno.</p></div><div class="form-error" data-form-error hidden></div><div class="form-grid">
+        <div class="field"><label for="feedback-type">Tipo</label><select class="select" id="feedback-type" name="feedbackType"><option value="suggestion">Sugestão de melhoria</option><option value="complaint">Reclamação</option></select></div>
+        <div class="field"><label for="feedback-page">Página ou área (opcional)</label><input class="input" id="feedback-page" name="pageName" maxlength="100" placeholder="Ex.: Estoque da loja"></div>
+        <div class="field field--full"><label for="feedback-title">Resumo</label><input class="input" id="feedback-title" name="title" minlength="4" maxlength="140" required placeholder="Resuma o ponto principal"></div>
+        <div class="field field--full"><label for="feedback-details">Explique com detalhes</label><textarea class="textarea" id="feedback-details" name="details" minlength="10" maxlength="3000" rows="7" required placeholder="Diga o que aconteceu, como isso afeta seu trabalho e, se tiver, sua ideia de solução"></textarea></div>
+      </div><button class="btn" type="submit">Enviar para a gerência</button></form>`}
+      <div class="feedback-feed"><header><div><p class="page-eyebrow">${manager ? 'Caixa de entrada' : 'Minhas mensagens'}</p><h3>${manager ? 'Acompanhamento' : 'Histórico e retornos'}</h3></div><div class="filter-tabs">${filters}</div></header><div class="feedback-list">${feed}</div></div>
+    </section>`;
+}
+
 async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
@@ -2500,6 +2557,7 @@ async function navigate(view) {
     if (view === 'point') await renderPoint();
     if (view === 'dashboard') await renderDashboard();
     if (view === 'my-day') await renderMyDay();
+    if (view === 'feedback') await renderFeedback();
     if (view === 'news') await renderNews();
     if (view === 'chips') await renderChips();
     if (view === 'renova-intake') await renderRenovaIntake();
@@ -2978,6 +3036,8 @@ async function enterApp(user) {
   state.requestFilter = user.role === 'stocker' ? 'approved' : '';
   state.alignmentTopic = '';
   state.pendingCount = 0;
+  state.feedback = [];
+  state.feedbackFilter = 'all';
   renderShell();
   if (user.mustChangePassword) return passwordModal(true);
   await navigate(user.role === 'seller' ? 'point' : 'dashboard');
@@ -3023,6 +3083,8 @@ root.addEventListener('click', async (event) => {
       await api(`/api/personal-planner/items/${Number(button.dataset.id)}`, { method: 'DELETE' });
       showToast('Item removido do seu planejamento.'); await renderMyDay();
     }
+    if (action === 'filter-feedback') { state.feedbackFilter = button.dataset.status || 'all'; await renderFeedback(); }
+    if (action === 'review-feedback' && state.user.role === 'manager') feedbackReviewModal(state.feedback.find((item) => item.id === Number(button.dataset.id)));
     if (action === 'open-quantity') { if (!state.catalog.length) await loadCatalog(); quantityModal(); }
     if (action === 'adjust-quantity') quantityModal(Number(button.dataset.variantId));
     if (action === 'choose-product') pickerModal(Number(button.dataset.productId));
@@ -3271,6 +3333,14 @@ document.addEventListener('submit', async (event) => {
       if (form.dataset.form === 'planner-item') {
         await api('/api/personal-planner/items', { method: 'POST', body: { title: data.title, details: data.details, type: data.type, priority: data.priority, date: data.date, time: data.time } });
         closeModal(true); showToast('Item adicionado ao seu dia.'); state.plannerDate = data.date; await renderMyDay();
+      }
+      if (form.dataset.form === 'site-feedback') {
+        await api('/api/site-feedback', { method: 'POST', body: { type: data.feedbackType, pageName: data.pageName, title: data.title, details: data.details } });
+        form.reset(); state.feedbackFilter = 'all'; showToast('Mensagem enviada para a gerência.'); await renderFeedback();
+      }
+      if (form.dataset.form === 'review-feedback') {
+        await api(`/api/site-feedback/${encodeURIComponent(form.dataset.id)}`, { method: 'PATCH', body: { status: data.status, managerNote: data.managerNote } });
+        closeModal(true); showToast('Acompanhamento atualizado.'); await renderFeedback();
       }
       if (form.dataset.form === 'login') {
         const result = await api('/api/auth/login', { method: 'POST', body: { identifier: data.identifier, password: data.password }, keepSession: true });

@@ -3095,6 +3095,71 @@ function plannerItemJson(row) {
   };
 }
 
+function siteFeedbackJson(row) {
+  return {
+    id: Number(row.id),
+    authorName: row.author_name,
+    authorRole: row.author_role,
+    type: row.feedback_type,
+    title: row.title,
+    details: row.details,
+    pageName: row.page_name,
+    status: row.status,
+    managerNote: row.manager_note,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function listSiteFeedback(env, user, url) {
+  const requestedStatus = String(url.searchParams.get('status') || 'all');
+  const status = ['new', 'in_review', 'resolved'].includes(requestedStatus) ? requestedStatus : 'all';
+  const manager = user.role === 'manager';
+  const where = [manager ? '1 = 1' : 'author_user_id = ?'];
+  const bindings = manager ? [] : [user.id];
+  if (status !== 'all') { where.push('status = ?'); bindings.push(status); }
+  const rows = await env.DB.prepare(`SELECT * FROM site_feedback WHERE ${where.join(' AND ')} ORDER BY CASE status WHEN 'new' THEN 0 WHEN 'in_review' THEN 1 ELSE 2 END, created_at DESC`).bind(...bindings).all();
+  const summary = manager
+    ? await env.DB.prepare(`SELECT COUNT(*) AS total, SUM(status = 'new') AS new_count, SUM(status = 'in_review') AS review_count, SUM(status = 'resolved') AS resolved_count FROM site_feedback`).first()
+    : await env.DB.prepare(`SELECT COUNT(*) AS total, SUM(status = 'new') AS new_count, SUM(status = 'in_review') AS review_count, SUM(status = 'resolved') AS resolved_count FROM site_feedback WHERE author_user_id = ?`).bind(user.id).first();
+  return json({
+    feedback: (rows.results || []).map(siteFeedbackJson),
+    summary: { total: Number(summary?.total || 0), new: Number(summary?.new_count || 0), inReview: Number(summary?.review_count || 0), resolved: Number(summary?.resolved_count || 0) },
+  });
+}
+
+async function createSiteFeedback(request, env, user) {
+  requireRole(user, ['seller', 'stocker']);
+  const input = await readJson(request);
+  const data = validateFields(input, {
+    title: textRule('um título', { min: 4, max: 140 }),
+    details: textRule('os detalhes', { min: 10, max: 3000 }),
+    pageName: textRule('a página', { max: 100, optional: true }),
+  });
+  const type = input.type === 'complaint' ? 'complaint' : input.type === 'suggestion' ? 'suggestion' : '';
+  if (!type) throw new HttpError(400, 'Selecione sugestão ou reclamação.');
+  const timestamp = nowIso();
+  const result = await env.DB.prepare(`INSERT INTO site_feedback (author_user_id, author_name, author_role, feedback_type, title, details, page_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(user.id, user.name, user.role, type, data.title, data.details, data.pageName, timestamp, timestamp).run();
+  await auditStatement(env, user.id, 'site_feedback.created', 'site_feedback', result.meta.last_row_id, { type, pageName: data.pageName }).run();
+  return json({ feedback: siteFeedbackJson(await env.DB.prepare('SELECT * FROM site_feedback WHERE id = ?').bind(result.meta.last_row_id).first()) }, 201);
+}
+
+async function updateSiteFeedback(request, env, manager, id) {
+  requireRole(manager, 'manager');
+  const existing = await env.DB.prepare('SELECT * FROM site_feedback WHERE id = ?').bind(id).first();
+  if (!existing) throw new HttpError(404, 'Mensagem não encontrada.');
+  const input = await readJson(request);
+  const status = ['new', 'in_review', 'resolved'].includes(input.status) ? input.status : '';
+  if (!status) throw new HttpError(400, 'Selecione um status válido.');
+  const managerNote = validateFields(input, { managerNote: textRule('a observação', { max: 1000, optional: true }) }).managerNote;
+  const timestamp = nowIso();
+  await env.DB.prepare('UPDATE site_feedback SET status = ?, manager_note = ?, reviewed_by = ?, updated_at = ? WHERE id = ?')
+    .bind(status, managerNote, manager.id, timestamp, id).run();
+  await auditStatement(env, manager.id, 'site_feedback.updated', 'site_feedback', id, { status }).run();
+  return json({ feedback: siteFeedbackJson(await env.DB.prepare('SELECT * FROM site_feedback WHERE id = ?').bind(id).first()) });
+}
+
 async function personalPlanner(env, user, url) {
   const date = plannerDate(url.searchParams.get('date') || nowIso().slice(0, 10));
   const [day, items] = await Promise.all([
@@ -3188,6 +3253,10 @@ async function routeApi(request, env) {
   if (method === 'PATCH' && path === '/api/preferences/theme') return saveUserTheme(request, env, user);
   if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
+  if (method === 'GET' && path === '/api/site-feedback') return listSiteFeedback(env, user, url);
+  if (method === 'POST' && path === '/api/site-feedback') return createSiteFeedback(request, env, user);
+  const siteFeedbackMatch = path.match(/^\/api\/site-feedback\/(\d+)$/);
+  if (method === 'PATCH' && siteFeedbackMatch) return updateSiteFeedback(request, env, user, Number(siteFeedbackMatch[1]));
   if (method === 'GET' && path === '/api/personal-planner') return personalPlanner(env, user, url);
   if (method === 'PUT' && path === '/api/personal-planner/day') return savePersonalPlannerDay(request, env, user);
   if (method === 'POST' && path === '/api/personal-planner/items') return createPersonalPlannerItem(request, env, user);

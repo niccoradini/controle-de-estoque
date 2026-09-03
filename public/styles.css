@@ -6090,5 +6090,95 @@ html[data-theme="light"] .alignment-topic__copy>span:last-child,html[data-theme=
 html[data-theme="light"] .alignment-detail__head,html[data-theme="light"] .alignment-topic__action { border-color:#e1dae5; background:#f8f5f9; }
 html[data-theme="light"] .alignment-principle,html[data-theme="light"] .alignment-service,html[data-theme="light"] .alignment-hierarchy strong { border-color:#e0d8e4; background:#f7f3f8; }
 
+/* Componentes compartilhados que ainda herdavam o modo escuro */
+html[data-theme="light"] .store-card,html[data-theme="light"] .device-selected-material,html[data-theme="light"] .device-accessory-field,html[data-theme="light"] .automatic-picker,html[data-theme="light"] .serial-picker-group,html[data-theme="light"] .serial-option { border-color:#ddd6e2; color:#29212e; background:#fff; box-shadow:0 5px 18px rgba(49,30,59,.055); }
+html[data-theme="light"] .store-card h3,html[data-theme="light"] .device-configurator__heading strong,html[data-theme="light"] .device-selected-material strong,html[data-theme="light"] .device-accessory-field__label span,html[data-theme="light"] .automatic-picker li strong,html[data-theme="light"] .serial-picker-group__head strong { color:#29212e; }
+html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card__body>p,html[data-theme="light"] .store-card__stock span,html[data-theme="light"] .store-card__stats,html[data-theme="light"] .device-configurator__heading small,html[data-theme="light"] .device-configurator__action>span,html[data-theme="light"] .device-accessory-field p,html[data-theme="light"] .automatic-picker li span { color:#6c6371; }
+html[data-theme="light"] .device-family-summary span { border-color:#ddd4e1; color:#5e5564; background:#f7f3f8; }
+html[data-theme="light"] .device-configurator { border-color:#ded7e2; }
+html[data-theme="light"] .device-accessory-field__label small { color:#713244; background:#f8e7ec; }
+html[data-theme="light"] .automatic-release { border-color:#e3bfc8; color:#8b3446; background:#fbecef; }
+html[data-theme="light"] .automatic-picker__head { border-color:#e3ced4; color:#7e3445; background:#faedf1; }
+html[data-theme="light"] .automatic-picker__head span { color:#775f66; }
+html[data-theme="light"] .automatic-picker li+li { border-color:#e5dfe7; }
+html[data-theme="light"] .material-code-box { border-color:#ddd6e2; background:#f7f4f8; }
+html[data-theme="light"] .material-code-box__label,html[data-theme="light"] .material-inline small { color:#665d6b; }
+html[data-theme="light"] .material-code-box__value code,html[data-theme="light"] .material-inline code { color:#643287; }
+html[data-theme="light"] .material-copy { border-color:#d8cde0; color:#643287; background:#fff; }
+html[data-theme="light"] .serial-release { border-color:#b9dfcf; background:#eef9f4; }
+html[data-theme="light"] .serial-chip { border-color:#a9d7c3; color:#086b46; background:#fff; }
+html[data-theme="light"] .scanner-status { border-color:#dcd5e1; color:#5f5665; background:#f7f4f8; }
+html[data-theme="light"] .scanner-help ol,html[data-theme="light"] .scanner-help p { color:#5f5665; }
+html[data-theme="light"] .serial-picker-intro { border-color:#d6c5e1; color:#623084; background:#f2e8f8; }
+html[data-theme="light"] .serial-picker-intro span { color:#645b69; }
+html[data-theme="light"] .serial-picker-group__head { border-color:#dfd8e3; background:#f7f4f8; }
+html[data-theme="light"] .serial-picker-count { color:#602d82; background:#eee2f7; }
+html[data-theme="light"] .serial-option { color:#4d4452; }
+html[data-theme="light"] .serial-option:hover,html[data-theme="light"] .serial-option:has(input:checked) { border-color:#b88bd4; color:#5e287f; background:#f0e4f7; }
+
+html[data-theme="light"] .admin-strip { border-color:#ddd6e2; background:#ddd6e2; }
+html[data-theme="light"] .admin-strip span { color:#625967; background:#fff; }
+html[data-theme="light"] .admin-strip span+span { border-color:#ddd6e2; }
+html[data-theme="light"] .admin-strip b,html[data-theme="light"] .stock-chart__label span,html[data-theme="light"] .order-legend b,html[data-theme="light"] .management-product-list strong,html[data-theme="light"] .access-list strong { color:#29212e; }
+html[data-theme="light"] .stock-chart__label small,html[data-theme="light"] .order-donut span,html[data-theme="light"] .order-legend span,html[data-theme="light"] .management-product-list code,html[data-theme="light"] .access-list span,html[data-theme="light"] .access-list time { color:#68606e; }
+html[data-theme="light"] .stock-chart__track { background:#e6e0e8; }
+html[data-theme="light"] .order-donut { box-shadow:0 0 0 1px #d9d1de,0 10px 28px rgba(49,30,59,.1); }
+html[data-theme="light"] .order-donut::after { border-color:#ddd6e2; background:#fff; box-shadow:inset 0 8px 20px rgba(49,30,59,.06); }
+html[data-theme="light"] .management-product-list li+li,html[data-theme="light"] .access-list li+li { border-color:#e2dce5; }
+
+html[data-theme="light"] .renova-box { border-color:#d4c1df; background:#f4ebf8; }
+html[data-theme="light"] .renova-box__head>div strong,html[data-theme="light"] .renova-bonus strong { color:#302438; }
+html[data-theme="light"] .renova-box__head>div span,html[data-theme="light"] .renova-switch span { color:#643187; }
+html[data-theme="light"] .renova-box__body { border-color:#d8c9e2; }
+html[data-theme="light"] .renova-bonus { border-color:#d3bde0; background:#eee1f6; }
+html[data-theme="light"] .renova-bonus span,html[data-theme="light"] .renova-bonus small,html[data-theme="light"] .renova-search-help,html[data-theme="light"] .renova-note { color:#685e6e; }
+
+html[data-theme="light"] .simple-alignment-hero { border-color:#d8cce1; color:#29212e; background:radial-gradient(circle at 85% 12%,rgba(126,57,161,.12),transparent 36%),linear-gradient(135deg,#fff,#f1eaf5); }
+html[data-theme="light"] .simple-alignment-hero h2,html[data-theme="light"] .simple-alignment-card h3,html[data-theme="light"] .simple-alignment-check h3 { color:#29212e; }
+html[data-theme="light"] .simple-alignment-hero p,html[data-theme="light"] .simple-alignment-card p,html[data-theme="light"] .simple-alignment-check li { color:#625967; }
+html[data-theme="light"] .simple-alignment-hero__time { border-color:#cdb8db; color:#603080; background:#efe3f7; }
+html[data-theme="light"] .simple-alignment-hero__time span { color:#675d6d; }
+html[data-theme="light"] .simple-alignment-role { border-color:#b9dfcf; color:#315c4c; background:#edf8f3; }
+html[data-theme="light"] .simple-alignment-card,html[data-theme="light"] .simple-alignment-check { border-color:#ddd5e2; background:#fff; box-shadow:0 5px 18px rgba(49,30,59,.055); }
+
+html[data-theme="light"] .news-manager-summary,html[data-theme="light"] .news-feed>.empty-state,html[data-theme="light"] .news-card { border-color:#ddd5e2; color:#29212e; background:#fff; box-shadow:0 7px 22px rgba(49,30,59,.06); }
+html[data-theme="light"] .news-manager-summary span,html[data-theme="light"] .news-manager-summary p,html[data-theme="light"] .news-card__heading time,html[data-theme="light"] .news-card__meta { color:#6b6270; }
+html[data-theme="light"] .news-manager-summary strong,html[data-theme="light"] .news-card h3,html[data-theme="light"] .news-card__body h4,html[data-theme="light"] .news-card__body li strong { color:#29212e; }
+html[data-theme="light"] .news-card__body { color:#5f5665; font-size:14px; }
+html[data-theme="light"] .news-card__body li { border-color:#e1dae5; color:#4c434f; background:#f8f5f9; }
+html[data-theme="light"] .news-card__body aside,html[data-theme="light"] .news-format-help { border-color:#d8c9e2; color:#5f5665; background:#f3eaf8; }
+html[data-theme="light"] .news-format-help strong { color:#51266e; }
+html[data-theme="light"] .news-format-help span,html[data-theme="light"] .news-format-help code { color:#665d6b; }
+html[data-theme="light"] .news-validity,html[data-theme="light"] .news-hidden-label { border-color:#d9d1de; color:#5e5564; background:#f3eff5; }
+html[data-theme="light"] .news-card__actions { border-color:#e2dce5; }
+
+html[data-theme="light"] .chip-toolbar,html[data-theme="light"] .renova-intake-toolbar { border-color:#ded7e2; background:#f7f4f8; }
+html[data-theme="light"] .chip-filter-owner label,html[data-theme="light"] .chip-search label { color:#514755; font-weight:700; }
+html[data-theme="light"] .chip-table th,html[data-theme="light"] .incoming-card__table-wrap th { border-color:#ddd6e2; color:#5d5462; background:#f3eff5; font-size:11px; }
+html[data-theme="light"] .chip-table td,html[data-theme="light"] .incoming-card__table-wrap td { border-color:#e3dde6; color:#332a38; }
+html[data-theme="light"] .chip-table tbody tr:hover { background:#f5eff8; }
+html[data-theme="light"] .chip-seller-cell>span { color:#653287; background:#eee3f5; }
+html[data-theme="light"] .chip-seller-cell strong,html[data-theme="light"] .chip-iccid code,html[data-theme="light"] .chip-sale strong { color:#302737; }
+html[data-theme="light"] .chip-seller-cell small,html[data-theme="light"] .chip-iccid small,html[data-theme="light"] .chip-sale span,html[data-theme="light"] .chip-table__muted { color:#6e6474; font-size:10px; }
+html[data-theme="light"] .chip-result-count,html[data-theme="light"] .incoming-result-count,html[data-theme="light"] .renova-intake-result-count { color:#655c6a; background:#f3eff5; font-size:11px; }
+html[data-theme="light"] .chip-registration-step,html[data-theme="light"] .chip-material-option,html[data-theme="light"] .chip-candidate-option,html[data-theme="light"] .chip-sale-summary,html[data-theme="light"] .chip-confirmation { border-color:#ddd3e3; color:#29212e; background:#fff; }
+html[data-theme="light"] .chip-registration-step>header { border-color:#ded6e2; background:#f6f1f8; }
+html[data-theme="light"] .chip-registration-step>header strong,html[data-theme="light"] .chip-material-option strong,html[data-theme="light"] .chip-picker-empty strong,html[data-theme="light"] .chip-candidate-heading strong,html[data-theme="light"] .chip-candidate-option code,html[data-theme="light"] .chip-batch-empty strong,html[data-theme="light"] .chip-batch-head>div:first-child strong,html[data-theme="light"] .chip-batch-item>div strong,html[data-theme="light"] .chip-batch-item>code,html[data-theme="light"] .chip-transfer-summary code,html[data-theme="light"] .chip-sale-summary strong,html[data-theme="light"] .chip-confirmation strong { color:#302737; }
+html[data-theme="light"] .chip-registration-step>header small,html[data-theme="light"] .chip-picker-empty,html[data-theme="light"] .chip-candidate-message,html[data-theme="light"] .chip-candidate-heading span,html[data-theme="light"] .chip-candidate-option small,html[data-theme="light"] .chip-candidate-actions>span,html[data-theme="light"] .chip-batch-empty,html[data-theme="light"] .chip-batch-head>div:first-child span,html[data-theme="light"] .chip-batch-head small,html[data-theme="light"] .chip-transfer-summary span,html[data-theme="light"] .chip-sale-summary span,html[data-theme="light"] .chip-confirmation span,html[data-theme="light"] .chip-sale-warning { color:#6a6170; }
+html[data-theme="light"] .chip-material-option code,html[data-theme="light"] .chip-batch-item>div code,html[data-theme="light"] .chip-transfer-summary strong,html[data-theme="light"] .chip-sale-summary code,html[data-theme="light"] .chip-confirmation code { color:#653287; }
+html[data-theme="light"] .chip-candidate-message,html[data-theme="light"] .chip-batch-empty { border-color:#d9d1de; background:#f7f4f8; }
+html[data-theme="light"] .chip-batch-head { border-color:#b9dfcf; background:#edf8f3; }
+html[data-theme="light"] .chip-batch-item { border-color:#ddd6e2; background:#fff; }
+
+html[data-theme="light"] .incoming-catalog { border-color:#ddd5e2; color:#29212e; background:#fff; }
+html[data-theme="light"] .incoming-donut::before { background:#fff; box-shadow:inset 0 0 0 1px #ddd6e2; }
+html[data-theme="light"] .incoming-card__details,html[data-theme="light"] .incoming-card__table-wrap { border-color:#e1dae5; }
+html[data-theme="light"] .point-history__list li,html[data-theme="light"] .point-qr__empty,html[data-theme="light"] .point-history__empty { border-color:#ddd4e2; color:#643287; background:#f8f4fa; }
+html[data-theme="light"] .point-history__list strong,html[data-theme="light"] .point-history__empty strong,html[data-theme="light"] .point-qr__empty strong { color:#302737; }
+html[data-theme="light"] .point-history__list time,html[data-theme="light"] .point-history__empty span,html[data-theme="light"] .point-qr__empty span { color:#6c6271; font-size:11px; }
+html[data-theme="light"] .modal__body,html[data-theme="light"] .modal__head { color:#29212e; background:#fff; }
+html[data-theme="light"] .modal__head h2,html[data-theme="light"] .modal__head h3 { color:#29212e; }
+html[data-theme="light"] .close-modal { color:#5f5665; background:#f0ebf3; }
+
 @media(max-width:1100px){html[data-theme="light"] .alignment-hero h2{font-size:clamp(36px,6vw,58px)}.content{min-width:0}.table-scroll,.repair-table-wrap,.chip-table-scroll,.incoming-card__table-wrap{max-width:100%;overflow-x:auto}}
 @media(max-width:720px){.theme-toggle span:last-child{display:none}.theme-toggle{padding:6px}.topbar__right .role-pill{display:none}}

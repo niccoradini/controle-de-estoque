@@ -3096,7 +3096,6 @@ function plannerItemJson(row) {
 }
 
 async function personalPlanner(env, user, url) {
-  requireRole(user, 'manager');
   const date = plannerDate(url.searchParams.get('date') || nowIso().slice(0, 10));
   const [day, items] = await Promise.all([
     env.DB.prepare('SELECT * FROM personal_planner_days WHERE user_id = ? AND plan_date = ?').bind(user.id, date).first(),
@@ -3118,7 +3117,6 @@ async function saveUserTheme(request, env, user) {
 }
 
 async function savePersonalPlannerDay(request, env, user) {
-  requireRole(user, 'manager');
   const input = await readJson(request);
   const date = plannerDate(input.date);
   const data = validateFields(input, {
@@ -3137,7 +3135,6 @@ async function savePersonalPlannerDay(request, env, user) {
 }
 
 async function createPersonalPlannerItem(request, env, user) {
-  requireRole(user, 'manager');
   const input = await readJson(request);
   const data = validateFields(input, {
     title: textRule('o título', { max: 180 }), details: textRule('os detalhes', { max: 1000, optional: true }),
@@ -3153,7 +3150,6 @@ async function createPersonalPlannerItem(request, env, user) {
 }
 
 async function updatePersonalPlannerItem(request, env, user, id) {
-  requireRole(user, 'manager');
   const existing = await env.DB.prepare('SELECT * FROM personal_planner_items WHERE id = ? AND user_id = ?').bind(id, user.id).first();
   if (!existing) throw new HttpError(404, 'Item não encontrado.');
   const input = await readJson(request);
@@ -3166,7 +3162,6 @@ async function updatePersonalPlannerItem(request, env, user, id) {
 }
 
 async function deletePersonalPlannerItem(env, user, id) {
-  requireRole(user, 'manager');
   const result = await env.DB.prepare('DELETE FROM personal_planner_items WHERE id = ? AND user_id = ?').bind(id, user.id).run();
   if (!result.meta.changes) throw new HttpError(404, 'Item não encontrado.');
   return noContent();

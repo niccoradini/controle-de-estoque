@@ -74,7 +74,7 @@ function canAccessRenovaIntake() {
 const viewTitles = {
   point: 'Meu ponto',
   dashboard: 'Visão geral',
-  'my-day': 'Meu Dia',
+  'my-day': 'Planner',
   news: 'Notícias',
   chips: 'Chips',
   'renova-intake': 'Renova',
@@ -539,18 +539,18 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Meu Dia'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
-      ['dashboard', 'home', 'Visão do estoque'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
+      ['dashboard', 'home', 'Visão do estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
       ['requests', 'orders', 'Pedidos para separar'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
   return [
-    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Loja / estoque'],
+    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Loja / estoque'],
     ['new-request', 'plus', 'Novo pedido'], ['chips', 'sim', 'Meus chips'], ['requests', 'orders', 'Meus pedidos'],
     ['alignment', 'briefing', 'Alinhamento rápido'],
   ];
@@ -2452,7 +2452,6 @@ function plannerItemModal() {
 }
 
 async function renderMyDay() {
-  if (state.user.role !== 'manager') return navigate('dashboard');
   const data = await api(`/api/personal-planner?date=${encodeURIComponent(state.plannerDate)}`);
   state.plannerDay = data.day;
   state.plannerItems = data.items || [];
@@ -2462,7 +2461,7 @@ async function renderMyDay() {
   const timed = pending.filter((item) => item.time).sort((a, b) => a.time.localeCompare(b.time));
   const upcoming = state.plannerItems.filter((item) => item.date > state.plannerDate && !item.completed).slice(0, 6);
   const content = document.querySelector('#view-content');
-  content.innerHTML = `<section class="planner-hero"><div><p class="page-eyebrow">Área pessoal e privada</p><h2>Meu Dia</h2><p>${escapeHtml(plannerDateLabel(state.plannerDate))}</p></div><div class="planner-date-actions"><input class="input" type="date" data-action="planner-date" value="${escapeHtml(state.plannerDate)}"><button class="btn" data-action="open-planner-item">${uiIcon('plus')} Adicionar</button></div></section>
+  content.innerHTML = `<section class="planner-hero"><div><p class="page-eyebrow">Área pessoal e privada</p><h2>Planner</h2><p>${escapeHtml(plannerDateLabel(state.plannerDate))}</p></div><div class="planner-date-actions"><input class="input" type="date" data-action="planner-date" value="${escapeHtml(state.plannerDate)}"><button class="btn" data-action="open-planner-item">${uiIcon('plus')} Adicionar</button></div></section>
     <section class="planner-metrics"><article><span>Pendentes</span><strong>${pending.length}</strong><small>para este dia</small></article><article><span>Concluídas</span><strong>${completed.length}</strong><small>progresso de ${todayItems.length ? Math.round((completed.length / todayItems.length) * 100) : 0}%</small></article><article><span>Com horário</span><strong>${timed.length}</strong><small>na agenda de hoje</small></article><article><span>Próximos dias</span><strong>${upcoming.length}</strong><small>itens já planejados</small></article></section>
     ${plannerMonthCalendar()}<div class="planner-layout"><main class="planner-main">
       <form class="planner-focus" data-form="planner-day"><input type="hidden" name="date" value="${escapeHtml(state.plannerDate)}"><div class="planner-section-head"><div><p class="page-eyebrow">Direção do dia</p><h3>Prioridades e intenção</h3></div><button class="btn btn--secondary btn--small" type="submit">Salvar planejamento</button></div><div class="form-error" data-form-error hidden></div><div class="planner-focus__grid">
@@ -2483,7 +2482,6 @@ function replenishmentText() {
 async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
-  if (view === 'my-day' && state.user.role !== 'manager') return;
   if (view === 'network-stock' && state.user.role !== 'manager') return;
   if (state.user.role === 'stocker' && ['new-request', 'chips'].includes(view)) return;
   if (view === 'renova-intake' && !canAccessRenovaIntake()) return;
@@ -3011,17 +3009,17 @@ root.addEventListener('click', async (event) => {
       document.documentElement.dataset.theme = theme; state.user.theme = theme; renderShell();
       await api('/api/preferences/theme', { method: 'PATCH', body: { theme } }); await navigate(state.view);
     }
-    if (action === 'planner-calendar-day' && state.user.role === 'manager') { state.plannerDate = button.dataset.date; await renderMyDay(); }
-    if (action === 'planner-month' && state.user.role === 'manager') {
+    if (action === 'planner-calendar-day') { state.plannerDate = button.dataset.date; await renderMyDay(); }
+    if (action === 'planner-month') {
       const date = new Date(`${state.plannerDate}T12:00:00`); date.setMonth(date.getMonth() + Number(button.dataset.offset), 1);
       state.plannerDate = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-01`; await renderMyDay();
     }
-    if (action === 'open-planner-item' && state.user.role === 'manager') plannerItemModal();
-    if (action === 'toggle-planner-item' && state.user.role === 'manager') {
+    if (action === 'open-planner-item') plannerItemModal();
+    if (action === 'toggle-planner-item') {
       const item = state.plannerItems.find((entry) => entry.id === Number(button.dataset.id));
       if (item) { await api(`/api/personal-planner/items/${item.id}`, { method: 'PATCH', body: { completed: !item.completed } }); await renderMyDay(); }
     }
-    if (action === 'delete-planner-item' && state.user.role === 'manager') {
+    if (action === 'delete-planner-item') {
       await api(`/api/personal-planner/items/${Number(button.dataset.id)}`, { method: 'DELETE' });
       showToast('Item removido do seu planejamento.'); await renderMyDay();
     }
@@ -3189,7 +3187,7 @@ modalRoot.addEventListener('input', (event) => {
 root.addEventListener('change', (event) => {
   const action = event.target.dataset.action;
   if (action === 'replenishment-threshold') { state.replenishmentThreshold = Number(event.target.value || 2); renderReplenishment(); return; }
-  if (action === 'planner-date' && state.user.role === 'manager') { state.plannerDate = event.target.value || localDateValue(); renderMyDay(); return; }
+  if (action === 'planner-date') { state.plannerDate = event.target.value || localDateValue(); renderMyDay(); return; }
   if (action === 'filter-chip-seller') { state.chipSellerId = Number(event.target.value || 0); renderChipResults(); return; }
   if (action === 'renova-enabled') {
     state.renova.enabled = event.target.checked;

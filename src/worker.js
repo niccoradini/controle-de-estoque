@@ -2311,7 +2311,7 @@ async function listChips(env, user) {
   let sellers = [];
   let materials = [];
   if (manager) {
-    const [sellerResult, materialResult] = await env.DB.batch([
+    const [sellerResult, materialResult, arrivalResult] = await env.DB.batch([
       env.DB.prepare(`
         SELECT u.id, u.name, u.email,
                SUM(CASE WHEN c.active = 1 AND c.status = 'available' THEN 1 ELSE 0 END) AS available_count,
@@ -2354,6 +2354,11 @@ async function listChips(env, user) {
         HAVING COUNT(inventory.id) > 0
         ORDER BY product.display_name COLLATE NOCASE, variant.sku COLLATE NOCASE
       `),
+      env.DB.prepare(`
+        SELECT key, value FROM system_state
+        WHERE key IN ('chip_latest_arrival_date', 'chip_latest_arrival_units',
+                      'chip_latest_arrival_material', 'chip_latest_arrival_source')
+      `),
     ]);
     const sellerRows = sellerResult.results || [];
     sellers = sellerRows.map((seller) => ({
@@ -2371,6 +2376,16 @@ async function listChips(env, user) {
       brand: material.brand || '',
       availableCount: Number(material.available_count || 0),
     }));
+    const arrival = Object.fromEntries((arrivalResult.results || []).map((item) => [item.key, item.value]));
+    if (arrival.chip_latest_arrival_date) {
+      materials = materials.map((material) => ({
+        ...material,
+        latestArrivalCount: material.materialCode === arrival.chip_latest_arrival_material
+          ? Number(arrival.chip_latest_arrival_units || 0) : 0,
+        latestArrivalDate: material.materialCode === arrival.chip_latest_arrival_material
+          ? arrival.chip_latest_arrival_date : '',
+      })).sort((left, right) => Number(right.latestArrivalCount || 0) - Number(left.latestArrivalCount || 0));
+    }
   }
   return json({
     chips,

@@ -8,6 +8,8 @@ if (!sourcePath) throw new Error('Uso: node scripts/build-inventory-refresh.mjs 
 
 const source = JSON.parse(await readFile(sourcePath, 'utf8'));
 const template = await readFile(templatePath, 'utf8');
+const templateMigrationNumber = template.match(/_migration_(\d{4})/)?.[1];
+if (!templateMigrationNumber) throw new Error('Não foi possível identificar o número da migração modelo.');
 if (!Array.isArray(source.rows) || !Array.isArray(source.incomingRows) || !Array.isArray(source.repairRows)) {
   throw new Error('A origem precisa conter itens disponíveis, em entrega e em reparo.');
 }
@@ -50,11 +52,11 @@ const productValues = products.map((item, index) => `  (${sqlText(item.materialC
 const serialValues = source.rows.map((row) => `  (${sqlText(row.material)}, ${sqlText(row.serialNumber)})`).join(',\n');
 
 let migration = template
-  .replaceAll('_migration_0058', `_migration_${migrationNumber}`)
-  .replaceAll('migration-0058', `migration-${migrationNumber}`)
-  .replaceAll('28/08/2026', source.importedAt.split('-').reverse().join('/'))
-  .replaceAll('2026-08-28', source.importedAt)
-  .replaceAll('ESTOQUE28.08.xlsx', source.source)
+  .replaceAll(`_migration_${templateMigrationNumber}`, `_migration_${migrationNumber}`)
+  .replaceAll(`migration-${templateMigrationNumber}`, `migration-${migrationNumber}`)
+  .replace(/\d{2}\/\d{2}\/2026/, source.importedAt.split('-').reverse().join('/'))
+  .replaceAll(template.match(/20\d{2}-\d{2}-\d{2}/)?.[0] || '', source.importedAt)
+  .replace(/ESTOQUE[^'\n]*\.xlsx/g, source.source)
   .replace(
     /(INSERT INTO repair_inventory\s+\(serial_number, material_code, technical_name, center, deposit, snapshot_date\)\s+VALUES\n)[\s\S]*?(;\n\nDROP TRIGGER)/,
     `$1${repairValues}$2`,
@@ -73,7 +75,7 @@ let migration = template
   .replace(/AND \(SELECT COUNT\(\*\) FROM _migration_\d{4}_serials\) = \d+/, `AND (SELECT COUNT(*) FROM _migration_${migrationNumber}_serials) = ${available}`)
   .replace(/\('inventory_snapshot_incoming_units', '\d+'\)/, `('inventory_snapshot_incoming_units', '${incoming}')`);
 
-if (migration.includes('_migration_0058') || migration.includes('ESTOQUE28.08.xlsx')) throw new Error('O modelo não foi atualizado por completo.');
+if (migration.includes(`_migration_${templateMigrationNumber}`) || migration.includes(`migration-${templateMigrationNumber}`)) throw new Error('O modelo não foi atualizado por completo.');
 const migrationPath = `migrations/${migrationNumber}_inventory_refresh_${source.importedAt.replaceAll('-', '_')}.sql`;
 await writeFile(migrationPath, migration);
 console.log(JSON.stringify({ migrationPath, products: products.length, available, incoming, repair: source.repairRows.length }));

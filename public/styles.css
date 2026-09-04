@@ -6227,3 +6227,12 @@ html[data-theme="light"] .table-scroll::after,html[data-theme="light"] .repair-t
 
 @media(max-width:1100px){html[data-theme="light"] .alignment-hero h2{font-size:clamp(36px,6vw,58px)}.content{min-width:0}.table-scroll,.repair-table-wrap,.chip-table-scroll,.incoming-card__table-wrap{max-width:100%;overflow-x:auto}}
 @media(max-width:720px){.theme-toggle span:last-child{display:none}.theme-toggle{padding:6px}.topbar__right .role-pill{display:none}}
+.chip-material-option__arrival {
+  display: block;
+  margin-top: 6px;
+  color: #147a55;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .chip-material-option__arrival { color: #70e4b8; }

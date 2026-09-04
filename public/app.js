@@ -2410,6 +2410,44 @@ function plannerDateLabel(date) {
   return new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }).format(parsed);
 }
 
+const septemberCareNotes = [
+  'Faça algo hoje que você normalmente deixa para depois.',
+  'Aumente sua ingestão de água durante o dia.',
+  'Reserve 10 minutos do dia para fazer algo que você gosta.',
+  'Envie uma mensagem para alguém que você gosta e diga algo positivo.',
+  'Fique pelo menos 30 minutos sem celular ou redes sociais.',
+  'Faça uma caminhada, alongamento ou qualquer atividade física.',
+  'Monte ou ouça uma playlist que melhore o seu humor.',
+  'Escolha uma pequena área e deixe tudo em ordem.',
+  'Faça um elogio sincero para alguém.',
+  'Pause por 5 minutos, respire profundamente e desacelere.',
+  'Experimente algo diferente da sua rotina.',
+  'Desafie-se a passar o dia sem reclamar de pequenas coisas.',
+  'Assista, leia ou converse sobre algo que faça você rir.',
+  'Faça uma caminhada prestando atenção ao ambiente ao seu redor.',
+  'Faça uma gentileza inesperada em troca.',
+  'Recuse algo que você não quer ou não consegue fazer, sem se sentir culpado.',
+  'Reserve 15 minutos para aprender algo novo.',
+  'Pergunte a alguém: “Como você está, de verdade?” e escute a resposta.',
+  'Conclua hoje uma tarefa que está sendo adiada há algum tempo.',
+  'Faça pelo menos uma refeição sem celular.',
+  'Escreva três coisas boas que aconteceram no seu dia.',
+  'Tente dormir um pouco mais cedo hoje.',
+  'Compartilhe uma mensagem, vídeo ou conteúdo positivo com alguém.',
+  'Entre em contato com alguém com quem você não conversa há algum tempo.',
+  'Se perceber que está se comparando, pare e pense em uma qualidade sua.',
+  'Compre, faça ou permita-se alguma coisa simples que você estava com vontade.',
+  'Deixe seu espaço de trabalho ou sua casa mais agradável.',
+  'Ofereça ajuda a alguém antes mesmo que a pessoa precise pedir.',
+  'Tire uma foto de algo simples que fez seu dia melhor.',
+  'Conte para alguém uma coisa boa que você viveu ou aprendeu durante este mês.',
+];
+
+function septemberCareNote(date) {
+  const value = new Date(`${date}T12:00:00`);
+  return value.getMonth() === 8 ? septemberCareNotes[value.getDate() - 1] || '' : '';
+}
+
 function plannerItemsFor(date) {
   return state.plannerItems.filter((item) => item.date === date);
 }
@@ -2427,7 +2465,8 @@ function plannerMonthCalendar() {
     const day = new Date(start); day.setDate(start.getDate() + index);
     const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
     const items = plannerItemsFor(date);
-    return `<button class="planner-calendar__day ${day.getMonth() === month ? '' : 'is-outside'} ${date === state.plannerDate ? 'is-selected' : ''} ${date === today ? 'is-today' : ''}" data-action="planner-calendar-day" data-date="${date}" aria-label="${day.toLocaleDateString('pt-BR')}, ${items.length} itens"><span>${day.getDate()}</span>${items.length ? `<b>${items.length}</b><i>${items.slice(0,3).map((item) => `<em class="is-${item.type}"></em>`).join('')}</i>` : ''}</button>`;
+    const careNote = septemberCareNote(date);
+    return `<button class="planner-calendar__day ${careNote ? 'has-care-note' : ''} ${day.getMonth() === month ? '' : 'is-outside'} ${date === state.plannerDate ? 'is-selected' : ''} ${date === today ? 'is-today' : ''}" data-action="planner-calendar-day" data-date="${date}" aria-label="${day.toLocaleDateString('pt-BR')}, ${careNote || `${items.length} itens`}" title="${escapeHtml(careNote)}"><span>${day.getDate()}</span>${careNote ? `<small class="planner-calendar__note">${escapeHtml(careNote)}</small>` : ''}${items.length ? `<b>${items.length}</b><i>${items.slice(0,3).map((item) => `<em class="is-${item.type}"></em>`).join('')}</i>` : ''}</button>`;
   }).join('');
   return `<section class="planner-calendar"><header><button data-action="planner-month" data-offset="-1" aria-label="Mês anterior">‹</button><div><p class="page-eyebrow">Calendário</p><h3>${escapeHtml(monthLabel)}</h3></div><button data-action="planner-month" data-offset="1" aria-label="Próximo mês">›</button></header><div class="planner-calendar__week"><span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span></div><div class="planner-calendar__grid">${cells}</div><footer><span><i class="is-appointment"></i> Compromisso</span><span><i class="is-task"></i> Tarefa</span><span><i class="is-reminder"></i> Lembrete</span></footer></section>`;
 }
@@ -2463,8 +2502,10 @@ async function renderMyDay() {
   const completed = todayItems.filter((item) => item.completed);
   const timed = pending.filter((item) => item.time).sort((a, b) => a.time.localeCompare(b.time));
   const upcoming = state.plannerItems.filter((item) => item.date > state.plannerDate && !item.completed).slice(0, 6);
+  const careNote = septemberCareNote(state.plannerDate);
   const content = document.querySelector('#view-content');
   content.innerHTML = `<section class="planner-hero"><div><p class="page-eyebrow">Área pessoal e privada</p><h2>Planner</h2><p>${escapeHtml(plannerDateLabel(state.plannerDate))}</p></div><div class="planner-date-actions"><input class="input" type="date" data-action="planner-date" value="${escapeHtml(state.plannerDate)}"><button class="btn" data-action="open-planner-item">${uiIcon('plus')} Adicionar</button></div></section>
+    ${careNote ? `<section class="planner-care-note"><span class="planner-care-note__ribbon" aria-hidden="true"></span><div><p class="page-eyebrow">Setembro Amarelo · 30 dias cuidando de você</p><h3>Nota do dia ${new Date(`${state.plannerDate}T12:00:00`).getDate()}</h3><p>${escapeHtml(careNote)}</p></div></section>` : ''}
     <section class="planner-metrics"><article><span>Pendentes</span><strong>${pending.length}</strong><small>para este dia</small></article><article><span>Concluídas</span><strong>${completed.length}</strong><small>progresso de ${todayItems.length ? Math.round((completed.length / todayItems.length) * 100) : 0}%</small></article><article><span>Com horário</span><strong>${timed.length}</strong><small>na agenda de hoje</small></article><article><span>Próximos dias</span><strong>${upcoming.length}</strong><small>itens já planejados</small></article></section>
     ${plannerMonthCalendar()}<div class="planner-layout"><main class="planner-main">
       <form class="planner-focus" data-form="planner-day"><input type="hidden" name="date" value="${escapeHtml(state.plannerDate)}"><div class="planner-section-head"><div><p class="page-eyebrow">Direção do dia</p><h3>Prioridades e intenção</h3></div><button class="btn btn--secondary btn--small" type="submit">Salvar planejamento</button></div><div class="form-error" data-form-error hidden></div><div class="planner-focus__grid">

@@ -1816,8 +1816,13 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.13.0');
+    assert.equal(JSON.parse(packageSource).version, '6.13.1');
     assert.match(appSource, /async function renderFeedback/);
+    assert.match(appSource, /const septemberCareNotes = \[/);
+    assert.match(appSource, /Setembro Amarelo · 30 dias cuidando de você/);
+    assert.match(appSource, /Conte para alguém uma coisa boa que você viveu ou aprendeu durante este mês/);
+    assert.match(stylesSource, /Planner — Setembro Amarelo/);
+    assert.match(stylesSource, /\.planner-care-note/);
     assert.match(appSource, /data-form="site-feedback"/);
     assert.match(stylesSource, /\.feedback-card/);
     assert.match(workerSource, /\/api\/site-feedback/);
@@ -2021,8 +2026,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.13\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.13\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.13\.1/);
+    assert.match(indexSource, /app\.js\?v=6\.13\.1/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -2096,7 +2101,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.13.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.13.1');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

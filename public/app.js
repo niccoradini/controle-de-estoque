@@ -2618,7 +2618,11 @@ async function navigate(view) {
     if (view === 'incoming') await renderIncoming();
     if (view === 'labels') await renderLabels();
     if (view === 'replenishment') await renderReplenishment();
-    if (view === 'network-stock') await renderNetworkStock();
+    if (view === 'network-stock') {
+      state.networkCategory = 'all';
+      state.networkExpandedAll = false;
+      await renderNetworkStock();
+    }
     if (view === 'stock') await renderStock();
     if (view === 'new-request') await renderNewRequest();
     if (view === 'requests') await renderRequests();
@@ -3202,6 +3206,8 @@ root.addEventListener('click', async (event) => {
     }
     if (action === 'network-store' && state.user.role === 'manager') {
       state.networkStore = button.dataset.store;
+      state.networkCategory = 'all';
+      state.networkExpandedAll = false;
       await renderNetworkStock();
     }
     if (action === 'refresh-network-stock' && state.user.role === 'manager') {
@@ -3210,6 +3216,8 @@ root.addEventListener('click', async (event) => {
     }
     if (action === 'network-brand' && state.user.role === 'manager') {
       state.networkBrand = button.dataset.brand;
+      state.networkCategory = 'all';
+      state.networkExpandedAll = false;
       await renderNetworkStock();
     }
     if (action === 'network-category' && state.user.role === 'manager') {

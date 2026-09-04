@@ -33,6 +33,8 @@ const state = {
   networkStore: 'all',
   networkSearch: '',
   networkBrand: 'all',
+  networkCategory: 'all',
+  networkExpandedAll: false,
   labelSelection: new Map(),
   labelSearch: '',
   labelMode: 'cases',
@@ -777,6 +779,7 @@ function networkVisibleItems() {
   return state.networkItems.filter((item) => {
     if (state.networkStore !== 'all' && item.storeCode !== state.networkStore) return false;
     if (state.networkBrand !== 'all' && friendlyBrand(item.brand) !== state.networkBrand) return false;
+    if (state.networkCategory !== 'all' && item.cluster !== state.networkCategory) return false;
     return !query || normalizeCatalogName(`${item.name} ${item.technicalName} ${item.materialCode}`).includes(query);
   });
 }
@@ -803,7 +806,6 @@ function renderNetworkStockWorkspace() {
   if (!target) return;
   const items = networkVisibleItems();
   const storeNames = new Map(state.networkStores.map((store) => [store.code, store.name]));
-  const devices = networkDeviceGroups(items);
   const categoryGroups = new Map();
   for (const item of items) {
     const cluster = clusterLabels[item.cluster] ? item.cluster : 'misc';
@@ -812,13 +814,18 @@ function renderNetworkStockWorkspace() {
   }
   const orderedCategories = clusterOrder.filter((cluster) => categoryGroups.has(cluster));
   const filteredTotals = items.reduce((sum, item) => ({ available: sum.available + item.available, incoming: sum.incoming + item.incoming, repair: sum.repair + item.repair }), { available: 0, incoming: 0, repair: 0 });
+  const categorySummary = orderedCategories.map((cluster) => {
+    const categoryItems = categoryGroups.get(cluster);
+    const totals = categoryItems.reduce((sum, item) => ({ available: sum.available + item.available, incoming: sum.incoming + item.incoming, repair: sum.repair + item.repair }), { available: 0, incoming: 0, repair: 0 });
+    return `<button class="network-category-card ${state.networkCategory === cluster ? 'is-active' : ''}" data-action="network-category" data-category="${cluster}"><span class="network-category-card__icon product-visual--${cluster}">${clusterGraphic(cluster)}</span><span><strong>${escapeHtml(clusterLabels[cluster])}</strong><small>${categoryItems.length} ${categoryItems.length === 1 ? 'item' : 'itens'}</small></span><b>${totals.available}<small> disponíveis</small></b>${totals.incoming || totals.repair ? `<em>${totals.incoming ? `${totals.incoming} chegando` : ''}${totals.incoming && totals.repair ? ' · ' : ''}${totals.repair ? `${totals.repair} em reparo` : ''}</em>` : ''}</button>`;
+  }).join('');
   const categorySections = orderedCategories.map((cluster) => {
     const categoryItems = categoryGroups.get(cluster).sort((left, right) => left.name.localeCompare(right.name, 'pt-BR') || left.materialCode.localeCompare(right.materialCode, 'pt-BR'));
     const categoryTotals = categoryItems.reduce((sum, item) => ({ available: sum.available + item.available, incoming: sum.incoming + item.incoming, repair: sum.repair + item.repair }), { available: 0, incoming: 0, repair: 0 });
-    return `<details class="network-product-group" open><summary><span class="network-product-group__icon product-visual--${cluster}">${clusterGraphic(cluster)}</span><div><strong>${escapeHtml(clusterLabels[cluster])}</strong><small>${categoryItems.length} registros · ${categoryTotals.available} disponíveis${categoryTotals.incoming ? ` · ${categoryTotals.incoming} chegando` : ''}${categoryTotals.repair ? ` · ${categoryTotals.repair} em reparo` : ''}</small></div><b>${uiIcon('chevron')}</b></summary><div class="network-product-table-wrap"><table class="network-product-table"><thead><tr><th>Produto</th><th>Material</th>${state.networkStore === 'all' ? '<th>Loja</th>' : ''}<th>Disponível</th><th>Chegando</th><th>Reparo</th><th>Atualizado</th></tr></thead><tbody>${categoryItems.map((item) => `<tr><td data-label="Produto"><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.technicalName)}</small></td><td data-label="Material"><code class="mono">${escapeHtml(item.materialCode)}</code></td>${state.networkStore === 'all' ? `<td data-label="Loja">${escapeHtml(storeNames.get(item.storeCode) || item.storeCode)}</td>` : ''}<td data-label="Disponível"><b class="network-quantity network-quantity--available">${item.available}</b></td><td data-label="Chegando"><b class="network-quantity network-quantity--incoming">${item.incoming || '—'}</b></td><td data-label="Reparo"><b class="network-quantity network-quantity--repair">${item.repair || '—'}</b></td><td data-label="Atualizado">${escapeHtml(formatDateOnly(item.latestModifiedOn))}</td></tr>`).join('')}</tbody></table></div></details>`;
+    const shouldOpen = state.networkExpandedAll || Boolean(state.networkSearch) || state.networkCategory !== 'all';
+    return `<details class="network-product-group" ${shouldOpen ? 'open' : ''}><summary><span class="network-product-group__icon product-visual--${cluster}">${clusterGraphic(cluster)}</span><div><strong>${escapeHtml(clusterLabels[cluster])}</strong><small>${categoryItems.length} registros · ${categoryTotals.available} disponíveis${categoryTotals.incoming ? ` · ${categoryTotals.incoming} chegando` : ''}${categoryTotals.repair ? ` · ${categoryTotals.repair} em reparo` : ''}</small></div><b>${uiIcon('chevron')}</b></summary><div class="network-product-table-wrap"><table class="network-product-table"><thead><tr><th>Produto</th><th>Material</th>${state.networkStore === 'all' ? '<th>Loja</th>' : ''}<th>Disponível</th><th>Chegando</th><th>Reparo</th><th>Atualizado</th></tr></thead><tbody>${categoryItems.map((item) => `<tr><td data-label="Produto"><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.technicalName)}</small></td><td data-label="Material"><code class="mono">${escapeHtml(item.materialCode)}</code></td>${state.networkStore === 'all' ? `<td data-label="Loja">${escapeHtml(storeNames.get(item.storeCode) || item.storeCode)}</td>` : ''}<td data-label="Disponível"><b class="network-quantity network-quantity--available">${item.available}</b></td><td data-label="Chegando"><b class="network-quantity network-quantity--incoming">${item.incoming || '—'}</b></td><td data-label="Reparo"><b class="network-quantity network-quantity--repair">${item.repair || '—'}</b></td><td data-label="Atualizado">${escapeHtml(formatDateOnly(item.latestModifiedOn))}</td></tr>`).join('')}</tbody></table></div></details>`;
   }).join('');
-  target.innerHTML = `<section class="network-section network-catalog"><div class="network-section__head"><div><p class="page-eyebrow">Catálogo completo</p><h3>Todos os itens das outras lojas</h3><p>Exibindo ${items.length} de ${state.networkItems.length} registros · ${filteredTotals.available} disponíveis · ${filteredTotals.incoming} chegando · ${filteredTotals.repair} em reparo</p></div></div>${categorySections || emptyState('Nenhum produto encontrado', 'Altere os filtros para visualizar os itens da rede.')}</section>
-    <details class="network-model-summary"><summary>Ver também aparelhos agrupados por modelo <b>${devices.length}</b></summary><section class="network-section"><div class="network-section__head"><div><p class="page-eyebrow">Resumo de aparelhos</p><h3>${devices.length} modelos encontrados</h3></div></div>${devices.length ? `<div class="network-device-grid">${devices.map((group) => `<article class="network-device-card"><div><small>${escapeHtml(group.brand)}</small><h4>${escapeHtml(group.name)}</h4></div><div class="network-device-card__total"><b>${group.available}</b><span>disponíveis</span>${group.incoming ? `<em>+${group.incoming} chegando</em>` : ''}</div><div class="network-store-lines">${[...group.stores.entries()].map(([code, balance]) => `<div><span>${escapeHtml(storeNames.get(code) || code)}</span><b>${balance.available} un.${balance.incoming ? ` <small>+${balance.incoming}</small>` : ''}</b></div>`).join('')}</div></article>`).join('')}</div>` : emptyState('Nenhum aparelho encontrado', 'Altere a loja, marca ou texto da busca.')}</section></details>`;
+  target.innerHTML = `<section class="network-category-summary"><div class="network-category-summary__head"><div><p class="page-eyebrow">Visão rápida</p><h3>Estoque por categoria</h3></div>${state.networkCategory !== 'all' ? '<button class="btn btn--ghost" data-action="network-category" data-category="all">Ver todas</button>' : ''}</div><div class="network-category-grid">${categorySummary}</div></section><section class="network-section network-catalog"><div class="network-section__head"><div><p class="page-eyebrow">Catálogo completo</p><h3>${state.networkCategory === 'all' ? 'Todos os produtos' : clusterLabels[state.networkCategory]}</h3><p>Exibindo ${items.length} de ${state.networkItems.length} registros · ${filteredTotals.available} disponíveis · ${filteredTotals.incoming} chegando · ${filteredTotals.repair} em reparo</p></div>${items.length ? `<button class="btn btn--secondary network-expand-button" data-action="network-expand-all">${state.networkExpandedAll ? 'Recolher grupos' : 'Expandir grupos'}</button>` : ''}</div>${categorySections || emptyState('Nenhum produto encontrado', 'Altere os filtros para visualizar os itens da rede.')}</section>`;
 }
 
 async function renderNetworkStock() {
@@ -3204,6 +3211,15 @@ root.addEventListener('click', async (event) => {
     if (action === 'network-brand' && state.user.role === 'manager') {
       state.networkBrand = button.dataset.brand;
       await renderNetworkStock();
+    }
+    if (action === 'network-category' && state.user.role === 'manager') {
+      state.networkCategory = button.dataset.category;
+      state.networkExpandedAll = false;
+      renderNetworkStockWorkspace();
+    }
+    if (action === 'network-expand-all' && state.user.role === 'manager') {
+      state.networkExpandedAll = !state.networkExpandedAll;
+      renderNetworkStockWorkspace();
     }
     if (action === 'open-store-group') {
       state.catalogSearch = '';

@@ -1816,7 +1816,10 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.13.1');
+    assert.equal(JSON.parse(packageSource).version, '6.14.0');
+    assert.match(appSource, /Todos os itens agrupados/);
+    assert.match(appSource, /network-product-table/);
+    assert.match(stylesSource, /Estoque da rede — catálogo completo agrupado/);
     assert.match(appSource, /async function renderFeedback/);
     assert.match(appSource, /const septemberCareNotes = \[/);
     assert.match(appSource, /Setembro Amarelo · 30 dias cuidando de você/);
@@ -2026,8 +2029,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.13\.1/);
-    assert.match(indexSource, /app\.js\?v=6\.13\.1/);
+    assert.match(indexSource, /styles\.css\?v=6\.14\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.14\.0/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -2101,7 +2104,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.13.1');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.14.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2190,5 +2193,19 @@ describe('Controle de estoque por código material', () => {
     assert.equal(latestMaterial.latestArrivalCount, 100);
     assert.equal(latestMaterial.latestArrivalDate, '2026-09-03');
     assert.ok(managerView.payload.sellers.every((item) => item.availableCount === 0 && item.soldCount === 0));
+  });
+
+  test('atualiza as três lojas da rede em 04/09 e mantém todos os materiais consultáveis', async () => {
+    const migration = await readFile(new URL('../migrations/0072_network_inventory_2026_09_04.sql', import.meta.url), 'utf8');
+    await applyMigration(migration);
+    const response = await manager.request('/api/network-inventory');
+    assert.equal(response.status, 200);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.totalUnits, 0), 3635);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.available, 0), 3125);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.incoming, 0), 460);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.repair, 0), 50);
+    assert.equal(response.payload.items.length, 790);
+    assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-04'));
+    assert.doesNotMatch(JSON.stringify(response.payload), /serialNumber|serialNumbers|serial_number/i);
   });
 });

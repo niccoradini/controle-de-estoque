@@ -992,6 +992,7 @@ const OUTLET_CAMPAIGN = [
   { id: 'edge-60-pro-256', name: 'Motorola Edge 60 Pro 256GB', match: 'MOTOROLA EDGE 60 PRO 256GB', discount: 30 },
   { id: 's25-ultra-256', name: 'Samsung Galaxy S25 Ultra 256GB', match: 'SAMSUNG GALAXY S25 ULTRA 256GB', discount: 30 },
   { id: 's25-edge-512', name: 'Samsung Galaxy S25 Edge 512GB', match: 'SAMSUNG GALAXY S25 EDGE 512GB', discount: 30 },
+  { id: 's25-plus-256', name: 'Samsung Galaxy S25+ 256GB', match: 'SAMSUNG GALAXY S25+ 256GB', discount: 30 },
   { id: 'a16-5g-128', name: 'Samsung Galaxy A16 5G 128GB', match: 'SAMSUNG GALAXY A16 5G 128GB', discount: 30 },
   { id: 'a06-5g-128', name: 'Samsung Galaxy A06 5G 128GB', match: 'SAMSUNG GALAXY A06 5G 128GB', discount: 30 },
   { id: 'watch7-bt-40', name: 'Galaxy Watch7 BT 40mm', match: 'GALAXY WATCH7 BT 40MM', discount: 40 },
@@ -999,6 +1000,15 @@ const OUTLET_CAMPAIGN = [
   { id: 'iphone-air-1tb', name: 'iPhone Air 1TB', match: 'APPLE IPHONE AIR 1TB', discount: 30 },
   { id: 'z-flip7-512', name: 'Samsung Galaxy Z Flip7 512GB', match: 'SAMSUNG GALAXY Z FLIP 7 512GB', discount: 30 },
 ];
+
+function outletMatchKey(value) {
+  return String(value || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replaceAll('+', ' PLUS ')
+    .toLocaleUpperCase('pt-BR')
+    .replace(/[^A-Z0-9]+/g, '');
+}
 
 async function outletInventory(env) {
   const [storesResult, itemsResult] = await env.DB.batch([
@@ -1012,8 +1022,8 @@ async function outletInventory(env) {
   ]);
   const products = new Map(OUTLET_CAMPAIGN.map((campaign) => [campaign.id, { ...campaign, available: 0, stores: new Map(), variants: new Map(), latestModifiedOn: '' }]));
   for (const item of itemsResult.results || []) {
-    const name = `${item.technical_name || ''} ${item.display_name || ''}`.toLocaleUpperCase('pt-BR');
-    const campaign = OUTLET_CAMPAIGN.find((entry) => name.includes(entry.match));
+    const name = outletMatchKey(`${item.technical_name || ''} ${item.display_name || ''}`);
+    const campaign = OUTLET_CAMPAIGN.find((entry) => name.includes(outletMatchKey(entry.match)));
     if (!campaign) continue;
     const product = products.get(campaign.id);
     const quantity = Number(item.available_quantity || 0);

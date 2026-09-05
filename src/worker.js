@@ -1029,20 +1029,39 @@ async function outletInventory(env) {
     const quantity = Number(item.available_quantity || 0);
     product.available += quantity;
     product.stores.set(item.store_code, (product.stores.get(item.store_code) || 0) + quantity);
-    product.variants.set(item.material_code, { materialCode: item.material_code, name: item.display_name || item.technical_name, available: (product.variants.get(item.material_code)?.available || 0) + quantity });
+    let variant = product.variants.get(item.material_code);
+    if (!variant) {
+      variant = { materialCode: item.material_code, name: item.display_name || item.technical_name, available: 0, stores: new Map(), latestModifiedOn: '' };
+      product.variants.set(item.material_code, variant);
+    }
+    variant.available += quantity;
+    variant.stores.set(item.store_code, (variant.stores.get(item.store_code) || 0) + quantity);
+    if (String(item.latest_modified_on || '') > variant.latestModifiedOn) variant.latestModifiedOn = item.latest_modified_on;
     if (String(item.latest_modified_on || '') > product.latestModifiedOn) product.latestModifiedOn = item.latest_modified_on;
   }
+  const availableProducts = [...products.values()].filter((product) => product.available > 0);
   return json({
     stores: (storesResult.results || []).map((store) => ({ code: store.code, name: store.name })),
-    products: [...products.values()].filter((product) => product.available > 0).map((product) => ({
+    products: availableProducts.map((product) => ({
       id: product.id,
       name: product.name,
       discount: product.discount,
       available: product.available,
       latestModifiedOn: product.latestModifiedOn,
       stores: Object.fromEntries(product.stores),
-      variants: [...product.variants.values()],
+      variants: [...product.variants.values()].map((variant) => ({ materialCode: variant.materialCode, name: variant.name, available: variant.available })),
     })),
+    items: availableProducts.flatMap((product) => [...product.variants.values()].map((variant) => ({
+      id: `${product.id}-${variant.materialCode}`,
+      campaignId: product.id,
+      modelName: product.name,
+      name: variant.name,
+      materialCode: variant.materialCode,
+      discount: product.discount,
+      available: variant.available,
+      latestModifiedOn: variant.latestModifiedOn,
+      stores: Object.fromEntries(variant.stores),
+    }))),
   });
 }
 

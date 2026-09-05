@@ -38,6 +38,9 @@ const state = {
   outletStores: [],
   outletSearch: '',
   outletDiscount: 'all',
+  outletStore: 'all',
+  outletCategory: 'all',
+  outletImportedOn: '',
   labelSelection: new Map(),
   labelSearch: '',
   labelMode: 'cases',
@@ -863,23 +866,33 @@ function renderOutletProducts() {
   const target = document.querySelector('[data-outlet-results]');
   if (!target) return;
   const query = normalizeCatalogName(state.outletSearch);
+  const storeNames = new Map(state.outletStores.map((store) => [store.code, store.name]));
   const products = state.outletProducts.filter((product) => (
     (state.outletDiscount === 'all' || Number(product.discount) === Number(state.outletDiscount))
-    && (!query || normalizeCatalogName(`${product.name} ${product.modelName} ${product.materialCode}`).includes(query))
+    && (state.outletCategory === 'all' || product.category === state.outletCategory || (state.outletCategory === 'accessories' && product.category !== 'devices'))
+    && (state.outletStore === 'all' || Number(product.stores?.[state.outletStore] || 0) > 0)
+    && (!query || normalizeCatalogName(`${product.name} ${Object.keys(product.stores || {}).map((code) => `${code} ${storeNames.get(code) || ''}`).join(' ')}`).includes(query))
   ));
-  const storeNames = new Map(state.outletStores.map((store) => [store.code, store.name]));
-  const available = products.reduce((sum, product) => sum + product.available, 0);
-  target.innerHTML = `<div class="outlet-results__head"><div><p class="page-eyebrow">Disponibilidade agora</p><h3>${products.length} ${products.length === 1 ? 'produto encontrado' : 'produtos encontrados'}</h3><p>${available} ${available === 1 ? 'unidade disponível' : 'unidades disponíveis'} nas lojas da rede</p></div></div>${products.length ? `<div class="outlet-grid">${products.map((product) => `<article class="outlet-card outlet-card--${product.discount}"><div class="outlet-card__top"><span class="outlet-card__discount"><b>${product.discount}%</b> de desconto</span><span class="outlet-card__visual">${clusterGraphic(product.campaignId === 'charger-duo-65w' ? 'chargers' : 'devices')}</span></div><div class="outlet-card__body"><p>${escapeHtml(product.modelName)}</p><h3>${escapeHtml(product.name)}</h3><span class="outlet-card__material">Material <code class="mono">${escapeHtml(product.materialCode)}</code></span></div><div class="outlet-card__availability"><strong><b>${product.available}</b> ${product.available === 1 ? 'unidade na rede' : 'unidades na rede'}</strong><div>${state.outletStores.map((store) => `<span class="${product.stores[store.code] ? 'has-stock' : ''}"><small>${escapeHtml(storeNames.get(store.code) || store.code)}</small><b>${product.stores[store.code] || 0}</b></span>`).join('')}</div></div><footer>Estoque atualizado em ${escapeHtml(formatDateOnly(product.latestModifiedOn))}</footer></article>`).join('')}</div>` : emptyState('Nenhuma oferta disponível', 'Não há saldo na rede para os filtros selecionados.')}`;
+  const available = products.reduce((sum, product) => sum + (state.outletStore === 'all' ? product.available : Number(product.stores?.[state.outletStore] || 0)), 0);
+  const categoryLabels = { devices: 'Celular', wearables: 'Relógio', chargers: 'Carregador', cases: 'Capa', screen_protectors: 'Película', misc: 'Acessório' };
+  target.innerHTML = `<div class="outlet-results__head"><div><p class="page-eyebrow">Disponibilidade da campanha</p><h3>${products.length} ${products.length === 1 ? 'produto encontrado' : 'produtos encontrados'}</h3><p>${available} ${available === 1 ? 'unidade disponível' : 'unidades disponíveis'}${state.outletStore === 'all' ? ' nas lojas da rede' : ` na ${escapeHtml(storeNames.get(state.outletStore) || state.outletStore)}`}</p></div></div>${products.length ? `<div class="outlet-grid">${products.map((product) => {
+    const relevantStores = state.outletStores.filter((store) => Number(product.stores?.[store.code] || 0) > 0 && (state.outletStore === 'all' || state.outletStore === store.code));
+    const visibleAvailable = state.outletStore === 'all' ? product.available : Number(product.stores?.[state.outletStore] || 0);
+    const graphicCategory = product.category === 'wearables' ? 'devices' : product.category;
+    return `<article class="outlet-card outlet-card--${product.discount}"><div class="outlet-card__top"><span class="outlet-card__discount"><b>${product.discount}%</b> de desconto</span><span class="outlet-card__visual product-visual--${escapeHtml(graphicCategory)}">${clusterGraphic(graphicCategory)}</span></div><div class="outlet-card__body"><p>${escapeHtml(categoryLabels[product.category] || 'Produto')}</p><h3>${escapeHtml(product.name)}</h3><span class="outlet-card__campaign">Oferta disponível em ${relevantStores.length} ${relevantStores.length === 1 ? 'loja' : 'lojas'}</span></div><div class="outlet-card__availability"><strong><b>${visibleAvailable}</b> ${visibleAvailable === 1 ? 'unidade disponível' : 'unidades disponíveis'}</strong><div class="outlet-store-list">${relevantStores.map((store) => `<div class="outlet-store-row"><span><strong>${escapeHtml(store.name)}</strong><small>Centro ${escapeHtml(store.center || store.code)}</small></span><b>${Number(product.stores[store.code])}<small> un.</small></b></div>`).join('')}</div></div><footer>Lista promocional importada em ${escapeHtml(formatDateOnly(state.outletImportedOn))}</footer></article>`;
+  }).join('')}</div>` : emptyState('Nenhuma oferta encontrada', 'Altere a busca ou os filtros para visualizar os itens da promoção.')}`;
 }
 
 async function renderOutlet() {
   const data = await api('/api/outlet');
-  state.outletProducts = data.items || [];
+  state.outletProducts = data.products || [];
   state.outletStores = data.stores || [];
+  state.outletImportedOn = data.importedOn || '';
   const content = document.querySelector('#view-content');
   const totalAvailable = state.outletProducts.reduce((sum, product) => sum + product.available, 0);
   const bestDiscount = Math.max(0, ...state.outletProducts.map((product) => product.discount));
-  content.innerHTML = `<section class="outlet-hero"><div><p class="page-eyebrow">Campanha Vivo Outlet</p><h2>Todos os produtos disponíveis</h2><p>Cada produto, cor e código material com saldo para venda aparece individualmente abaixo.</p><div class="outlet-hero__metrics"><span><b>${state.outletProducts.length}</b> produtos em promoção</span><span><b>${totalAvailable}</b> unidades na rede</span><span><b>até ${bestDiscount}%</b> de desconto</span></div></div><div class="outlet-hero__seal"><small>desconto de</small><strong>${bestDiscount}%</strong><span>OUTLET</span></div></section><section class="outlet-toolbar"><label>${uiIcon('search')}<input type="search" data-action="outlet-search" value="${escapeHtml(state.outletSearch)}" placeholder="Buscar produto, modelo ou código material"></label><div class="filter-tabs"><button class="chip ${state.outletDiscount === 'all' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="all">Todos</button><button class="chip ${state.outletDiscount === '30' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="30">30% OFF</button><button class="chip ${state.outletDiscount === '40' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="40">40% OFF</button></div></section><section class="outlet-results" data-outlet-results></section>`;
+  const accessoryCount = state.outletProducts.filter((product) => product.category !== 'devices').length;
+  content.innerHTML = `<section class="outlet-hero"><div><p class="page-eyebrow">Campanha Vivo Outlet</p><h2>Ofertas de todas as lojas em um só lugar</h2><p>Consulte o produto, o desconto, a loja, o centro e a quantidade disponível antes de oferecer ao cliente.</p><div class="outlet-hero__metrics"><span><b>${state.outletProducts.length}</b> modelos em promoção</span><span><b>${totalAvailable}</b> unidades disponíveis</span><span><b>${state.outletStores.length}</b> lojas participantes</span><span><b>${accessoryCount}</b> acessórios e wearables</span></div></div><div class="outlet-hero__seal"><small>desconto de até</small><strong>${bestDiscount}%</strong><span>OUTLET</span></div></section><section class="outlet-toolbar outlet-toolbar--detailed"><label class="outlet-search">${uiIcon('search')}<input type="search" data-action="outlet-search" value="${escapeHtml(state.outletSearch)}" placeholder="Buscar aparelho, acessório, loja ou centro"></label><label class="outlet-select"><span>Loja</span><select class="select" data-action="outlet-store"><option value="all">Todas as lojas (${totalAvailable} un.)</option>${state.outletStores.map((store) => `<option value="${escapeHtml(store.code)}" ${state.outletStore === store.code ? 'selected' : ''}>${escapeHtml(store.name)} · ${store.center} (${store.available})</option>`).join('')}</select></label><div class="outlet-filter-groups"><div class="filter-tabs"><button class="chip ${state.outletCategory === 'all' ? 'is-active' : ''}" data-action="outlet-category" data-category="all">Tudo</button><button class="chip ${state.outletCategory === 'devices' ? 'is-active' : ''}" data-action="outlet-category" data-category="devices">Celulares</button><button class="chip ${state.outletCategory === 'accessories' ? 'is-active' : ''}" data-action="outlet-category" data-category="accessories">Acessórios</button></div><div class="filter-tabs"><button class="chip ${state.outletDiscount === 'all' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="all">Todos</button><button class="chip ${state.outletDiscount === '30' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="30">30% OFF</button><button class="chip ${state.outletDiscount === '40' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="40">40% OFF</button></div></div></section><section class="outlet-results" data-outlet-results></section>`;
   renderOutletProducts();
 }
 
@@ -3267,6 +3280,11 @@ root.addEventListener('click', async (event) => {
       document.querySelectorAll('[data-action="outlet-discount"]').forEach((filter) => filter.classList.toggle('is-active', filter.dataset.discount === state.outletDiscount));
       renderOutletProducts();
     }
+    if (action === 'outlet-category') {
+      state.outletCategory = button.dataset.category;
+      document.querySelectorAll('[data-action="outlet-category"]').forEach((filter) => filter.classList.toggle('is-active', filter.dataset.category === state.outletCategory));
+      renderOutletProducts();
+    }
     if (action === 'open-store-group') {
       state.catalogSearch = '';
       state.catalogCategory = button.dataset.cluster;
@@ -3360,6 +3378,7 @@ modalRoot.addEventListener('input', (event) => {
 
 root.addEventListener('change', (event) => {
   const action = event.target.dataset.action;
+  if (action === 'outlet-store') { state.outletStore = event.target.value || 'all'; renderOutletProducts(); return; }
   if (action === 'replenishment-threshold') { state.replenishmentThreshold = Number(event.target.value || 2); renderReplenishment(); return; }
   if (action === 'planner-date') { state.plannerDate = event.target.value || localDateValue(); renderMyDay(); return; }
   if (action === 'filter-chip-seller') { state.chipSellerId = Number(event.target.value || 0); renderChipResults(); return; }

@@ -985,83 +985,64 @@ async function networkInventoryDashboard(env) {
   });
 }
 
-const OUTLET_CAMPAIGN = [
-  { id: 'edge-60-fusion-256', name: 'Motorola Edge 60 Fusion 256GB', match: 'MOTOROLA EDGE 60 FUSION 256GB', discount: 30 },
-  { id: 'edge-60-pro-512', name: 'Motorola Edge 60 Pro 512GB', match: 'MOTOROLA EDGE 60 PRO 512GB', discount: 30 },
-  { id: 'moto-g56-256', name: 'Moto G56 5G 256GB', match: 'MOTO G56 256GB', discount: 30 },
-  { id: 'edge-60-pro-256', name: 'Motorola Edge 60 Pro 256GB', match: 'MOTOROLA EDGE 60 PRO 256GB', discount: 30 },
-  { id: 's25-ultra-256', name: 'Samsung Galaxy S25 Ultra 256GB', match: 'SAMSUNG GALAXY S25 ULTRA 256GB', discount: 30 },
-  { id: 's25-edge-512', name: 'Samsung Galaxy S25 Edge 512GB', match: 'SAMSUNG GALAXY S25 EDGE 512GB', discount: 30 },
-  { id: 's25-plus-256', name: 'Samsung Galaxy S25+ 256GB', match: 'SAMSUNG GALAXY S25+ 256GB', discount: 30 },
-  { id: 'a16-5g-128', name: 'Samsung Galaxy A16 5G 128GB', match: 'SAMSUNG GALAXY A16 5G 128GB', discount: 30 },
-  { id: 'a06-5g-128', name: 'Samsung Galaxy A06 5G 128GB', match: 'SAMSUNG GALAXY A06 5G 128GB', discount: 30 },
-  { id: 'watch7-bt-40', name: 'Galaxy Watch7 BT 40mm', match: 'GALAXY WATCH7 BT 40MM', discount: 40 },
-  { id: 'charger-duo-65w', name: 'Carregador Parede Duo USB-A USB-C 65W', match: 'CARREGADOR PAREDE DUO USB-A USB-C 65W', discount: 40 },
-  { id: 'iphone-air-1tb', name: 'iPhone Air 1TB', match: 'APPLE IPHONE AIR 1TB', discount: 30 },
-  { id: 'z-flip7-512', name: 'Samsung Galaxy Z Flip7 512GB', match: 'SAMSUNG GALAXY Z FLIP 7 512GB', discount: 30 },
-];
-
-function outletMatchKey(value) {
-  return String(value || '')
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replaceAll('+', ' PLUS ')
-    .toLocaleUpperCase('pt-BR')
-    .replace(/[^A-Z0-9]+/g, '');
-}
-
 async function outletInventory(env) {
-  const [storesResult, itemsResult] = await env.DB.batch([
-    env.DB.prepare('SELECT code, name FROM network_stores ORDER BY name COLLATE NOCASE'),
+  const [storesResult, itemsResult, sourceResult] = await env.DB.batch([
     env.DB.prepare(`
-      SELECT store_code, material_code, display_name, technical_name, available_quantity, latest_modified_on
-      FROM network_inventory
-      WHERE available_quantity > 0
-      ORDER BY technical_name COLLATE NOCASE, material_code
+      SELECT center_code, store_name, SUM(quantity) AS available
+      FROM outlet_stock
+      GROUP BY center_code, store_name
+      ORDER BY store_name COLLATE NOCASE
     `),
+    env.DB.prepare(`
+      SELECT center_code, store_name, product_id, product_name, category,
+             quantity, discount, imported_on, source_name
+      FROM outlet_stock
+      WHERE quantity > 0
+      ORDER BY product_name COLLATE NOCASE, store_name COLLATE NOCASE
+    `),
+    env.DB.prepare('SELECT MAX(imported_on) AS imported_on, MAX(source_name) AS source_name FROM outlet_stock'),
   ]);
-  const products = new Map(OUTLET_CAMPAIGN.map((campaign) => [campaign.id, { ...campaign, available: 0, stores: new Map(), variants: new Map(), latestModifiedOn: '' }]));
+  const products = new Map();
   for (const item of itemsResult.results || []) {
-    const name = outletMatchKey(`${item.technical_name || ''} ${item.display_name || ''}`);
-    const campaign = OUTLET_CAMPAIGN.find((entry) => name.includes(outletMatchKey(entry.match)));
-    if (!campaign) continue;
-    const product = products.get(campaign.id);
-    const quantity = Number(item.available_quantity || 0);
-    product.available += quantity;
-    product.stores.set(item.store_code, (product.stores.get(item.store_code) || 0) + quantity);
-    let variant = product.variants.get(item.material_code);
-    if (!variant) {
-      variant = { materialCode: item.material_code, name: item.display_name || item.technical_name, available: 0, stores: new Map(), latestModifiedOn: '' };
-      product.variants.set(item.material_code, variant);
+    let product = products.get(item.product_id);
+    if (!product) {
+      product = {
+        id: item.product_id,
+        name: item.product_name,
+        category: item.category,
+        discount: Number(item.discount),
+        available: 0,
+        stores: new Map(),
+      };
+      products.set(item.product_id, product);
     }
-    variant.available += quantity;
-    variant.stores.set(item.store_code, (variant.stores.get(item.store_code) || 0) + quantity);
-    if (String(item.latest_modified_on || '') > variant.latestModifiedOn) variant.latestModifiedOn = item.latest_modified_on;
-    if (String(item.latest_modified_on || '') > product.latestModifiedOn) product.latestModifiedOn = item.latest_modified_on;
+    const quantity = Number(item.quantity || 0);
+    product.available += quantity;
+    product.stores.set(item.center_code, (product.stores.get(item.center_code) || 0) + quantity);
   }
-  const availableProducts = [...products.values()].filter((product) => product.available > 0);
+  const availableProducts = [...products.values()]
+    .filter((product) => product.available > 0)
+    .sort((a, b) => b.discount - a.discount || a.name.localeCompare(b.name, 'pt-BR'));
+  const payloadProducts = availableProducts.map((product) => ({
+    id: product.id,
+    name: product.name,
+    category: product.category,
+    discount: product.discount,
+    available: product.available,
+    stores: Object.fromEntries(product.stores),
+  }));
+  const source = sourceResult.results?.[0] || {};
   return json({
-    stores: (storesResult.results || []).map((store) => ({ code: store.code, name: store.name })),
-    products: availableProducts.map((product) => ({
-      id: product.id,
-      name: product.name,
-      discount: product.discount,
-      available: product.available,
-      latestModifiedOn: product.latestModifiedOn,
-      stores: Object.fromEntries(product.stores),
-      variants: [...product.variants.values()].map((variant) => ({ materialCode: variant.materialCode, name: variant.name, available: variant.available })),
+    importedOn: source.imported_on || '',
+    sourceName: source.source_name || '',
+    stores: (storesResult.results || []).map((store) => ({
+      code: store.center_code,
+      center: store.center_code,
+      name: store.store_name,
+      available: Number(store.available || 0),
     })),
-    items: availableProducts.flatMap((product) => [...product.variants.values()].map((variant) => ({
-      id: `${product.id}-${variant.materialCode}`,
-      campaignId: product.id,
-      modelName: product.name,
-      name: variant.name,
-      materialCode: variant.materialCode,
-      discount: product.discount,
-      available: variant.available,
-      latestModifiedOn: variant.latestModifiedOn,
-      stores: Object.fromEntries(variant.stores),
-    }))),
+    products: payloadProducts,
+    items: payloadProducts,
   });
 }
 

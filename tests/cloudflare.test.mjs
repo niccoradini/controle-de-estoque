@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60, migration61, migration62, migration63, migration64, migration65, migration66, migration67] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60, migration61, migration62, migration63, migration64, migration65, migration66, migration67, migration73] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -133,6 +133,7 @@ before(async () => {
     readFile(new URL('../migrations/0065_personal_planner.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0066_user_theme_preference.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0067_site_feedback.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0073_outlet_campaign_2026_09_05.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -265,6 +266,7 @@ before(async () => {
   await applyMigration(migration65);
   await applyMigration(migration66);
   await applyMigration(migration67);
+  await applyMigration(migration73);
 });
 
 after(async () => mf?.dispose());
@@ -585,16 +587,21 @@ describe('Controle de estoque por código material', () => {
   test('mostra no Outlet somente ofertas com disponibilidade na rede', async () => {
     const response = await seller.request('/api/outlet');
     assert.equal(response.status, 200);
-    assert.equal(response.payload.products.length, 7);
+    assert.equal(response.payload.products.length, 13);
+    assert.equal(response.payload.stores.length, 15);
+    assert.equal(response.payload.importedOn, '2026-09-05');
+    assert.equal(response.payload.sourceName, 'Planilha Outlet 05-09-2026');
     assert.ok(response.payload.products.every((product) => product.available > 0));
     assert.ok(response.payload.products.every((product) => [30, 40].includes(product.discount)));
     assert.ok(response.payload.products.some((product) => product.name === 'Motorola Edge 60 Fusion 256GB'));
     assert.ok(response.payload.products.some((product) => product.name === 'Samsung Galaxy S25 Ultra 256GB'));
     assert.ok(response.payload.products.some((product) => product.name === 'Moto G56 5G 256GB'));
-    assert.ok(response.payload.items.length > response.payload.products.length);
-    assert.ok(response.payload.items.every((item) => item.available > 0 && item.materialCode));
-    assert.equal(new Set(response.payload.items.map((item) => item.materialCode)).size, response.payload.items.length);
-    assert.equal(response.payload.items.reduce((sum, item) => sum + item.available, 0), response.payload.products.reduce((sum, product) => sum + product.available, 0));
+    assert.ok(response.payload.products.some((product) => product.name === 'Carregador Parede Duo USB-A USB-C 65W' && product.discount === 40));
+    assert.ok(response.payload.products.some((product) => product.name === 'Galaxy Watch7 BT 40mm' && product.discount === 40));
+    assert.equal(response.payload.products.reduce((sum, product) => sum + product.available, 0), 114);
+    assert.equal(response.payload.stores.find((store) => store.code === '89MN').available, 20);
+    assert.equal(response.payload.products.find((product) => product.id === 'edge-60-fusion-256').stores['89MN'], 3);
+    assert.equal(response.payload.items.length, response.payload.products.length);
     assert.doesNotMatch(JSON.stringify(response.payload), /serialNumber|serialNumbers|serial_number/i);
     assert.equal((await new Client('198.51.100.56').request('/api/outlet')).status, 401);
   });
@@ -1833,9 +1840,12 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.18.0');
+    assert.equal(JSON.parse(packageSource).version, '6.19.0');
     assert.match(appSource, /Campanha Vivo Outlet/);
     assert.match(appSource, /data-action="outlet-discount"/);
+    assert.match(appSource, /data-action="outlet-store"/);
+    assert.match(appSource, /data-action="outlet-category"/);
+    assert.match(appSource, /Lista promocional importada/);
     assert.match(stylesSource, /Outlet — campanha e disponibilidade da rede/);
     assert.match(appSource, /Escolha uma categoria/);
     assert.match(appSource, /network-category-card/);

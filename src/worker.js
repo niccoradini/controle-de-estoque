@@ -985,6 +985,57 @@ async function networkInventoryDashboard(env) {
   });
 }
 
+const OUTLET_CAMPAIGN = [
+  { id: 'edge-60-fusion-256', name: 'Motorola Edge 60 Fusion 256GB', match: 'MOTOROLA EDGE 60 FUSION 256GB', discount: 30 },
+  { id: 'edge-60-pro-512', name: 'Motorola Edge 60 Pro 512GB', match: 'MOTOROLA EDGE 60 PRO 512GB', discount: 30 },
+  { id: 'moto-g56-256', name: 'Moto G56 5G 256GB', match: 'MOTO G56 256GB', discount: 30 },
+  { id: 'edge-60-pro-256', name: 'Motorola Edge 60 Pro 256GB', match: 'MOTOROLA EDGE 60 PRO 256GB', discount: 30 },
+  { id: 's25-ultra-256', name: 'Samsung Galaxy S25 Ultra 256GB', match: 'SAMSUNG GALAXY S25 ULTRA 256GB', discount: 30 },
+  { id: 's25-edge-512', name: 'Samsung Galaxy S25 Edge 512GB', match: 'SAMSUNG GALAXY S25 EDGE 512GB', discount: 30 },
+  { id: 'a16-5g-128', name: 'Samsung Galaxy A16 5G 128GB', match: 'SAMSUNG GALAXY A16 5G 128GB', discount: 30 },
+  { id: 'a06-5g-128', name: 'Samsung Galaxy A06 5G 128GB', match: 'SAMSUNG GALAXY A06 5G 128GB', discount: 30 },
+  { id: 'watch7-bt-40', name: 'Galaxy Watch7 BT 40mm', match: 'GALAXY WATCH7 BT 40MM', discount: 40 },
+  { id: 'charger-duo-65w', name: 'Carregador Parede Duo USB-A USB-C 65W', match: 'CARREGADOR PAREDE DUO USB-A USB-C 65W', discount: 40 },
+  { id: 'iphone-air-1tb', name: 'iPhone Air 1TB', match: 'APPLE IPHONE AIR 1TB', discount: 30 },
+  { id: 'z-flip7-512', name: 'Samsung Galaxy Z Flip7 512GB', match: 'SAMSUNG GALAXY Z FLIP 7 512GB', discount: 30 },
+];
+
+async function outletInventory(env) {
+  const [storesResult, itemsResult] = await env.DB.batch([
+    env.DB.prepare('SELECT code, name FROM network_stores ORDER BY name COLLATE NOCASE'),
+    env.DB.prepare(`
+      SELECT store_code, material_code, display_name, technical_name, available_quantity, latest_modified_on
+      FROM network_inventory
+      WHERE available_quantity > 0
+      ORDER BY technical_name COLLATE NOCASE, material_code
+    `),
+  ]);
+  const products = new Map(OUTLET_CAMPAIGN.map((campaign) => [campaign.id, { ...campaign, available: 0, stores: new Map(), variants: new Map(), latestModifiedOn: '' }]));
+  for (const item of itemsResult.results || []) {
+    const name = `${item.technical_name || ''} ${item.display_name || ''}`.toLocaleUpperCase('pt-BR');
+    const campaign = OUTLET_CAMPAIGN.find((entry) => name.includes(entry.match));
+    if (!campaign) continue;
+    const product = products.get(campaign.id);
+    const quantity = Number(item.available_quantity || 0);
+    product.available += quantity;
+    product.stores.set(item.store_code, (product.stores.get(item.store_code) || 0) + quantity);
+    product.variants.set(item.material_code, { materialCode: item.material_code, name: item.display_name || item.technical_name, available: (product.variants.get(item.material_code)?.available || 0) + quantity });
+    if (String(item.latest_modified_on || '') > product.latestModifiedOn) product.latestModifiedOn = item.latest_modified_on;
+  }
+  return json({
+    stores: (storesResult.results || []).map((store) => ({ code: store.code, name: store.name })),
+    products: [...products.values()].filter((product) => product.available > 0).map((product) => ({
+      id: product.id,
+      name: product.name,
+      discount: product.discount,
+      available: product.available,
+      latestModifiedOn: product.latestModifiedOn,
+      stores: Object.fromEntries(product.stores),
+      variants: [...product.variants.values()],
+    })),
+  });
+}
+
 async function dashboard(env, user) {
   const products = await catalogData(env, user.role === 'manager' ? user : { ...user, role: 'manager' });
   const stock = products.reduce((totals, product) => ({
@@ -3282,6 +3333,7 @@ async function routeApi(request, env) {
     requireRole(user, 'manager');
     return networkInventoryDashboard(env);
   }
+  if (method === 'GET' && path === '/api/outlet') return outletInventory(env);
   if (method === 'GET' && path === '/api/point/me') return myPoint(env, user);
   if (method === 'POST' && path === '/api/point/me/punch') {
     requireRole(user, ['seller', 'stocker']);

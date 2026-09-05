@@ -34,6 +34,10 @@ const state = {
   networkSearch: '',
   networkBrand: 'all',
   networkCategory: 'all',
+  outletProducts: [],
+  outletStores: [],
+  outletSearch: '',
+  outletDiscount: 'all',
   labelSelection: new Map(),
   labelSearch: '',
   labelMode: 'cases',
@@ -87,6 +91,7 @@ const viewTitles = {
   labels: 'Etiquetas do estoque',
   stock: 'Loja e estoque',
   'network-stock': 'Estoque da rede',
+  outlet: 'Outlet',
   'new-request': 'Novo pedido',
   requests: 'Pedidos de retirada',
   alignment: 'Central de Alinhamento',
@@ -543,18 +548,18 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['feedback', 'briefing', 'Sugestões recebidas'], ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
-      ['dashboard', 'home', 'Visão do estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
+      ['dashboard', 'home', 'Visão do estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
       ['requests', 'orders', 'Pedidos para separar'], ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
   return [
-    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['stock', 'stock', 'Loja / estoque'],
+    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Loja / estoque'],
     ['new-request', 'plus', 'Novo pedido'], ['chips', 'sim', 'Meus chips'], ['requests', 'orders', 'Meus pedidos'],
     ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
   ];
@@ -852,6 +857,30 @@ async function renderNetworkStock() {
     <div class="network-store-grid"><button class="network-store-card ${state.networkStore === 'all' ? 'is-active' : ''}" data-action="network-store" data-store="all"><span>Todas as lojas</span><strong>${totals.available}</strong><small>unidades disponíveis</small></button>${state.networkStores.map((store) => `<button class="network-store-card ${state.networkStore === store.code ? 'is-active' : ''}" data-action="network-store" data-store="${escapeHtml(store.code)}"><span>${escapeHtml(store.name)}</span><strong>${store.available}</strong><small>${store.incoming} chegando · ${store.repair} em reparo</small><em>Base ${escapeHtml(formatDate(`${store.snapshotDate}T12:00:00.000Z`, false))}</em></button>`).join('')}</div>
     <section class="network-toolbar"><label>${uiIcon('search')}<input type="search" data-action="network-search" value="${escapeHtml(state.networkSearch)}" placeholder="Buscar qualquer produto, nome técnico ou material"></label><div class="filter-tabs"><button class="chip ${state.networkBrand === 'all' ? 'is-active' : ''}" data-action="network-brand" data-brand="all">Todas as marcas</button>${brands.map((brand) => `<button class="chip ${state.networkBrand === brand ? 'is-active' : ''}" data-action="network-brand" data-brand="${escapeHtml(brand)}">${escapeHtml(brand)}</button>`).join('')}</div></section><div data-network-results></div>`;
   renderNetworkStockWorkspace();
+}
+
+function renderOutletProducts() {
+  const target = document.querySelector('[data-outlet-results]');
+  if (!target) return;
+  const query = normalizeCatalogName(state.outletSearch);
+  const products = state.outletProducts.filter((product) => (
+    (state.outletDiscount === 'all' || Number(product.discount) === Number(state.outletDiscount))
+    && (!query || normalizeCatalogName(`${product.name} ${product.variants.map((variant) => `${variant.name} ${variant.materialCode}`).join(' ')}`).includes(query))
+  ));
+  const storeNames = new Map(state.outletStores.map((store) => [store.code, store.name]));
+  const available = products.reduce((sum, product) => sum + product.available, 0);
+  target.innerHTML = `<div class="outlet-results__head"><div><p class="page-eyebrow">Disponibilidade agora</p><h3>${products.length} ${products.length === 1 ? 'oferta encontrada' : 'ofertas encontradas'}</h3><p>${available} ${available === 1 ? 'unidade disponível' : 'unidades disponíveis'} nas lojas da rede</p></div></div>${products.length ? `<div class="outlet-grid">${products.map((product) => `<article class="outlet-card outlet-card--${product.discount}"><div class="outlet-card__top"><span class="outlet-card__discount"><b>${product.discount}%</b> de desconto</span><span class="outlet-card__visual">${clusterGraphic(product.id === 'charger-duo-65w' ? 'chargers' : 'devices')}</span></div><div class="outlet-card__body"><p>Vivo Outlet</p><h3>${escapeHtml(product.name)}</h3><span>${product.variants.length} ${product.variants.length === 1 ? 'material participante' : 'materiais participantes'}</span></div><div class="outlet-card__availability"><strong><b>${product.available}</b> unidades na rede</strong><div>${state.outletStores.map((store) => `<span class="${product.stores[store.code] ? 'has-stock' : ''}"><small>${escapeHtml(storeNames.get(store.code) || store.code)}</small><b>${product.stores[store.code] || 0}</b></span>`).join('')}</div></div><div class="outlet-card__variants">${product.variants.map((variant) => `<span title="${escapeHtml(variant.name)}"><code class="mono">${escapeHtml(variant.materialCode)}</code><b>${variant.available} un.</b></span>`).join('')}</div><footer>Estoque atualizado em ${escapeHtml(formatDateOnly(product.latestModifiedOn))}</footer></article>`).join('')}</div>` : emptyState('Nenhuma oferta disponível', 'Não há saldo na rede para os filtros selecionados.')}`;
+}
+
+async function renderOutlet() {
+  const data = await api('/api/outlet');
+  state.outletProducts = data.products || [];
+  state.outletStores = data.stores || [];
+  const content = document.querySelector('#view-content');
+  const totalAvailable = state.outletProducts.reduce((sum, product) => sum + product.available, 0);
+  const bestDiscount = Math.max(0, ...state.outletProducts.map((product) => product.discount));
+  content.innerHTML = `<section class="outlet-hero"><div><p class="page-eyebrow">Campanha Vivo Outlet</p><h2>Ofertas disponíveis na rede</h2><p>Veja somente os aparelhos e acessórios da campanha que possuem saldo para venda nas lojas.</p><div class="outlet-hero__metrics"><span><b>${state.outletProducts.length}</b> modelos disponíveis</span><span><b>${totalAvailable}</b> unidades na rede</span><span><b>até ${bestDiscount}%</b> de desconto</span></div></div><div class="outlet-hero__seal"><small>desconto de</small><strong>${bestDiscount}%</strong><span>OUTLET</span></div></section><section class="outlet-toolbar"><label>${uiIcon('search')}<input type="search" data-action="outlet-search" value="${escapeHtml(state.outletSearch)}" placeholder="Buscar oferta ou código material"></label><div class="filter-tabs"><button class="chip ${state.outletDiscount === 'all' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="all">Todos</button><button class="chip ${state.outletDiscount === '30' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="30">30% OFF</button><button class="chip ${state.outletDiscount === '40' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="40">40% OFF</button></div></section><section class="outlet-results" data-outlet-results></section>`;
+  renderOutletProducts();
 }
 
 function sellerInventoryGroupCard(group, totalAvailable) {
@@ -2623,6 +2652,7 @@ async function navigate(view) {
     if (view === 'my-day') await renderMyDay();
     if (view === 'feedback') await renderFeedback();
     if (view === 'news') await renderNews();
+    if (view === 'outlet') await renderOutlet();
     if (view === 'chips') await renderChips();
     if (view === 'renova-intake') await renderRenovaIntake();
     if (view === 'repairs') await renderRepairs();
@@ -3232,6 +3262,11 @@ root.addEventListener('click', async (event) => {
       state.networkCategory = button.dataset.category;
       renderNetworkStockWorkspace();
     }
+    if (action === 'outlet-discount') {
+      state.outletDiscount = button.dataset.discount;
+      document.querySelectorAll('[data-action="outlet-discount"]').forEach((filter) => filter.classList.toggle('is-active', filter.dataset.discount === state.outletDiscount));
+      renderOutletProducts();
+    }
     if (action === 'open-store-group') {
       state.catalogSearch = '';
       state.catalogCategory = button.dataset.cluster;
@@ -3368,6 +3403,7 @@ root.addEventListener('input', (event) => {
   if (event.target.dataset.action === 'chip-search') { state.chipSearch = event.target.value; renderChipResults(); }
   if (event.target.dataset.action === 'stock-search') { state.stockSearch = event.target.value; renderStockTable(); }
   if (event.target.dataset.action === 'network-search') { state.networkSearch = event.target.value; renderNetworkStockWorkspace(); }
+  if (event.target.dataset.action === 'outlet-search') { state.outletSearch = event.target.value; renderOutletProducts(); }
   if (event.target.dataset.action === 'catalog-search') { state.catalogSearch = event.target.value; renderCatalogGrid(); }
   if (event.target.dataset.action === 'renova-used-device-search') {
     state.renova.deviceId = Number(renovaTradeInByName(event.target.value)?.id || 0);

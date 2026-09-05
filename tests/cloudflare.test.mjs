@@ -582,6 +582,18 @@ describe('Controle de estoque por código material', () => {
     assert.ok(users.payload.users.filter((user) => user.id !== Number(sellerUser.id)).every((user) => !user.hasPointQr));
   });
 
+  test('mostra no Outlet somente ofertas com disponibilidade na rede', async () => {
+    const response = await seller.request('/api/outlet');
+    assert.equal(response.status, 200);
+    assert.ok(response.payload.products.length > 0);
+    assert.ok(response.payload.products.every((product) => product.available > 0));
+    assert.ok(response.payload.products.every((product) => [30, 40].includes(product.discount)));
+    assert.ok(response.payload.products.some((product) => product.name === 'Motorola Edge 60 Fusion 256GB'));
+    assert.ok(response.payload.products.some((product) => product.name === 'Samsung Galaxy S25 Ultra 256GB'));
+    assert.doesNotMatch(JSON.stringify(response.payload), /serialNumber|serialNumbers|serial_number/i);
+    assert.equal((await new Client('198.51.100.56').request('/api/outlet')).status, 401);
+  });
+
   test('registra o horário do ponto no servidor e mantém o histórico individual', async () => {
     const before = Date.now();
     const punched = await seller.request('/api/point/me/punch', { method: 'POST' });
@@ -1816,7 +1828,10 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.16.0');
+    assert.equal(JSON.parse(packageSource).version, '6.17.0');
+    assert.match(appSource, /Campanha Vivo Outlet/);
+    assert.match(appSource, /data-action="outlet-discount"/);
+    assert.match(stylesSource, /Outlet — campanha e disponibilidade da rede/);
     assert.match(appSource, /Escolha uma categoria/);
     assert.match(appSource, /network-category-card/);
     assert.match(appSource, /function networkProductGroups/);
@@ -2034,8 +2049,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.16\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.16\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.17\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.17\.0/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -2109,7 +2124,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.16.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.17.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

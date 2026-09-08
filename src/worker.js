@@ -354,6 +354,15 @@ function parseIncomingDeposits(value) {
   }
 }
 
+function parseJsonObject(value) {
+  try {
+    const parsed = JSON.parse(value || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 function auditStatement(env, actorId, action, entityType, entityId, details = {}) {
   return env.DB.prepare(`
     INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, details_json)
@@ -779,7 +788,13 @@ async function listCatalog(env, user) {
     catalogData(env, user),
     env.DB.prepare(`
       SELECT key, value FROM system_state
-      WHERE key IN ('pricing_table_date', 'pricing_table_source', 'retail_pricing_table_date', 'retail_pricing_table_source')
+      WHERE key IN (
+        'pricing_table_date', 'pricing_table_source',
+        'retail_pricing_table_date', 'retail_pricing_table_source',
+        'payment_policy_effective_date', 'payment_policy_max_installments',
+        'payment_policy_minimum_installment_cents', 'payment_policy_pix_discount_basis_points',
+        'payment_policy_installment_surcharge_ppm', 'payment_policy_note'
+      )
     `).all(),
     env.DB.prepare(`
       SELECT id, device_name, manufacturer, product_type, good_cents, defective_cents, table_date
@@ -823,6 +838,14 @@ async function listCatalog(env, user) {
       source: pricingState.pricing_table_source || '',
       retailTableDate: pricingState.retail_pricing_table_date || '',
       retailSource: pricingState.retail_pricing_table_source || '',
+      paymentPolicy: {
+        effectiveDate: pricingState.payment_policy_effective_date || '',
+        maxInstallments: Number(pricingState.payment_policy_max_installments || 21),
+        minimumInstallmentCents: Number(pricingState.payment_policy_minimum_installment_cents || 0),
+        pixDiscountBasisPoints: Number(pricingState.payment_policy_pix_discount_basis_points || 1000),
+        installmentSurchargePartsPerMillion: parseJsonObject(pricingState.payment_policy_installment_surcharge_ppm),
+        note: pricingState.payment_policy_note || '',
+      },
     },
     renova: {
       tableDate: renovaRows.results?.[0]?.table_date || '',

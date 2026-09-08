@@ -1606,6 +1606,16 @@ button:focus-visible, a:focus-visible {
 .pricing-selector__control { display: grid; gap: 6px; }
 .pricing-selector__control label { color: #d8d8dd; font-size: 10px; font-weight: 750; }
 .pricing-selector__control small { color: #71717b; font-size: 8px; text-align: right; }
+.payment-policy-guide { margin: -7px 0 18px; padding: 17px 20px; border: 1px solid rgba(181, 140, 255, .18); border-radius: 15px; background: rgba(181, 140, 255, .055); }
+.payment-policy-guide header { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.payment-policy-guide header span { color: #b996ef; font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.payment-policy-guide h3 { margin: 3px 0 0; color: #f1ecf6; font-size: 15px; }
+.payment-policy-guide header > b { padding: 8px 12px; border-radius: 999px; color: #211529; background: #cdb0f8; font-size: 13px; white-space: nowrap; }
+.payment-policy-guide > div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-top: 12px; }
+.payment-policy-guide article { display: grid; gap: 4px; padding: 10px; border: 1px solid rgba(255, 255, 255, .07); border-radius: 10px; background: rgba(0, 0, 0, .12); }
+.payment-policy-guide article strong { color: #e5d7f8; font-size: 10px; }
+.payment-policy-guide article span, .payment-policy-guide > p { color: #8d8494; font-size: 8px; line-height: 1.45; }
+.payment-policy-guide > p { margin: 9px 0 0; }
 
 .device-price-hint {
   display: flex;
@@ -1635,6 +1645,8 @@ button:focus-visible, a:focus-visible {
 .device-selected-price span { color: #ff8193; font-size: 9px; font-weight: 800; text-transform: uppercase; }
 .device-selected-price strong { color: #fff; font-size: 17px; }
 .device-selected-price small { grid-column: 2; color: #a5a5ae; font-size: 8px; text-align: right; }
+.device-selected-price__options { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 6px; }
+.device-selected-price__options small { grid-column: auto; padding: 5px 6px; border-radius: 6px; color: #bcb3c1; background: rgba(255,255,255,.045); text-align: center; }
 .device-selected-price--muted { border-color: #333339; background: #171719; }
 .device-selected-price--muted strong { color: #85858e; font-size: 10px; }
 
@@ -1654,6 +1666,7 @@ button:focus-visible, a:focus-visible {
 }
 .store-card__price strong { color: #ff9bab; font-size: 15px; line-height: 1.1; }
 .store-card__price span { color: #85858e; font-size: 8px; line-height: 1.35; }
+.store-card__price span b { color: #c5b8ca; font-weight: 750; }
 .picker-price {
   display: flex;
   align-items: center;
@@ -1724,10 +1737,15 @@ button:focus-visible, a:focus-visible {
 .request-pricing-summary strong { color: #f5f5f6; font-size: 13px; }
 .cart-pricing-summary p,
 .request-pricing-summary small { grid-column: 1 / -1; margin: 0; color: #8b8b94; font-size: 8px; line-height: 1.45; }
+.cart-pricing-summary .cart-payment-options { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.cart-payment-options > span { display: grid; gap: 3px; padding: 8px; border: 1px solid rgba(181,140,255,.15); border-radius: 8px; color: #eee8f3; background: rgba(181,140,255,.055); font-size: 10px; text-transform: none; }
+.cart-payment-options > span b { color: #bda0e9; font-size: 8px; text-transform: uppercase; }
+.cart-payment-options > span small { color: #8f8497; font-size: 7px; }
 
 @media (max-width: 980px) {
   .management-dashboard-grid { grid-template-columns: 1fr; }
   .admin-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .payment-policy-guide > div { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 560px) {
@@ -1735,6 +1753,8 @@ button:focus-visible, a:focus-visible {
   .pricing-selector__control small { text-align: left; }
   .device-selected-price { grid-template-columns: 1fr; }
   .device-selected-price small { grid-column: 1; text-align: left; }
+  .device-selected-price__options, .cart-pricing-summary .cart-payment-options, .payment-policy-guide > div { grid-template-columns: 1fr; }
+  .payment-policy-guide header { align-items: flex-start; }
   .cart-pricing-summary,
   .request-pricing-summary { grid-template-columns: 1fr; }
   .cart-pricing-summary p,
@@ -5677,17 +5697,19 @@ body.cart-drawer-open { overflow: hidden; }
 .shelf-label__prices li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .shelf-label__prices li b { flex: 0 0 auto; color: #17141a; font-size: 7px; }
 .shelf-label__foot { display: flex; justify-content: space-between; gap: 6px; margin-top: 5px; padding-top: 4px; border-top: 1px solid #e1dde4; color: #716b75; font-size: 5px; }
-.store-shelf-label { display: grid; grid-template-rows: auto 1fr auto auto; align-content: stretch; padding: 7px 9px; border: 1px solid #17141a; font-family: "Vivo Type", Arial, sans-serif; }
-.store-shelf-label > strong { margin: 0 0 4px; font-size: 10px; line-height: 1.05; text-align: center; }
-.store-shelf-label__installment { display: grid; grid-template-columns: auto auto auto 1fr; align-items: baseline; justify-content: center; gap: 3px; }
-.store-shelf-label__installment > span { font-size: 7px; }
-.store-shelf-label__installment small, .store-shelf-label__cash small { font-size: 5px; }
-.store-shelf-label__installment b { font-size: 14px; }
-.store-shelf-label__installment em { align-self: center; font-size: 5px; font-style: normal; line-height: .9; }
-.store-shelf-label__cash { display: flex; align-items: baseline; justify-content: center; gap: 4px; }
-.store-shelf-label__cash > span { font-size: 7px; }
-.store-shelf-label__cash b { font-size: 12px; }
-.store-shelf-label > p { margin: 4px 0 0; font-size: 4.5px; text-align: center; }
+.store-shelf-label { display: grid; grid-template-rows: auto auto 1fr auto; align-content: stretch; padding: 8px 10px; border: 1px solid #4f2380; font-family: "Vivo Type", Arial, sans-serif; }
+.store-shelf-label__brand { display: flex; align-items: center; justify-content: space-between; color: #5c258d; text-transform: uppercase; }
+.store-shelf-label__brand b { font-size: 10px; font-style: italic; letter-spacing: -.06em; text-transform: lowercase; }
+.store-shelf-label__brand span { font-size: 5px; font-weight: 800; letter-spacing: .1em; }
+.store-shelf-label > strong { margin: 4px 0 6px; color: #1d1722; font-size: 12px; line-height: 1.05; text-align: center; }
+.store-shelf-label__pricing { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+.store-shelf-label__pricing > div { display: grid; align-content: center; gap: 1px; padding: 4px 5px; border: 1px solid #e1d8e8; border-radius: 5px; background: #faf8fb; }
+.store-shelf-label__pricing span { color: #655d69; font-size: 5px; font-weight: 700; text-transform: uppercase; }
+.store-shelf-label__pricing b { color: #221927; font-size: 8px; }
+.store-shelf-label__pricing small { color: #706777; font-size: 4.5px; }
+.store-shelf-label__pricing .is-pix { border-color: #b79aca; background: #f2e9f8; }
+.store-shelf-label__pricing .is-pix b, .store-shelf-label__pricing .is-long b { color: #5c258d; }
+.store-shelf-label > p { margin: 5px 0 0; color: #706777; font-size: 4.5px; text-align: center; }
 .label-print-sheet { display: none; }
 @media (max-width: 900px) {
   .label-builder { grid-template-columns: 1fr; }
@@ -5923,16 +5945,17 @@ body.cart-drawer-open { overflow: hidden; }
   .label-print-sheet .shelf-label__prices li { font-size: 6.2pt; line-height: 1; }
   .label-print-sheet .shelf-label__prices li b { font-size: 6.5pt; }
   .label-print-sheet .shelf-label__foot { margin-top: 1.5mm; padding-top: 1mm; font-size: 6pt; }
-  .label-print-sheet .store-shelf-label { padding: 2.8mm 3mm 1.5mm; border: .25mm solid #17141a; }
-  .label-print-sheet .store-shelf-label > strong { margin: 0 0 1.2mm; font-size: 10pt; }
-  .label-print-sheet .store-shelf-label__installment { gap: 1mm; }
-  .label-print-sheet .store-shelf-label__installment > span { font-size: 8pt; }
-  .label-print-sheet .store-shelf-label__installment small, .label-print-sheet .store-shelf-label__cash small { font-size: 6pt; }
-  .label-print-sheet .store-shelf-label__installment b { font-size: 16pt; }
-  .label-print-sheet .store-shelf-label__installment em { font-size: 6pt; }
-  .label-print-sheet .store-shelf-label__cash > span { font-size: 8pt; }
-  .label-print-sheet .store-shelf-label__cash b { font-size: 14pt; }
-  .label-print-sheet .store-shelf-label > p { margin-top: 1.2mm; font-size: 5.5pt; }
+  body > .label-print-portal--store { width: 200mm !important; grid-template-columns: repeat(2, 100mm) !important; grid-auto-rows: 55mm !important; }
+  .label-print-portal--store .store-shelf-label { width: 100mm; height: 55mm; padding: 3mm 4mm 2mm; border: .3mm solid #4f2380; }
+  .label-print-portal--store .store-shelf-label__brand b { font-size: 13pt; }
+  .label-print-portal--store .store-shelf-label__brand span { font-size: 7pt; }
+  .label-print-portal--store .store-shelf-label > strong { margin: 1.5mm 0 2mm; font-size: 15pt; }
+  .label-print-portal--store .store-shelf-label__pricing { gap: 1.5mm; }
+  .label-print-portal--store .store-shelf-label__pricing > div { gap: .5mm; padding: 1.6mm 2mm; border-radius: 1.5mm; }
+  .label-print-portal--store .store-shelf-label__pricing span { font-size: 7pt; }
+  .label-print-portal--store .store-shelf-label__pricing b { font-size: 13pt; }
+  .label-print-portal--store .store-shelf-label__pricing small { font-size: 6pt; }
+  .label-print-portal--store .store-shelf-label > p { margin-top: 1.5mm; font-size: 6.5pt; }
 }
 
 /* Tema claro por preferência do usuário */
@@ -5990,6 +6013,11 @@ html[data-theme="light"] .pricing-selector p { color:#655c6b; font-weight:550; }
 html[data-theme="light"] .pricing-selector__control label { color:#45384c; font-weight:750; }
 html[data-theme="light"] .pricing-selector__control small { color:#6e6474; font-weight:550; }
 html[data-theme="light"] .pricing-selector .select { border-color:#cfc5d5; color:#28202d; background:#fff; }
+html[data-theme="light"] .payment-policy-guide { border-color:#d8c9e2; background:#f4ecf8; }
+html[data-theme="light"] .payment-policy-guide h3 { color:#2d2233; }
+html[data-theme="light"] .payment-policy-guide article { border-color:#e0d6e6; background:#fff; }
+html[data-theme="light"] .payment-policy-guide article strong { color:#642f84; }
+html[data-theme="light"] .payment-policy-guide article span,html[data-theme="light"] .payment-policy-guide>p { color:#665d6c; }
 html[data-theme="light"] .stock-toolbar .search-box { border-color:#cec5d4; background:#fff; }
 html[data-theme="light"] .stock-toolbar .search-box .input { color:#251d29; background:#fff; }
 html[data-theme="light"] .stock-toolbar .search-box .input::placeholder { color:#817687; opacity:1; }

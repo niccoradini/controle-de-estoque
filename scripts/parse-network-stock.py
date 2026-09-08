@@ -17,6 +17,12 @@ STORE_NAMES = {
     'ESTOQUE 210H.xlsx': 'Avenida',
 }
 
+STORE_NAMES_BY_CENTER = {
+    '89MN': 'BQ Lucas',
+    '283H': 'Pátio',
+    '210H': 'Avenida',
+}
+
 if len(sys.argv) < 2:
     raise SystemExit('Informe uma ou mais planilhas de estoque.')
 
@@ -78,7 +84,8 @@ for filename in filenames:
             item['ignored'] += 1
     if len(centers) != 1:
         raise SystemExit(f'A planilha {path.name} possui mais de um centro: {sorted(centers)}')
-    store_name = STORE_NAMES.get(path.name, path.stem.replace('ESTOQUE LOJA ', '').title())
+    center = next(iter(centers))
+    store_name = STORE_NAMES.get(path.name, STORE_NAMES_BY_CENTER.get(center, path.stem.replace('ESTOQUE LOJA ', '').title()))
     code = store_name.lower().replace('á', 'a').replace('ã', 'a').replace(' ', '-')
     items = [
         {'materialCode': material, 'technicalName': technical_name, **counts}
@@ -87,7 +94,7 @@ for filename in filenames:
     stores.append({
         'code': code,
         'name': store_name,
-        'center': next(iter(centers)),
+        'center': center,
         'sourceFile': path.name,
         'snapshotDate': snapshot_date,
         'sourceRows': len(serials),

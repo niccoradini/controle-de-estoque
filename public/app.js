@@ -156,8 +156,18 @@ const clusterOrder = ['devices', 'cases', 'screen_protectors', 'speakers', 'note
 
 const alignmentTopics = [
   {
-    id: 'customer-care',
+    id: 'payment-options',
     number: '01',
+    icon: 'sim',
+    eyebrow: 'Matinal comercial',
+    title: 'Três caminhos para fechar melhor',
+    summary: 'Compare PIX, 12x e até 21x para adaptar a proposta à prioridade de cada cliente.',
+    minutes: 12,
+    wide: true,
+  },
+  {
+    id: 'customer-care',
+    number: '02',
     icon: 'service',
     eyebrow: 'Prioridade absoluta',
     title: 'Resolver faz parte do atendimento',
@@ -167,7 +177,7 @@ const alignmentTopics = [
   },
   {
     id: 'responsibilities',
-    number: '02',
+    number: '03',
     icon: 'tasks',
     eyebrow: 'Função completa',
     title: 'Responsabilidades do consultor',
@@ -176,7 +186,7 @@ const alignmentTopics = [
   },
   {
     id: 'conduct',
-    number: '03',
+    number: '04',
     icon: 'conduct',
     eyebrow: 'Postura profissional',
     title: 'Comportamento em loja',
@@ -185,7 +195,7 @@ const alignmentTopics = [
   },
   {
     id: 'organization',
-    number: '04',
+    number: '05',
     icon: 'clean',
     eyebrow: 'Responsabilidade coletiva',
     title: 'A loja é de todos',
@@ -2092,6 +2102,38 @@ function alignmentLeadershipMessages() {
   </section>`;
 }
 
+function paymentOptionsAlignment() {
+  const approaches = [
+    ['Pergunte primeiro', 'Descubra se a prioridade é pagar menos no total, reduzir a parcela ou levar uma solução completa.'],
+    ['Monte a solução', 'Inclua aparelho, capa, película, carregador, seguro e plano adequados ao uso do cliente.'],
+    ['Comece pela menor parcela', 'Apresente a composição completa em até 21x e mostre o total exibido pelo simulador.'],
+    ['Compare com 12x', 'Mostre a parcela em 12x e o mesmo total do preço-base para facilitar a decisão.'],
+    ['Guarde o PIX para fechar', 'Quando o cliente buscar o menor valor total, apresente PIX ou Vivo Pay com 10% a menos.'],
+  ];
+  const negotiationIdeas = [
+    ['Orçamento mensal', '“Qual valor mensal fica confortável para você?” Depois, ajuste prazo e composição sem retirar benefícios antes de comparar.'],
+    ['Menor valor total', '“Se sua prioridade é economizar no total, vou mostrar a opção mais vantajosa para fechar hoje.”'],
+    ['Solução completa', '“Vamos proteger o aparelho desde o primeiro dia e distribuir tudo em uma parcela que caiba no seu planejamento.”'],
+    ['Vivo Renova', '“Vou verificar quanto seu aparelho usado pode reduzir da proposta e comparar as três opções.”'],
+    ['Comparação clara', '“Vou colocar lado a lado parcela e total para você escolher com segurança.”'],
+    ['Objeção de preço', 'Troque “está caro” por uma pergunta: “O que pesa mais agora: o valor mensal ou o total da compra?”'],
+  ];
+  return `<div class="alignment-detail__body alignment-payment-morning">
+    <div class="alignment-principle alignment-principle--priority"><span>Objetivo da matinal</span><strong>Não existe uma única proposta ideal. Existe a proposta certa para a prioridade do cliente.</strong><p>Use o simulador para apresentar números exatos, comparar alternativas e conduzir a escolha com transparência.</p></div>
+    <section class="alignment-payment-grid" aria-label="Três opções de pagamento">
+      <article class="alignment-payment-card is-pix"><span>01 · Menor valor total</span><h4>PIX ou Vivo Pay</h4><strong>10% a menos</strong><p>Funciona em qualquer produto e plano. Use como argumento decisivo quando economia for a prioridade.</p></article>
+      <article class="alignment-payment-card"><span>02 · Equilíbrio</span><h4>De 1x a 12x</h4><strong>Preço-base</strong><p>O total permanece igual ao preço-base. Apresente parcela e total lado a lado.</p></article>
+      <article class="alignment-payment-card is-long"><span>03 · Parcela menor</span><h4>De 13x a 21x</h4><strong>Mais possibilidades</strong><p>Disponível em cartões selecionados. O simulador informa parcela e total para cada prazo.</p></article>
+    </section>
+    <div class="alignment-detail-grid">
+      <section class="alignment-panel"><div class="alignment-panel__heading"><div><span class="alignment-panel__label">Roteiro de negociação</span><h4>Da descoberta ao fechamento.</h4></div><span class="alignment-count">5 passos</span></div><div class="alignment-process">${approaches.map(([title, text], index) => `<article><span>${index + 1}</span><div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div></article>`).join('')}</div></section>
+      <aside class="alignment-panel alignment-panel--contrast"><span class="alignment-panel__label">Perguntas que abrem a conversa</span><h4>Faça o cliente dizer o que precisa.</h4><ul class="alignment-checklist"><li>“Você prefere reduzir o valor total ou deixar a parcela mais leve?”</li><li>“Qual faixa mensal cabe com tranquilidade no seu planejamento?”</li><li>“O aparelho usado entrará no Vivo Renova?”</li><li>“Quer sair com o aparelho protegido e pronto para usar?”</li><li>“Posso comparar três cenários no simulador?”</li></ul></aside>
+    </div>
+    <section class="alignment-panel"><div class="alignment-panel__heading"><div><span class="alignment-panel__label">Ideias para usar no balcão</span><h4>Seis maneiras de conduzir a proposta.</h4></div><span class="alignment-count">Prática comercial</span></div><div class="alignment-script-grid">${negotiationIdeas.map(([title, text]) => `<article class="alignment-script"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></article>`).join('')}</div></section>
+    <div class="alignment-commitment-grid"><section><span class="alignment-panel__label">Antes de confirmar</span><h4>Conferência obrigatória.</h4><ul class="alignment-checklist"><li>Selecione a categoria correta do plano.</li><li>Use somente o valor mostrado na tabela ou no simulador.</li><li>Confirme se o cartão aceita o prazo escolhido.</li><li>Mostre ao cliente a parcela e o total da opção selecionada.</li><li>Valide os itens, serviços e descontos da proposta.</li></ul></section><section><span class="alignment-panel__label">Exercício de 3 minutos</span><h4>Treino em duplas.</h4><p>Uma pessoa faz o papel do cliente e escolhe uma prioridade: menor valor total, parcela mais leve ou solução completa. A outra faz três perguntas, simula as opções e apresenta uma recomendação clara. Depois, troquem os papéis.</p><div class="alignment-note">Combinado do dia: cada vendedor fará pelo menos três comparações completas antes de oferecer retirar um item da proposta.</div></section></div>
+  </div>`;
+}
+
 function customerCareAlignment() {
   const steps = [
     ['Acolher', 'Receba a demanda sem interromper ou transferir a responsabilidade.'],
@@ -2158,6 +2200,7 @@ function alignmentDetail() {
   const previousTopic = alignmentTopics[topicIndex - 1] || null;
   const nextTopic = alignmentTopics[topicIndex + 1] || null;
   const bodies = {
+    'payment-options': paymentOptionsAlignment,
     'customer-care': customerCareAlignment,
     responsibilities: responsibilitiesAlignment,
     conduct: conductAlignment,
@@ -2186,7 +2229,7 @@ function renderAlignment() {
     return;
   }
   if (!alignmentTopics.some((topic) => topic.id === state.alignmentTopic)) state.alignmentTopic = alignmentTopics[0].id;
-  content.innerHTML = `<section class="alignment-hero"><div class="alignment-hero__content"><div class="alignment-hero__meta"><div class="alignment-edition">${uiIcon('briefing')}<span>Edição 01 · Agosto 2026</span></div><div class="alignment-duration">${uiIcon('history')}<span>Roteiro · até 20 min</span></div></div><p class="alignment-hero__eyebrow">Central de Alinhamento · SJDR Centro</p><h2>O padrão da loja começa nas pequenas atitudes.</h2><p>Um espaço para transformar orientações em atitudes claras, consistentes e observáveis no dia a dia.</p><div class="alignment-values"><span>Resolver</span><span>Respeitar</span><span>Organizar</span></div></div><div class="alignment-hero__mark" aria-hidden="true"><span>01</span><small>matinal</small></div></section>
+  content.innerHTML = `<section class="alignment-hero"><div class="alignment-hero__content"><div class="alignment-hero__meta"><div class="alignment-edition">${uiIcon('briefing')}<span>Edição 02 · Setembro 2026</span></div><div class="alignment-duration">${uiIcon('history')}<span>Roteiro · até 32 min</span></div></div><p class="alignment-hero__eyebrow">Central de Alinhamento · SJDR Centro</p><h2>Mais opções para transformar interesse em decisão.</h2><p>Uma matinal prática para comparar formas de pagamento, negociar com clareza e manter os padrões da loja.</p><div class="alignment-values"><span>Simular</span><span>Comparar</span><span>Fechar</span></div></div><div class="alignment-hero__mark" aria-hidden="true"><span>02</span><small>matinal</small></div></section>
     <div class="alignment-section-heading"><div><span>Navegação da edição</span><h3>Todos os temas ficam ao alcance durante a apresentação</h3></div><p>Troque de assunto sem fechar o conteúdo ou retornar ao início.</p></div>
     <div class="alignment-workspace">
       <aside class="alignment-navigator" aria-label="Temas desta edição">
@@ -2211,9 +2254,10 @@ function renderSimpleAlignment() {
     ['users', 'Equipe alinhada', 'Respeite horários, intervalos e colegas. Dúvidas operacionais devem ser levadas ao gerente com clareza.'],
   ];
   content.innerHTML = `<section class="simple-alignment-hero">
-      <div><span>Alinhamento rápido · Agosto 2026</span><h2>Quatro combinados para o dia funcionar bem.</h2><p>Uma leitura direta, feita em cerca de 5 minutos, para vendedores e estoquistas.</p></div>
-      <div class="simple-alignment-hero__time">${uiIcon('history')}<strong>5 min</strong><span>leitura rápida</span></div>
+      <div><span>Matinal comercial · Setembro 2026</span><h2>Três caminhos para fechar melhor.</h2><p>Compare a proposta conforme a prioridade do cliente: menor valor total, equilíbrio ou parcela mais leve.</p></div>
+      <div class="simple-alignment-hero__time">${uiIcon('history')}<strong>12 min</strong><span>conversa prática</span></div>
     </section>
+    <section class="simple-payment-morning"><header><span>Nova estrutura de pagamento</span><h3>Apresente sempre parcela e total.</h3><p>Comece entendendo o que o cliente valoriza e use os números exatos do simulador.</p></header><div class="simple-payment-options"><article><span>PIX / Vivo Pay</span><strong>10% a menos</strong><p>Para quem busca o menor valor total.</p></article><article><span>De 1x a 12x</span><strong>Preço-base</strong><p>Para equilibrar parcela e valor total.</p></article><article><span>De 13x a 21x</span><strong>Parcela menor</strong><p>Em cartões selecionados, com total indicado no simulador.</p></article></div><div class="simple-payment-playbook"><section><span>Conversa em 4 passos</span><ol><li>Pergunte a prioridade e a faixa mensal.</li><li>Monte a solução completa, incluindo proteção e serviços úteis.</li><li>Compare até 21x, 12x e PIX ou Vivo Pay.</li><li>Confirme parcela, total, itens e descontos antes de concluir.</li></ol></section><section><span>Frases que ajudam</span><ul><li>“Você prefere pagar menos no total ou reduzir a parcela?”</li><li>“Posso comparar três cenários para você escolher?”</li><li>“Vamos verificar quanto seu aparelho usado pode reduzir da proposta?”</li><li>“Quer distribuir a solução completa em uma parcela confortável?”</li></ul></section></div><footer><strong>Dica de negociação:</strong> diante de uma objeção, faça uma pergunta antes de retirar produto, proteção ou serviço da proposta.</footer></section>
     <section class="simple-alignment-role">${uiIcon('check')}<p>${roleGuidance}</p></section>
     <div class="simple-alignment-grid">${topics.map(([icon, title, text], index) => `<article class="simple-alignment-card"><div><span>${String(index + 1).padStart(2, '0')}</span>${uiIcon(icon)}</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></article>`).join('')}</div>
     <section class="simple-alignment-check"><div><span>Antes de encerrar o turno</span><h3>Checklist de 30 segundos</h3></div><ul><li>Pedidos e cancelamentos estão registrados no sistema.</li><li>Produtos e espaços de trabalho ficaram organizados.</li><li>Divergências foram comunicadas ao gerente.</li><li>O próximo responsável recebeu as informações importantes.</li></ul></section>

@@ -1847,7 +1847,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.20.0');
+    assert.equal(JSON.parse(packageSource).version, '6.21.0');
     assert.match(appSource, /Campanha Vivo Outlet/);
     assert.match(appSource, /data-action="outlet-discount"/);
     assert.match(appSource, /data-action="outlet-store"/);
@@ -1958,8 +1958,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /prefers-reduced-motion:\s*reduce/i);
     assert.match(appSource, /Central de Alinhamento/i);
     assert.match(appSource, /data-action="open-alignment"/i);
-    assert.match(appSource, /Roteiro · até 20 min/);
-    assert.match(appSource, /minutes:\s*6[\s\S]*minutes:\s*6[\s\S]*minutes:\s*4[\s\S]*minutes:\s*4/);
+    assert.match(appSource, /Roteiro · até 32 min/);
+    assert.match(appSource, /minutes:\s*12[\s\S]*minutes:\s*6[\s\S]*minutes:\s*6[\s\S]*minutes:\s*4[\s\S]*minutes:\s*4/);
     assert.match(appSource, /Resumo guiado · 2 min/);
     assert.match(appSource, /A loja exclusiva Vivo deve atender presencialmente e tratar demandas de todos os serviços do grupo/);
     assert.match(appSource, /Resolver o problema do cliente não é um favor/i);
@@ -1975,7 +1975,14 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /Cozinha e sala de estoque/i);
     assert.match(appSource, /state\.user\.role !== 'manager'[\s\S]*\['users', 'audit'\]/i);
     assert.match(appSource, /function renderSimpleAlignment/);
-    assert.match(appSource, /Quatro combinados para o dia funcionar bem/i);
+    assert.match(appSource, /Três caminhos para fechar melhor/i);
+    assert.match(appSource, /function paymentOptionsAlignment/);
+    assert.match(appSource, /PIX ou Vivo Pay[\s\S]*De 1x a 12x[\s\S]*De 13x a 21x/);
+    assert.match(appSource, /Qual valor mensal fica confortável para você/);
+    const paymentAlignmentSource = appSource.match(/function paymentOptionsAlignment\(\)[\s\S]*?(?=\nfunction customerCareAlignment\(\))/)?.[0] || '';
+    assert.doesNotMatch(paymentAlignmentSource, /\bjuros\b/i);
+    const simpleAlignmentSource = appSource.match(/function renderSimpleAlignment\(\)[\s\S]*?(?=\nconst actionLabels)/)?.[0] || '';
+    assert.doesNotMatch(simpleAlignmentSource, /\bjuros\b/i);
     assert.match(appSource, /Checklist de 30 segundos/i);
     assert.match(stylesSource, /\.simple-alignment-grid/);
     assert.match(appSource, /function renderNews/);
@@ -2071,8 +2078,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.20\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.20\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.21\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.21\.0/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -2146,7 +2153,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.20.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.21.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2249,5 +2256,29 @@ describe('Controle de estoque por código material', () => {
     assert.equal(response.payload.items.length, 790);
     assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-04'));
     assert.doesNotMatch(JSON.stringify(response.payload), /serialNumber|serialNumbers|serial_number/i);
+  });
+
+  test('atualiza todas as bases recebidas em 08/09', async () => {
+    const inventoryMigration = await readFile(new URL('../migrations/0076_inventory_refresh_2026_09_08.sql', import.meta.url), 'utf8');
+    const networkMigration = await readFile(new URL('../migrations/0077_network_inventory_2026_09_08.sql', import.meta.url), 'utf8');
+    const incomingMigration = await readFile(new URL('../migrations/0078_incoming_inventory_details_2026_09_08.sql', import.meta.url), 'utf8');
+    await applyMigration(inventoryMigration);
+    await applyMigration(networkMigration);
+    await applyMigration(incomingMigration);
+
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-09-08');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, '209H.08.09.xlsx');
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM incoming_inventory_serials')).count), 155);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM repair_inventory')).count), 111);
+
+    const response = await manager.request('/api/network-inventory');
+    assert.equal(response.status, 200);
+    assert.deepEqual(response.payload.stores.map((store) => store.center), ['210H', '89MN', '283H']);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.totalUnits, 0), 3534);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.available, 0), 3056);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.incoming, 0), 428);
+    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.repair, 0), 50);
+    assert.equal(response.payload.items.length, 778);
+    assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-08'));
   });
 });

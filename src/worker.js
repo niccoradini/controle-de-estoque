@@ -1383,6 +1383,65 @@ async function exportReplenishmentSpreadsheet(env) {
   });
 }
 
+function renovaWorkbookDateTime(value) {
+  if (!value) return '';
+  try {
+    return new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+      timeZone: 'America/Sao_Paulo',
+    }).format(new Date(value));
+  } catch {
+    return String(value);
+  }
+}
+
+function renovaWorkbook(items, generatedOn) {
+  const awaiting = items.filter((item) => !item.pickup_on).length;
+  const pickedUp = items.length - awaiting;
+  const lastDataRow = Math.max(7, items.length + 7);
+  const rows = items.map((item, index) => {
+    const row = index + 8;
+    const leftStyle = index % 2 ? 4 : 3;
+    const centerStyle = index % 2 ? 6 : 5;
+    const statusStyle = item.pickup_on ? 18 : 17;
+    const status = item.pickup_on ? 'Retirado' : 'Aguardando retirada';
+    const receivedOn = String(item.received_on || '').split('-').reverse().join('/');
+    const pickupOn = item.pickup_on ? String(item.pickup_on).split('-').reverse().join('/') : '—';
+    return `<row r="${row}" ht="28"><c r="A${row}" s="${centerStyle}" t="inlineStr"><is><t>${xmlCell(item.registration_code || '—')}</t></is></c><c r="B${row}" s="${leftStyle}" t="inlineStr"><is><t>${xmlCell(item.model)}</t></is></c><c r="C${row}" s="${centerStyle}" t="inlineStr"><is><t>${xmlCell(item.imei || 'Não informado')}</t></is></c><c r="D${row}" s="${statusStyle}" t="inlineStr"><is><t>${status}</t></is></c><c r="E${row}" s="${centerStyle}" t="inlineStr"><is><t>${receivedOn}</t></is></c><c r="F${row}" s="${centerStyle}" t="inlineStr"><is><t>${xmlCell(renovaWorkbookDateTime(item.created_at))}</t></is></c><c r="G${row}" s="${centerStyle}" t="inlineStr"><is><t>${pickupOn}</t></is></c><c r="H${row}" s="${leftStyle}" t="inlineStr"><is><t>${xmlCell(item.created_by_name || 'Equipe da loja')}</t></is></c><c r="I${row}" s="${leftStyle}" t="inlineStr"><is><t>${xmlCell(item.updated_by_name || item.created_by_name || 'Equipe da loja')}</t></is></c><c r="J${row}" s="${centerStyle}" t="inlineStr"><is><t>${xmlCell(renovaWorkbookDateTime(item.updated_at))}</t></is></c></row>`;
+  }).join('');
+  const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:J${lastDataRow}"/><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="7" topLeftCell="A8" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="17"/><cols><col min="1" max="1" width="12" customWidth="1"/><col min="2" max="2" width="38" customWidth="1"/><col min="3" max="3" width="21" customWidth="1"/><col min="4" max="4" width="23" customWidth="1"/><col min="5" max="5" width="16" customWidth="1"/><col min="6" max="7" width="20" customWidth="1"/><col min="8" max="9" width="25" customWidth="1"/><col min="10" max="10" width="20" customWidth="1"/></cols><sheetData><row r="1" ht="44"><c r="A1" s="1" t="inlineStr"><is><t>RELAÇÃO DE APARELHOS RENOVA</t></is></c><c r="I1" s="11" t="inlineStr"><is><t>✦ vivo</t></is></c></row><row r="2" ht="24"><c r="A2" s="2" t="inlineStr"><is><t>CONTROLE DE ESTOQUE • HISTÓRICO DE RECEBIMENTOS E RETIRADAS</t></is></c><c r="I2" s="12" t="inlineStr"><is><t>RENOVA</t></is></c></row><row r="4" ht="20"><c r="A4" s="13" t="inlineStr"><is><t>GERADO EM</t></is></c><c r="C4" s="13" t="inlineStr"><is><t>TOTAL CADASTRADO</t></is></c><c r="E4" s="19" t="inlineStr"><is><t>AGUARDANDO RETIRADA</t></is></c><c r="G4" s="20" t="inlineStr"><is><t>JÁ RETIRADOS</t></is></c><c r="I4" s="13" t="inlineStr"><is><t>CONTEÚDO</t></is></c></row><row r="5" ht="32"><c r="A5" s="14" t="inlineStr"><is><t>${xmlCell(generatedOn)}</t></is></c><c r="C5" s="14" t="n"><v>${items.length}</v></c><c r="E5" s="21" t="n"><v>${awaiting}</v></c><c r="G5" s="22" t="n"><v>${pickedUp}</v></c><c r="I5" s="14" t="inlineStr"><is><t>Histórico completo</t></is></c></row><row r="7" ht="31"><c r="A7" s="8" t="inlineStr"><is><t>CÓDIGO</t></is></c><c r="B7" s="7" t="inlineStr"><is><t>APARELHO / MODELO</t></is></c><c r="C7" s="8" t="inlineStr"><is><t>IMEI</t></is></c><c r="D7" s="8" t="inlineStr"><is><t>ESTADO</t></is></c><c r="E7" s="8" t="inlineStr"><is><t>RECEBIDO EM</t></is></c><c r="F7" s="8" t="inlineStr"><is><t>CADASTRADO EM</t></is></c><c r="G7" s="8" t="inlineStr"><is><t>RETIRADO EM</t></is></c><c r="H7" s="7" t="inlineStr"><is><t>CADASTRADO POR</t></is></c><c r="I7" s="7" t="inlineStr"><is><t>ATUALIZADO POR</t></is></c><c r="J7" s="8" t="inlineStr"><is><t>ÚLTIMA ATUALIZAÇÃO</t></is></c></row>${rows}</sheetData><autoFilter ref="A7:J${lastDataRow}"/><mergeCells count="14"><mergeCell ref="A1:H1"/><mergeCell ref="I1:J1"/><mergeCell ref="A2:H2"/><mergeCell ref="I2:J2"/><mergeCell ref="A4:B4"/><mergeCell ref="C4:D4"/><mergeCell ref="E4:F4"/><mergeCell ref="G4:H4"/><mergeCell ref="I4:J4"/><mergeCell ref="A5:B5"/><mergeCell ref="C5:D5"/><mergeCell ref="E5:F5"/><mergeCell ref="G5:H5"/><mergeCell ref="I5:J5"/></mergeCells><pageMargins left="0.2" right="0.2" top="0.3" bottom="0.3" header="0.15" footer="0.15"/><pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="9"><font><sz val="10"/><name val="Aptos"/><color rgb="FF2A2430"/></font><font><b/><sz val="20"/><name val="Aptos Display"/><color rgb="FFFFFFFF"/></font><font><b/><sz val="9"/><name val="Aptos"/><color rgb="FFEADFF5"/></font><font><b/><sz val="10"/><name val="Aptos"/><color rgb="FFFFFFFF"/></font><font><b/><sz val="17"/><name val="Aptos Display"/><color rgb="FFFFFFFF"/></font><font><b/><sz val="9"/><name val="Aptos"/><color rgb="FF6A3B89"/></font><font><b/><sz val="14"/><name val="Aptos Display"/><color rgb="FF4C216B"/></font><font><b/><sz val="9"/><name val="Aptos"/><color rgb="FF9A5D00"/></font><font><b/><sz val="9"/><name val="Aptos"/><color rgb="FF137A55"/></font></fonts><fills count="10"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF55217A"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF6F0FA"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF8A47BD"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF0E5F8"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2D9"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE1F7EE"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE9D8F5"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFE1D5E8"/></left><right style="thin"><color rgb="FFE1D5E8"/></right><top style="thin"><color rgb="FFE1D5E8"/></top><bottom style="thin"><color rgb="FFE1D5E8"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="23"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center" indent="1"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="left" vertical="center" indent="2"/></xf><xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" indent="1"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" indent="1"/></xf><xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" indent="1" wrapText="1"/></xf><xf numFmtId="0" fontId="3" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="0" fontId="4" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="5" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="6" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="7" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="8" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="7" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="8" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="7" fillId="7" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="8" fillId="8" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+  return zipWorkbook({
+    '[Content_Types].xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
+    '_rels/.rels': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+    'xl/workbook.xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Histórico Renova" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+    'xl/_rels/workbook.xml.rels': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
+    'xl/worksheets/sheet1.xml': sheet,
+    'xl/styles.xml': styles,
+  });
+}
+
+async function exportRenovaSpreadsheet(env) {
+  const rows = (await env.DB.prepare(`
+    SELECT item.*, creator.name AS created_by_name, updater.name AS updated_by_name
+    FROM renova_intake_items item
+    LEFT JOIN users creator ON creator.id = item.created_by
+    LEFT JOIN users updater ON updater.id = item.updated_by
+    ORDER BY item.received_on DESC, item.created_at DESC, item.id
+  `).all()).results || [];
+  const timestamp = new Date();
+  const date = timestamp.toISOString().slice(0, 10);
+  const generatedOn = renovaWorkbookDateTime(timestamp.toISOString());
+  return new Response(renovaWorkbook(rows, generatedOn), {
+    headers: {
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="historico-renova-${date}.xlsx"`,
+      'Cache-Control': 'private, no-store',
+    },
+  });
+}
+
 async function saveReplenishmentItem(request, env, user) {
   const data = await readJson(request);
   const variantId = Number(data.variantId);
@@ -3658,6 +3717,10 @@ async function routeApi(request, env) {
   if (method === 'PUT' && newsMatch) {
     requireRole(user, 'manager');
     return updateNews(request, env, user, decodeURIComponent(newsMatch[1]));
+  }
+  if (method === 'GET' && path === '/api/renova-intake/export') {
+    requireRole(user, ['manager', 'stocker']);
+    return exportRenovaSpreadsheet(env);
   }
   if (method === 'GET' && path === '/api/renova-intake') {
     requireRole(user, ['manager', 'stocker']);

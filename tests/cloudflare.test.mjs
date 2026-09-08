@@ -1664,6 +1664,24 @@ describe('Controle de estoque por código material', () => {
     assert.equal(pickedUp.payload.item.pickupOn, '2026-08-12');
     assert.equal(pickedUp.payload.item.updatedByName, 'Estoquista Um');
 
+    assert.equal((await seller.request('/api/renova-intake/export')).status, 403);
+    const renovaExport = await mf.dispatchFetch('https://controleestoque.app.br/api/renova-intake/export', {
+      headers: { Cookie: stocker.cookie, 'CF-Connecting-IP': stocker.ip },
+    });
+    assert.equal(renovaExport.status, 200);
+    assert.match(renovaExport.headers.get('content-type'), /spreadsheetml\.sheet/i);
+    assert.match(renovaExport.headers.get('content-disposition'), /historico-renova-\d{4}-\d{2}-\d{2}\.xlsx/);
+    const renovaWorkbookBytes = new Uint8Array(await renovaExport.arrayBuffer());
+    assert.deepEqual([...renovaWorkbookBytes.slice(0, 4)], [0x50, 0x4b, 0x03, 0x04]);
+    const renovaWorkbookSource = new TextDecoder().decode(renovaWorkbookBytes);
+    assert.match(renovaWorkbookSource, /RELAÇÃO DE APARELHOS RENOVA/);
+    assert.match(renovaWorkbookSource, /SAMSUNG GALAXY S23 128GB/);
+    assert.match(renovaWorkbookSource, /351234567890123/);
+    assert.match(renovaWorkbookSource, /Retirado/);
+    assert.match(renovaWorkbookSource, /CADASTRADO EM/);
+    assert.match(renovaWorkbookSource, /ÚLTIMA ATUALIZAÇÃO/);
+    assert.ok(renovaWorkbookSource.indexOf('<autoFilter') < renovaWorkbookSource.indexOf('<mergeCells'));
+
     const corrected = await manager.request(`/api/renova-intake/${created.payload.item.id}`, {
       method: 'PUT',
       body: { model: 'SAMSUNG GALAXY S23 ULTRA 256GB', receivedOn: '2026-08-10', pickupOn: '' },
@@ -1908,7 +1926,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.22.0');
+    assert.equal(JSON.parse(packageSource).version, '6.23.0');
     assert.match(appSource, /Campanha Vivo Outlet/);
     assert.match(appSource, /data-action="outlet-discount"/);
     assert.match(appSource, /data-action="outlet-store"/);
@@ -2084,7 +2102,10 @@ describe('Controle de estoque por código material', () => {
     assert.match(stylesSource, /\.renova-intake-code/);
     assert.match(appSource, /Selecione um aparelho da lista do Vivo Renova/);
     assert.match(appSource, /Data da retirada pela empresa/);
+    assert.match(appSource, /href="\/api\/renova-intake\/export"/);
+    assert.match(appSource, /Gerar planilha/);
     assert.match(stylesSource, /\.renova-intake-hero/);
+    assert.match(stylesSource, /\.renova-intake-hero__actions/);
     assert.match(stylesSource, /\.renova-intake-card/);
     assert.match(stylesSource, /\.chip-owner-card/);
     assert.match(updaterSource, /npm run check/);
@@ -2139,8 +2160,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.22\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.22\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.23\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.23\.0/);
     assert.match(appSource, /showcases: 'Vitrines'/);
     assert.match(appSource, /async function renderShowcases/);
     assert.match(appSource, /data-form="showcase-slot"/);
@@ -2222,7 +2243,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.22.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.23.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

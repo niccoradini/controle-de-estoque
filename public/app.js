@@ -52,6 +52,7 @@ const state = {
   outletStore: 'all',
   outletCategory: 'all',
   outletImportedOn: '',
+  showcases: { canEdit: false, summary: {}, fixtures: [], products: [], serials: [] },
   labelSelection: new Map(),
   labelSearch: '',
   labelMode: 'cases',
@@ -106,6 +107,7 @@ const viewTitles = {
   stock: 'Loja e estoque',
   'network-stock': 'Estoque da rede',
   outlet: 'Outlet',
+  showcases: 'Vitrines',
   'new-request': 'Novo pedido',
   requests: 'Pedidos de retirada',
   alignment: 'Central de Alinhamento',
@@ -609,18 +611,18 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['feedback', 'briefing', 'Sugestões recebidas'], ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
-      ['dashboard', 'home', 'Visão do estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
+      ['dashboard', 'home', 'Visão do estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
       ['requests', 'orders', 'Pedidos para separar'], ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
   return [
-    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Loja / estoque'],
+    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Loja / estoque'],
     ['new-request', 'plus', 'Novo pedido'], ['chips', 'sim', 'Meus chips'], ['requests', 'orders', 'Meus pedidos'],
     ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
   ];
@@ -952,6 +954,103 @@ async function renderOutlet() {
   const accessoryCount = state.outletProducts.filter((product) => product.category !== 'devices').length;
   content.innerHTML = `<section class="outlet-hero"><div><p class="page-eyebrow">Campanha Vivo Outlet</p><h2>Ofertas de todas as lojas em um só lugar</h2><p>Consulte o produto, o desconto, a loja, o centro e a quantidade disponível antes de oferecer ao cliente.</p><div class="outlet-hero__metrics"><span><b>${state.outletProducts.length}</b> modelos em promoção</span><span><b>${totalAvailable}</b> unidades disponíveis</span><span><b>${state.outletStores.length}</b> lojas participantes</span><span><b>${accessoryCount}</b> acessórios e wearables</span></div></div><div class="outlet-hero__seal"><small>desconto de até</small><strong>${bestDiscount}%</strong><span>OUTLET</span></div></section><section class="outlet-toolbar outlet-toolbar--detailed"><label class="outlet-search">${uiIcon('search')}<input type="search" data-action="outlet-search" value="${escapeHtml(state.outletSearch)}" placeholder="Buscar aparelho, acessório, loja ou centro"></label><label class="outlet-select"><span>Loja</span><select class="select" data-action="outlet-store"><option value="all">Todas as lojas (${totalAvailable} un.)</option>${state.outletStores.map((store) => `<option value="${escapeHtml(store.code)}" ${state.outletStore === store.code ? 'selected' : ''}>${escapeHtml(store.name)} · ${store.center} (${store.available})</option>`).join('')}</select></label><div class="outlet-filter-groups"><div class="filter-tabs"><button class="chip ${state.outletCategory === 'all' ? 'is-active' : ''}" data-action="outlet-category" data-category="all">Tudo</button><button class="chip ${state.outletCategory === 'devices' ? 'is-active' : ''}" data-action="outlet-category" data-category="devices">Celulares</button><button class="chip ${state.outletCategory === 'accessories' ? 'is-active' : ''}" data-action="outlet-category" data-category="accessories">Acessórios</button></div><div class="filter-tabs"><button class="chip ${state.outletDiscount === 'all' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="all">Todos</button><button class="chip ${state.outletDiscount === '30' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="30">30% OFF</button><button class="chip ${state.outletDiscount === '40' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="40">40% OFF</button></div></div></section><section class="outlet-results" data-outlet-results></section>`;
   renderOutletProducts();
+}
+
+function showcaseProductChoice(product) {
+  return `${product.name} · ${product.materialCode || 'sem material'}`;
+}
+
+function showcaseFixtureById(fixtureId) {
+  return state.showcases.fixtures.find((fixture) => fixture.id === fixtureId) || null;
+}
+
+function showcaseSlotById(fixtureId, slotNumber) {
+  return showcaseFixtureById(fixtureId)?.slots.find((slot) => slot.slotNumber === Number(slotNumber)) || null;
+}
+
+function showcaseSlotMarkup(fixture, slot) {
+  const assignment = slot.assignment;
+  const editable = state.showcases.canEdit;
+  const shelfLabel = fixture.type === 'demo_table'
+    ? `Posição ${slot.positionNumber}`
+    : `Prateleira ${slot.shelfNumber}, posição ${slot.positionNumber}`;
+  if (!assignment) {
+    return `<button class="showcase-slot is-empty" ${editable ? `data-action="open-showcase-slot" data-fixture-id="${escapeHtml(fixture.id)}" data-slot-number="${slot.slotNumber}"` : 'disabled'} aria-label="${escapeHtml(`${shelfLabel}: posição vazia`)}"><span>${editable ? uiIcon('plus') : uiIcon('box')}</span><strong>Posição livre</strong><small>${editable ? 'Cadastrar produto' : shelfLabel}</small></button>`;
+  }
+  const imageProduct = { ...assignment, name: assignment.productName };
+  const health = assignment.health === 'attention' ? 'is-attention' : 'is-occupied';
+  return `<button class="showcase-slot ${health}" data-action="open-showcase-slot" data-fixture-id="${escapeHtml(fixture.id)}" data-slot-number="${slot.slotNumber}" aria-label="${escapeHtml(`${shelfLabel}: ${assignment.productName}`)}">
+    <span class="showcase-slot__image">${productImageMarkup(imageProduct, 'showcase-product-image', 72, 72)}</span>
+    <span class="showcase-slot__copy"><small>${escapeHtml(shelfLabel)}</small><strong>${escapeHtml(assignment.productName)}</strong><code>${escapeHtml(assignment.materialCode || 'Sem código')}</code>${assignment.serialNumber ? `<em>IMEI ${escapeHtml(assignment.serialNumber)}</em>` : '<em>Sem controle por IMEI</em>'}</span>
+    <span class="showcase-slot__status">${assignment.health === 'attention' ? `${uiIcon('warning')} Conferir` : `${uiIcon('check')} Ocupada`}</span>
+  </button>`;
+}
+
+function showcaseCabinetMarkup(fixture) {
+  const shelves = Array.from({ length: fixture.shelfCount }, (_, index) => {
+    const shelfNumber = index + 1;
+    const slots = fixture.slots.filter((slot) => slot.shelfNumber === shelfNumber);
+    return `<div class="showcase-shelf"><div class="showcase-shelf__label"><span>Prateleira</span><strong>${shelfNumber}</strong></div><div class="showcase-shelf__slots">${slots.map((slot) => showcaseSlotMarkup(fixture, slot)).join('')}</div></div>`;
+  }).join('');
+  return `<article class="showcase-cabinet ${fixture.type === 'device_showcase' ? 'is-device' : 'is-accessory'}"><header><div><span>${fixture.type === 'device_showcase' ? 'Aparelhos' : 'Acessórios'}</span><h3>${escapeHtml(fixture.name)}</h3></div><strong>${fixture.occupied}<small>/${fixture.capacity}</small></strong></header><div class="showcase-cabinet__glass">${shelves}</div><footer><span>${fixture.capacity - fixture.occupied} posições livres</span>${fixture.attention ? `<b>${uiIcon('warning')} ${fixture.attention} para conferir</b>` : `<b>${uiIcon('check')} Tudo certo</b>`}</footer></article>`;
+}
+
+function showcaseDemoTableMarkup(fixture) {
+  return `<article class="showcase-demo-table ${fixture.id === 'demo-main' ? 'is-main' : 'is-side'}"><header><div><span>Degustação</span><h3>${escapeHtml(fixture.name)}</h3></div><strong>${fixture.occupied}/${fixture.capacity}</strong></header><div class="showcase-demo-table__surface">${fixture.slots.map((slot) => showcaseSlotMarkup(fixture, slot)).join('')}<span class="showcase-demo-table__channel" aria-hidden="true"></span></div><footer>${fixture.capacity - fixture.occupied} ${fixture.capacity - fixture.occupied === 1 ? 'posição livre' : 'posições livres'}</footer></article>`;
+}
+
+async function renderShowcases() {
+  const data = await api('/api/showcases');
+  state.showcases = data;
+  const cabinets = data.fixtures.filter((fixture) => fixture.type !== 'demo_table');
+  const demoTables = data.fixtures.filter((fixture) => fixture.type === 'demo_table');
+  const content = document.querySelector('#view-content');
+  content.innerHTML = `<section class="showcase-hero"><div><p class="page-eyebrow">Mapa vivo da exposição</p><h2>Vitrines da loja</h2><p>Veja exatamente onde cada produto está exposto. ${data.canEdit ? 'Clique em uma posição para cadastrar, trocar ou retirar um item.' : 'Gerentes e estoquistas mantêm este mapa atualizado.'}</p></div><div class="showcase-hero__visual" aria-hidden="true"><span></span><span></span><span></span><span></span></div></section>
+    <section class="showcase-summary"><article><span>Posições</span><strong>${data.summary.capacity}</strong><small>em toda a loja</small></article><article><span>Ocupadas</span><strong>${data.summary.occupied}</strong><small>produtos expostos</small></article><article><span>Livres</span><strong>${data.summary.capacity - data.summary.occupied}</strong><small>disponíveis para uso</small></article><article class="${data.summary.attention ? 'has-attention' : ''}"><span>Conferência</span><strong>${data.summary.attention}</strong><small>${data.summary.attention ? 'itens pedindo atenção' : 'nenhuma divergência'}</small></article></section>
+    <section class="showcase-section"><header><div><p class="page-eyebrow">Exposição vertical</p><h2>Vitrines e prateleiras</h2><p>Até quatro produtos em cada prateleira.</p></div><div class="showcase-legend"><span><i class="is-occupied"></i>Ocupada</span><span><i class="is-empty"></i>Livre</span><span><i class="is-attention"></i>Conferir</span></div></header><div class="showcase-cabinet-grid">${cabinets.map(showcaseCabinetMarkup).join('')}</div></section>
+    <section class="showcase-section showcase-demo-section"><header><div><p class="page-eyebrow">Experimentação</p><h2>Mesas de degustação</h2><p>Mapa das posições de aparelhos disponíveis para demonstração.</p></div></header><div class="showcase-demo-floor">${demoTables.map(showcaseDemoTableMarkup).join('')}</div></section>`;
+}
+
+function showcaseSerialOptions(fixture, slot, variantId) {
+  if (fixture.type === 'accessory_showcase') return '';
+  const serials = state.showcases.serials.filter((serial) => Number(serial.variantId) === Number(variantId)
+    && (!serial.fixtureId || (serial.fixtureId === fixture.id && serial.slotNumber === slot.slotNumber)));
+  const selectedId = Number(slot.assignment?.serialId || 0);
+  return `<option value="">Selecione o IMEI</option>${serials.map((serial) => `<option value="${serial.id}" ${serial.id === selectedId ? 'selected' : ''}>${escapeHtml(serial.serialNumber)}${serial.status !== 'available' ? ' · conferir estoque' : ''}</option>`).join('')}`;
+}
+
+function refreshShowcaseSerialPicker(form) {
+  const fixture = showcaseFixtureById(form.dataset.fixtureId);
+  const slot = showcaseSlotById(form.dataset.fixtureId, form.dataset.slotNumber);
+  const choice = String(form.elements.productChoice?.value || '');
+  const product = state.showcases.products.find((item) => showcaseProductChoice(item) === choice);
+  const wrapper = form.querySelector('[data-showcase-serial-field]');
+  if (!wrapper || !fixture || !slot) return;
+  if (fixture.type === 'accessory_showcase') {
+    wrapper.hidden = true;
+    return;
+  }
+  wrapper.hidden = false;
+  const select = wrapper.querySelector('select');
+  select.innerHTML = product ? showcaseSerialOptions(fixture, slot, product.variantId) : '<option value="">Escolha primeiro o produto</option>';
+  select.required = true;
+}
+
+function showcaseSlotModal(fixtureId, slotNumber) {
+  const fixture = showcaseFixtureById(fixtureId);
+  const slot = showcaseSlotById(fixtureId, slotNumber);
+  if (!fixture || !slot) return;
+  const assignment = slot.assignment;
+  if (!state.showcases.canEdit) {
+    if (!assignment) return;
+    showModal(`<div class="modal__head"><div><h2>${escapeHtml(assignment.productName)}</h2><p>${escapeHtml(fixture.name)} · posição ${slot.positionNumber}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="showcase-detail">${productImageMarkup({ ...assignment, name: assignment.productName }, 'showcase-detail__image', 112, 112)}<div><span>Código material</span><strong>${escapeHtml(assignment.materialCode || 'Não informado')}</strong>${assignment.serialNumber ? `<span>IMEI cadastrado</span><code>${escapeHtml(assignment.serialNumber)}</code>` : '<span>Produto sem controle por IMEI</span>'}</div></div></div><div class="modal__footer"><button class="btn" data-action="close-modal">Fechar</button></div>`, { small: true });
+    return;
+  }
+  const wantsSerial = fixture.type !== 'accessory_showcase';
+  const products = state.showcases.products.filter((product) => wantsSerial ? product.cluster === 'devices' : product.cluster !== 'devices');
+  const currentProduct = products.find((product) => product.variantId === assignment?.variantId);
+  const currentChoice = currentProduct ? showcaseProductChoice(currentProduct) : '';
+  showModal(`<form data-form="showcase-slot" data-fixture-id="${escapeHtml(fixture.id)}" data-slot-number="${slot.slotNumber}" novalidate><div class="modal__head"><div><h2>${assignment ? 'Editar posição' : 'Cadastrar produto'}</h2><p>${escapeHtml(fixture.name)} · ${fixture.type === 'demo_table' ? `posição ${slot.positionNumber}` : `prateleira ${slot.shelfNumber}, posição ${slot.positionNumber}`}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="showcase-form-intro"><span>${fixture.type === 'accessory_showcase' ? clusterGraphic('misc') : clusterGraphic('devices')}</span><div><strong>${fixture.type === 'accessory_showcase' ? 'Produto de exposição' : 'Aparelho identificado'}</strong><p>${wantsSerial ? 'O IMEI será conferido com o estoque e não poderá aparecer em duas posições.' : 'Escolha um item disponível no estoque da loja.'}</p></div></div><div class="field"><label for="showcase-product-choice">Produto</label><input class="input" id="showcase-product-choice" name="productChoice" data-action="showcase-product-choice" list="showcase-product-options" value="${escapeHtml(currentChoice)}" placeholder="Digite o nome ou código material" autocomplete="off" required><datalist id="showcase-product-options">${products.map((product) => `<option value="${escapeHtml(showcaseProductChoice(product))}">${product.quantity} un. no estoque</option>`).join('')}</datalist></div><div class="field" data-showcase-serial-field ${wantsSerial ? '' : 'hidden'}><label for="showcase-serial">IMEI</label><select class="select" id="showcase-serial" name="serialId" ${wantsSerial ? 'required' : ''}>${showcaseSerialOptions(fixture, slot, currentProduct?.variantId || 0)}</select><p class="field-hint">Somente IMEIs disponíveis e ainda não usados em outra posição aparecem aqui.</p></div></div><div class="modal__footer">${assignment ? '<button type="button" class="btn btn--danger" data-action="clear-showcase-slot">Esvaziar posição</button>' : ''}<button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Salvar posição</button></div></form>`, { wide: true });
 }
 
 function sellerInventoryGroupCard(group, totalAvailable) {
@@ -2755,6 +2854,7 @@ async function navigate(view) {
     if (view === 'my-day') await renderMyDay();
     if (view === 'feedback') await renderFeedback();
     if (view === 'news') await renderNews();
+    if (view === 'showcases') await renderShowcases();
     if (view === 'outlet') await renderOutlet();
     if (view === 'chips') await renderChips();
     if (view === 'renova-intake') await renderRenovaIntake();
@@ -3215,6 +3315,7 @@ async function enterApp(user) {
   state.networkStore = 'all';
   state.networkSearch = '';
   state.networkBrand = 'all';
+  state.showcases = { canEdit: false, summary: {}, fixtures: [], products: [], serials: [] };
   state.renovaSearch = '';
   state.renovaStatus = 'awaiting_pickup';
   state.chipSellers = [];
@@ -3260,6 +3361,7 @@ root.addEventListener('click', async (event) => {
       await navigate(button.dataset.view);
     }
     if (action === 'reload-view') await navigate(state.view);
+    if (action === 'open-showcase-slot') showcaseSlotModal(button.dataset.fixtureId, Number(button.dataset.slotNumber));
     if (action === 'open-menu') document.body.classList.add('menu-open');
     if (action === 'close-menu') document.body.classList.remove('menu-open');
     if (action === 'logout') await withBusy(button, async () => { await api('/api/auth/logout', { method: 'POST' }); state.user = null; closeModal(true); renderLogin(); });
@@ -3453,6 +3555,16 @@ modalRoot.addEventListener('click', async (event) => {
   if (target.dataset.action === 'add-chip-to-batch') addSelectedChipToBatch();
   if (target.dataset.action === 'remove-chip-batch-item') removeChipFromBatch(target.dataset.chipCandidateId);
   if (target.dataset.action === 'clear-chip-batch') clearChipBatch();
+  if (target.dataset.action === 'clear-showcase-slot') {
+    const form = target.closest('form[data-form="showcase-slot"]');
+    if (!form) return;
+    await withBusy(target, async () => {
+      await api(`/api/showcases/${encodeURIComponent(form.dataset.fixtureId)}/slots/${Number(form.dataset.slotNumber)}`, { method: 'DELETE' });
+      closeModal(true);
+      showToast('Posição esvaziada.');
+      await renderShowcases();
+    });
+  }
   if (target.dataset.action === 'remove-cart-item') {
     state.cart.delete(Number(target.dataset.variantId));
     if (state.cart.size) requestReviewModal();
@@ -3464,6 +3576,11 @@ modalRoot.addEventListener('click', async (event) => {
 modalRoot.addEventListener('input', (event) => {
   if (event.target.dataset.action === 'chip-material-search') renderChipMaterialOptions();
   if (event.target.dataset.action === 'chip-iccid-suffix') queueChipCandidateSearch();
+  if (event.target.dataset.action === 'showcase-product-choice') refreshShowcaseSerialPicker(event.target.closest('form'));
+});
+
+modalRoot.addEventListener('change', (event) => {
+  if (event.target.dataset.action === 'showcase-product-choice') refreshShowcaseSerialPicker(event.target.closest('form'));
 });
 
 root.addEventListener('change', (event) => {
@@ -3559,6 +3676,17 @@ document.addEventListener('submit', async (event) => {
       if (form.dataset.form === 'site-feedback') {
         await api('/api/site-feedback', { method: 'POST', body: { type: data.feedbackType, pageName: data.pageName, title: data.title, details: data.details } });
         form.reset(); state.feedbackFilter = 'all'; showToast('Mensagem enviada para a gerência.'); await renderFeedback();
+      }
+      if (form.dataset.form === 'showcase-slot') {
+        const product = state.showcases.products.find((item) => showcaseProductChoice(item) === String(data.productChoice || '').trim());
+        if (!product) throw new ApiError('Selecione um produto da lista.', 400, { productChoice: 'Escolha uma das opções exibidas.' });
+        const fixture = showcaseFixtureById(form.dataset.fixtureId);
+        const serialId = fixture?.type === 'accessory_showcase' ? null : Number(data.serialId || 0);
+        if (fixture?.type !== 'accessory_showcase' && !serialId) throw new ApiError('Selecione o IMEI do aparelho.', 400, { serialId: 'Escolha um IMEI disponível.' });
+        await api(`/api/showcases/${encodeURIComponent(form.dataset.fixtureId)}/slots/${Number(form.dataset.slotNumber)}`, { method: 'PUT', body: { variantId: product.variantId, serialId } });
+        closeModal(true);
+        showToast('Produto cadastrado na vitrine.');
+        await renderShowcases();
       }
       if (form.dataset.form === 'review-feedback') {
         await api(`/api/site-feedback/${encodeURIComponent(form.dataset.id)}`, { method: 'PATCH', body: { status: data.status, managerNote: data.managerNote } });

@@ -3331,6 +3331,220 @@ async function deletePersonalPlannerItem(env, user, id) {
   return noContent();
 }
 
+function showcaseProductName(row) {
+  return [row.product_name, row.option1_value, row.option2_value, row.option3_value]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .filter((value, index, values) => values.indexOf(value) === index)
+    .join(' · ');
+}
+
+async function showcaseOverview(env, user) {
+  const editable = ['manager', 'stocker'].includes(user.role);
+  const [fixturesResult, slotsResult] = await Promise.all([
+    env.DB.prepare(`
+      SELECT id, name, fixture_type, shelf_count, slots_per_shelf, sort_order
+      FROM showcase_fixtures
+      ORDER BY sort_order, name COLLATE NOCASE
+    `).all(),
+    env.DB.prepare(`
+      SELECT slot.fixture_id, slot.slot_number, slot.variant_id, slot.serial_id,
+             slot.updated_at, editor.name AS updated_by_name,
+             product.name AS product_name, product.category, product.cluster,
+             product.imagem_url, product.active AS product_active,
+             variant.sku AS material_code, variant.option1_value, variant.option2_value,
+             variant.option3_value, variant.serial_tracking, variant.active AS variant_active,
+             serial.serial_number, serial.status AS serial_status
+      FROM showcase_slots slot
+      JOIN product_variants variant ON variant.id = slot.variant_id
+      JOIN products product ON product.id = variant.product_id
+      LEFT JOIN inventory_serials serial ON serial.id = slot.serial_id
+      LEFT JOIN users editor ON editor.id = slot.updated_by
+      ORDER BY slot.fixture_id, slot.slot_number
+    `).all(),
+  ]);
+
+  const assignments = new Map((slotsResult.results || []).map((row) => [
+    `${row.fixture_id}:${row.slot_number}`,
+    {
+      variantId: Number(row.variant_id),
+      serialId: row.serial_id == null ? null : Number(row.serial_id),
+      productName: showcaseProductName(row),
+      materialCode: row.material_code || '',
+      category: row.category,
+      cluster: row.cluster || 'misc',
+      imagem_url: row.imagem_url || '',
+      serialTracked: Boolean(row.serial_tracking),
+      serialNumber: row.serial_number || '',
+      serialStatus: row.serial_status || '',
+      health: !row.product_active || !row.variant_active || (row.serial_id && row.serial_status !== 'available') ? 'attention' : 'ok',
+      updatedAt: row.updated_at,
+      updatedBy: row.updated_by_name || '',
+    },
+  ]));
+
+  const fixtures = (fixturesResult.results || []).map((fixture) => {
+    const capacity = Number(fixture.shelf_count) * Number(fixture.slots_per_shelf);
+    const slots = Array.from({ length: capacity }, (_, index) => ({
+      slotNumber: index + 1,
+      shelfNumber: Math.floor(index / Number(fixture.slots_per_shelf)) + 1,
+      positionNumber: (index % Number(fixture.slots_per_shelf)) + 1,
+      assignment: assignments.get(`${fixture.id}:${index + 1}`) || null,
+    }));
+    return {
+      id: fixture.id,
+      name: fixture.name,
+      type: fixture.fixture_type,
+      shelfCount: Number(fixture.shelf_count),
+      slotsPerShelf: Number(fixture.slots_per_shelf),
+      capacity,
+      occupied: slots.filter((slot) => slot.assignment).length,
+      attention: slots.filter((slot) => slot.assignment?.health === 'attention').length,
+      slots,
+    };
+  });
+
+  let products = [];
+  let serials = [];
+  if (editable) {
+    const [productsResult, serialsResult] = await Promise.all([
+      env.DB.prepare(`
+        SELECT variant.id AS variant_id, product.name AS product_name, product.category,
+               product.cluster, product.imagem_url, variant.sku AS material_code,
+               variant.option1_value, variant.option2_value, variant.option3_value,
+               variant.serial_tracking, variant.quantity_on_hand
+        FROM product_variants variant
+        JOIN products product ON product.id = variant.product_id
+        WHERE product.active = 1 AND variant.active = 1 AND variant.quantity_on_hand > 0
+        ORDER BY product.cluster, product.name COLLATE NOCASE, variant.sku COLLATE NOCASE
+      `).all(),
+      env.DB.prepare(`
+        SELECT serial.id, serial.variant_id, serial.serial_number, serial.status,
+               slot.fixture_id, slot.slot_number
+        FROM inventory_serials serial
+        LEFT JOIN showcase_slots slot ON slot.serial_id = serial.id
+        WHERE serial.status = 'available' OR slot.serial_id IS NOT NULL
+        ORDER BY serial.serial_number COLLATE NOCASE
+      `).all(),
+    ]);
+    products = (productsResult.results || []).map((row) => ({
+      variantId: Number(row.variant_id),
+      name: showcaseProductName(row),
+      materialCode: row.material_code || '',
+      category: row.category,
+      cluster: row.cluster || 'misc',
+      imagem_url: row.imagem_url || '',
+      serialTracked: Boolean(row.serial_tracking),
+      quantity: Number(row.quantity_on_hand),
+    }));
+    serials = (serialsResult.results || []).map((row) => ({
+      id: Number(row.id),
+      variantId: Number(row.variant_id),
+      serialNumber: row.serial_number,
+      status: row.status,
+      fixtureId: row.fixture_id || '',
+      slotNumber: row.slot_number == null ? null : Number(row.slot_number),
+    }));
+  }
+
+  return json({
+    canEdit: editable,
+    summary: {
+      fixtures: fixtures.length,
+      capacity: fixtures.reduce((sum, fixture) => sum + fixture.capacity, 0),
+      occupied: fixtures.reduce((sum, fixture) => sum + fixture.occupied, 0),
+      attention: fixtures.reduce((sum, fixture) => sum + fixture.attention, 0),
+    },
+    fixtures,
+    products,
+    serials,
+  }, 200, { 'Cache-Control': 'private, no-store, max-age=0' });
+}
+
+async function saveShowcaseSlot(request, env, user, fixtureId, slotNumber) {
+  const input = await readJson(request);
+  const variantId = Number(input?.variantId);
+  const serialId = input?.serialId == null || input.serialId === '' ? null : Number(input.serialId);
+  if (!Number.isInteger(variantId) || variantId <= 0) throw new HttpError(400, 'Selecione um produto válido.');
+  if (serialId != null && (!Number.isInteger(serialId) || serialId <= 0)) throw new HttpError(400, 'Selecione um IMEI válido.');
+
+  const fixture = await env.DB.prepare(`
+    SELECT * FROM showcase_fixtures WHERE id = ?
+  `).bind(fixtureId).first();
+  if (!fixture) throw new HttpError(404, 'Vitrine não encontrada.');
+  const capacity = Number(fixture.shelf_count) * Number(fixture.slots_per_shelf);
+  if (!Number.isInteger(slotNumber) || slotNumber < 1 || slotNumber > capacity) {
+    throw new HttpError(400, 'Esta posição não existe na vitrine.');
+  }
+
+  const variant = await env.DB.prepare(`
+    SELECT variant.id, variant.serial_tracking, variant.active, product.active AS product_active,
+           product.name, product.category, product.cluster
+    FROM product_variants variant
+    JOIN products product ON product.id = variant.product_id
+    WHERE variant.id = ?
+  `).bind(variantId).first();
+  if (!variant || !variant.active || !variant.product_active) throw new HttpError(404, 'Produto indisponível no catálogo.');
+
+  const needsSerial = fixture.fixture_type !== 'accessory_showcase';
+  if (needsSerial && variant.cluster !== 'devices') throw new HttpError(400, 'Escolha um aparelho para esta posição.');
+  if (needsSerial && serialId == null) throw new HttpError(400, 'Selecione o IMEI do aparelho.');
+  if (!needsSerial && variant.cluster === 'devices') throw new HttpError(400, 'Nesta vitrine, selecione um acessório ou produto complementar.');
+  if (!needsSerial && serialId != null) throw new HttpError(400, 'Acessórios não precisam de IMEI nesta vitrine.');
+
+  let serial = null;
+  if (serialId != null) {
+    serial = await env.DB.prepare(`
+      SELECT id, variant_id, serial_number, status
+      FROM inventory_serials
+      WHERE id = ?
+    `).bind(serialId).first();
+    if (!serial || Number(serial.variant_id) !== variantId) throw new HttpError(400, 'Este IMEI não pertence ao produto selecionado.');
+    if (!/^\d{15}$/.test(String(serial.serial_number || ''))) throw new HttpError(400, 'Este número de série não é um IMEI válido de 15 dígitos.');
+    if (serial.status !== 'available') throw new HttpError(409, 'Este IMEI não está disponível no estoque.');
+    const occupied = await env.DB.prepare(`
+      SELECT fixture_id, slot_number FROM showcase_slots
+      WHERE serial_id = ? AND NOT (fixture_id = ? AND slot_number = ?)
+    `).bind(serialId, fixtureId, slotNumber).first();
+    if (occupied) throw new HttpError(409, 'Este IMEI já está cadastrado em outra posição da vitrine.');
+  }
+
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`
+      INSERT INTO showcase_slots (fixture_id, slot_number, variant_id, serial_id, updated_by, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(fixture_id, slot_number) DO UPDATE SET
+        variant_id = excluded.variant_id,
+        serial_id = excluded.serial_id,
+        updated_by = excluded.updated_by,
+        updated_at = excluded.updated_at
+    `).bind(fixtureId, slotNumber, variantId, serialId, user.id, timestamp),
+    auditStatement(env, user.id, 'showcase.slot_saved', 'showcase_slot', `${fixtureId}:${slotNumber}`, {
+      fixtureName: fixture.name, variantId, serialNumber: serial?.serial_number || '',
+    }),
+  ]);
+  return json({ message: 'Posição da vitrine atualizada.' });
+}
+
+async function deleteShowcaseSlot(env, user, fixtureId, slotNumber) {
+  const existing = await env.DB.prepare(`
+    SELECT slot.variant_id, serial.serial_number, fixture.name AS fixture_name
+    FROM showcase_slots slot
+    JOIN showcase_fixtures fixture ON fixture.id = slot.fixture_id
+    LEFT JOIN inventory_serials serial ON serial.id = slot.serial_id
+    WHERE slot.fixture_id = ? AND slot.slot_number = ?
+  `).bind(fixtureId, slotNumber).first();
+  if (!existing) throw new HttpError(404, 'Esta posição já está vazia.');
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM showcase_slots WHERE fixture_id = ? AND slot_number = ?').bind(fixtureId, slotNumber),
+    auditStatement(env, user.id, 'showcase.slot_cleared', 'showcase_slot', `${fixtureId}:${slotNumber}`, {
+      fixtureName: existing.fixture_name, variantId: Number(existing.variant_id), serialNumber: existing.serial_number || '',
+    }),
+  ]);
+  return noContent();
+}
+
 async function routeApi(request, env) {
   validateRequestSource(request);
   const url = new URL(request.url);
@@ -3367,6 +3581,16 @@ async function routeApi(request, env) {
     return networkInventoryDashboard(env);
   }
   if (method === 'GET' && path === '/api/outlet') return outletInventory(env);
+  if (method === 'GET' && path === '/api/showcases') return showcaseOverview(env, user);
+  const showcaseSlotMatch = path.match(/^\/api\/showcases\/([^/]+)\/slots\/(\d+)$/);
+  if (method === 'PUT' && showcaseSlotMatch) {
+    requireRole(user, ['manager', 'stocker']);
+    return saveShowcaseSlot(request, env, user, decodeURIComponent(showcaseSlotMatch[1]), Number(showcaseSlotMatch[2]));
+  }
+  if (method === 'DELETE' && showcaseSlotMatch) {
+    requireRole(user, ['manager', 'stocker']);
+    return deleteShowcaseSlot(env, user, decodeURIComponent(showcaseSlotMatch[1]), Number(showcaseSlotMatch[2]));
+  }
   if (method === 'GET' && path === '/api/point/me') return myPoint(env, user);
   if (method === 'POST' && path === '/api/point/me/punch') {
     requireRole(user, ['seller', 'stocker']);

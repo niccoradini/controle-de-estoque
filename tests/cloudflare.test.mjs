@@ -65,7 +65,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60, migration61, migration62, migration63, migration64, migration65, migration66, migration67, migration73, migration74, migration75] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60, migration61, migration62, migration63, migration64, migration65, migration66, migration67, migration73, migration74, migration75, migration79] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -136,6 +136,7 @@ before(async () => {
     readFile(new URL('../migrations/0073_outlet_campaign_2026_09_05.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0074_pricing_policy_2026_09_07.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0075_retail_pricing_catalog_2026_09_08.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0079_showcase_control.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -271,6 +272,7 @@ before(async () => {
   await applyMigration(migration73);
   await applyMigration(migration74);
   await applyMigration(migration75);
+  await applyMigration(migration79);
 });
 
 after(async () => mf?.dispose());
@@ -1279,6 +1281,65 @@ describe('Controle de estoque por código material', () => {
     assert.equal((await stocker.request('/api/audit')).status, 403);
   });
 
+  test('controla vitrines com visualização geral e edição de gerente ou estoquista', async () => {
+    const initial = await manager.request('/api/showcases');
+    assert.equal(initial.status, 200);
+    assert.equal(initial.payload.canEdit, true);
+    assert.equal(initial.payload.summary.fixtures, 7);
+    assert.equal(initial.payload.summary.capacity, 68);
+    assert.equal(initial.payload.summary.occupied, 0);
+    assert.equal(initial.payload.fixtures.find((fixture) => fixture.id === 'devices-1').capacity, 16);
+    assert.equal(initial.payload.fixtures.find((fixture) => fixture.id === 'accessories-1').capacity, 12);
+    assert.equal(initial.payload.fixtures.find((fixture) => fixture.id === 'demo-main').capacity, 6);
+
+    const serialized = initial.payload.products.find((product) => product.cluster === 'devices'
+      && initial.payload.serials.some((serial) => serial.variantId === product.variantId && !serial.fixtureId && /^\d{15}$/.test(serial.serialNumber)));
+    const serial = initial.payload.serials.find((item) => item.variantId === serialized.variantId && !item.fixtureId);
+    assert.ok(serialized);
+    assert.ok(serial);
+
+    const savedDevice = await manager.request('/api/showcases/devices-1/slots/1', {
+      method: 'PUT', body: { variantId: serialized.variantId, serialId: serial.id },
+    });
+    assert.equal(savedDevice.status, 200);
+
+    const duplicate = await stocker.request('/api/showcases/devices-2/slots/1', {
+      method: 'PUT', body: { variantId: serialized.variantId, serialId: serial.id },
+    });
+    assert.equal(duplicate.status, 409);
+    assert.match(duplicate.payload.error, /outra posição/i);
+
+    const sellerView = await seller.request('/api/showcases');
+    assert.equal(sellerView.status, 200);
+    assert.equal(sellerView.payload.canEdit, false);
+    assert.equal(sellerView.payload.products.length, 0);
+    assert.equal(sellerView.payload.serials.length, 0);
+    const visibleAssignment = sellerView.payload.fixtures.find((fixture) => fixture.id === 'devices-1').slots[0].assignment;
+    assert.equal(visibleAssignment.serialNumber, serial.serialNumber);
+    assert.equal(visibleAssignment.materialCode, serialized.materialCode);
+    assert.equal((await seller.request('/api/showcases/devices-1/slots/2', {
+      method: 'PUT', body: { variantId: serialized.variantId, serialId: serial.id },
+    })).status, 403);
+
+    const accessory = initial.payload.products.find((product) => product.cluster !== 'devices');
+    assert.ok(accessory);
+    const savedAccessory = await stocker.request('/api/showcases/accessories-1/slots/1', {
+      method: 'PUT', body: { variantId: accessory.variantId, serialId: null },
+    });
+    assert.equal(savedAccessory.status, 200);
+    assert.equal((await manager.request('/api/showcases')).payload.summary.occupied, 2);
+
+    const wrongKind = await manager.request('/api/showcases/accessories-1/slots/2', {
+      method: 'PUT', body: { variantId: serialized.variantId, serialId: serial.id },
+    });
+    assert.equal(wrongKind.status, 400);
+
+    assert.equal((await stocker.request('/api/showcases/devices-1/slots/1', { method: 'DELETE' })).status, 204);
+    assert.equal((await manager.request('/api/showcases/accessories-1/slots/1', { method: 'DELETE' })).status, 204);
+    assert.equal((await manager.request('/api/showcases')).payload.summary.occupied, 0);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action LIKE 'showcase.%'`)).count), 4);
+  });
+
   test('controla chips por material e identifica o ICCID pelos 6 últimos dígitos', async () => {
     assert.equal((await stocker.request('/api/chips')).status, 403);
     assert.equal((await seller.request('/api/chips', {
@@ -1847,7 +1908,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.21.0');
+    assert.equal(JSON.parse(packageSource).version, '6.22.0');
     assert.match(appSource, /Campanha Vivo Outlet/);
     assert.match(appSource, /data-action="outlet-discount"/);
     assert.match(appSource, /data-action="outlet-store"/);
@@ -2078,8 +2139,16 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.21\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.21\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.22\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.22\.0/);
+    assert.match(appSource, /showcases: 'Vitrines'/);
+    assert.match(appSource, /async function renderShowcases/);
+    assert.match(appSource, /data-form="showcase-slot"/);
+    assert.match(appSource, /Gerentes e estoquistas mantêm este mapa atualizado/);
+    assert.match(workerSource, /GET' && path === '\/api\/showcases'/);
+    assert.match(workerSource, /requireRole\(user, \['manager', 'stocker'\]\)/);
+    assert.match(stylesSource, /\.showcase-cabinet-grid/);
+    assert.match(stylesSource, /\.showcase-demo-floor/);
     assert.match(stylesSource, /Consolidação responsiva/);
     assert.match(stylesSource, /@media screen and \(max-width: 380px\)/);
     assert.match(stylesSource, /max-height: calc\(100dvh - 10px\)/);
@@ -2153,7 +2222,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.21.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.22.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

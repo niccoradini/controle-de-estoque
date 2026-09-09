@@ -3990,7 +3990,7 @@ a:focus-visible,
   .alignment-step--compact span { display: none !important; }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1180px) {
   .alignment-workspace { display: block; }
   .alignment-navigator { top: 74px; max-height: none; overflow: visible; margin-bottom: 15px; padding: 13px; border-radius: 21px; }
   .alignment-navigator__head { align-items: center; padding: 1px 2px 12px; }

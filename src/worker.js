@@ -1546,6 +1546,46 @@ async function stockSummary(env, user) {
   })) });
 }
 
+async function serializedInventory(env) {
+  const rows = (await env.DB.prepare(`
+    SELECT inventory.id, inventory.serial_number, inventory.status,
+           inventory.created_at, inventory.updated_at,
+           variant.id AS variant_id, variant.sku AS material_code,
+           COALESCE(product.display_name, product.name) AS product_name,
+           product.brand, product.cluster,
+           assignment.request_id
+    FROM inventory_serials inventory
+    JOIN product_variants variant ON variant.id = inventory.variant_id
+    JOIN products product ON product.id = variant.product_id
+    LEFT JOIN request_serial_assignments assignment ON assignment.serial_id = inventory.id
+    WHERE variant.serial_tracking = 1
+    ORDER BY CASE inventory.status WHEN 'available' THEN 0 ELSE 1 END,
+             product_name COLLATE NOCASE,
+             inventory.serial_number COLLATE NOCASE
+  `).all()).results || [];
+  const items = rows.map((row) => ({
+    id: Number(row.id),
+    variantId: Number(row.variant_id),
+    serialNumber: row.serial_number,
+    status: row.status,
+    productName: row.product_name,
+    materialCode: row.material_code || '',
+    brand: row.brand || '',
+    cluster: row.cluster || 'misc',
+    requestId: row.request_id || null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+  return json({
+    summary: {
+      total: items.length,
+      available: items.filter((item) => item.status === 'available').length,
+      withdrawn: items.filter((item) => item.status === 'withdrawn').length,
+    },
+    items,
+  });
+}
+
 async function adjustQuantityStock(request, env, user) {
   const input = await readJson(request);
   const data = validateFields(input, {
@@ -3702,6 +3742,10 @@ async function routeApi(request, env) {
   }
   if (method === 'GET' && path === '/api/catalog') return listCatalog(env, user);
   if (method === 'GET' && path === '/api/stock/summary') return stockSummary(env, user);
+  if (method === 'GET' && path === '/api/inventory/serials') {
+    requireRole(user, ['manager', 'stocker']);
+    return serializedInventory(env);
+  }
   if (method === 'GET' && path === '/api/incoming') {
     requireRole(user, ['manager', 'stocker']);
     return incomingInventoryDetails(env);

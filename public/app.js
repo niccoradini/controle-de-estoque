@@ -1704,15 +1704,57 @@ async function renderStock() {
   const unavailableMaterials = state.catalog.filter((product) => Number(product.available || 0) === 0).length;
   const hasQuantityOnly = state.catalog.some((product) => product.variants.some((variant) => !variant.serialTracked));
   const movementButton = state.user.role === 'manager' && hasQuantityOnly ? '<button class="btn" data-action="open-quantity">+ Nova movimentação</button>' : '';
+  const stockActions = `<div class="page-actions stock-page-actions"><button class="btn btn--secondary" data-action="view-serialized-stock">${uiIcon('stock')} Ver códigos serializados</button>${movementButton}</div>`;
   const clusters = [['', 'Todos'], ...clusterOrder.map((value) => [value, clusterLabels[value]])];
   const heading = state.user.role === 'stocker'
     ? ['Conferência operacional', 'Estoque completo', 'Consulte preços, códigos materiais e disponibilidade antes de separar os pedidos.']
     : ['Inventário serializado', 'Estoque por código material', `${state.catalog.length} materiais cadastrados e rastreados pelo sistema.`];
-  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">${heading[0]}</p><h2>${heading[1]}</h2><p>${heading[2]}</p></div>${movementButton}</div>
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">${heading[0]}</p><h2>${heading[1]}</h2><p>${heading[2]}</p></div>${stockActions}</div>
     <div class="metrics-grid stock-metrics">${metric('Saldo físico', totals.onHand, `${state.catalog.length} materiais cadastrados`, 'metric-card--info')}${metric('Disponível', totals.available, 'Pronto para pedidos', 'metric-card--success')}${metric('Reservado', totals.reserved, `${totals.allocated} chip(s) com vendedores`)}${metric('Em chegada', totals.incoming, `${unavailableMaterials} materiais sem saldo · DEPS/NREM`, 'metric-card--warning')}</div>
     ${pricingSelector()}
     <section class="card stock-section"><div class="card__head"><div><h3>Produtos</h3><span>Preço, saldo físico, reservado, disponível e itens a caminho por depósito</span></div></div><div class="stock-toolbar"><div class="search-box"><input class="input" data-action="stock-search" value="${escapeHtml(state.stockSearch)}" placeholder="Buscar nome ou código material..."></div><div class="category-chips">${clusters.map(([value, label]) => `<button class="chip ${state.stockCluster === value ? 'is-active' : ''}" data-action="filter-stock-category" data-category="${value}">${label}</button>`).join('')}</div></div><div class="card__body--flush" data-stock-table></div></section>`;
   renderStockTable();
+}
+
+async function serializedStockModal() {
+  const data = await api('/api/inventory/serials');
+  const summary = data.summary || { total: 0, available: 0, withdrawn: 0 };
+  const items = data.items || [];
+  showModal(`<div class="serialized-inventory">
+    <div class="modal__head"><div><p class="modal-eyebrow">Consulta protegida</p><h2>Códigos serializados</h2><p>Visualização exclusiva para gerentes e estoquistas.</p></div>${modalCloseButton()}</div>
+    <div class="modal__body">
+      <div class="serial-overview"><article><span>Total cadastrado</span><strong>${summary.total}</strong></article><article class="is-available"><span>Disponíveis</span><strong>${summary.available}</strong></article><article><span>Retirados</span><strong>${summary.withdrawn}</strong></article></div>
+      <div class="serial-toolbar"><label class="serial-search"><span>Buscar produto, material ou série</span><input class="input" type="search" data-serial-search placeholder="Digite para localizar..."></label><div class="serial-status-filter" role="group" aria-label="Filtrar situação"><button class="chip is-active" data-serial-filter="available">Disponíveis</button><button class="chip" data-serial-filter="all">Todos</button><button class="chip" data-serial-filter="withdrawn">Retirados</button></div></div>
+      <div class="serial-results-note" data-serial-results-note></div>
+      <div class="serial-table-wrap" data-serial-results></div>
+    </div>
+  </div>`, { wide: true });
+
+  let status = 'available';
+  let query = '';
+  const renderResults = () => {
+    const normalized = query.trim().toLocaleLowerCase('pt-BR');
+    const filtered = items.filter((item) => {
+      if (status !== 'all' && item.status !== status) return false;
+      return !normalized || [item.productName, item.materialCode, item.serialNumber, item.brand]
+        .some((value) => String(value || '').toLocaleLowerCase('pt-BR').includes(normalized));
+    });
+    const visible = filtered.slice(0, 200);
+    const target = modalRoot.querySelector('[data-serial-results]');
+    const note = modalRoot.querySelector('[data-serial-results-note]');
+    if (!target || !note) return;
+    note.textContent = filtered.length > visible.length
+      ? `Mostrando ${visible.length} de ${filtered.length} resultados. Refine a busca para localizar um código específico.`
+      : `${filtered.length} ${filtered.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}`;
+    target.innerHTML = visible.length ? `<table class="serial-inventory-table"><thead><tr><th>Produto</th><th>Material</th><th>Série / IMEI</th><th>Situação</th><th>Pedido</th></tr></thead><tbody>${visible.map((item) => `<tr><td><strong>${escapeHtml(item.productName)}</strong><span>${escapeHtml(clusterLabels[item.cluster] || item.brand || 'Produto')}</span></td><td><code>${escapeHtml(item.materialCode || '—')}</code></td><td><code class="serial-number-value">${escapeHtml(item.serialNumber)}</code></td><td><span class="serial-state serial-state--${item.status}">${item.status === 'available' ? 'Disponível' : 'Retirado'}</span></td><td>${item.requestId ? `<span class="serial-order">#${escapeHtml(requestCode(item.requestId))}</span>` : '—'}</td></tr>`).join('')}</tbody></table>` : emptyState('Nenhum código encontrado', 'Tente outro termo ou altere o filtro de situação.');
+  };
+  modalRoot.querySelector('[data-serial-search]')?.addEventListener('input', (event) => { query = event.target.value; renderResults(); });
+  modalRoot.querySelectorAll('[data-serial-filter]').forEach((button) => button.addEventListener('click', () => {
+    status = button.dataset.serialFilter;
+    modalRoot.querySelectorAll('[data-serial-filter]').forEach((item) => item.classList.toggle('is-active', item === button));
+    renderResults();
+  }));
+  renderResults();
 }
 
 function renderCartBar() {
@@ -3401,6 +3443,7 @@ root.addEventListener('click', async (event) => {
     }
     if (action === 'filter-feedback') { state.feedbackFilter = button.dataset.status || 'all'; await renderFeedback(); }
     if (action === 'review-feedback' && state.user.role === 'manager') feedbackReviewModal(state.feedback.find((item) => item.id === Number(button.dataset.id)));
+    if (action === 'view-serialized-stock' && ['manager', 'stocker'].includes(state.user.role)) await serializedStockModal();
     if (action === 'open-quantity') { if (!state.catalog.length) await loadCatalog(); quantityModal(); }
     if (action === 'adjust-quantity') quantityModal(Number(button.dataset.variantId));
     if (action === 'choose-product') pickerModal(Number(button.dataset.productId));

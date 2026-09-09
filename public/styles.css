@@ -2332,6 +2332,36 @@ a:focus-visible,
 }
 
 .page-actions { gap: 7px; }
+.stock-page-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.stock-page-actions .ui-icon { width: 16px; height: 16px; }
+
+/* Consulta protegida de estoque serializado — v6.28.0 */
+.serialized-inventory .modal__body { display: grid; gap: 16px; }
+.serial-overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.serial-overview article { padding: 14px 16px; border: 1px solid rgba(255,255,255,.07); border-radius: 15px; background: rgba(255,255,255,.025); }
+.serial-overview span { display: block; color: var(--muted); font-size: 9px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; }
+.serial-overview strong { display: block; margin-top: 5px; color: #f6f4f8; font-size: 24px; font-weight: 560; letter-spacing: -.035em; }
+.serial-overview .is-available { border-color: rgba(79,211,157,.2); background: rgba(79,211,157,.06); }
+.serial-overview .is-available strong { color: #72dfb2; }
+.serial-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.serial-search { flex: 1; min-width: 220px; }
+.serial-search > span { display: block; margin: 0 0 6px 2px; color: var(--muted); font-size: 9px; font-weight: 650; }
+.serial-status-filter { display: flex; gap: 6px; }
+.serial-status-filter .chip { margin: 0; }
+.serial-results-note { min-height: 16px; color: var(--muted); font-size: 9px; }
+.serial-table-wrap { max-height: min(48vh, 430px); overflow: auto; border: 1px solid rgba(255,255,255,.07); border-radius: 15px; background: rgba(10,10,12,.35); }
+.serial-inventory-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.serial-inventory-table th { position: sticky; z-index: 1; top: 0; padding: 10px 12px; color: #8f8e98; background: #121215; font-size: 8px; font-weight: 700; letter-spacing: .07em; text-align: left; text-transform: uppercase; }
+.serial-inventory-table td { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.055); vertical-align: middle; }
+.serial-inventory-table td:first-child { min-width: 210px; }
+.serial-inventory-table td strong, .serial-inventory-table td span { display: block; }
+.serial-inventory-table td:first-child span { margin-top: 2px; color: var(--muted); font-size: 8px; }
+.serial-inventory-table code { color: #d8d4df; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; }
+.serial-number-value { color: #d8c4ff !important; font-weight: 700; }
+.serial-state { width: max-content; padding: 4px 7px; border-radius: 99px; font-size: 8px; font-weight: 700; }
+.serial-state--available { color: #7ae2b7; background: rgba(64,196,140,.12); }
+.serial-state--withdrawn { color: #b3b0ba; background: rgba(255,255,255,.065); }
+.serial-order { color: #cdb6fa; font-weight: 700; }
 
 .metrics,
 .metrics-grid {
@@ -3248,6 +3278,15 @@ a:focus-visible,
   .modal--wide {
     border-radius: 28px 28px 0 0;
   }
+
+  .stock-page-actions { justify-content: flex-start; }
+  .stock-page-actions .btn { flex: 1; }
+  .serial-overview { grid-template-columns: repeat(3, minmax(82px, 1fr)); overflow-x: auto; }
+  .serial-overview article { padding: 11px; }
+  .serial-overview strong { font-size: 20px; }
+  .serial-toolbar { align-items: stretch; flex-direction: column; }
+  .serial-status-filter { overflow-x: auto; }
+  .serial-table-wrap { max-height: 50vh; }
 
   .admin-strip span + span { border-left: 0; }
 }

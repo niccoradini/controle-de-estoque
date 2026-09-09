@@ -2335,7 +2335,7 @@ a:focus-visible,
 .stock-page-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .stock-page-actions .ui-icon { width: 16px; height: 16px; }
 
-/* Consulta protegida de estoque serializado — v6.28.0 */
+/* Consulta protegida de estoque serializado — v6.29.0 */
 .serialized-inventory .modal__body { display: grid; gap: 16px; }
 .serial-overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
 .serial-overview article { padding: 14px 16px; border: 1px solid rgba(255,255,255,.07); border-radius: 15px; background: rgba(255,255,255,.025); }

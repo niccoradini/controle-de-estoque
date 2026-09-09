@@ -981,7 +981,7 @@ function showcaseSlotMarkup(fixture, slot) {
   const health = assignment.health === 'attention' ? 'is-attention' : 'is-occupied';
   return `<button class="showcase-slot ${health}" data-action="open-showcase-slot" data-fixture-id="${escapeHtml(fixture.id)}" data-slot-number="${slot.slotNumber}" aria-label="${escapeHtml(`${shelfLabel}: ${assignment.productName}`)}">
     <span class="showcase-slot__image">${productImageMarkup(imageProduct, 'showcase-product-image', 72, 72)}</span>
-    <span class="showcase-slot__copy"><small>${escapeHtml(shelfLabel)}</small><strong>${escapeHtml(assignment.productName)}</strong><code>${escapeHtml(assignment.materialCode || 'Sem código')}</code>${assignment.serialNumber ? `<em>IMEI ${escapeHtml(assignment.serialNumber)}</em>` : '<em>Sem controle por IMEI</em>'}</span>
+    <span class="showcase-slot__copy"><small>${escapeHtml(shelfLabel)}</small><strong>${escapeHtml(assignment.productName)}</strong><code>${escapeHtml(assignment.materialCode || 'Sem código')}</code>${assignment.serialNumber ? `<em>Serial / IMEI ${escapeHtml(assignment.serialNumber)}</em>` : '<em>Sem controle serial</em>'}</span>
     <span class="showcase-slot__status">${assignment.health === 'attention' ? `${uiIcon('warning')} Conferir` : `${uiIcon('check')} Ocupada`}</span>
   </button>`;
 }
@@ -1012,11 +1012,10 @@ async function renderShowcases() {
 }
 
 function showcaseSerialOptions(fixture, slot, variantId) {
-  if (fixture.type === 'accessory_showcase') return '';
   const serials = state.showcases.serials.filter((serial) => Number(serial.variantId) === Number(variantId)
     && (!serial.fixtureId || (serial.fixtureId === fixture.id && serial.slotNumber === slot.slotNumber)));
   const selectedId = Number(slot.assignment?.serialId || 0);
-  return `<option value="">Selecione o IMEI</option>${serials.map((serial) => `<option value="${serial.id}" ${serial.id === selectedId ? 'selected' : ''}>${escapeHtml(serial.serialNumber)}${serial.status !== 'available' ? ' · conferir estoque' : ''}</option>`).join('')}`;
+  return `<option value="">Selecione o serial ou IMEI</option>${serials.map((serial) => `<option value="${serial.id}" ${serial.id === selectedId ? 'selected' : ''}>${escapeHtml(serial.serialNumber)}${serial.status !== 'available' ? ' · conferir estoque' : ''}</option>`).join('')}`;
 }
 
 function refreshShowcaseSerialPicker(form) {
@@ -1026,8 +1025,11 @@ function refreshShowcaseSerialPicker(form) {
   const product = state.showcases.products.find((item) => showcaseProductChoice(item) === choice);
   const wrapper = form.querySelector('[data-showcase-serial-field]');
   if (!wrapper || !fixture || !slot) return;
-  if (fixture.type === 'accessory_showcase') {
+  if (!product?.serialTracked) {
     wrapper.hidden = true;
+    const select = wrapper.querySelector('select');
+    select.required = false;
+    select.value = '';
     return;
   }
   wrapper.hidden = false;
@@ -1046,11 +1048,11 @@ function showcaseSlotModal(fixtureId, slotNumber) {
     showModal(`<div class="modal__head"><div><h2>${escapeHtml(assignment.productName)}</h2><p>${escapeHtml(fixture.name)} · posição ${slot.positionNumber}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="showcase-detail">${productImageMarkup({ ...assignment, name: assignment.productName }, 'showcase-detail__image', 112, 112)}<div><span>Código material</span><strong>${escapeHtml(assignment.materialCode || 'Não informado')}</strong>${assignment.serialNumber ? `<span>IMEI cadastrado</span><code>${escapeHtml(assignment.serialNumber)}</code>` : '<span>Produto sem controle por IMEI</span>'}</div></div></div><div class="modal__footer"><button class="btn" data-action="close-modal">Fechar</button></div>`, { small: true });
     return;
   }
-  const wantsSerial = fixture.type !== 'accessory_showcase';
-  const products = state.showcases.products.filter((product) => wantsSerial ? product.cluster === 'devices' : product.cluster !== 'devices');
+  const products = state.showcases.products;
   const currentProduct = products.find((product) => product.variantId === assignment?.variantId);
+  const wantsSerial = Boolean(currentProduct?.serialTracked);
   const currentChoice = currentProduct ? showcaseProductChoice(currentProduct) : '';
-  showModal(`<form data-form="showcase-slot" data-fixture-id="${escapeHtml(fixture.id)}" data-slot-number="${slot.slotNumber}" novalidate><div class="modal__head"><div><h2>${assignment ? 'Editar posição' : 'Cadastrar produto'}</h2><p>${escapeHtml(fixture.name)} · ${fixture.type === 'demo_table' ? `posição ${slot.positionNumber}` : `prateleira ${slot.shelfNumber}, posição ${slot.positionNumber}`}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="showcase-form-intro"><span>${fixture.type === 'accessory_showcase' ? clusterGraphic('misc') : clusterGraphic('devices')}</span><div><strong>${fixture.type === 'accessory_showcase' ? 'Produto de exposição' : 'Aparelho identificado'}</strong><p>${wantsSerial ? 'O IMEI será conferido com o estoque e não poderá aparecer em duas posições.' : 'Escolha um item disponível no estoque da loja.'}</p></div></div><div class="field"><label for="showcase-product-choice">Produto</label><input class="input" id="showcase-product-choice" name="productChoice" data-action="showcase-product-choice" list="showcase-product-options" value="${escapeHtml(currentChoice)}" placeholder="Digite o nome ou código material" autocomplete="off" required><datalist id="showcase-product-options">${products.map((product) => `<option value="${escapeHtml(showcaseProductChoice(product))}">${product.quantity} un. no estoque</option>`).join('')}</datalist></div><div class="field" data-showcase-serial-field ${wantsSerial ? '' : 'hidden'}><label for="showcase-serial">IMEI</label><select class="select" id="showcase-serial" name="serialId" ${wantsSerial ? 'required' : ''}>${showcaseSerialOptions(fixture, slot, currentProduct?.variantId || 0)}</select><p class="field-hint">Somente IMEIs disponíveis e ainda não usados em outra posição aparecem aqui.</p></div></div><div class="modal__footer">${assignment ? '<button type="button" class="btn btn--danger" data-action="clear-showcase-slot">Esvaziar posição</button>' : ''}<button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Salvar posição</button></div></form>`, { wide: true });
+  showModal(`<form data-form="showcase-slot" data-fixture-id="${escapeHtml(fixture.id)}" data-slot-number="${slot.slotNumber}" novalidate><div class="modal__head"><div><h2>${assignment ? 'Editar posição' : 'Cadastrar produto'}</h2><p>${escapeHtml(fixture.name)} · ${fixture.type === 'demo_table' ? `posição ${slot.positionNumber}` : `prateleira ${slot.shelfNumber}, posição ${slot.positionNumber}`}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="showcase-form-intro"><span>${clusterGraphic(currentProduct?.cluster || 'devices')}</span><div><strong>Qualquer produto do estoque</strong><p>Celulares, tablets, relógios e acessórios podem ocupar esta posição. Quando houver controle serial, escolha o código correspondente.</p></div></div><div class="field"><label for="showcase-product-choice">Produto</label><input class="input" id="showcase-product-choice" name="productChoice" data-action="showcase-product-choice" list="showcase-product-options" value="${escapeHtml(currentChoice)}" placeholder="Digite o nome ou código material" autocomplete="off" required><datalist id="showcase-product-options">${products.map((product) => `<option value="${escapeHtml(showcaseProductChoice(product))}">${product.quantity} un. no estoque · ${escapeHtml(clusterLabels[product.cluster] || 'Produto')}</option>`).join('')}</datalist></div><div class="field" data-showcase-serial-field ${wantsSerial ? '' : 'hidden'}><label for="showcase-serial">Serial / IMEI</label><select class="select" id="showcase-serial" name="serialId" ${wantsSerial ? 'required' : ''}>${showcaseSerialOptions(fixture, slot, currentProduct?.variantId || 0)}</select><p class="field-hint">A lista mostra todos os códigos disponíveis desse material, independentemente do tamanho ou formato.</p></div></div><div class="modal__footer">${assignment ? '<button type="button" class="btn btn--danger" data-action="clear-showcase-slot">Esvaziar posição</button>' : ''}<button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Salvar posição</button></div></form>`, { wide: true });
 }
 
 function sellerInventoryGroupCard(group, totalAvailable) {
@@ -3737,9 +3739,8 @@ document.addEventListener('submit', async (event) => {
       if (form.dataset.form === 'showcase-slot') {
         const product = state.showcases.products.find((item) => showcaseProductChoice(item) === String(data.productChoice || '').trim());
         if (!product) throw new ApiError('Selecione um produto da lista.', 400, { productChoice: 'Escolha uma das opções exibidas.' });
-        const fixture = showcaseFixtureById(form.dataset.fixtureId);
-        const serialId = fixture?.type === 'accessory_showcase' ? null : Number(data.serialId || 0);
-        if (fixture?.type !== 'accessory_showcase' && !serialId) throw new ApiError('Selecione o IMEI do aparelho.', 400, { serialId: 'Escolha um IMEI disponível.' });
+        const serialId = product.serialTracked ? Number(data.serialId || 0) : null;
+        if (product.serialTracked && !serialId) throw new ApiError('Selecione o serial ou IMEI do produto.', 400, { serialId: 'Escolha um código disponível.' });
         await api(`/api/showcases/${encodeURIComponent(form.dataset.fixtureId)}/slots/${Number(form.dataset.slotNumber)}`, { method: 'PUT', body: { variantId: product.variantId, serialId } });
         closeModal(true);
         showToast('Produto cadastrado na vitrine.');

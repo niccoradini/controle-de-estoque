@@ -3552,10 +3552,24 @@ async function showcaseOverview(env, user) {
         SELECT variant.id AS variant_id, product.name AS product_name, product.category,
                product.cluster, product.imagem_url, variant.sku AS material_code,
                variant.option1_value, variant.option2_value, variant.option3_value,
-               variant.serial_tracking, variant.quantity_on_hand
+               variant.serial_tracking,
+               CASE WHEN variant.serial_tracking = 1 THEN (
+                 SELECT COUNT(*) FROM inventory_serials available_serial
+                 WHERE available_serial.variant_id = variant.id AND available_serial.status = 'available'
+               ) ELSE variant.quantity_on_hand END AS available_quantity
         FROM product_variants variant
         JOIN products product ON product.id = variant.product_id
-        WHERE product.active = 1 AND variant.active = 1 AND variant.quantity_on_hand > 0
+        WHERE product.active = 1 AND variant.active = 1 AND (
+          variant.quantity_on_hand > 0
+          OR EXISTS (
+            SELECT 1 FROM inventory_serials available_serial
+            WHERE available_serial.variant_id = variant.id AND available_serial.status = 'available'
+          )
+          OR EXISTS (
+            SELECT 1 FROM showcase_slots occupied_slot
+            WHERE occupied_slot.variant_id = variant.id
+          )
+        )
         ORDER BY product.cluster, product.name COLLATE NOCASE, variant.sku COLLATE NOCASE
       `).all(),
       env.DB.prepare(`
@@ -3575,7 +3589,7 @@ async function showcaseOverview(env, user) {
       cluster: row.cluster || 'misc',
       imagem_url: row.imagem_url || '',
       serialTracked: Boolean(row.serial_tracking),
-      quantity: Number(row.quantity_on_hand),
+      quantity: Number(row.available_quantity),
     }));
     serials = (serialsResult.results || []).map((row) => ({
       id: Number(row.id),
@@ -3626,11 +3640,9 @@ async function saveShowcaseSlot(request, env, user, fixtureId, slotNumber) {
   `).bind(variantId).first();
   if (!variant || !variant.active || !variant.product_active) throw new HttpError(404, 'Produto indisponível no catálogo.');
 
-  const needsSerial = fixture.fixture_type !== 'accessory_showcase';
-  if (needsSerial && variant.cluster !== 'devices') throw new HttpError(400, 'Escolha um aparelho para esta posição.');
-  if (needsSerial && serialId == null) throw new HttpError(400, 'Selecione o IMEI do aparelho.');
-  if (!needsSerial && variant.cluster === 'devices') throw new HttpError(400, 'Nesta vitrine, selecione um acessório ou produto complementar.');
-  if (!needsSerial && serialId != null) throw new HttpError(400, 'Acessórios não precisam de IMEI nesta vitrine.');
+  const needsSerial = Boolean(variant.serial_tracking);
+  if (needsSerial && serialId == null) throw new HttpError(400, 'Selecione o serial ou IMEI do produto.');
+  if (!needsSerial && serialId != null) throw new HttpError(400, 'Este produto não utiliza controle por serial.');
 
   let serial = null;
   if (serialId != null) {
@@ -3639,14 +3651,14 @@ async function saveShowcaseSlot(request, env, user, fixtureId, slotNumber) {
       FROM inventory_serials
       WHERE id = ?
     `).bind(serialId).first();
-    if (!serial || Number(serial.variant_id) !== variantId) throw new HttpError(400, 'Este IMEI não pertence ao produto selecionado.');
-    if (!/^\d{15}$/.test(String(serial.serial_number || ''))) throw new HttpError(400, 'Este número de série não é um IMEI válido de 15 dígitos.');
-    if (serial.status !== 'available') throw new HttpError(409, 'Este IMEI não está disponível no estoque.');
+    if (!serial || Number(serial.variant_id) !== variantId) throw new HttpError(400, 'Este serial ou IMEI não pertence ao produto selecionado.');
+    if (!String(serial.serial_number || '').trim()) throw new HttpError(400, 'Este produto não possui um serial válido.');
+    if (serial.status !== 'available') throw new HttpError(409, 'Este serial ou IMEI não está disponível no estoque.');
     const occupied = await env.DB.prepare(`
       SELECT fixture_id, slot_number FROM showcase_slots
       WHERE serial_id = ? AND NOT (fixture_id = ? AND slot_number = ?)
     `).bind(serialId, fixtureId, slotNumber).first();
-    if (occupied) throw new HttpError(409, 'Este IMEI já está cadastrado em outra posição da vitrine.');
+    if (occupied) throw new HttpError(409, 'Este serial ou IMEI já está cadastrado em outra posição da vitrine.');
   }
 
   const timestamp = nowIso();

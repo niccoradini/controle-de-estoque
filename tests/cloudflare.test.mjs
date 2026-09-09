@@ -1299,8 +1299,9 @@ describe('Controle de estoque por código material', () => {
     assert.equal(initial.payload.fixtures.find((fixture) => fixture.id === 'accessories-1').capacity, 12);
     assert.equal(initial.payload.fixtures.find((fixture) => fixture.id === 'demo-main').capacity, 6);
 
-    const serialized = initial.payload.products.find((product) => product.cluster === 'devices'
-      && initial.payload.serials.some((serial) => serial.variantId === product.variantId && !serial.fixtureId && /^\d{15}$/.test(serial.serialNumber)));
+    assert.ok(initial.payload.products.some((product) => /IPAD|WATCH|TAB/i.test(product.name)));
+    const serialized = initial.payload.products.find((product) => product.cluster === 'devices' && product.serialTracked
+      && initial.payload.serials.some((serial) => serial.variantId === product.variantId && !serial.fixtureId));
     const serial = initial.payload.serials.find((item) => item.variantId === serialized.variantId && !item.fixtureId);
     assert.ok(serialized);
     assert.ok(serial);
@@ -1328,23 +1329,51 @@ describe('Controle de estoque por código material', () => {
       method: 'PUT', body: { variantId: serialized.variantId, serialId: serial.id },
     })).status, 403);
 
-    const accessory = initial.payload.products.find((product) => product.cluster !== 'devices');
+    const accessory = initial.payload.products.find((product) => product.cluster !== 'devices'
+      && initial.payload.serials.some((item) => item.variantId === product.variantId && !item.fixtureId));
     assert.ok(accessory);
+    const accessorySerial = initial.payload.serials.find((item) => item.variantId === accessory.variantId && !item.fixtureId);
     const savedAccessory = await stocker.request('/api/showcases/accessories-1/slots/1', {
-      method: 'PUT', body: { variantId: accessory.variantId, serialId: null },
+      method: 'PUT', body: { variantId: accessory.variantId, serialId: accessorySerial.id },
     });
-    assert.equal(savedAccessory.status, 200);
-    assert.equal((await manager.request('/api/showcases')).payload.summary.occupied, 2);
+    assert.equal(savedAccessory.status, 200, savedAccessory.payload?.error);
+    const accessoryCustomSerialNumber = 'ACCESSORY-SERIAL-TEST';
+    await database.prepare(`
+      INSERT INTO inventory_serials (variant_id, serial_number, status)
+      VALUES (?, ?, 'available')
+    `).bind(accessory.variantId, accessoryCustomSerialNumber).run();
+    const accessoryCustomSerial = await row('SELECT id FROM inventory_serials WHERE serial_number = ?', accessoryCustomSerialNumber);
+    const savedAccessoryAnywhere = await manager.request('/api/showcases/devices-1/slots/2', {
+      method: 'PUT', body: { variantId: accessory.variantId, serialId: accessoryCustomSerial.id },
+    });
+    assert.equal(savedAccessoryAnywhere.status, 200);
 
-    const wrongKind = await manager.request('/api/showcases/accessories-1/slots/2', {
-      method: 'PUT', body: { variantId: serialized.variantId, serialId: serial.id },
+    const customSerialNumber = 'WATCH-SERIAL-TEST';
+    await database.prepare(`
+      INSERT INTO inventory_serials (variant_id, serial_number, status)
+      VALUES (?, ?, 'available')
+    `).bind(serialized.variantId, customSerialNumber).run();
+    const customSerial = await row('SELECT id FROM inventory_serials WHERE serial_number = ?', customSerialNumber);
+    const priorQuantity = Number((await row('SELECT quantity_on_hand FROM product_variants WHERE id = ?', serialized.variantId)).quantity_on_hand);
+    await database.prepare('UPDATE product_variants SET quantity_on_hand = 0 WHERE id = ?').bind(serialized.variantId).run();
+    const refreshed = await manager.request('/api/showcases');
+    assert.ok(refreshed.payload.products.some((product) => product.variantId === serialized.variantId && product.quantity > 0));
+    await database.prepare('UPDATE product_variants SET quantity_on_hand = ? WHERE id = ?').bind(priorQuantity, serialized.variantId).run();
+
+    const savedFlexibleSerial = await manager.request('/api/showcases/accessories-1/slots/2', {
+      method: 'PUT', body: { variantId: serialized.variantId, serialId: customSerial.id },
     });
-    assert.equal(wrongKind.status, 400);
+    assert.equal(savedFlexibleSerial.status, 200);
+    assert.equal((await manager.request('/api/showcases')).payload.summary.occupied, 4);
 
     assert.equal((await stocker.request('/api/showcases/devices-1/slots/1', { method: 'DELETE' })).status, 204);
+    assert.equal((await manager.request('/api/showcases/devices-1/slots/2', { method: 'DELETE' })).status, 204);
     assert.equal((await manager.request('/api/showcases/accessories-1/slots/1', { method: 'DELETE' })).status, 204);
+    assert.equal((await manager.request('/api/showcases/accessories-1/slots/2', { method: 'DELETE' })).status, 204);
+    await database.prepare('DELETE FROM inventory_serials WHERE id = ?').bind(customSerial.id).run();
+    await database.prepare('DELETE FROM inventory_serials WHERE id = ?').bind(accessoryCustomSerial.id).run();
     assert.equal((await manager.request('/api/showcases')).payload.summary.occupied, 0);
-    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action LIKE 'showcase.%'`)).count), 4);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action LIKE 'showcase.%'`)).count), 8);
   });
 
   test('controla chips por material e identifica o ICCID pelos 6 últimos dígitos', async () => {
@@ -1934,7 +1963,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.28.0');
+    assert.equal(JSON.parse(packageSource).version, '6.29.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2173,8 +2202,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.28\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.28\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.29\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.29\.0/);
     assert.match(appSource, /showcases: 'Vitrines'/);
     assert.match(appSource, /async function renderShowcases/);
     assert.match(appSource, /data-form="showcase-slot"/);
@@ -2256,7 +2285,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.28.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.29.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

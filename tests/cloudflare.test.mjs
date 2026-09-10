@@ -1963,7 +1963,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.30.0');
+    assert.equal(JSON.parse(packageSource).version, '6.33.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2095,8 +2095,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /state\.alignmentExpanded/);
     assert.match(appSource, /function renderSimpleAlignment/);
     assert.match(appSource, /Três caminhos para fechar melhor/i);
-    assert.match(appSource, /data-action="expand-alignment"[\s\S]*Entenda mais/i);
-    assert.match(appSource, /Materiais de estudo rápido/i);
+    assert.match(appSource, /function alignmentQuickAccess[\s\S]*expand-alignment[\s\S]*Entenda mais/i);
+    assert.match(appSource, /function alignmentQuickStudy/i);
     assert.match(appSource, /Descoberta da prioridade[\s\S]*Leitura do simulador[\s\S]*Resposta a objeções[\s\S]*Simulação em dupla/i);
     assert.match(stylesSource, /\.alignment-expand-button/);
     assert.match(appSource, /function paymentOptionsAlignment/);
@@ -2179,8 +2179,10 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /role="tablist"/);
     assert.match(appSource, /Tema \$\{topicIndex \+ 1\} de \$\{alignmentTopics\.length\}/);
     assert.doesNotMatch(appSource, /data-action="close-alignment"/);
-    assert.match(stylesSource, /\.alignment-navigator/);
-    assert.match(stylesSource, /\.alignment-nav__item/);
+    assert.match(stylesSource, /\.alignment-topic-strip/);
+    assert.match(stylesSource, /\.alignment-topic-chip/);
+    assert.match(stylesSource, /\.alignment-quick-access/);
+    assert.match(stylesSource, /\.alignment-quick-study/);
     assert.match(stylesSource, /\.alignment-detail__pager/);
     assert.match(stylesSource, /\.alignment-conversation/);
     assert.match(stylesSource, /\.alignment-message__bubble/);
@@ -2206,11 +2208,16 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.30\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.30\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.33\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.33\.0/);
     assert.match(appSource, /showcases: 'Vitrines'/);
     assert.match(appSource, /async function renderShowcases/);
     assert.match(appSource, /data-form="showcase-slot"/);
+    assert.match(appSource, /function showcaseProductByCode/);
+    assert.match(appSource, /name="itemCode"[\s\S]*TGSA590B4000 ou 22024249/);
+    assert.match(appSource, /data-action="showcase-product-code"/);
+    assert.doesNotMatch(appSource, /name="productChoice"/);
+    assert.match(stylesSource, /\.showcase-product-result/);
     assert.match(appSource, /Gerentes e estoquistas mantêm este mapa atualizado/);
     assert.match(workerSource, /GET' && path === '\/api\/showcases'/);
     assert.match(workerSource, /requireRole\(user, \['manager', 'stocker'\]\)/);
@@ -2289,7 +2296,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.30.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.33.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2416,5 +2423,25 @@ describe('Controle de estoque por código material', () => {
     assert.equal(response.payload.stores.reduce((sum, store) => sum + store.repair, 0), 50);
     assert.equal(response.payload.items.length, 778);
     assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-08'));
+  });
+
+  test('atualiza o estoque de 10/09 e libera os aparelhos de exposição na vitrine', async () => {
+    const migration = await readFile(new URL('../migrations/0080_inventory_refresh_2026_09_10.sql', import.meta.url), 'utf8');
+    await applyMigration(migration);
+
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-09-10');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, 'estoque.10.09.xlsx');
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM repair_inventory')).count), 111);
+
+    const showcase = await manager.request('/api/showcases');
+    assert.equal(showcase.status, 200);
+    const byCode = (code) => showcase.payload.products.find((product) => product.materialCode === code);
+    assert.equal(byCode('DGAP277U6000').quantity, 2);
+    assert.equal(byCode('TGSA61262000').quantity, 4);
+    assert.equal(byCode('TGSA590B4000').quantity, 1);
+    assert.equal(byCode('TGSA609B4000').quantity, 2);
+    assert.equal(byCode('TGMO61152000').quantity, 2);
+    assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '351008263818229'));
+    assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '357749666523106'));
   });
 });

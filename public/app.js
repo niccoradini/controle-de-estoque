@@ -41,7 +41,7 @@ const state = {
   replenishmentThreshold: 2,
   networkStores: [],
   networkItems: [],
-  networkStore: 'all',
+  networkStore: '',
   networkSearch: '',
   networkBrand: 'all',
   networkCategory: 'all',
@@ -612,7 +612,7 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Estoque da loja'], ['network-stock', 'stock', 'Estoque da rede'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['network-stock', 'stock', 'Estoque da rede'], ['stock', 'stock', 'Estoque da loja'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'Outlet'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['feedback', 'briefing', 'Sugestões recebidas'], ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
@@ -845,7 +845,7 @@ function managerDeviceOverview(products = []) {
 function networkVisibleItems(includeCategory = true) {
   const query = normalizeCatalogName(state.networkSearch);
   return state.networkItems.filter((item) => {
-    if (state.networkStore !== 'all' && item.storeCode !== state.networkStore) return false;
+    if (item.storeCode !== state.networkStore) return false;
     if (state.networkBrand !== 'all' && friendlyBrand(item.brand) !== state.networkBrand) return false;
     if (includeCategory && state.networkCategory !== 'all' && item.cluster !== state.networkCategory) return false;
     return !query || normalizeCatalogName(`${item.name} ${item.technicalName} ${item.materialCode}`).includes(query);
@@ -884,7 +884,7 @@ function renderNetworkStockWorkspace() {
   if (!target) return;
   const categoryItems = networkVisibleItems(false);
   const items = networkVisibleItems();
-  const storeNames = new Map(state.networkStores.map((store) => [store.code, store.name]));
+  const store = state.networkStores.find((entry) => entry.code === state.networkStore);
   const products = networkProductGroups(items);
   const categoryGroups = new Map();
   for (const item of categoryItems) {
@@ -898,14 +898,14 @@ function renderNetworkStockWorkspace() {
     const entries = categoryGroups.get(cluster);
     const totals = entries.reduce((sum, item) => ({ available: sum.available + item.available, incoming: sum.incoming + item.incoming, repair: sum.repair + item.repair }), { available: 0, incoming: 0, repair: 0 });
     const productCount = networkProductGroups(entries).length;
-    return `<button class="network-category-card ${state.networkCategory === cluster ? 'is-active' : ''}" data-action="network-category" data-category="${cluster}"><span class="network-category-card__icon product-visual--${cluster}">${clusterGraphic(cluster)}</span><span><strong>${escapeHtml(clusterLabels[cluster])}</strong><small>${productCount} ${productCount === 1 ? 'produto' : 'produtos'}</small></span><b>${totals.available}<small> disponíveis</small></b>${totals.incoming || totals.repair ? `<em>${totals.incoming ? `${totals.incoming} chegando` : ''}${totals.incoming && totals.repair ? ' · ' : ''}${totals.repair ? `${totals.repair} em reparo` : ''}</em>` : ''}</button>`;
+    return `<button class="network-category-pill ${state.networkCategory === cluster ? 'is-active' : ''}" data-action="network-category" data-category="${cluster}"><span class="product-visual--${cluster}">${clusterGraphic(cluster)}</span><strong>${escapeHtml(clusterLabels[cluster])}</strong><small>${productCount}</small></button>`;
   }).join('');
   const productSections = clusterOrder.filter((cluster) => products.some((product) => product.cluster === cluster)).map((cluster) => {
     const clusterProducts = products.filter((product) => product.cluster === cluster);
     const totalAvailable = clusterProducts.reduce((sum, product) => sum + product.available, 0);
-    return `<section class="network-catalog-group"><header><span class="network-catalog-group__icon product-visual--${cluster}">${clusterGraphic(cluster)}</span><div><h3>${escapeHtml(clusterLabels[cluster])}</h3><p>${clusterProducts.length} ${clusterProducts.length === 1 ? 'produto' : 'produtos'} · ${totalAvailable} disponíveis</p></div></header><div class="network-product-grid">${clusterProducts.map((product) => `<article class="network-product-card"><div class="network-product-card__head"><span>${escapeHtml(product.brand || clusterLabels[cluster])}</span><code class="mono">${escapeHtml(product.materialCode)}</code></div><h4>${escapeHtml(product.name)}</h4><p>${escapeHtml(product.technicalName || 'Nome técnico não informado')}</p><div class="network-product-card__totals"><span class="is-available"><b>${product.available}</b>Disponíveis</span><span class="is-incoming"><b>${product.incoming}</b>Chegando</span><span class="is-repair"><b>${product.repair}</b>Reparo</span></div><div class="network-store-balance-grid">${state.networkStores.filter((store) => state.networkStore === 'all' || store.code === state.networkStore).map((store) => { const balance = product.stores.get(store.code) || { available: 0, incoming: 0, repair: 0 }; return `<div class="network-store-balance ${product.stores.has(store.code) ? '' : 'is-empty'}"><strong>${escapeHtml(storeNames.get(store.code) || store.code)}</strong><span><b>${balance.available}</b> disp.</span><span><b>${balance.incoming}</b> cheg.</span><span><b>${balance.repair}</b> rep.</span></div>`; }).join('')}</div><footer>Atualizado em ${escapeHtml(formatDateOnly(product.latestModifiedOn))}</footer></article>`).join('')}</div></section>`;
+    return `<section class="network-store-section"><header><div><span class="network-store-section__icon product-visual--${cluster}">${clusterGraphic(cluster)}</span><div><h3>${escapeHtml(clusterLabels[cluster])}</h3><p>${clusterProducts.length} ${clusterProducts.length === 1 ? 'item' : 'itens'} · ${totalAvailable} disponíveis</p></div></div></header><div class="network-stock-table"><div class="network-stock-row network-stock-row--head"><span>Produto</span><span>Código</span><span>Disponível</span><span>A caminho</span><span>Reparo</span><span>Atualização</span></div>${clusterProducts.map((product) => `<article class="network-stock-row"><div><strong>${escapeHtml(product.name)}</strong><small>${escapeHtml(product.brand || clusterLabels[cluster])}${product.technicalName && product.technicalName !== product.name ? ` · ${escapeHtml(product.technicalName)}` : ''}</small></div><code class="mono">${escapeHtml(product.materialCode)}</code><b class="network-stock-quantity is-available">${product.available}</b><b class="network-stock-quantity is-incoming">${product.incoming}</b><b class="network-stock-quantity is-repair">${product.repair}</b><time>${escapeHtml(formatDateOnly(product.latestModifiedOn))}</time></article>`).join('')}</div></section>`;
   }).join('');
-  target.innerHTML = `<section class="network-category-summary"><div class="network-category-summary__head"><div><p class="page-eyebrow">Acesso rápido</p><h3>Escolha uma categoria</h3></div>${state.networkCategory !== 'all' ? '<button class="btn btn--ghost" data-action="network-category" data-category="all">Mostrar tudo</button>' : ''}</div><div class="network-category-grid">${categorySummary}</div></section><section class="network-catalog"><div class="network-catalog__head"><div><p class="page-eyebrow">Estoque completo</p><h3>${state.networkCategory === 'all' ? 'Todos os produtos da rede' : clusterLabels[state.networkCategory]}</h3><p>${products.length} produtos agrupados · ${items.length} registros de loja · ${filteredTotals.available} disponíveis · ${filteredTotals.incoming} chegando · ${filteredTotals.repair} em reparo</p></div></div>${productSections || emptyState('Nenhum produto encontrado', 'Altere os filtros para visualizar os itens da rede.')}</section>`;
+  target.innerHTML = `<section class="network-selected-store"><div class="network-selected-store__title"><p class="page-eyebrow">Estoque individual</p><h2>${escapeHtml(store?.name || 'Loja')}</h2><span>Centro ${escapeHtml(store?.center || '')} · base ${escapeHtml(formatDate(`${store?.snapshotDate || ''}T12:00:00.000Z`, false))}</span></div><div class="network-selected-store__metrics"><span><strong>${filteredTotals.available}</strong> disponíveis</span><span><strong>${filteredTotals.incoming}</strong> a caminho</span><span><strong>${filteredTotals.repair}</strong> em reparo</span><span><strong>${products.length}</strong> materiais</span></div></section><nav class="network-category-strip" aria-label="Categorias do estoque"><button class="network-category-pill ${state.networkCategory === 'all' ? 'is-active' : ''}" data-action="network-category" data-category="all"><strong>Todos</strong><small>${networkProductGroups(categoryItems).length}</small></button>${categorySummary}</nav><div class="network-store-results"><div class="network-store-results__head"><div><h3>${state.networkCategory === 'all' ? 'Estoque completo da loja' : clusterLabels[state.networkCategory]}</h3><p>Os saldos abaixo pertencem somente à ${escapeHtml(store?.name || 'loja selecionada')}.</p></div></div>${productSections || emptyState('Nenhum produto encontrado', 'Altere a busca ou escolha outra categoria.')}</div>`;
 }
 
 async function renderNetworkStock() {
@@ -913,13 +913,10 @@ async function renderNetworkStock() {
   const data = await api('/api/network-inventory');
   state.networkStores = data.stores || [];
   state.networkItems = data.items || [];
+  if (!state.networkStores.some((store) => store.code === state.networkStore)) state.networkStore = state.networkStores[0]?.code || '';
   const content = document.querySelector('#view-content');
-  const totals = state.networkStores.reduce((sum, store) => ({ available: sum.available + store.available, incoming: sum.incoming + store.incoming, repair: sum.repair + store.repair }), { available: 0, incoming: 0, repair: 0 });
   const brands = [...new Set(state.networkItems.filter((item) => item.cluster === 'devices').map((item) => friendlyBrand(item.brand)))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
-  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Consulta gerencial</p><h2>Estoque da rede</h2><p>Compare saldos das outras lojas sem misturar ou movimentar o estoque local.</p></div><div class="network-heading-actions"><button class="btn btn--secondary" data-action="refresh-network-stock">Atualizar dados</button><button class="btn btn--secondary" data-action="navigate" data-view="dashboard">Voltar à visão geral</button></div></div>
-    <div class="metrics-grid">${metric('Disponíveis na rede', totals.available, 'Somente nas lojas comparadas', 'metric-card--success')}${metric('Em entrega', totals.incoming, 'Unidades a caminho', 'metric-card--info')}${metric('Em reparo', totals.repair, 'Separadas do saldo disponível', 'metric-card--warning')}${metric('Lojas', state.networkStores.length, 'BQ Lucas, Pátio e Avenida')}</div>
-    <div class="network-store-grid"><button class="network-store-card ${state.networkStore === 'all' ? 'is-active' : ''}" data-action="network-store" data-store="all"><span>Todas as lojas</span><strong>${totals.available}</strong><small>unidades disponíveis</small></button>${state.networkStores.map((store) => `<button class="network-store-card ${state.networkStore === store.code ? 'is-active' : ''}" data-action="network-store" data-store="${escapeHtml(store.code)}"><span>${escapeHtml(store.name)}</span><strong>${store.available}</strong><small>${store.incoming} chegando · ${store.repair} em reparo</small><em>Base ${escapeHtml(formatDate(`${store.snapshotDate}T12:00:00.000Z`, false))}</em></button>`).join('')}</div>
-    <section class="network-toolbar"><label>${uiIcon('search')}<input type="search" data-action="network-search" value="${escapeHtml(state.networkSearch)}" placeholder="Buscar qualquer produto, nome técnico ou material"></label><div class="filter-tabs"><button class="chip ${state.networkBrand === 'all' ? 'is-active' : ''}" data-action="network-brand" data-brand="all">Todas as marcas</button>${brands.map((brand) => `<button class="chip ${state.networkBrand === brand ? 'is-active' : ''}" data-action="network-brand" data-brand="${escapeHtml(brand)}">${escapeHtml(brand)}</button>`).join('')}</div></section><div data-network-results></div>`;
+  content.innerHTML = `<section class="network-page-intro"><div><p class="page-eyebrow">Consulta gerencial</p><h2>Estoque da rede</h2><p>Cada loja aparece separadamente. Selecione uma unidade para consultar o estoque completo dela.</p></div><button class="btn btn--secondary" data-action="refresh-network-stock">Atualizar dados</button></section><div class="network-store-switcher" role="tablist" aria-label="Escolha uma loja">${state.networkStores.map((store) => `<button role="tab" aria-selected="${state.networkStore === store.code}" class="network-store-tab ${state.networkStore === store.code ? 'is-active' : ''}" data-action="network-store" data-store="${escapeHtml(store.code)}"><span><small>Centro ${escapeHtml(store.center)}</small><strong>${escapeHtml(store.name)}</strong></span><b>${store.available}<small> disponíveis</small></b><em>${store.materialCount} materiais</em></button>`).join('')}</div><section class="network-toolbar network-toolbar--clean"><label>${uiIcon('search')}<input type="search" data-action="network-search" value="${escapeHtml(state.networkSearch)}" placeholder="Buscar produto ou código nesta loja"></label><div class="filter-tabs"><button class="chip ${state.networkBrand === 'all' ? 'is-active' : ''}" data-action="network-brand" data-brand="all">Todas as marcas</button>${brands.map((brand) => `<button class="chip ${state.networkBrand === brand ? 'is-active' : ''}" data-action="network-brand" data-brand="${escapeHtml(brand)}">${escapeHtml(brand)}</button>`).join('')}</div></section><div data-network-results></div>`;
   renderNetworkStockWorkspace();
 }
 
@@ -3406,7 +3403,7 @@ async function enterApp(user) {
   state.replenishmentThreshold = 2;
   state.networkStores = [];
   state.networkItems = [];
-  state.networkStore = 'all';
+  state.networkStore = '';
   state.networkSearch = '';
   state.networkBrand = 'all';
   state.showcases = { canEdit: false, summary: {}, fixtures: [], products: [], serials: [] };

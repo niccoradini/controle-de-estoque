@@ -6575,3 +6575,29 @@ button.showcase-slot:not(:disabled):hover { z-index: 2; transform: translateY(-3
   .showcase-slot { padding: 9px 7px; }
   .showcase-demo-table__surface { padding: 13px; gap: 8px; }
 }
+
+/* IMEIs no estoque da rede — consulta limpa e sob demanda */
+.network-stock-item { border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent); }
+.network-stock-item:last-child { border-bottom: 0; }
+.network-stock-item > .network-stock-row { border-bottom: 0; }
+.network-imei-panel { margin: 0 18px 13px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--primary) 14%, var(--border)); border-radius: 14px; background: color-mix(in srgb, var(--primary) 3%, var(--surface)); }
+.network-imei-panel summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; cursor: pointer; list-style: none; color: var(--text); }
+.network-imei-panel summary::-webkit-details-marker { display: none; }
+.network-imei-panel summary > span { display: grid; grid-template-columns: 30px auto; align-items: center; column-gap: 9px; }
+.network-imei-panel summary > span > svg { grid-row: 1 / 3; width: 18px; color: var(--primary); }
+.network-imei-panel summary strong { font-size: .78rem; }
+.network-imei-panel summary small { color: var(--muted); font-size: .68rem; }
+.network-imei-panel summary > svg { width: 15px; transition: transform .2s ease; }
+.network-imei-panel[open] summary > svg { transform: rotate(90deg); }
+.network-imei-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0 12px 12px; }
+.network-imei-card { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 9px; min-width: 0; padding: 10px; border: 1px solid color-mix(in srgb, var(--border) 78%, transparent); border-radius: 11px; background: var(--surface); }
+.network-imei-card > span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, transparent); font-size: .65rem; font-weight: 800; }
+.network-imei-card > div { min-width: 0; }
+.network-imei-card small { display: block; margin-bottom: 2px; color: var(--muted); font-size: .58rem; font-weight: 800; letter-spacing: .08em; }
+.network-imei-card button { max-width: 100%; padding: 0; overflow: hidden; border: 0; color: var(--text); background: transparent; font-size: .74rem; text-overflow: ellipsis; cursor: copy; }
+.network-imei-card em { padding: 4px 7px; border-radius: 999px; color: var(--muted); background: var(--background); font-size: .58rem; font-style: normal; font-weight: 800; }
+.network-imei-card em.is-available { color: #258660; background: color-mix(in srgb, #48c993 13%, var(--surface)); }
+.network-imei-card em.is-incoming { color: #3576a8; background: color-mix(in srgb, #58aee8 13%, var(--surface)); }
+.network-imei-card em.is-repair { color: #a66a18; background: color-mix(in srgb, #ffb24a 14%, var(--surface)); }
+@media (max-width: 900px) { .network-imei-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .network-imei-panel { margin-inline: 10px; } .network-imei-grid { grid-template-columns: 1fr; } }

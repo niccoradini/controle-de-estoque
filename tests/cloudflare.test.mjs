@@ -1968,7 +1968,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.34.0');
+    assert.equal(JSON.parse(packageSource).version, '6.35.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2213,8 +2213,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.34\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.34\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.35\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.35\.0/);
     assert.match(appSource, /showcases: 'Vitrines'/);
     assert.match(appSource, /async function renderShowcases/);
     assert.match(appSource, /data-form="showcase-slot"/);
@@ -2301,7 +2301,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.34.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.35.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2446,6 +2446,23 @@ describe('Controle de estoque por código material', () => {
     assert.equal(byCode('TGSA590B4000').quantity, 1);
     assert.equal(byCode('TGSA609B4000').quantity, 2);
     assert.equal(byCode('TGMO61152000').quantity, 2);
+    assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '351008263818229'));
+    assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '357749666523106'));
+  });
+
+  test('substitui a base de 10/09 pela planilha atualizada', async () => {
+    const migration = await readFile(new URL('../migrations/0081_inventory_refresh_2026_09_10.sql', import.meta.url), 'utf8');
+    await applyMigration(migration);
+
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-09-10');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, 'estoque.10.09(1).xlsx');
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM repair_inventory')).count), 111);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM inventory_serials WHERE serial_number = '552355269008568780' AND status = 'available'`)).count), 0);
+
+    const showcase = await manager.request('/api/showcases');
+    assert.equal(showcase.status, 200);
+    const byCode = (code) => showcase.payload.products.find((product) => product.materialCode === code);
+    assert.equal(byCode('TGSA609B4000').quantity, 2);
     assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '351008263818229'));
     assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '357749666523106'));
   });

@@ -963,7 +963,7 @@ function managerDeviceProducts(products) {
 }
 
 async function networkInventoryDashboard(env) {
-  const [storesResult, itemsResult] = await env.DB.batch([
+  const [storesResult, itemsResult, localItemsResult, snapshotResult] = await env.DB.batch([
     env.DB.prepare(`
       SELECT code, name, center, snapshot_date, source_file, total_units, material_count,
              available_units, incoming_units, repair_units, ignored_units
@@ -977,22 +977,105 @@ async function networkInventoryDashboard(env) {
       FROM network_inventory
       ORDER BY cluster, brand COLLATE NOCASE, display_name COLLATE NOCASE, material_code
     `),
+    env.DB.prepare(`
+      WITH repairs AS (
+        SELECT material_code, MAX(technical_name) AS technical_name, COUNT(*) AS quantity
+        FROM repair_inventory
+        GROUP BY material_code
+      ), local_catalog AS (
+        SELECT
+          variant.sku AS material_code,
+          COALESCE(product.display_name, product.name) AS display_name,
+          COALESCE(product.technical_name, product.name) AS technical_name,
+          product.brand,
+          product.cluster,
+          variant.quantity_on_hand AS available_quantity,
+          COALESCE(incoming.quantity, 0) AS incoming_quantity,
+          COALESCE(repairs.quantity, 0) AS repair_quantity,
+          MAX(variant.updated_at, COALESCE(incoming.updated_at, ''), COALESCE(product.updated_at, '')) AS latest_modified_on
+        FROM product_variants variant
+        JOIN products product ON product.id = variant.product_id
+        LEFT JOIN incoming_inventory incoming ON incoming.variant_id = variant.id
+        LEFT JOIN repairs ON repairs.material_code = variant.sku COLLATE NOCASE
+        WHERE variant.sku IS NOT NULL AND trim(variant.sku) <> ''
+          AND (variant.active = 1 OR variant.quantity_on_hand > 0 OR COALESCE(incoming.quantity, 0) > 0 OR COALESCE(repairs.quantity, 0) > 0)
+      )
+      SELECT material_code, display_name, technical_name, brand, cluster,
+             available_quantity, incoming_quantity, repair_quantity, 0 AS ignored_quantity,
+             substr(latest_modified_on, 1, 10) AS latest_modified_on
+      FROM local_catalog
+      UNION ALL
+      SELECT repairs.material_code, repairs.technical_name, repairs.technical_name,
+             CASE
+               WHEN repairs.technical_name LIKE 'SSG %' OR repairs.technical_name LIKE 'SAMSUNG %' THEN 'Samsung'
+               WHEN repairs.technical_name LIKE 'APPLE %' THEN 'Apple'
+               WHEN repairs.technical_name LIKE 'MOTO %' THEN 'Motorola'
+               WHEN repairs.technical_name LIKE 'SIM CARD %' THEN 'Vivo'
+               ELSE 'Outros'
+             END AS brand,
+             CASE
+               WHEN repairs.material_code LIKE 'TG%' OR repairs.material_code LIKE 'DG%' OR repairs.material_code LIKE 'BG%' THEN 'devices'
+               WHEN repairs.technical_name LIKE '% CP %' OR repairs.technical_name LIKE '%CAPA%' THEN 'cases'
+               WHEN repairs.technical_name LIKE '%FILME%' OR repairs.technical_name LIKE '%PELICULA%' THEN 'screen_protectors'
+               ELSE 'misc'
+             END AS cluster,
+             0, 0, repairs.quantity, 0, MAX(repair_inventory.snapshot_date)
+      FROM repairs
+      JOIN repair_inventory ON repair_inventory.material_code = repairs.material_code COLLATE NOCASE
+      WHERE NOT EXISTS (SELECT 1 FROM local_catalog WHERE local_catalog.material_code = repairs.material_code COLLATE NOCASE)
+      GROUP BY repairs.material_code, repairs.technical_name, repairs.quantity
+      ORDER BY cluster, brand COLLATE NOCASE, display_name COLLATE NOCASE, material_code
+    `),
+    env.DB.prepare(`
+      SELECT key, value FROM system_state
+      WHERE key IN ('inventory_snapshot_date', 'inventory_snapshot_source')
+    `),
   ]);
+  const snapshot = Object.fromEntries((snapshotResult.results || []).map((row) => [row.key, row.value]));
+  const localItems = (localItemsResult.results || []).map((item) => ({
+    storeCode: 'sao-joao-del-rei',
+    materialCode: item.material_code,
+    name: item.display_name,
+    technicalName: item.technical_name,
+    brand: item.brand,
+    cluster: item.cluster,
+    available: Number(item.available_quantity),
+    incoming: Number(item.incoming_quantity),
+    repair: Number(item.repair_quantity),
+    ignored: Number(item.ignored_quantity),
+    latestModifiedOn: item.latest_modified_on || snapshot.inventory_snapshot_date || '',
+  }));
+  const localTotals = localItems.reduce((totals, item) => ({
+    available: totals.available + item.available,
+    incoming: totals.incoming + item.incoming,
+    repair: totals.repair + item.repair,
+    ignored: totals.ignored + item.ignored,
+  }), { available: 0, incoming: 0, repair: 0, ignored: 0 });
+  const networkStores = (storesResult.results || []).map((store) => ({
+    code: store.code,
+    name: store.name,
+    center: store.center,
+    snapshotDate: store.snapshot_date,
+    sourceFile: store.source_file,
+    totalUnits: Number(store.total_units),
+    materialCount: Number(store.material_count),
+    available: Number(store.available_units),
+    incoming: Number(store.incoming_units),
+    repair: Number(store.repair_units),
+    ignored: Number(store.ignored_units),
+  }));
   return json({
-    stores: (storesResult.results || []).map((store) => ({
-      code: store.code,
-      name: store.name,
-      center: store.center,
-      snapshotDate: store.snapshot_date,
-      sourceFile: store.source_file,
-      totalUnits: Number(store.total_units),
-      materialCount: Number(store.material_count),
-      available: Number(store.available_units),
-      incoming: Number(store.incoming_units),
-      repair: Number(store.repair_units),
-      ignored: Number(store.ignored_units),
-    })),
-    items: (itemsResult.results || []).map((item) => ({
+    stores: [{
+      code: 'sao-joao-del-rei',
+      name: 'São João del-Rei',
+      center: '209H',
+      snapshotDate: snapshot.inventory_snapshot_date || '',
+      sourceFile: snapshot.inventory_snapshot_source || '',
+      totalUnits: localTotals.available + localTotals.incoming + localTotals.repair + localTotals.ignored,
+      materialCount: localItems.length,
+      ...localTotals,
+    }, ...networkStores],
+    items: [...localItems, ...(itemsResult.results || []).map((item) => ({
       storeCode: item.store_code,
       materialCode: item.material_code,
       name: item.display_name,
@@ -1004,7 +1087,7 @@ async function networkInventoryDashboard(env) {
       repair: Number(item.repair_quantity),
       ignored: Number(item.ignored_quantity),
       latestModifiedOn: item.latest_modified_on,
-    })),
+    }))],
   });
 }
 

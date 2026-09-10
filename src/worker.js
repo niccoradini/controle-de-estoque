@@ -3658,11 +3658,19 @@ async function saveShowcaseSlot(request, env, user, fixtureId, slotNumber) {
       SELECT fixture_id, slot_number FROM showcase_slots
       WHERE serial_id = ? AND NOT (fixture_id = ? AND slot_number = ?)
     `).bind(serialId, fixtureId, slotNumber).first();
-    if (occupied) throw new HttpError(409, 'Este serial ou IMEI já está cadastrado em outra posição da vitrine.');
+    serial.previousFixtureId = occupied?.fixture_id || '';
+    serial.previousSlotNumber = occupied?.slot_number == null ? null : Number(occupied.slot_number);
   }
 
   const timestamp = nowIso();
-  await env.DB.batch([
+  const statements = [];
+  if (serial?.previousFixtureId) {
+    statements.push(env.DB.prepare(`
+      DELETE FROM showcase_slots
+      WHERE serial_id = ? AND NOT (fixture_id = ? AND slot_number = ?)
+    `).bind(serialId, fixtureId, slotNumber));
+  }
+  statements.push(
     env.DB.prepare(`
       INSERT INTO showcase_slots (fixture_id, slot_number, variant_id, serial_id, updated_by, updated_at)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -3674,8 +3682,10 @@ async function saveShowcaseSlot(request, env, user, fixtureId, slotNumber) {
     `).bind(fixtureId, slotNumber, variantId, serialId, user.id, timestamp),
     auditStatement(env, user.id, 'showcase.slot_saved', 'showcase_slot', `${fixtureId}:${slotNumber}`, {
       fixtureName: fixture.name, variantId, serialNumber: serial?.serial_number || '',
+      movedFrom: serial?.previousFixtureId ? `${serial.previousFixtureId}:${serial.previousSlotNumber}` : '',
     }),
-  ]);
+  );
+  await env.DB.batch(statements);
   return json({ message: 'Posição da vitrine atualizada.' });
 }
 

@@ -1311,11 +1311,16 @@ describe('Controle de estoque por código material', () => {
     });
     assert.equal(savedDevice.status, 200);
 
-    const duplicate = await stocker.request('/api/showcases/devices-2/slots/1', {
+    const moved = await stocker.request('/api/showcases/devices-2/slots/1', {
       method: 'PUT', body: { variantId: serialized.variantId, serialId: serial.id },
     });
-    assert.equal(duplicate.status, 409);
-    assert.match(duplicate.payload.error, /outra posição/i);
+    assert.equal(moved.status, 200);
+    const afterMove = await manager.request('/api/showcases');
+    assert.equal(afterMove.payload.fixtures.find((fixture) => fixture.id === 'devices-1').slots[0].assignment, null);
+    assert.equal(afterMove.payload.fixtures.find((fixture) => fixture.id === 'devices-2').slots[0].assignment.serialNumber, serial.serialNumber);
+    assert.equal((await manager.request('/api/showcases/devices-1/slots/1', {
+      method: 'PUT', body: { variantId: serialized.variantId, serialId: serial.id },
+    })).status, 200);
 
     const sellerView = await seller.request('/api/showcases');
     assert.equal(sellerView.status, 200);
@@ -1373,7 +1378,7 @@ describe('Controle de estoque por código material', () => {
     await database.prepare('DELETE FROM inventory_serials WHERE id = ?').bind(customSerial.id).run();
     await database.prepare('DELETE FROM inventory_serials WHERE id = ?').bind(accessoryCustomSerial.id).run();
     assert.equal((await manager.request('/api/showcases')).payload.summary.occupied, 0);
-    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action LIKE 'showcase.%'`)).count), 8);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action LIKE 'showcase.%'`)).count), 10);
   });
 
   test('controla chips por material e identifica o ICCID pelos 6 últimos dígitos', async () => {
@@ -1963,7 +1968,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.33.0');
+    assert.equal(JSON.parse(packageSource).version, '6.34.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2208,8 +2213,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.33\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.33\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.34\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.34\.0/);
     assert.match(appSource, /showcases: 'Vitrines'/);
     assert.match(appSource, /async function renderShowcases/);
     assert.match(appSource, /data-form="showcase-slot"/);
@@ -2296,7 +2301,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.33.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.34.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

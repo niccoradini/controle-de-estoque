@@ -961,6 +961,12 @@ function showcaseProductChoice(product) {
   return `${product.name} · ${product.materialCode || 'sem material'}`;
 }
 
+function showcaseProductByCode(value) {
+  const code = String(value || '').trim().toUpperCase();
+  if (!code) return null;
+  return state.showcases.products.find((item) => String(item.materialCode || '').trim().toUpperCase() === code) || null;
+}
+
 function showcaseFixtureById(fixtureId) {
   return state.showcases.fixtures.find((fixture) => fixture.id === fixtureId) || null;
 }
@@ -1022,10 +1028,14 @@ function showcaseSerialOptions(fixture, slot, variantId) {
 function refreshShowcaseSerialPicker(form) {
   const fixture = showcaseFixtureById(form.dataset.fixtureId);
   const slot = showcaseSlotById(form.dataset.fixtureId, form.dataset.slotNumber);
-  const choice = String(form.elements.productChoice?.value || '');
-  const product = state.showcases.products.find((item) => showcaseProductChoice(item) === choice);
+  const product = showcaseProductByCode(form.elements.itemCode?.value);
   const wrapper = form.querySelector('[data-showcase-serial-field]');
+  const result = form.querySelector('[data-showcase-product-result]');
   if (!wrapper || !fixture || !slot) return;
+  if (result) {
+    result.hidden = !product;
+    result.innerHTML = product ? `<span class="product-visual--${escapeHtml(product.cluster || 'misc')}">${clusterGraphic(product.cluster || 'misc')}</span><div><small>Produto encontrado</small><strong>${escapeHtml(product.name)}</strong><code>${escapeHtml(product.materialCode)}</code><p>${Number(product.quantity)} ${Number(product.quantity) === 1 ? 'unidade disponível' : 'unidades disponíveis'} · ${escapeHtml(clusterLabels[product.cluster] || 'Produto')}</p></div>${uiIcon('check')}` : '';
+  }
   if (!product?.serialTracked) {
     wrapper.hidden = true;
     const select = wrapper.querySelector('select');
@@ -1052,8 +1062,8 @@ function showcaseSlotModal(fixtureId, slotNumber) {
   const products = state.showcases.products;
   const currentProduct = products.find((product) => product.variantId === assignment?.variantId);
   const wantsSerial = Boolean(currentProduct?.serialTracked);
-  const currentChoice = currentProduct ? showcaseProductChoice(currentProduct) : '';
-  showModal(`<form data-form="showcase-slot" data-fixture-id="${escapeHtml(fixture.id)}" data-slot-number="${slot.slotNumber}" novalidate><div class="modal__head"><div><h2>${assignment ? 'Editar posição' : 'Cadastrar produto'}</h2><p>${escapeHtml(fixture.name)} · ${fixture.type === 'demo_table' ? `posição ${slot.positionNumber}` : `prateleira ${slot.shelfNumber}, posição ${slot.positionNumber}`}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="showcase-form-intro"><span>${clusterGraphic(currentProduct?.cluster || 'devices')}</span><div><strong>Qualquer produto do estoque</strong><p>Celulares, tablets, relógios e acessórios podem ocupar esta posição. Quando houver controle serial, escolha o código correspondente.</p></div></div><div class="field"><label for="showcase-product-choice">Produto</label><input class="input" id="showcase-product-choice" name="productChoice" data-action="showcase-product-choice" list="showcase-product-options" value="${escapeHtml(currentChoice)}" placeholder="Digite o nome ou código material" autocomplete="off" required><datalist id="showcase-product-options">${products.map((product) => `<option value="${escapeHtml(showcaseProductChoice(product))}">${product.quantity} un. no estoque · ${escapeHtml(clusterLabels[product.cluster] || 'Produto')}</option>`).join('')}</datalist></div><div class="field" data-showcase-serial-field ${wantsSerial ? '' : 'hidden'}><label for="showcase-serial">Serial / IMEI</label><select class="select" id="showcase-serial" name="serialId" ${wantsSerial ? 'required' : ''}>${showcaseSerialOptions(fixture, slot, currentProduct?.variantId || 0)}</select><p class="field-hint">A lista mostra todos os códigos disponíveis desse material, independentemente do tamanho ou formato.</p></div></div><div class="modal__footer">${assignment ? '<button type="button" class="btn btn--danger" data-action="clear-showcase-slot">Esvaziar posição</button>' : ''}<button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Salvar posição</button></div></form>`, { wide: true });
+  const currentCode = currentProduct?.materialCode || '';
+  showModal(`<form data-form="showcase-slot" data-fixture-id="${escapeHtml(fixture.id)}" data-slot-number="${slot.slotNumber}" novalidate><div class="modal__head"><div><h2>${assignment ? 'Editar posição' : 'Cadastrar produto'}</h2><p>${escapeHtml(fixture.name)} · ${fixture.type === 'demo_table' ? `posição ${slot.positionNumber}` : `prateleira ${slot.shelfNumber}, posição ${slot.positionNumber}`}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="showcase-form-intro"><span>${clusterGraphic(currentProduct?.cluster || 'devices')}</span><div><strong>Pesquise pelo código do item</strong><p>Use o código comercial ou material. Celulares, tablets, relógios e acessórios podem ocupar esta posição.</p></div></div><div class="field"><label for="showcase-item-code">Código do item</label><input class="input showcase-code-search" id="showcase-item-code" name="itemCode" data-action="showcase-product-code" list="showcase-code-options" value="${escapeHtml(currentCode)}" placeholder="Ex.: TGSA590B4000 ou 22024249" autocomplete="off" autocapitalize="characters" spellcheck="false" required autofocus><datalist id="showcase-code-options">${products.map((product) => `<option value="${escapeHtml(product.materialCode)}">${escapeHtml(product.name)} · ${product.quantity} un.</option>`).join('')}</datalist><p class="field-hint">Digite o código completo para localizar exatamente o produto.</p></div><div class="showcase-product-result" data-showcase-product-result ${currentProduct ? '' : 'hidden'}>${currentProduct ? `<span class="product-visual--${escapeHtml(currentProduct.cluster || 'misc')}">${clusterGraphic(currentProduct.cluster || 'misc')}</span><div><small>Produto encontrado</small><strong>${escapeHtml(currentProduct.name)}</strong><code>${escapeHtml(currentProduct.materialCode)}</code><p>${Number(currentProduct.quantity)} ${Number(currentProduct.quantity) === 1 ? 'unidade disponível' : 'unidades disponíveis'} · ${escapeHtml(clusterLabels[currentProduct.cluster] || 'Produto')}</p></div>${uiIcon('check')}` : ''}</div><div class="field" data-showcase-serial-field ${wantsSerial ? '' : 'hidden'}><label for="showcase-serial">Serial / IMEI</label><select class="select" id="showcase-serial" name="serialId" ${wantsSerial ? 'required' : ''}>${showcaseSerialOptions(fixture, slot, currentProduct?.variantId || 0)}</select><p class="field-hint">A lista mostra os códigos disponíveis deste item.</p></div></div><div class="modal__footer">${assignment ? '<button type="button" class="btn btn--danger" data-action="clear-showcase-slot">Esvaziar posição</button>' : ''}<button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Salvar posição</button></div></form>`, { wide: true });
 }
 
 function sellerInventoryGroupCard(group, totalAvailable) {
@@ -2197,6 +2207,19 @@ function alignmentNavigationItem(topic) {
   </button>`;
 }
 
+function alignmentTopicChip(topic) {
+  const selected = state.alignmentTopic === topic.id;
+  return `<button type="button" id="alignment-tab-${escapeHtml(topic.id)}" class="alignment-topic-chip ${selected ? 'is-selected' : ''}" data-action="open-alignment" data-topic="${escapeHtml(topic.id)}" role="tab" aria-selected="${selected}" aria-controls="alignment-detail"><span>${escapeHtml(topic.number)}</span>${uiIcon(topic.icon)}<strong>${escapeHtml(topic.title)}</strong><small>${Number(topic.minutes)} min</small></button>`;
+}
+
+function alignmentQuickAccess(expanded = false) {
+  return `<section class="alignment-quick-access" aria-label="Acesso rápido ao alinhamento"><div><span>${uiIcon('briefing')}</span><p><strong>Alinhamento rápido</strong><small>O essencial para aplicar agora no atendimento.</small></p></div><button type="button" class="alignment-expand-button" data-action="${expanded ? 'collapse-alignment' : 'expand-alignment'}"><span>${expanded ? 'Ver resumo' : 'Entenda mais'}</span>${uiIcon(expanded ? 'chevron' : 'briefing', expanded ? 'alignment-icon--back' : '')}</button></section>`;
+}
+
+function alignmentQuickStudy({ time, title, intro, steps, sourceUrl, sourceLabel }) {
+  return `<details class="alignment-quick-study"><summary><span>${uiIcon('briefing')}</span><div><small>Estudo rápido · ${escapeHtml(time)}</small><strong>${escapeHtml(title)}</strong></div>${uiIcon('chevron')}</summary><div class="alignment-quick-study__content"><p>${escapeHtml(intro)}</p><ol>${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel || 'Ver referência')} ${uiIcon('chevron')}</a>` : ''}</div></details>`;
+}
+
 function alignmentServiceTiles() {
   const services = [
     ['Atendimento e tratamento', 'Não limitar a atuação à venda: acolher com linguagem acessível, identificar a demanda, usar os recursos da loja e acompanhar o encaminhamento.'],
@@ -2281,7 +2304,7 @@ function paymentOptionsAlignment() {
       <aside class="alignment-panel alignment-panel--contrast"><span class="alignment-panel__label">Perguntas que abrem a conversa</span><h4>Faça o cliente dizer o que precisa.</h4><ul class="alignment-checklist"><li>“Você prefere reduzir o valor total ou deixar a parcela mais leve?”</li><li>“Qual faixa mensal cabe com tranquilidade no seu planejamento?”</li><li>“O aparelho usado entrará no Vivo Renova?”</li><li>“Quer sair com o aparelho protegido e pronto para usar?”</li><li>“Posso comparar três cenários no simulador?”</li></ul></aside>
     </div>
     <section class="alignment-panel"><div class="alignment-panel__heading"><div><span class="alignment-panel__label">Ideias para usar no balcão</span><h4>Seis maneiras de conduzir a proposta.</h4></div><span class="alignment-count">Prática comercial</span></div><div class="alignment-script-grid">${negotiationIdeas.map(([title, text]) => `<article class="alignment-script"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></article>`).join('')}</div></section>
-    <section class="alignment-study"><header><div><span>Materiais de estudo rápido</span><h4>Aprenda um pouco e aplique na próxima venda.</h4></div><p>Escolha uma atividade por vez. Em poucos minutos, a equipe treina as habilidades que mais ajudam no fechamento.</p></header><div class="alignment-study__grid">${studyMaterials.map(([time, title, text], index) => `<article><span>${escapeHtml(time)}</span><b>${String(index + 1).padStart(2, '0')}</b><h5>${escapeHtml(title)}</h5><p>${escapeHtml(text)}</p></article>`).join('')}</div><div class="alignment-study__challenge"><span>${uiIcon('briefing')}</span><div><strong>Desafio da próxima venda</strong><p>Antes de apresentar um valor, descubra a prioridade do cliente. Depois, mostre duas opções lado a lado e peça que ele diga qual faz mais sentido.</p></div></div></section>
+    ${alignmentQuickStudy({ time: '3 min', title: 'Argumentação que começa pela escuta', intro: 'Uma proposta fica mais clara quando o vendedor primeiro entende a prioridade e adapta a comparação ao que ouviu.', steps: studyMaterials.map(([, title, text]) => `${title}: ${text}`), sourceUrl: 'https://www.sciencedirect.com/science/article/abs/pii/S0148296319303017', sourceLabel: 'Pesquisa sobre escuta e relacionamento em vendas' })}
     <div class="alignment-commitment-grid"><section><span class="alignment-panel__label">Antes de confirmar</span><h4>Conferência obrigatória.</h4><ul class="alignment-checklist"><li>Selecione a categoria correta do plano.</li><li>Use somente o valor mostrado na tabela ou no simulador.</li><li>Confirme se o cartão aceita o prazo escolhido.</li><li>Mostre ao cliente a parcela e o total da opção selecionada.</li><li>Valide os itens, serviços e descontos da proposta.</li></ul></section><section><span class="alignment-panel__label">Exercício de 3 minutos</span><h4>Treino em duplas.</h4><p>Uma pessoa faz o papel do cliente e escolhe uma prioridade: menor valor total, parcela mais leve ou solução completa. A outra faz três perguntas, simula as opções e apresenta uma recomendação clara. Depois, troquem os papéis.</p><div class="alignment-note">Combinado do dia: cada vendedor fará pelo menos três comparações completas antes de oferecer retirar um item da proposta.</div></section></div>
   </div>`;
 }
@@ -2311,6 +2334,7 @@ function customerCareAlignment() {
       <section class="alignment-panel"><span class="alignment-panel__label">Fluxo esperado</span><div class="alignment-process">${steps.map(([title, text], index) => `<article><span>${index + 1}</span><div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div></article>`).join('')}</div></section>
       <aside class="alignment-panel alignment-panel--contrast"><span class="alignment-panel__label">Quando precisar de apoio</span><h4>O cliente continua acompanhado pela loja.</h4><ul class="alignment-checklist"><li>Acione o gerente quando faltar procedimento, permissão ou segurança para concluir.</li><li>Se uma central for indispensável, faça o contato com o cliente na loja e ofereça o suporte necessário.</li><li>Não prometa o que não pode cumprir; informe prazo, responsável e próximo passo com clareza.</li><li>Antes de encerrar, confirme que a demanda foi resolvida ou corretamente encaminhada.</li></ul></aside>
     </div>
+    ${alignmentQuickStudy({ time: '2 min', title: 'Escuta ativa em quatro movimentos', intro: 'Ouvir bem reduz retrabalho e ajuda o cliente a perceber que sua necessidade foi compreendida.', steps: ['Deixe o cliente concluir sem interromper.', 'Resuma o problema com suas próprias palavras.', 'Faça uma pergunta para confirmar a prioridade.', 'Explique a solução e peça a confirmação do entendimento.'], sourceUrl: 'https://pubmed.ncbi.nlm.nih.gov/36327574/', sourceLabel: 'Estudo sobre percepção e escuta ativa' })}
     ${alignmentLeadershipMessages()}
   </div>`;
 }
@@ -2330,6 +2354,7 @@ function responsibilitiesAlignment() {
       </div>
       <div class="alignment-employment-limit"><div><span class="alignment-panel__label">Responsabilidade pessoal</span><h5>Erro, fraude e dolo são situações diferentes.</h5></div><p>Desconto salarial por dano exige as condições do art. 462 da CLT e análise do caso concreto.</p><a href="https://www.planalto.gov.br/ccivil_03/decreto-lei/del5452compilado.htm" target="_blank" rel="noopener noreferrer">CLT · art. 462 ${uiIcon('chevron')}</a></div>
     </section>
+    ${alignmentQuickStudy({ time: '2 min', title: 'Conferência sem retrabalho', intro: 'Uma pausa curta antes da confirmação protege o cliente, o vendedor e o estoque.', steps: ['Leia novamente produto, plano e quantidade.', 'Confirme titularidade e dados essenciais.', 'Mostre ao cliente o resumo final.', 'Registre ou peça apoio antes de concluir se algo estiver divergente.'] })}
     <div class="alignment-commitment-grid"><section><span class="alignment-panel__label">Compromisso com horários</span><h4>Pontualidade protege a operação.</h4><ul class="alignment-checklist"><li>Esteja pronto para iniciar o trabalho no horário combinado.</li><li>Cumpra corretamente os horários de intervalo e retorno.</li><li>Avise com antecedência sempre que houver atraso, ausência ou imprevisto.</li><li>Não deixe a equipe descobrir o problema apenas no início do turno.</li></ul></section><section><span class="alignment-panel__label">Quando houver dúvida</span><h4>Pedir apoio faz parte. Abandonar a demanda, não.</h4><p>Consulte o procedimento, envolva o gerente e continue acompanhando o caso. O cliente deve saber quem está cuidando da solicitação e qual será o próximo passo.</p><div class="alignment-note">Sinal de profissionalismo: reconhecer o limite, buscar ajuda e permanecer responsável pelo acompanhamento.</div></section></div>
   </div>`;
 }
@@ -2344,6 +2369,7 @@ function conductAlignment() {
       <article><span class="alignment-conduct-icon">${uiIcon('users')}</span><h4>Conversa entre colegas</h4><p>Sem gritos, ironias, exposição ou correções públicas. Divergências são tratadas com respeito, em particular e no canal correto.</p></article>
       <article><span class="alignment-conduct-icon">${uiIcon('tasks')}</span><h4>Orientações da liderança</h4><p>Demandas operacionais seguem a estrutura da loja. Dúvidas podem ser apresentadas; decisões devem ser cumpridas e desacordos tratados profissionalmente.</p></article>
     </div>
+    ${alignmentQuickStudy({ time: '2 min', title: 'Adapte a conversa sem perder o padrão', intro: 'Venda adaptativa significa ajustar perguntas e explicações ao cliente, mantendo clareza, respeito e todas as conferências.', steps: ['Observe se o cliente quer rapidez ou mais explicação.', 'Escolha exemplos próximos da rotina dele.', 'Confirme se a recomendação fez sentido.', 'Mantenha as mesmas regras e informações em qualquer abordagem.'], sourceUrl: 'https://journals.sagepub.com/doi/pdf/10.1177/002224379002700106', sourceLabel: 'Pesquisa clássica sobre venda adaptativa' })}
     <section class="alignment-attitudes"><figure><img src="/alignment/atitudes-profissionais.webp" alt="Quadro com atitudes profissionais como pontualidade, ética, educação e cumprimento de compromissos" loading="lazy"><figcaption>Imagem utilizada no material-base da reunião.</figcaption></figure><div><span class="alignment-panel__label">Atitudes que sustentam o padrão</span><h4>Profissionalismo aparece nas pequenas escolhas.</h4><ul class="alignment-checklist"><li>Ser pontual e avisar com antecedência.</li><li>Cumprir o que foi combinado.</li><li>Responder com educação e falar a verdade.</li><li>Agir com ética, agradecer e reconhecer o esforço dos colegas.</li><li>Usar o celular pessoal somente nos momentos permitidos ou em necessidade comunicada à liderança.</li></ul></div></section>
   </div>`;
 }
@@ -2353,6 +2379,7 @@ function organizationAlignment() {
     <div class="alignment-principle"><span>Responsabilidade compartilhada</span><strong>Quem usa, organiza. Quem identifica, corrige ou comunica.</strong><p>Cozinha e sala de estoque não pertencem a uma única pessoa: são ambientes de trabalho e responsabilidade de toda a equipe.</p></div>
     <div class="alignment-photo-grid"><figure><img src="/alignment/organizacao-pia.webp" alt="Pia da cozinha com utensílios deixados após o uso" loading="lazy"><figcaption>Pia: utensílios não devem permanecer acumulados.</figcaption></figure><figure><img src="/alignment/organizacao-mesa.webp" alt="Mesa da cozinha com embalagens e objetos espalhados" loading="lazy"><figcaption>Mesa: cada pessoa deve liberar e limpar o espaço após usar.</figcaption></figure><figure><img src="/alignment/organizacao-lixeira.webp" alt="Lixeira da cozinha cheia além da capacidade" loading="lazy"><figcaption>Lixeira: não espere transbordar para tomar providência.</figcaption></figure></div>
     <p class="alignment-photo-note">Registros do material-base usados como exemplos objetivos de situações que precisam ser corrigidas — o foco é o padrão do ambiente, não a exposição de pessoas.</p>
+    ${alignmentQuickStudy({ time: '1 min', title: 'Fechamento visual do turno', intro: 'Um ambiente organizado torna divergências mais fáceis de perceber e agiliza o próximo atendimento.', steps: ['Retire o que não pertence ao espaço.', 'Devolva cada item ao local identificado.', 'Confira acessos, bancadas e corredores.', 'Comunique imediatamente o que não pôde ser corrigido.'] })}
     <div class="alignment-commitment-grid"><section><span class="alignment-panel__label">Cozinha</span><h4>Deixe pronta para a próxima pessoa.</h4><ul class="alignment-checklist"><li>Lave, seque e guarde os utensílios usados.</li><li>Limpe pia, bancada e mesa depois da refeição.</li><li>Descarte embalagens e restos no local correto.</li><li>Ao perceber a lixeira cheia, feche o saco e providencie a troca.</li></ul></section><section><span class="alignment-panel__label">Sala de estoque</span><h4>Organização também protege o inventário.</h4><ul class="alignment-checklist"><li>Devolva cada item ao espaço identificado.</li><li>Mantenha corredores, mesas e acessos livres.</li><li>Não deixe caixas, embalagens ou produtos soltos.</li><li>Comunique imediatamente divergências, danos ou itens fora do lugar.</li></ul></section></div>
   </div>`;
 }
@@ -2393,16 +2420,9 @@ function renderAlignment() {
     return;
   }
   if (!alignmentTopics.some((topic) => topic.id === state.alignmentTopic)) state.alignmentTopic = alignmentTopics[0].id;
-  content.innerHTML = `<button type="button" class="alignment-back-to-summary" data-action="collapse-alignment">${uiIcon('chevron', 'alignment-icon--back')} Voltar para a versão resumida</button><section class="alignment-hero"><div class="alignment-hero__content"><div class="alignment-hero__meta"><div class="alignment-edition">${uiIcon('briefing')}<span>Edição 02 · Setembro 2026</span></div><div class="alignment-duration">${uiIcon('history')}<span>Roteiro · até 32 min</span></div></div><p class="alignment-hero__eyebrow">Central de Alinhamento · SJDR Centro</p><h2>Mais opções para transformar interesse em decisão.</h2><p>Uma matinal prática para comparar formas de pagamento, negociar com clareza e manter os padrões da loja.</p><div class="alignment-values"><span>Simular</span><span>Comparar</span><span>Fechar</span></div></div><div class="alignment-hero__mark" aria-hidden="true"><span>02</span><small>matinal</small></div></section>
-    <div class="alignment-section-heading"><div><span>Navegação da edição</span><h3>Todos os temas ficam ao alcance durante a apresentação</h3></div><p>Troque de assunto sem fechar o conteúdo ou retornar ao início.</p></div>
-    <div class="alignment-workspace">
-      <aside class="alignment-navigator" aria-label="Temas desta edição">
-        <div class="alignment-navigator__head"><div><span>Índice</span><strong>Escolha um assunto</strong></div><small>${alignmentTopics.length} temas</small></div>
-        <nav class="alignment-nav__list" role="tablist" aria-label="Conteúdos do alinhamento">${alignmentTopics.map(alignmentNavigationItem).join('')}</nav>
-        <p class="alignment-navigator__hint">O assunto selecionado aparece ao lado. Use também os botões Anterior e Próximo para conduzir a reunião em sequência.</p>
-      </aside>
-      ${alignmentDetail()}
-    </div>
+  content.innerHTML = `${alignmentQuickAccess(true)}<section class="alignment-expanded-intro"><div><span>Roteiro · até 32 min</span><h2>Escolha um tema e aplique na rotina.</h2><p>Conteúdo prático, exemplos de balcão e estudos curtos sem tirar o vendedor da operação.</p></div><div><strong>02</strong><small>edição</small></div></section>
+    <nav class="alignment-topic-strip" role="tablist" aria-label="Conteúdos do alinhamento">${alignmentTopics.map(alignmentTopicChip).join('')}</nav>
+    <div class="alignment-workspace">${alignmentDetail()}</div>
     <section class="alignment-footer"><span>${uiIcon('check')}</span><div><strong>O combinado precisa aparecer na rotina.</strong><p>Use o índice como guia da conversa e transforme cada orientação em um padrão acompanhado pela gestão.</p></div></section>`;
 }
 
@@ -2419,13 +2439,11 @@ function renderSimpleAlignment() {
     ['stock', 'Estoque organizado', 'Devolva cada produto ao local identificado e comunique imediatamente qualquer falta, dano ou divergência.'],
     ['users', 'Equipe alinhada', 'Respeite horários, intervalos e colegas. Dúvidas operacionais devem ser levadas ao gerente com clareza.'],
   ];
-  content.innerHTML = `<section class="simple-alignment-hero">
+  content.innerHTML = `${alignmentQuickAccess()}<section class="simple-alignment-hero">
       <div><span>Matinal comercial · Setembro 2026</span><h2>Três caminhos para fechar melhor.</h2><p>Compare a proposta conforme a prioridade do cliente: menor valor total, equilíbrio ou parcela mais leve.</p></div>
       <div class="simple-alignment-hero__time">${uiIcon('history')}<strong>12 min</strong><span>conversa prática</span></div>
     </section>
     <section class="simple-payment-morning"><header><span>Nova estrutura de pagamento</span><h3>Apresente sempre parcela e total.</h3><p>Comece entendendo o que o cliente valoriza e use os números exatos do simulador.</p></header><div class="simple-payment-options"><article><span>PIX / Vivo Pay</span><strong>10% a menos</strong><p>Para quem busca o menor valor total.</p></article><article><span>De 1x a 12x</span><strong>Preço-base</strong><p>Para equilibrar parcela e valor total.</p></article><article><span>De 13x a 21x</span><strong>Parcela menor</strong><p>Em cartões selecionados, com total indicado no simulador.</p></article></div><div class="simple-payment-playbook"><section><span>Conversa em 4 passos</span><ol><li>Pergunte a prioridade e a faixa mensal.</li><li>Monte a solução completa, incluindo proteção e serviços úteis.</li><li>Compare até 21x, 12x e PIX ou Vivo Pay.</li><li>Confirme parcela, total, itens e descontos antes de concluir.</li></ol></section><section><span>Frases que ajudam</span><ul><li>“Você prefere pagar menos no total ou reduzir a parcela?”</li><li>“Posso comparar três cenários para você escolher?”</li><li>“Vamos verificar quanto seu aparelho usado pode reduzir da proposta?”</li><li>“Quer distribuir a solução completa em uma parcela confortável?”</li></ul></section></div><footer><strong>Dica de negociação:</strong> diante de uma objeção, faça uma pergunta antes de retirar produto, proteção ou serviço da proposta.</footer></section>
-    ${paymentSurchargeTable()}
-    <section class="alignment-expand-callout"><div><span>Material completo da matinal</span><h3>Quer entender cada regra e vender com mais segurança?</h3><p>Acesse exemplos, roteiro de negociação, respostas para objeções, exercícios rápidos e todos os combinados da equipe.</p></div><button type="button" class="alignment-expand-button" data-action="expand-alignment"><span>Entenda mais</span>${uiIcon('chevron')}</button></section>
     <section class="simple-alignment-role">${uiIcon('check')}<p>${roleGuidance}</p></section>
     <div class="simple-alignment-grid">${topics.map(([icon, title, text], index) => `<article class="simple-alignment-card"><div><span>${String(index + 1).padStart(2, '0')}</span>${uiIcon(icon)}</div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></article>`).join('')}</div>
     <section class="simple-alignment-check"><div><span>Antes de encerrar o turno</span><h3>Checklist de 30 segundos</h3></div><ul><li>Pedidos e cancelamentos estão registrados no sistema.</li><li>Produtos e espaços de trabalho ficaram organizados.</li><li>Divergências foram comunicadas ao gerente.</li><li>O próximo responsável recebeu as informações importantes.</li></ul></section>
@@ -3658,11 +3676,11 @@ modalRoot.addEventListener('click', async (event) => {
 modalRoot.addEventListener('input', (event) => {
   if (event.target.dataset.action === 'chip-material-search') renderChipMaterialOptions();
   if (event.target.dataset.action === 'chip-iccid-suffix') queueChipCandidateSearch();
-  if (event.target.dataset.action === 'showcase-product-choice') refreshShowcaseSerialPicker(event.target.closest('form'));
+  if (event.target.dataset.action === 'showcase-product-code') refreshShowcaseSerialPicker(event.target.closest('form'));
 });
 
 modalRoot.addEventListener('change', (event) => {
-  if (event.target.dataset.action === 'showcase-product-choice') refreshShowcaseSerialPicker(event.target.closest('form'));
+  if (event.target.dataset.action === 'showcase-product-code') refreshShowcaseSerialPicker(event.target.closest('form'));
 });
 
 root.addEventListener('change', (event) => {
@@ -3760,8 +3778,8 @@ document.addEventListener('submit', async (event) => {
         form.reset(); state.feedbackFilter = 'all'; showToast('Mensagem enviada para a gerência.'); await renderFeedback();
       }
       if (form.dataset.form === 'showcase-slot') {
-        const product = state.showcases.products.find((item) => showcaseProductChoice(item) === String(data.productChoice || '').trim());
-        if (!product) throw new ApiError('Selecione um produto da lista.', 400, { productChoice: 'Escolha uma das opções exibidas.' });
+        const product = showcaseProductByCode(data.itemCode);
+        if (!product) throw new ApiError('Código não encontrado no estoque disponível.', 400, { itemCode: 'Confira o código completo e tente novamente.' });
         const serialId = product.serialTracked ? Number(data.serialId || 0) : null;
         if (product.serialTracked && !serialId) throw new ApiError('Selecione o serial ou IMEI do produto.', 400, { serialId: 'Escolha um código disponível.' });
         await api(`/api/showcases/${encodeURIComponent(form.dataset.fixtureId)}/slots/${Number(form.dataset.slotNumber)}`, { method: 'PUT', body: { variantId: product.variantId, serialId } });

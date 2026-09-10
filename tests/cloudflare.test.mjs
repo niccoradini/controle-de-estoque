@@ -491,12 +491,14 @@ describe('Controle de estoque por código material', () => {
   test('mostra ao gerente o estoque comparativo das outras lojas sem expor séries', async () => {
     const response = await manager.request('/api/network-inventory');
     assert.equal(response.status, 200);
-    assert.deepEqual(response.payload.stores.map((store) => store.name).sort(), ['Avenida', 'BQ Lucas', 'Pátio'].sort());
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.totalUnits, 0), 3521);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.available, 0), 3047);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.incoming, 0), 423);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.repair, 0), 51);
-    assert.equal(response.payload.items.length, 790);
+    assert.deepEqual(response.payload.stores.map((store) => store.name).sort(), ['Avenida', 'BQ Lucas', 'Pátio', 'São João del-Rei'].sort());
+    const otherStores = response.payload.stores.filter((store) => store.center !== '209H');
+    assert.equal(otherStores.reduce((sum, store) => sum + store.totalUnits, 0), 3521);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.available, 0), 3047);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.incoming, 0), 423);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.repair, 0), 51);
+    assert.equal(response.payload.items.filter((item) => item.storeCode !== 'sao-joao-del-rei').length, 790);
+    assert.ok(response.payload.items.some((item) => item.storeCode === 'sao-joao-del-rei'));
     assert.ok(response.payload.items.some((item) => item.cluster === 'devices' && item.available > 0));
     assert.doesNotMatch(JSON.stringify(response.payload), /serialNumber|serialNumbers|serial_number/i);
     assert.equal((await new Client('198.51.100.55').request('/api/network-inventory')).status, 401);
@@ -1968,7 +1970,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.35.0');
+    assert.equal(JSON.parse(packageSource).version, '6.36.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -1978,14 +1980,13 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /data-action="outlet-category"/);
     assert.match(appSource, /Lista promocional importada/);
     assert.match(stylesSource, /Outlet — campanha e disponibilidade da rede/);
-    assert.match(appSource, /Escolha uma categoria/);
-    assert.match(appSource, /network-category-card/);
+    assert.match(appSource, /Cada loja aparece separadamente/);
+    assert.match(appSource, /network-store-switcher/);
     assert.match(appSource, /function networkProductGroups/);
-    assert.match(appSource, /\$\{products\.length\} produtos agrupados · \$\{items\.length\} registros de loja/);
+    assert.match(appSource, /Os saldos abaixo pertencem somente/);
     assert.match(appSource, /refresh-network-stock/);
-    assert.match(appSource, /network-product-card/);
-    assert.match(appSource, /network-store-balance-grid/);
-    assert.match(stylesSource, /Estoque da rede — catálogo visual por produto/);
+    assert.match(appSource, /network-stock-table/);
+    assert.match(stylesSource, /Estoque da rede — lojas independentes/);
     assert.match(appSource, /async function renderFeedback/);
     assert.match(appSource, /const septemberCareNotes = \[/);
     assert.match(appSource, /Setembro Amarelo · 30 dias cuidando de você/);
@@ -2213,8 +2214,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.35\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.35\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.36\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.36\.0/);
     assert.match(appSource, /showcases: 'Vitrines'/);
     assert.match(appSource, /async function renderShowcases/);
     assert.match(appSource, /data-form="showcase-slot"/);
@@ -2301,7 +2302,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.35.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.36.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2397,12 +2398,13 @@ describe('Controle de estoque por código material', () => {
     await applyMigration(migration);
     const response = await manager.request('/api/network-inventory');
     assert.equal(response.status, 200);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.totalUnits, 0), 3635);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.available, 0), 3125);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.incoming, 0), 460);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.repair, 0), 50);
-    assert.equal(response.payload.items.length, 790);
-    assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-04'));
+    const otherStores = response.payload.stores.filter((store) => store.center !== '209H');
+    assert.equal(otherStores.reduce((sum, store) => sum + store.totalUnits, 0), 3635);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.available, 0), 3125);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.incoming, 0), 460);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.repair, 0), 50);
+    assert.equal(response.payload.items.filter((item) => item.storeCode !== 'sao-joao-del-rei').length, 790);
+    assert.ok(otherStores.every((store) => store.snapshotDate === '2026-09-04'));
     assert.doesNotMatch(JSON.stringify(response.payload), /serialNumber|serialNumbers|serial_number/i);
   });
 
@@ -2421,12 +2423,13 @@ describe('Controle de estoque por código material', () => {
 
     const response = await manager.request('/api/network-inventory');
     assert.equal(response.status, 200);
-    assert.deepEqual(response.payload.stores.map((store) => store.center), ['210H', '89MN', '283H']);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.totalUnits, 0), 3534);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.available, 0), 3056);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.incoming, 0), 428);
-    assert.equal(response.payload.stores.reduce((sum, store) => sum + store.repair, 0), 50);
-    assert.equal(response.payload.items.length, 778);
+    assert.deepEqual(response.payload.stores.map((store) => store.center), ['209H', '210H', '89MN', '283H']);
+    const otherStores = response.payload.stores.filter((store) => store.center !== '209H');
+    assert.equal(otherStores.reduce((sum, store) => sum + store.totalUnits, 0), 3534);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.available, 0), 3056);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.incoming, 0), 428);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.repair, 0), 50);
+    assert.equal(response.payload.items.filter((item) => item.storeCode !== 'sao-joao-del-rei').length, 778);
     assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-08'));
   });
 

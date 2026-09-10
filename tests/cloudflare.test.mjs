@@ -1963,7 +1963,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.29.0');
+    assert.equal(JSON.parse(packageSource).version, '6.30.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2092,9 +2092,13 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /Ativação de Pré/i);
     assert.match(appSource, /Gerente geral[\s\S]*Gerente de operações[\s\S]*Consultores/i);
     assert.match(appSource, /Cozinha e sala de estoque/i);
-    assert.match(appSource, /state\.user\.role !== 'manager'[\s\S]*\['users', 'audit'\]/i);
+    assert.match(appSource, /state\.alignmentExpanded/);
     assert.match(appSource, /function renderSimpleAlignment/);
     assert.match(appSource, /Três caminhos para fechar melhor/i);
+    assert.match(appSource, /data-action="expand-alignment"[\s\S]*Entenda mais/i);
+    assert.match(appSource, /Materiais de estudo rápido/i);
+    assert.match(appSource, /Descoberta da prioridade[\s\S]*Leitura do simulador[\s\S]*Resposta a objeções[\s\S]*Simulação em dupla/i);
+    assert.match(stylesSource, /\.alignment-expand-button/);
     assert.match(appSource, /function paymentOptionsAlignment/);
     assert.match(appSource, /PIX ou Vivo Pay[\s\S]*De 1x a 12x[\s\S]*De 13x a 21x/);
     assert.match(appSource, /Como o acréscimo evolui de 13x a 21x/);
@@ -2202,8 +2206,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.29\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.29\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.30\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.30\.0/);
     assert.match(appSource, /showcases: 'Vitrines'/);
     assert.match(appSource, /async function renderShowcases/);
     assert.match(appSource, /data-form="showcase-slot"/);
@@ -2285,7 +2289,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.29.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.30.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

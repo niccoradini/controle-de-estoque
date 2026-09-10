@@ -963,7 +963,7 @@ function managerDeviceProducts(products) {
 }
 
 async function networkInventoryDashboard(env) {
-  const [storesResult, itemsResult, localItemsResult, snapshotResult] = await env.DB.batch([
+  const [storesResult, itemsResult, localItemsResult, snapshotResult, networkSerialsResult, localSerialsResult] = await env.DB.batch([
     env.DB.prepare(`
       SELECT code, name, center, snapshot_date, source_file, total_units, material_count,
              available_units, incoming_units, repair_units, ignored_units
@@ -1030,6 +1030,40 @@ async function networkInventoryDashboard(env) {
       SELECT key, value FROM system_state
       WHERE key IN ('inventory_snapshot_date', 'inventory_snapshot_source')
     `),
+    env.DB.prepare(`
+      SELECT serial.store_code, serial.material_code, serial.serial_number,
+             serial.stock_status, serial.modified_on
+      FROM network_inventory_serials serial
+      JOIN network_inventory item
+        ON item.store_code = serial.store_code
+       AND item.material_code = serial.material_code COLLATE NOCASE
+      WHERE item.cluster = 'devices'
+      ORDER BY serial.store_code, serial.material_code, serial.serial_number
+    `),
+    env.DB.prepare(`
+      SELECT 'sao-joao-del-rei' AS store_code, variant.sku AS material_code,
+             serial.serial_number, 'available' AS stock_status,
+             substr(serial.updated_at, 1, 10) AS modified_on
+      FROM inventory_serials serial
+      JOIN product_variants variant ON variant.id = serial.variant_id
+      JOIN products product ON product.id = variant.product_id
+      WHERE serial.status = 'available' AND product.cluster = 'devices'
+      UNION ALL
+      SELECT 'sao-joao-del-rei', incoming.material_code, incoming.serial_number,
+             'incoming', incoming.snapshot_date
+      FROM incoming_inventory_serials incoming
+      JOIN product_variants variant ON variant.sku = incoming.material_code COLLATE NOCASE
+      JOIN products product ON product.id = variant.product_id
+      WHERE product.cluster = 'devices'
+      UNION ALL
+      SELECT 'sao-joao-del-rei', repair.material_code, repair.serial_number,
+             'repair', repair.snapshot_date
+      FROM repair_inventory repair
+      JOIN product_variants variant ON variant.sku = repair.material_code COLLATE NOCASE
+      JOIN products product ON product.id = variant.product_id
+      WHERE product.cluster = 'devices'
+      ORDER BY material_code, serial_number
+    `),
   ]);
   const snapshot = Object.fromEntries((snapshotResult.results || []).map((row) => [row.key, row.value]));
   const localItems = (localItemsResult.results || []).map((item) => ({
@@ -1088,6 +1122,13 @@ async function networkInventoryDashboard(env) {
       ignored: Number(item.ignored_quantity),
       latestModifiedOn: item.latest_modified_on,
     }))],
+    serials: [...(localSerialsResult.results || []), ...(networkSerialsResult.results || [])].map((serial) => ({
+      storeCode: serial.store_code,
+      materialCode: serial.material_code,
+      serialNumber: serial.serial_number,
+      status: serial.stock_status,
+      modifiedOn: serial.modified_on,
+    })),
   });
 }
 

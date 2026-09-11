@@ -1034,10 +1034,6 @@ async function networkInventoryDashboard(env) {
       SELECT serial.store_code, serial.material_code, serial.serial_number,
              serial.stock_status, serial.modified_on
       FROM network_inventory_serials serial
-      JOIN network_inventory item
-        ON item.store_code = serial.store_code
-       AND item.material_code = serial.material_code COLLATE NOCASE
-      WHERE item.cluster = 'devices'
       ORDER BY serial.store_code, serial.material_code, serial.serial_number
     `),
     env.DB.prepare(`

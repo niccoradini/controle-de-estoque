@@ -6601,3 +6601,22 @@ button.showcase-slot:not(:disabled):hover { z-index: 2; transform: translateY(-3
 .network-imei-card em.is-repair { color: #a66a18; background: color-mix(in srgb, #ffb24a 14%, var(--surface)); }
 @media (max-width: 900px) { .network-imei-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .network-imei-panel { margin-inline: 10px; } .network-imei-grid { grid-template-columns: 1fr; } }
+
+/* Consulta direta: código e seriais permanecem visíveis sem rolagem lateral */
+.network-stock-row { grid-template-columns: minmax(280px, 2.5fr) repeat(3, minmax(78px, .55fr)) minmax(105px, .72fr) minmax(100px, .7fr); min-width: 760px; }
+.network-product-identity code { display: inline-flex; width: fit-content; margin-top: 6px; padding: 4px 8px; border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border)); border-radius: 7px; color: var(--primary); background: color-mix(in srgb, var(--primary) 7%, var(--surface)); font-size: .78rem; font-weight: 800; }
+.network-product-identity small { margin-top: 5px !important; }
+.network-serial-count { display: flex; align-items: baseline; gap: 5px; color: var(--muted); }
+.network-serial-count strong { color: var(--primary); font-size: 1rem; }
+.network-serial-count small { font-size: .7rem; }
+.network-serial-count.has-serials { cursor: default; }
+@media (max-width: 700px) {
+  .network-stock-table { overflow: visible; }
+  .network-stock-row--head { display: none; }
+  .network-stock-row { grid-template-columns: repeat(4, minmax(0, 1fr)); min-width: 0; padding: 15px; gap: 12px 8px; }
+  .network-product-identity { grid-column: 1 / -1; }
+  .network-product-identity strong { white-space: normal !important; }
+  .network-stock-row time { display: none; }
+  .network-stock-quantity { justify-self: stretch; }
+  .network-serial-count { align-items: center; justify-content: center; flex-direction: column; min-height: 32px; padding: 4px; border-radius: 10px; background: var(--background); }
+}

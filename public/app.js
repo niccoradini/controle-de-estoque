@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 87038)
-Total output lines: 4059
-
 import {
   compatibleCaseChoices,
   groupAccessoryChoices,
@@ -2033,7 +2030,313 @@ function renderChipResults() {
 
 function chipSellerRoster() {
   if (state.user.role !== 'manager') return '';
-  if (!state.chipSellers.length) return `<section class="chip-roster chip-roster--empty"><div><p class="page-eyeb…7038 tokens truncated…erials = [
+  if (!state.chipSellers.length) return `<section class="chip-roster chip-roster--empty"><div><p class="page-eyebrow">Distribuição</p><h3>Nenhum vendedor ativo</h3><p>Crie um usuário vendedor antes de distribuir chips.</p></div><button class="btn btn--secondary" data-action="navigate" data-view="users">Abrir usuários</button></section>`;
+  return `<section class="chip-roster"><div class="chip-roster__head"><div><p class="page-eyebrow">Carteiras da equipe</p><h3>Até ${Number(state.chipLimit)} chips disponíveis por vendedor</h3><p>Chips vendidos permanecem no histórico e liberam espaço para reposição.</p></div><button class="btn btn--secondary" data-action="clear-chip-seller">Ver todos</button></div><div class="chip-roster__grid">${state.chipSellers.map((seller) => {
+    const percentage = Math.min(100, Math.round((seller.availableCount / state.chipLimit) * 100));
+    return `<button class="chip-owner-card ${state.chipSellerId === seller.id ? 'is-selected' : ''}" data-action="select-chip-seller" data-seller-id="${seller.id}"><span class="chip-owner-card__avatar">${escapeHtml(initials(seller.name))}</span><div><strong>${escapeHtml(seller.name)}</strong><small>${seller.availableCount} disponíveis · ${seller.soldCount} vendidos</small><span class="chip-owner-card__bar"><i style="width:${percentage}%"></i></span></div><b>${seller.availableCount}/${state.chipLimit}</b></button>`;
+  }).join('')}</div></section>`;
+}
+
+async function renderChips() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/chips');
+  state.chips = data.chips || [];
+  state.chipSellers = data.sellers || [];
+  state.chipMaterials = data.materials || [];
+  state.chipLimit = Number(data.limit || 10);
+  const available = Number(data.summary?.available || 0);
+  const sold = Number(data.summary?.sold || 0);
+  const removed = Number(data.summary?.removed || 0);
+  const sellerFree = Math.max(0, state.chipLimit - available);
+  const manager = state.user.role === 'manager';
+  const intro = manager
+    ? ['Gestão de SIM cards', 'Controle todos os chips da equipe.', 'Escolha um material disponível, informe os 6 últimos dígitos do ICCID e distribua a unidade identificada.']
+    : ['Sua carteira', 'Seus chips em um só lugar.', 'Confira material e ICCID. Quando vender, registre a data e o número ativado.'];
+  const addButton = manager && state.chipSellers.length
+    ? `<button class="btn" data-action="open-chip">${uiIcon('sim')} Cadastrar chip</button>`
+    : '';
+  const thirdMetric = manager
+    ? `<article><span>Retirados</span><strong>${removed}</strong><small>preservados no histórico</small></article>`
+    : `<article><span>Vagas livres</span><strong>${sellerFree}</strong><small>limite de ${state.chipLimit}</small></article>`;
+  const sellerOptions = manager
+    ? `<div class="field chip-filter-owner"><label for="chip-seller-filter">Vendedor</label><select class="select" id="chip-seller-filter" data-action="filter-chip-seller"><option value="">Todos os vendedores</option>${state.chipSellers.map((seller) => `<option value="${seller.id}" ${state.chipSellerId === seller.id ? 'selected' : ''}>${escapeHtml(seller.name)} · ${seller.availableCount}/${state.chipLimit}</option>`).join('')}</select></div>`
+    : '';
+  const filters = manager
+    ? [['all', 'Todos'], ['available', 'Disponíveis'], ['sold', 'Vendidos'], ['removed', 'Retirados']]
+    : [['available', 'Disponíveis'], ['sold', 'Vendidos'], ['all', 'Todos']];
+  content.innerHTML = `<section class="chips-hero"><div><p class="page-eyebrow">${intro[0]}</p><h2>${intro[1]}</h2><p>${intro[2]}</p></div>${addButton}</section>
+    <section class="chip-metrics"><article><span>Disponíveis</span><strong>${available}</strong><small>${manager ? 'nas carteiras ativas' : `de ${state.chipLimit} sob sua responsabilidade`}</small></article><article><span>Vendidos</span><strong>${sold}</strong><small>com data e linha registradas</small></article>${thirdMetric}</section>
+    ${chipSellerRoster()}
+    <section class="chip-control"><div class="chip-control__head"><div><p class="page-eyebrow">Conferência</p><h3>${manager ? 'Todos os chips' : 'Material, ICCID e vendas'}</h3></div><div class="chip-control__scan-note">${uiIcon('sim')}<span><strong>Busca inteligente</strong>Identificação pelos 6 últimos dígitos.</span></div></div>
+      <div class="chip-toolbar"><div class="field chip-search"><label for="chip-search">Buscar chip</label><input class="input" id="chip-search" data-action="chip-search" value="${escapeHtml(state.chipSearch)}" placeholder="Material, ICCID, vendedor ou linha"></div>${sellerOptions}<div class="chip-filter-tabs" aria-label="Filtrar situação">${filters.map(([value, label]) => `<button class="chip ${state.chipStatus === value ? 'is-active' : ''}" data-action="filter-chips" data-status="${value}">${label}</button>`).join('')}</div></div>
+      <div data-chip-results></div>
+    </section>`;
+  renderChipResults();
+}
+
+function newsCategory(item) {
+  return newsCategoryInfo[item?.category] || newsCategoryInfo.notice;
+}
+
+function safeNewsImagePath(value = '') {
+  const path = String(value || '');
+  return /^\/news\/[a-z0-9][a-z0-9._-]*\.(?:jpe?g|png|webp)$/i.test(path) ? path : '';
+}
+
+function newsBody(value = '') {
+  const lines = String(value || '').replace(/\r/g, '').split('\n');
+  let html = '';
+  let listOpen = false;
+  const closeList = () => {
+    if (!listOpen) return;
+    html += '</ul>';
+    listOpen = false;
+  };
+  for (const sourceLine of lines) {
+    const line = sourceLine.trim();
+    if (!line) {
+      closeList();
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      closeList();
+      html += `<h4>${escapeHtml(line.slice(3))}</h4>`;
+      continue;
+    }
+    if (line.startsWith('• ')) {
+      if (!listOpen) {
+        html += '<ul>';
+        listOpen = true;
+      }
+      const parts = line.slice(2).split(' — ');
+      const label = parts.shift() || '';
+      const detail = parts.join(' — ');
+      html += `<li><span>${escapeHtml(label)}</span>${detail ? `<strong>${escapeHtml(detail)}</strong>` : ''}</li>`;
+      continue;
+    }
+    if (line.startsWith('! ')) {
+      closeList();
+      html += `<aside>${escapeHtml(line.slice(2))}</aside>`;
+      continue;
+    }
+    closeList();
+    html += `<p>${escapeHtml(line)}</p>`;
+  }
+  closeList();
+  return html;
+}
+
+function newsCard(item) {
+  const category = newsCategory(item);
+  const imagePath = safeNewsImagePath(item.imagePath);
+  const cardImagePath = safeNewsImagePath(newsCardArtwork[imagePath] || imagePath);
+  const hasCuratedArtwork = cardImagePath !== imagePath;
+  const managerControls = state.user.role === 'manager'
+    ? `<div class="news-card__actions"><button class="btn btn--secondary btn--small" data-action="edit-news" data-id="${escapeHtml(item.id)}">Editar</button><button class="btn ${item.active ? 'btn--danger' : ''} btn--small" data-action="toggle-news" data-id="${escapeHtml(item.id)}" data-active="${item.active ? 'false' : 'true'}">${item.active ? 'Ocultar da aba' : 'Publicar novamente'}</button></div>`
+    : '';
+  return `<article class="news-card news-card--${escapeHtml(item.category)} ${imagePath ? 'news-card--media' : ''} ${item.active ? '' : 'is-hidden'}">
+    <div class="news-card__accent"><span>${uiIcon(category.icon)}</span><small>${escapeHtml(category.label)}</small></div>
+    ${imagePath ? `<button type="button" class="news-card__media ${hasCuratedArtwork ? 'news-card__media--curated' : ''}" data-action="view-news-art" data-id="${escapeHtml(item.id)}" aria-label="Ampliar arte: ${escapeHtml(item.title)}"><img src="${escapeHtml(cardImagePath)}" alt="${escapeHtml(item.imageAlt || item.title)}" loading="lazy" decoding="async"><span>${uiIcon('search')} Ver arte completa</span></button>` : ''}
+    <div class="news-card__content">
+      <div class="news-card__heading"><div><span class="news-category news-category--${escapeHtml(item.category)}">${escapeHtml(category.label)}</span>${item.validityLabel ? `<span class="news-validity">${escapeHtml(item.validityLabel)}</span>` : ''}${item.active ? '' : '<span class="news-hidden-label">Oculta</span>'}</div><time>${formatDate(item.updatedAt)}</time></div>
+      <h3>${escapeHtml(item.title)}</h3>
+      <div class="news-card__body">${newsBody(item.body)}</div>
+      <div class="news-card__meta"><span>Publicado por ${escapeHtml(item.authorName)}</span>${item.updatedAt !== item.createdAt ? '<span>Conteúdo atualizado</span>' : ''}</div>
+      ${managerControls}
+    </div>
+  </article>`;
+}
+
+async function renderNews() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/news');
+  state.news = data.news || [];
+  const visibleCount = state.news.filter((item) => item.active).length;
+  const hiddenCount = state.news.length - visibleCount;
+  const managerSummary = state.user.role === 'manager'
+    ? `<div class="news-manager-summary"><span><strong>${visibleCount}</strong> publicadas</span><span><strong>${hiddenCount}</strong> ocultas</span><p>Itens ocultos continuam disponíveis somente aqui para edição ou republicação.</p></div>`
+    : '';
+  const emptyAction = state.user.role === 'manager'
+    ? '<button class="btn" data-action="open-news">Publicar a primeira notícia</button>'
+    : '';
+  content.innerHTML = `<section class="news-hero">
+      <div><span>Informações da loja</span><h2>Notícias, promoções e comunicados.</h2><p>Acompanhe aqui o que está acontecendo e as orientações que precisam chegar a toda a equipe.</p></div>
+      ${state.user.role === 'manager' ? '<button class="btn" data-action="open-news">+ Publicar notícia</button>' : `<div class="news-hero__mark">${uiIcon('news')}<span>${visibleCount} ${visibleCount === 1 ? 'publicação' : 'publicações'}</span></div>`}
+    </section>
+    ${managerSummary}
+    <section class="news-feed" aria-label="Publicações da loja">${state.news.length ? state.news.map(newsCard).join('') : emptyState('Nenhuma notícia publicada', state.user.role === 'manager' ? 'Crie uma promoção, comunicado ou novidade para a equipe.' : 'As próximas promoções e informações da loja aparecerão aqui.', emptyAction)}</section>`;
+}
+
+
+function renovaIntakeStatus(item) {
+  return item.pickupOn
+    ? '<span class="renova-intake-status renova-intake-status--picked">Retirado</span>'
+    : '<span class="renova-intake-status renova-intake-status--waiting">Aguardando retirada</span>';
+}
+
+function filteredRenovaIntakeItems() {
+  const query = state.renovaSearch.trim().toLocaleUpperCase('pt-BR');
+  return state.renovaItems.filter((item) => {
+    const statusMatches = state.renovaStatus === 'all'
+      || (state.renovaStatus === 'picked_up' ? Boolean(item.pickupOn) : !item.pickupOn);
+    return statusMatches && (!query || [item.registrationCode, item.model, item.imei].some((value) => String(value || '').toLocaleUpperCase('pt-BR').includes(query)));
+  });
+}
+
+function renderRenovaIntakeResults() {
+  document.querySelectorAll('[data-action="filter-renova-intake"]').forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.status === state.renovaStatus);
+  });
+  const target = document.querySelector('[data-renova-intake-results]');
+  if (!target) return;
+  const items = filteredRenovaIntakeItems();
+  target.innerHTML = items.length
+    ? `<div class="renova-intake-grid">${items.map((item) => `<article class="renova-intake-card ${item.pickupOn ? 'is-picked' : ''}">
+        <div class="renova-intake-card__icon">${uiIcon('renova')}</div>
+        <div class="renova-intake-card__main"><div class="renova-intake-card__heading">${renovaIntakeStatus(item)}<small>Atualizado por ${escapeHtml(item.updatedByName)}</small></div><h3><span class="renova-intake-code">${escapeHtml(item.registrationCode || '#---')}</span>${escapeHtml(item.model)}</h3><div class="renova-intake-dates"><div><span>IMEI</span><strong class="mono">${item.imei ? escapeHtml(item.imei) : 'Não informado'}</strong></div><div><span>Recebido em</span><strong>${escapeHtml(formatDateOnly(item.receivedOn))}</strong></div><div><span>Retirado em</span><strong>${item.pickupOn ? escapeHtml(formatDateOnly(item.pickupOn)) : 'Ainda não retirado'}</strong></div></div></div>
+        <div class="renova-intake-card__actions">${item.pickupOn ? `<button class="btn btn--secondary btn--small" data-action="edit-renova-intake" data-id="${escapeHtml(item.id)}">Corrigir dados</button>` : `<button class="btn btn--small" data-action="pickup-renova-intake" data-id="${escapeHtml(item.id)}">Registrar retirada</button><button class="btn btn--secondary btn--small" data-action="edit-renova-intake" data-id="${escapeHtml(item.id)}">Editar</button>`}<button class="btn btn--danger btn--small" data-action="delete-renova-intake" data-id="${escapeHtml(item.id)}">Excluir</button></div>
+      </article>`).join('')}</div><p class="renova-intake-result-count">${items.length} ${items.length === 1 ? 'aparelho encontrado' : 'aparelhos encontrados'}</p>`
+    : emptyState('Nenhum aparelho encontrado', state.renovaStatus === 'awaiting_pickup' ? 'Não há aparelhos aguardando retirada.' : 'Ajuste a busca ou cadastre um novo aparelho.');
+}
+
+async function renderRenovaIntake() {
+  if (!canAccessRenovaIntake()) return navigate('dashboard');
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/renova-intake');
+  state.renovaItems = data.items || [];
+  const awaiting = Number(data.summary?.awaitingPickup || 0);
+  const pickedUp = Number(data.summary?.pickedUp || 0);
+  const total = Number(data.summary?.total || 0);
+  content.innerHTML = `<section class="renova-intake-hero"><div><p class="page-eyebrow">Controle de aparelhos recebidos</p><h2>Renova</h2><p>Registre os aparelhos deixados na loja e acompanhe o que ainda aguarda retirada pela empresa.</p></div><div class="renova-intake-hero__actions"><a class="btn btn--secondary" href="/api/renova-intake/export">${uiIcon('copy')} Gerar planilha</a><button class="btn" data-action="open-renova-intake">${uiIcon('plus')} Cadastrar aparelho</button></div></section>
+    <section class="renova-intake-metrics"><article><span>Aguardando retirada</span><strong>${awaiting}</strong><small>aparelhos na loja</small></article><article><span>Já retirados</span><strong>${pickedUp}</strong><small>com data registrada</small></article><article><span>Total recebido</span><strong>${total}</strong><small>histórico completo</small></article></section>
+    <section class="renova-intake-control"><div class="renova-intake-control__head"><div><p class="page-eyebrow">Acompanhamento</p><h3>Recebimentos e retiradas</h3></div><div class="renova-intake-filter-tabs" aria-label="Filtrar aparelhos"><button class="chip ${state.renovaStatus === 'awaiting_pickup' ? 'is-active' : ''}" data-action="filter-renova-intake" data-status="awaiting_pickup">Aguardando</button><button class="chip ${state.renovaStatus === 'picked_up' ? 'is-active' : ''}" data-action="filter-renova-intake" data-status="picked_up">Retirados</button><button class="chip ${state.renovaStatus === 'all' ? 'is-active' : ''}" data-action="filter-renova-intake" data-status="all">Todos</button></div></div><div class="renova-intake-toolbar"><div class="field"><label for="renova-intake-search">Buscar código, modelo ou IMEI</label><input class="input" id="renova-intake-search" data-action="search-renova-intake" value="${escapeHtml(state.renovaSearch)}" placeholder="Ex.: #001, iPhone 15 ou IMEI"></div></div><div data-renova-intake-results></div></section>`;
+  renderRenovaIntakeResults();
+}
+
+async function renderUsers() {
+  const content = document.querySelector('#view-content');
+  const data = await api('/api/users');
+  state.users = data.users;
+  content.innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Acessos</p><h2>Usuários</h2><p>Edite os acessos e vincule o QR Code individual do ponto.</p></div><button class="btn" data-action="open-user">+ Novo usuário</button></div><section class="card"><div class="card__body--flush"><div class="table-scroll"><table class="table responsive-table"><thead><tr><th>Nome</th><th>RE</th><th>E-mail</th><th>Perfil</th><th>QR do ponto</th><th>Status</th><th>Criado em</th><th></th></tr></thead><tbody>${state.users.map((user) => `<tr><td data-label="Nome"><div class="cell-main">${escapeHtml(user.name)}</div></td><td data-label="RE">${user.employeeRe ? `<code class="material-pill mono">${escapeHtml(user.employeeRe)}</code>` : '—'}</td><td data-label="E-mail">${escapeHtml(user.email)}</td><td data-label="Perfil">${escapeHtml(roleLabel(user.role))}</td><td data-label="QR do ponto"><button class="point-qr-admin ${user.hasPointQr ? 'is-ready' : ''}" data-action="upload-point-qr" data-id="${user.id}">${uiIcon(user.hasPointQr ? 'check' : 'plus')} ${user.hasPointQr ? 'Substituir QR' : 'Cadastrar QR'}</button></td><td data-label="Status"><span class="status status--${user.active ? 'available' : 'cancelled'}">${user.active ? 'Ativo' : 'Inativo'}</span></td><td data-label="Criado em">${formatDate(user.createdAt, false)}</td><td data-label="Ações"><div class="table-actions"><button class="btn btn--secondary btn--small" data-action="edit-user" data-id="${user.id}">Editar</button>${user.id === state.user.id ? '' : `<button class="btn btn--danger btn--small" data-action="delete-user" data-id="${user.id}">Excluir</button>`}</div></td></tr>`).join('')}</tbody></table></div></div></section>`;
+}
+
+function uploadPointQr(user) {
+  if (!user || state.user.role !== 'manager') return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/jpeg,image/png,image/webp';
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new ApiError('Selecione uma imagem JPG, PNG ou WebP.', 400);
+      if (file.size > 450000) throw new ApiError('A imagem deve ter no máximo 450 KB.', 400);
+      const imageDataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new ApiError('Não foi possível ler a imagem.', 400));
+        reader.readAsDataURL(file);
+      });
+      const imageBase64 = imageDataUrl.split(',', 2)[1] || '';
+      await api(`/api/users/${user.id}/point-qr`, { method: 'PUT', body: { mimeType: file.type, imageBase64 } });
+      showToast(`QR Code de ${user.name.split(' ')[0]} cadastrado com segurança.`);
+      await renderUsers();
+    } catch (error) {
+      showToast(error.message, 'error');
+    }
+  }, { once: true });
+  input.click();
+}
+
+function alignmentNavigationItem(topic) {
+  const selected = state.alignmentTopic === topic.id;
+  return `<button type="button" id="alignment-tab-${escapeHtml(topic.id)}" class="alignment-nav__item ${selected ? 'is-selected' : ''}" data-action="open-alignment" data-topic="${escapeHtml(topic.id)}" role="tab" aria-selected="${selected}" aria-controls="alignment-detail" tabindex="${selected ? '0' : '-1'}">
+    <span class="alignment-nav__number">${escapeHtml(topic.number)}</span>
+    <span class="alignment-nav__icon">${uiIcon(topic.icon)}</span>
+    <span class="alignment-nav__copy"><small>${escapeHtml(topic.eyebrow)} · ${Number(topic.minutes)} min</small><strong>${escapeHtml(topic.title)}</strong></span>
+    <span class="alignment-nav__arrow">${uiIcon('chevron')}</span>
+  </button>`;
+}
+
+function alignmentTopicChip(topic) {
+  const selected = state.alignmentTopic === topic.id;
+  return `<button type="button" id="alignment-tab-${escapeHtml(topic.id)}" class="alignment-topic-chip ${selected ? 'is-selected' : ''}" data-action="open-alignment" data-topic="${escapeHtml(topic.id)}" role="tab" aria-selected="${selected}" aria-controls="alignment-detail"><span>${escapeHtml(topic.number)}</span>${uiIcon(topic.icon)}<strong>${escapeHtml(topic.title)}</strong><small>${Number(topic.minutes)} min</small></button>`;
+}
+
+function alignmentQuickAccess(expanded = false) {
+  return `<section class="alignment-quick-access" aria-label="Acesso rápido ao alinhamento"><div><span>${uiIcon('briefing')}</span><p><strong>Alinhamento rápido</strong><small>O essencial para aplicar agora no atendimento.</small></p></div><button type="button" class="alignment-expand-button" data-action="${expanded ? 'collapse-alignment' : 'expand-alignment'}"><span>${expanded ? 'Ver resumo' : 'Entenda mais'}</span>${uiIcon(expanded ? 'chevron' : 'briefing', expanded ? 'alignment-icon--back' : '')}</button></section>`;
+}
+
+function alignmentQuickStudy({ time, title, intro, steps, sourceUrl, sourceLabel }) {
+  return `<details class="alignment-quick-study"><summary><span>${uiIcon('briefing')}</span><div><small>Estudo rápido · ${escapeHtml(time)}</small><strong>${escapeHtml(title)}</strong></div>${uiIcon('chevron')}</summary><div class="alignment-quick-study__content"><p>${escapeHtml(intro)}</p><ol>${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel || 'Ver referência')} ${uiIcon('chevron')}</a>` : ''}</div></details>`;
+}
+
+function alignmentServiceTiles() {
+  const services = [
+    ['Atendimento e tratamento', 'Não limitar a atuação à venda: acolher com linguagem acessível, identificar a demanda, usar os recursos da loja e acompanhar o encaminhamento.'],
+    ['Troca de chip', 'Receber a solicitação, conferir os dados e executar ou encaminhar pelo procedimento correto.'],
+    ['Faturas', 'Consultar valores e serviços ativos, explicar a cobrança e registrar ou orientar corretamente uma contestação.'],
+    ['Recargas', 'Explicar as opções e concluir a solicitação com segurança.'],
+    ['Ativação de Pré', 'Cadastrar e ativar o plano conforme o procedimento vigente.'],
+    ['Portabilidade', 'Orientar requisitos, registrar corretamente e explicar os próximos passos.'],
+    ['Informação correta', 'Explicar preço, fidelidade, multa, serviços adicionais, primeira fatura e demais condições antes da confirmação.'],
+    ['Conferência da operação', 'Confirmar titularidade, linhas, plano final, dependentes e encerramento de ofertas antigas antes de concluir.'],
+    ['Documentos e protocolo', 'Entregar ou viabilizar contrato, comprovantes, Etiqueta Padrão e identificação para acompanhar a demanda.'],
+    ['Dados e consentimento', 'Usar somente os dados necessários, proteger credenciais e nunca incluir produto ou serviço sem autorização.'],
+  ];
+  return services.map(([title, text], index) => `<article class="alignment-service"><span>${String(index + 1).padStart(2, '0')}</span><div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div></article>`).join('');
+}
+
+function alignmentLeadershipMessages() {
+  const renatoMessage = [
+    'Bom dia, um ótimo mês a todos.',
+    'Ponto de atenção.',
+    'Ainda temos CN/ lojas enviando ou pedindo para clientes ligarem na central para resolver seus problemas com operadora!! Isso é uma prática INACEITÁVEL e PROIBIDA dentro da nossa REDE. Se não souberem o procedimentos a empresa está a disposição para ajudar, inclusive se o caso podem me acionar que a solução vem.',
+    'Os clientes que buscam nossos canais de atendimento precisam ser resolvido em loja, hoje as lojas tem mesma autonomia que a central 10315 ou 1058 e não vejo motivo para esse direcionamento.',
+    'Ótimo mês a todos e boas vendas',
+  ];
+  const mariaMessage = [
+    'É isto, Renato! Desde que nos propusemos a ser parceiros da Vivo, nossa principal preocupação é “sempre” atender e resolver todos os problemas em loja! Como bem disse o Renato, é INACEITÁVEL e INADMISSÍVEL encaminhar o cliente para o 10315! Chegamos onde estamos porque essa sempre foi nossa prioridade maior: cliente tem que sair da loja com seu problema resolvido! Se acaso for absolutamente necessário entrar em contato com a Central, fazê-lo para o cliente e colocá-lo para falar dentro da loja, dando todo o suporte necessário! Cliente tem que sair de loja completamente satisfeito e feliz com o nosso atendimento! É assim que fizemos a Gramcell crescer e é assim que queremos ser a PRIMEIRA em atendimento para o nosso cliente! Vcs são a GRAMCELL e eu me orgulho muito disso! Obrigada e um ótimo mês para todos!',
+  ];
+  const messageParagraphs = (paragraphs) => paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('');
+  return `<section class="alignment-conversation" aria-label="Mensagens da liderança sobre atendimento ao cliente">
+    <header class="alignment-conversation__head">
+      <div><span class="alignment-panel__label">Orientações que deram origem a este alinhamento</span><h4>Direcionamento direto da liderança.</h4><p>Mensagens reproduzidas integralmente para preservar o contexto e a importância do comunicado.</p></div>
+      <span class="alignment-conversation__status"><i aria-hidden="true"></i>Comunicado interno</span>
+    </header>
+    <div class="alignment-conversation__thread">
+      <article class="alignment-message alignment-message--supervisor">
+        <header class="alignment-message__head"><span class="alignment-message__avatar" aria-hidden="true">RD</span><div class="alignment-message__sender"><strong>Renato Dal Negro</strong><span>Supervisor Comercial</span></div><time datetime="2026-08-01T07:37:00-03:00">01 de agosto · 7:37</time></header>
+        <div class="alignment-message__bubble">${messageParagraphs(renatoMessage)}</div>
+        <footer class="alignment-message__meta"><span aria-label="24 reações positivas">${uiIcon('check')}<strong>24</strong></span><small>Mensagem da liderança comercial</small></footer>
+      </article>
+      <article class="alignment-message alignment-message--owner">
+        <header class="alignment-message__head"><span class="alignment-message__avatar" aria-hidden="true">MC</span><div class="alignment-message__sender"><strong>Maria Caldas</strong><span>Dona da empresa</span></div><time datetime="2026-08-01T09:59:00-03:00">01 de agosto · 9:59</time></header>
+        <div class="alignment-message__reply"><span>Em resposta a</span><strong>Renato Dal Negro</strong><p>Bom dia, um ótimo mês a todos.<br>Ponto de atenção.</p></div>
+        <div class="alignment-message__bubble">${messageParagraphs(mariaMessage)}</div>
+        <footer class="alignment-message__meta"><span aria-label="17 reações positivas">${uiIcon('check')}<strong>17</strong></span><small>Confirmação da direção da empresa</small></footer>
+      </article>
+    </div>
+  </section>`;
+}
+
+function paymentOptionsAlignment() {
+  const approaches = [
+    ['Pergunte primeiro', 'Descubra se a prioridade é pagar menos no total, reduzir a parcela ou levar uma solução completa.'],
+    ['Monte a solução', 'Inclua aparelho, capa, película, carregador, seguro e plano adequados ao uso do cliente.'],
+    ['Comece pela menor parcela', 'Apresente a composição completa em até 21x e mostre o total exibido pelo simulador.'],
+    ['Compare com 12x', 'Mostre a parcela em 12x e o mesmo total do preço-base para facilitar a decisão.'],
+    ['Guarde o PIX para fechar', 'Quando o cliente buscar o menor valor total, apresente PIX ou Vivo Pay com 10% a menos.'],
+  ];
+  const negotiationIdeas = [
+    ['Orçamento mensal', '“Qual valor mensal fica confortável para você?” Depois, ajuste prazo e composição sem retirar benefícios antes de comparar.'],
+    ['Menor valor total', '“Se sua prioridade é economizar no total, vou mostrar a opção mais vantajosa para fechar hoje.”'],
+    ['Solução completa', '“Vamos proteger o aparelho desde o primeiro dia e distribuir tudo em uma parcela que caiba no seu planejamento.”'],
+    ['Vivo Renova', '“Vou verificar quanto seu aparelho usado pode reduzir da proposta e comparar as três opções.”'],
+    ['Comparação clara', '“Vou colocar lado a lado parcela e total para você escolher com segurança.”'],
+    ['Objeção de preço', 'Troque “está caro” por uma pergunta: “O que pesa mais agora: o valor mensal ou o total da compra?”'],
+  ];
+  const studyMaterials = [
     ['1 minuto', 'Descoberta da prioridade', 'Decore três perguntas: “Quer menor valor total?”, “Qual parcela fica confortável?” e “Quer levar a solução completa?”'],
     ['2 minutos', 'Leitura do simulador', 'Treine localizar preço-base, quantidade de parcelas, valor mensal e total final. Nunca faça cálculo de cabeça.'],
     ['3 minutos', 'Resposta a objeções', 'Pratique ouvir, confirmar a dúvida, fazer uma pergunta e só então comparar uma nova proposta.'],

@@ -56,7 +56,7 @@ let migration = template
   .replaceAll(`migration-${templateMigrationNumber}`, `migration-${migrationNumber}`)
   .replace(/\d{2}\/\d{2}\/2026/, source.importedAt.split('-').reverse().join('/'))
   .replaceAll(template.match(/20\d{2}-\d{2}-\d{2}/)?.[0] || '', source.importedAt)
-  .replace(/ESTOQUE[^'\n]*\.xlsx/g, source.source)
+  .replace(/('inventory_snapshot_source', ')[^']+('\))/, `$1${source.source}$2`)
   .replace(
     /(INSERT INTO repair_inventory\s+\(serial_number, material_code, technical_name, center, deposit, snapshot_date\)\s+VALUES\n)[\s\S]*?(;\n\nDROP TRIGGER)/,
     `$1${repairValues}$2`,

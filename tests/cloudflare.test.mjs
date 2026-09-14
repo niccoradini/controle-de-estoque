@@ -2478,4 +2478,28 @@ describe('Controle de estoque por código material', () => {
     assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '351008263818229'));
     assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '357749666523106'));
   });
+
+  test('atualiza o estoque da loja com a base de 14/09', async () => {
+    const migration = await readFile(new URL('../migrations/0084_inventory_refresh_2026_09_14.sql', import.meta.url), 'utf8');
+    const incomingMigration = await readFile(new URL('../migrations/0085_incoming_inventory_details_2026_09_14.sql', import.meta.url), 'utf8');
+    await applyMigration(migration);
+    await applyMigration(incomingMigration);
+
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-09-14');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, '209H14.09.26.xlsx');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_incoming_units'`)).value, '160');
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM repair_inventory')).count), 111);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM inventory_serials WHERE status = 'available'`)).count), 1046);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM incoming_inventory_serials')).count), 160);
+    assert.equal(Number((await row(`SELECT COUNT(DISTINCT material_code) AS count FROM incoming_inventory_serials`)).count), 44);
+    assert.equal((await row(`SELECT MIN(snapshot_date) AS snapshot FROM incoming_inventory_serials`)).snapshot, '2026-09-14');
+
+    const showcase = await manager.request('/api/showcases');
+    assert.equal(showcase.status, 200);
+    const byCode = (code) => showcase.payload.products.find((product) => product.materialCode === code);
+    assert.equal(byCode('DGAP20362000').quantity, 6);
+    assert.equal(byCode('TGSA61262000').quantity, 3);
+    assert.equal(byCode('TGSA58664000').quantity, 9);
+    assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '351008263818229'));
+  });
 });

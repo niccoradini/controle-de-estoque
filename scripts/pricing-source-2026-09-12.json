@@ -1,0 +1,707 @@
+{
+  "source": "Gramcell · Simulador Produtos",
+  "tableDate": "2026-09-12",
+  "checkedAt": "2026-09-14",
+  "pixDiscountBasisPoints": 1000,
+  "paymentPolicyMaxInstallments": 21,
+  "paymentPolicyMinimumInstallmentCents": 0,
+  "installmentSurchargePartsPerMillion": {
+    "13": 77440,
+    "14": 83130,
+    "15": 88820,
+    "16": 94540,
+    "17": 100280,
+    "18": 106020,
+    "19": 111810,
+    "20": 117610,
+    "21": 123416
+  },
+  "simulatorObservedLegacyThresholds": [
+    {
+      "minCents": 499900,
+      "maxInstallments": 21
+    },
+    {
+      "minCents": 299900,
+      "maxInstallments": 15
+    },
+    {
+      "minCents": 99900,
+      "maxInstallments": 12
+    },
+    {
+      "minCents": 49900,
+      "maxInstallments": 6
+    },
+    {
+      "minCents": 9900,
+      "maxInstallments": 3
+    },
+    {
+      "minCents": 0,
+      "maxInstallments": 1
+    }
+  ],
+  "policyNote": "Preços conferidos diretamente no Gramcell · Simulador Produtos em 14/09/2026. Tabela vigente de produtos: 12/09/2026.",
+  "profiles": [
+    {
+      "name": "iPhone 13 256GB",
+      "prices": {
+        "PRÉ": 359900,
+        "CONTROLE BTL": 359900,
+        "CONTROLE ENTRADA": 349900,
+        "CONTROLE ALTO VALOR": 329900,
+        "PÓS INDIVIDUAL": 319900,
+        "FAMILIA 2": 309900,
+        "FAMILIA 3": 299900,
+        "FAMILIA 4/5": 289900,
+        "VIVO V": 279900
+      }
+    },
+    {
+      "name": "iPhone 14 256GB",
+      "prices": {
+        "PRÉ": 374900,
+        "CONTROLE BTL": 374900,
+        "CONTROLE ENTRADA": 359900,
+        "CONTROLE ALTO VALOR": 349900,
+        "PÓS INDIVIDUAL": 329900,
+        "FAMILIA 2": 319900,
+        "FAMILIA 3": 309900,
+        "FAMILIA 4/5": 299900,
+        "VIVO V": 269900
+      }
+    },
+    {
+      "name": "iPhone 15 256GB",
+      "prices": {
+        "PRÉ": 479900,
+        "CONTROLE BTL": 479900,
+        "CONTROLE ENTRADA": 469900,
+        "CONTROLE ALTO VALOR": 459900,
+        "PÓS INDIVIDUAL": 409900,
+        "FAMILIA 2": 399900,
+        "FAMILIA 3": 369900,
+        "FAMILIA 4/5": 359900,
+        "VIVO V": 349900
+      }
+    },
+    {
+      "name": "iPhone 16 256GB",
+      "prices": {
+        "PRÉ": 579900,
+        "CONTROLE BTL": 579900,
+        "CONTROLE ENTRADA": 539900,
+        "CONTROLE ALTO VALOR": 529900,
+        "PÓS INDIVIDUAL": 499900,
+        "FAMILIA 2": 489900,
+        "FAMILIA 3": 479900,
+        "FAMILIA 4/5": 469900,
+        "VIVO V": 459900
+      }
+    },
+    {
+      "name": "iPhone 16E 256GB",
+      "prices": {
+        "PRÉ": 429900,
+        "CONTROLE BTL": 429900,
+        "CONTROLE ENTRADA": 399900,
+        "CONTROLE ALTO VALOR": 394900,
+        "PÓS INDIVIDUAL": 389900,
+        "FAMILIA 2": 379900,
+        "FAMILIA 3": 359900,
+        "FAMILIA 4/5": 319900,
+        "VIVO V": 309900
+      }
+    },
+    {
+      "name": "iPhone 17 256GB",
+      "prices": {
+        "PRÉ": 659900,
+        "CONTROLE BTL": 639900,
+        "CONTROLE ENTRADA": 629900,
+        "CONTROLE ALTO VALOR": 619900,
+        "PÓS INDIVIDUAL": 599900,
+        "FAMILIA 2": 589900,
+        "FAMILIA 3": 579900,
+        "FAMILIA 4/5": 559900,
+        "VIVO V": 549900
+      }
+    },
+    {
+      "name": "iPhone 17 512GB",
+      "prices": {
+        "PRÉ": 799900,
+        "CONTROLE BTL": 799900,
+        "CONTROLE ENTRADA": 789900,
+        "CONTROLE ALTO VALOR": 779900,
+        "PÓS INDIVIDUAL": 769900,
+        "FAMILIA 2": 759900,
+        "FAMILIA 3": 749900,
+        "FAMILIA 4/5": 729900,
+        "VIVO V": 699900
+      }
+    },
+    {
+      "name": "iPhone 17 Pro 256GB",
+      "prices": {
+        "PRÉ": 1029900,
+        "CONTROLE BTL": 1029900,
+        "CONTROLE ENTRADA": 1019900,
+        "CONTROLE ALTO VALOR": 999900,
+        "PÓS INDIVIDUAL": 989900,
+        "FAMILIA 2": 979900,
+        "FAMILIA 3": 959900,
+        "FAMILIA 4/5": 929900,
+        "VIVO V": 879900
+      }
+    },
+    {
+      "name": "iPhone 17 Pro 512GB",
+      "prices": {
+        "PRÉ": 1234900,
+        "CONTROLE BTL": 1234900,
+        "CONTROLE ENTRADA": 1169900,
+        "CONTROLE ALTO VALOR": 1139900,
+        "PÓS INDIVIDUAL": 1124900,
+        "FAMILIA 2": 1069900,
+        "FAMILIA 3": 1049900,
+        "FAMILIA 4/5": 1019900,
+        "VIVO V": 969900
+      }
+    },
+    {
+      "name": "iPhone 17 Pro Max 1TB",
+      "prices": {
+        "PRÉ": 1449900,
+        "CONTROLE BTL": 1449900,
+        "CONTROLE ENTRADA": 1339900,
+        "CONTROLE ALTO VALOR": 1309900,
+        "PÓS INDIVIDUAL": 1289900,
+        "FAMILIA 2": 1239900,
+        "FAMILIA 3": 1209900,
+        "FAMILIA 4/5": 1179900,
+        "VIVO V": 1119900
+      }
+    },
+    {
+      "name": "iPhone 17 Pro Max 256GB",
+      "prices": {
+        "PRÉ": 1099900,
+        "CONTROLE BTL": 1099900,
+        "CONTROLE ENTRADA": 1039900,
+        "CONTROLE ALTO VALOR": 1029900,
+        "PÓS INDIVIDUAL": 1009900,
+        "FAMILIA 2": 999900,
+        "FAMILIA 3": 989900,
+        "FAMILIA 4/5": 979900,
+        "VIVO V": 959900
+      }
+    },
+    {
+      "name": "iPhone 17 Pro Max 512GB",
+      "prices": {
+        "PRÉ": 1289900,
+        "CONTROLE BTL": 1289900,
+        "CONTROLE ENTRADA": 1249900,
+        "CONTROLE ALTO VALOR": 1229900,
+        "PÓS INDIVIDUAL": 1209900,
+        "FAMILIA 2": 1189900,
+        "FAMILIA 3": 1159900,
+        "FAMILIA 4/5": 1129900,
+        "VIVO V": 1079900
+      }
+    },
+    {
+      "name": "iPhone 17E 256GB",
+      "prices": {
+        "PRÉ": 499900,
+        "CONTROLE BTL": 499900,
+        "CONTROLE ENTRADA": 484900,
+        "CONTROLE ALTO VALOR": 479900,
+        "PÓS INDIVIDUAL": 449900,
+        "FAMILIA 2": 434900,
+        "FAMILIA 3": 404900,
+        "FAMILIA 4/5": 399900,
+        "VIVO V": 389900
+      }
+    },
+    {
+      "name": "iPhone Air 256GB",
+      "prices": {
+        "PRÉ": 719900,
+        "CONTROLE BTL": 719900,
+        "CONTROLE ENTRADA": 669900,
+        "CONTROLE ALTO VALOR": 659900,
+        "PÓS INDIVIDUAL": 649900,
+        "FAMILIA 2": 639900,
+        "FAMILIA 3": 609900,
+        "FAMILIA 4/5": 579900,
+        "VIVO V": 549900
+      }
+    },
+    {
+      "name": "Moto G35 5G",
+      "prices": {
+        "PRÉ": 90900,
+        "CONTROLE BTL": 90900,
+        "CONTROLE ENTRADA": 89900,
+        "CONTROLE ALTO VALOR": 84900,
+        "PÓS INDIVIDUAL": 79900,
+        "FAMILIA 2": 74900,
+        "FAMILIA 3": 69900,
+        "FAMILIA 4/5": 64900,
+        "VIVO V": 59900
+      }
+    },
+    {
+      "name": "Moto G47 5G 128GB",
+      "prices": {
+        "PRÉ": 114900,
+        "CONTROLE BTL": 114900,
+        "CONTROLE ENTRADA": 99900,
+        "CONTROLE ALTO VALOR": 94900,
+        "PÓS INDIVIDUAL": 89900,
+        "FAMILIA 2": 84900,
+        "FAMILIA 3": 79900,
+        "FAMILIA 4/5": 74900,
+        "VIVO V": 69900
+      }
+    },
+    {
+      "name": "Moto G56 5G 256GB",
+      "prices": {
+        "PRÉ": 149900,
+        "CONTROLE BTL": 149900,
+        "CONTROLE ENTRADA": 144900,
+        "CONTROLE ALTO VALOR": 141900,
+        "PÓS INDIVIDUAL": 138900,
+        "FAMILIA 2": 134900,
+        "FAMILIA 3": 129900,
+        "FAMILIA 4/5": 124900,
+        "VIVO V": 119900
+      }
+    },
+    {
+      "name": "Moto G86 5G 256GB",
+      "prices": {
+        "PRÉ": 177900,
+        "CONTROLE BTL": 177900,
+        "CONTROLE ENTRADA": 174900,
+        "CONTROLE ALTO VALOR": 169900,
+        "PÓS INDIVIDUAL": 164900,
+        "FAMILIA 2": 159900,
+        "FAMILIA 3": 154900,
+        "FAMILIA 4/5": 149900,
+        "VIVO V": 144900
+      }
+    },
+    {
+      "name": "Motorola Edge 60 Fusion 256GB",
+      "prices": {
+        "PRÉ": 194900,
+        "CONTROLE BTL": 194900,
+        "CONTROLE ENTRADA": 192900,
+        "CONTROLE ALTO VALOR": 184900,
+        "PÓS INDIVIDUAL": 174900,
+        "FAMILIA 2": 169900,
+        "FAMILIA 3": 164900,
+        "FAMILIA 4/5": 159900,
+        "VIVO V": 154900
+      }
+    },
+    {
+      "name": "Motorola Edge 60 Pro 256GB",
+      "prices": {
+        "PRÉ": 319900,
+        "CONTROLE BTL": 319900,
+        "CONTROLE ENTRADA": 289900,
+        "CONTROLE ALTO VALOR": 279900,
+        "PÓS INDIVIDUAL": 269900,
+        "FAMILIA 2": 239900,
+        "FAMILIA 3": 229900,
+        "FAMILIA 4/5": 219900,
+        "VIVO V": 209900
+      }
+    },
+    {
+      "name": "Motorola Edge 70 512GB",
+      "prices": {
+        "PRÉ": 379900,
+        "CONTROLE BTL": 379900,
+        "CONTROLE ENTRADA": 299900,
+        "CONTROLE ALTO VALOR": 289900,
+        "PÓS INDIVIDUAL": 279900,
+        "FAMILIA 2": 269900,
+        "FAMILIA 3": 259900,
+        "FAMILIA 4/5": 249900,
+        "VIVO V": 239900
+      }
+    },
+    {
+      "name": "Motorola Edge 70 Fusion 256GB",
+      "prices": {
+        "PRÉ": 234900,
+        "CONTROLE BTL": 234900,
+        "CONTROLE ENTRADA": 219900,
+        "CONTROLE ALTO VALOR": 209900,
+        "PÓS INDIVIDUAL": 199900,
+        "FAMILIA 2": 194900,
+        "FAMILIA 3": 189900,
+        "FAMILIA 4/5": 184900,
+        "VIVO V": 179900
+      }
+    },
+    {
+      "name": "Motorola Moto G67 5G 128GB",
+      "prices": {
+        "PRÉ": 134900,
+        "CONTROLE BTL": 134900,
+        "CONTROLE ENTRADA": 129900,
+        "CONTROLE ALTO VALOR": 127900,
+        "PÓS INDIVIDUAL": 124900,
+        "FAMILIA 2": 119900,
+        "FAMILIA 3": 114900,
+        "FAMILIA 4/5": 109900,
+        "VIVO V": 104900
+      }
+    },
+    {
+      "name": "Motorola Moto G67 5G 256GB",
+      "prices": {
+        "PRÉ": 157900,
+        "CONTROLE BTL": 157900,
+        "CONTROLE ENTRADA": 149900,
+        "CONTROLE ALTO VALOR": 147900,
+        "PÓS INDIVIDUAL": 139900,
+        "FAMILIA 2": 137900,
+        "FAMILIA 3": 134900,
+        "FAMILIA 4/5": 129900,
+        "VIVO V": 124900
+      }
+    },
+    {
+      "name": "Motorola Moto G77 5G 256GB",
+      "prices": {
+        "PRÉ": 157900,
+        "CONTROLE BTL": 157900,
+        "CONTROLE ENTRADA": 154900,
+        "CONTROLE ALTO VALOR": 149900,
+        "PÓS INDIVIDUAL": 144900,
+        "FAMILIA 2": 139900,
+        "FAMILIA 3": 134900,
+        "FAMILIA 4/5": 129900,
+        "VIVO V": 124900
+      }
+    },
+    {
+      "name": "Motorola Signature 512GB",
+      "prices": {
+        "PRÉ": 589900,
+        "CONTROLE BTL": 589900,
+        "CONTROLE ENTRADA": 579900,
+        "CONTROLE ALTO VALOR": 539900,
+        "PÓS INDIVIDUAL": 459900,
+        "FAMILIA 2": 399900,
+        "FAMILIA 3": 389900,
+        "FAMILIA 4/5": 379900,
+        "VIVO V": 369900
+      }
+    },
+    {
+      "name": "Samsung Galaxy A06 4G 128GB",
+      "prices": {
+        "PRÉ": 97900,
+        "CONTROLE BTL": 97900,
+        "CONTROLE ENTRADA": 92900,
+        "CONTROLE ALTO VALOR": 87900,
+        "PÓS INDIVIDUAL": 82900,
+        "FAMILIA 2": 77900,
+        "FAMILIA 3": 72900,
+        "FAMILIA 4/5": 67900,
+        "VIVO V": 62900
+      }
+    },
+    {
+      "name": "Samsung Galaxy A07 5G 128GB",
+      "prices": {
+        "PRÉ": 112900,
+        "CONTROLE BTL": 112900,
+        "CONTROLE ENTRADA": 104900,
+        "CONTROLE ALTO VALOR": 102900,
+        "PÓS INDIVIDUAL": 99900,
+        "FAMILIA 2": 89900,
+        "FAMILIA 3": 87900,
+        "FAMILIA 4/5": 84900,
+        "VIVO V": 82900
+      }
+    },
+    {
+      "name": "Samsung Galaxy A17 5G 128GB",
+      "prices": {
+        "PRÉ": 152900,
+        "CONTROLE BTL": 152900,
+        "CONTROLE ENTRADA": 134900,
+        "CONTROLE ALTO VALOR": 124900,
+        "PÓS INDIVIDUAL": 122900,
+        "FAMILIA 2": 119900,
+        "FAMILIA 3": 104900,
+        "FAMILIA 4/5": 99900,
+        "VIVO V": 94900
+      }
+    },
+    {
+      "name": "Samsung Galaxy A17 5G 256GB",
+      "prices": {
+        "PRÉ": 162900,
+        "CONTROLE BTL": 162900,
+        "CONTROLE ENTRADA": 159900,
+        "CONTROLE ALTO VALOR": 157900,
+        "PÓS INDIVIDUAL": 154900,
+        "FAMILIA 2": 144900,
+        "FAMILIA 3": 124900,
+        "FAMILIA 4/5": 119900,
+        "VIVO V": 114900
+      }
+    },
+    {
+      "name": "Samsung Galaxy A36 5G 256GB",
+      "prices": {
+        "PRÉ": 179900,
+        "CONTROLE BTL": 179900,
+        "CONTROLE ENTRADA": 169900,
+        "CONTROLE ALTO VALOR": 167900,
+        "PÓS INDIVIDUAL": 164900,
+        "FAMILIA 2": 159900,
+        "FAMILIA 3": 154900,
+        "FAMILIA 4/5": 149900,
+        "VIVO V": 144900
+      }
+    },
+    {
+      "name": "Samsung Galaxy A37 5G 256GB",
+      "prices": {
+        "PRÉ": 214900,
+        "CONTROLE BTL": 214900,
+        "CONTROLE ENTRADA": 189900,
+        "CONTROLE ALTO VALOR": 184900,
+        "PÓS INDIVIDUAL": 179900,
+        "FAMILIA 2": 169900,
+        "FAMILIA 3": 164900,
+        "FAMILIA 4/5": 159900,
+        "VIVO V": 154900
+      }
+    },
+    {
+      "name": "Samsung Galaxy A57 5G 256GB",
+      "prices": {
+        "PRÉ": 249900,
+        "CONTROLE BTL": 249900,
+        "CONTROLE ENTRADA": 209900,
+        "CONTROLE ALTO VALOR": 204900,
+        "PÓS INDIVIDUAL": 199900,
+        "FAMILIA 2": 189900,
+        "FAMILIA 3": 184900,
+        "FAMILIA 4/5": 179900,
+        "VIVO V": 174900
+      }
+    },
+    {
+      "name": "Samsung Galaxy S25 256GB",
+      "prices": {
+        "PRÉ": 399900,
+        "CONTROLE BTL": 399900,
+        "CONTROLE ENTRADA": 369900,
+        "CONTROLE ALTO VALOR": 359900,
+        "PÓS INDIVIDUAL": 349900,
+        "FAMILIA 2": 309900,
+        "FAMILIA 3": 304900,
+        "FAMILIA 4/5": 299900,
+        "VIVO V": 294900
+      }
+    },
+    {
+      "name": "Samsung Galaxy S25 FE 5G 256GB",
+      "prices": {
+        "PRÉ": 399900,
+        "CONTROLE BTL": 399900,
+        "CONTROLE ENTRADA": 329900,
+        "CONTROLE ALTO VALOR": 319900,
+        "PÓS INDIVIDUAL": 299900,
+        "FAMILIA 2": 279900,
+        "FAMILIA 3": 269900,
+        "FAMILIA 4/5": 259900,
+        "VIVO V": 249900
+      }
+    },
+    {
+      "name": "Samsung Galaxy S25 Ultra 256GB",
+      "prices": {
+        "PRÉ": 597900,
+        "CONTROLE BTL": 597900,
+        "CONTROLE ENTRADA": 589900,
+        "CONTROLE ALTO VALOR": 579900,
+        "PÓS INDIVIDUAL": 559900,
+        "FAMILIA 2": 519900,
+        "FAMILIA 3": 509900,
+        "FAMILIA 4/5": 504900,
+        "VIVO V": 499900
+      }
+    },
+    {
+      "name": "Samsung Galaxy S26 256GB",
+      "prices": {
+        "PRÉ": 479900,
+        "CONTROLE BTL": 479900,
+        "CONTROLE ENTRADA": 399900,
+        "CONTROLE ALTO VALOR": 389900,
+        "PÓS INDIVIDUAL": 379900,
+        "FAMILIA 2": 339900,
+        "FAMILIA 3": 329900,
+        "FAMILIA 4/5": 324900,
+        "VIVO V": 319900
+      }
+    },
+    {
+      "name": "Samsung Galaxy S26 512GB",
+      "prices": {
+        "PRÉ": 789900,
+        "CONTROLE BTL": 789900,
+        "CONTROLE ENTRADA": 549900,
+        "CONTROLE ALTO VALOR": 539900,
+        "PÓS INDIVIDUAL": 529900,
+        "FAMILIA 2": 439900,
+        "FAMILIA 3": 429900,
+        "FAMILIA 4/5": 399900,
+        "VIVO V": 389900
+      }
+    },
+    {
+      "name": "Samsung Galaxy S26 Ultra 256GB",
+      "prices": {
+        "PRÉ": 859900,
+        "CONTROLE BTL": 859900,
+        "CONTROLE ENTRADA": 799900,
+        "CONTROLE ALTO VALOR": 779900,
+        "PÓS INDIVIDUAL": 689900,
+        "FAMILIA 2": 579900,
+        "FAMILIA 3": 569900,
+        "FAMILIA 4/5": 559900,
+        "VIVO V": 549900
+      }
+    },
+    {
+      "name": "Samsung Galaxy S26+ 256GB",
+      "prices": {
+        "PRÉ": 869900,
+        "CONTROLE BTL": 869900,
+        "CONTROLE ENTRADA": 599900,
+        "CONTROLE ALTO VALOR": 579900,
+        "PÓS INDIVIDUAL": 549900,
+        "FAMILIA 2": 499900,
+        "FAMILIA 3": 489900,
+        "FAMILIA 4/5": 479900,
+        "VIVO V": 469900
+      }
+    },
+    {
+      "name": "Samsung Galaxy S26+ 512GB",
+      "prices": {
+        "PRÉ": 929900,
+        "CONTROLE BTL": 929900,
+        "CONTROLE ENTRADA": 649900,
+        "CONTROLE ALTO VALOR": 629900,
+        "PÓS INDIVIDUAL": 599900,
+        "FAMILIA 2": 549900,
+        "FAMILIA 3": 539900,
+        "FAMILIA 4/5": 529900,
+        "VIVO V": 519900
+      }
+    },
+    {
+      "name": "Samsung Galaxy Z Flip 7 256GB",
+      "prices": {
+        "PRÉ": 389900,
+        "CONTROLE BTL": 389900,
+        "CONTROLE ENTRADA": 339900,
+        "CONTROLE ALTO VALOR": 334900,
+        "PÓS INDIVIDUAL": 289900,
+        "FAMILIA 2": 269900,
+        "FAMILIA 3": 259900,
+        "FAMILIA 4/5": 249900,
+        "VIVO V": 239900
+      }
+    },
+    {
+      "name": "Samsung Galaxy Z Flip 7 512GB",
+      "prices": {
+        "PRÉ": 419900,
+        "CONTROLE BTL": 419900,
+        "CONTROLE ENTRADA": 369900,
+        "CONTROLE ALTO VALOR": 364900,
+        "PÓS INDIVIDUAL": 319900,
+        "FAMILIA 2": 289900,
+        "FAMILIA 3": 279900,
+        "FAMILIA 4/5": 269900,
+        "VIVO V": 259900
+      }
+    },
+    {
+      "name": "Samsung Galaxy Z Flip 7 FE 256GB",
+      "prices": {
+        "PRÉ": 309900,
+        "CONTROLE BTL": 309900,
+        "CONTROLE ENTRADA": 259900,
+        "CONTROLE ALTO VALOR": 254900,
+        "PÓS INDIVIDUAL": 219900,
+        "FAMILIA 2": 204900,
+        "FAMILIA 3": 194900,
+        "FAMILIA 4/5": 184900,
+        "VIVO V": 174900
+      }
+    },
+    {
+      "name": "Samsung Galaxy Z Flip 8 512GB",
+      "prices": {
+        "PRÉ": 839900,
+        "CONTROLE BTL": 839900,
+        "CONTROLE ENTRADA": 809900,
+        "CONTROLE ALTO VALOR": 759900,
+        "PÓS INDIVIDUAL": 699900,
+        "FAMILIA 2": 649900,
+        "FAMILIA 3": 639900,
+        "FAMILIA 4/5": 629900,
+        "VIVO V": 619900
+      }
+    },
+    {
+      "name": "Samsung Galaxy Z Fold 7 512GB",
+      "prices": {
+        "PRÉ": 699900,
+        "CONTROLE BTL": 699900,
+        "CONTROLE ENTRADA": 649900,
+        "CONTROLE ALTO VALOR": 644900,
+        "PÓS INDIVIDUAL": 579900,
+        "FAMILIA 2": 549900,
+        "FAMILIA 3": 539900,
+        "FAMILIA 4/5": 529900,
+        "VIVO V": 519900
+      }
+    },
+    {
+      "name": "Samsung Galaxy Z Fold 8 512GB",
+      "prices": {
+        "PRÉ": 1209900,
+        "CONTROLE BTL": 1209900,
+        "CONTROLE ENTRADA": 1189900,
+        "CONTROLE ALTO VALOR": 1119900,
+        "PÓS INDIVIDUAL": 1039900,
+        "FAMILIA 2": 929900,
+        "FAMILIA 3": 919900,
+        "FAMILIA 4/5": 909900,
+        "VIVO V": 899900
+      }
+    }
+  ]
+}
+

@@ -2,8 +2,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const sourcePath = new URL('./pricing-source-2026-09-07.json', import.meta.url);
-const outputPath = new URL('../migrations/0074_pricing_policy_2026_09_07.sql', import.meta.url);
+const sourcePath = new URL('./pricing-source-2026-09-12.json', import.meta.url);
+const outputPath = new URL('../migrations/0083_pricing_policy_2026_09_12.sql', import.meta.url);
 const source = JSON.parse(await readFile(sourcePath, 'utf8'));
 
 const categories = [

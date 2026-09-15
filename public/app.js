@@ -568,17 +568,18 @@ async function copyText(value) {
 function authVisual() {
   return `
     <section class="auth-visual">
-      <div class="auth-brand"><div class="brand-mark" aria-hidden="true"><img src="/estoque-symbol.svg" alt=""></div>Estoque</div>
+      <div class="auth-brand"><div class="brand-mark" aria-hidden="true"><img src="/estoque-symbol.svg" alt=""></div><span class="auth-brand__text"><strong>Estoque</strong><small>Loja e controle</small></span></div>
       <div class="auth-copy">
-        <h1>Estoque,<br>com clareza.</h1>
-        <p>Produtos, pedidos e disponibilidade em uma experiência simples.</p>
+        <p class="auth-copy__eyebrow">Tudo em um só lugar</p>
+        <h1>Seu estoque.<br><span>Sempre claro.</span></h1>
+        <p>Consulte produtos, acompanhe pedidos e encontre o que precisa sem perder tempo.</p>
         <div class="auth-feature-list" aria-label="Recursos do sistema">
-          <span class="auth-feature">Estoque por material</span>
-          <span class="auth-feature">Liberação automática</span>
-          <span class="auth-feature">Histórico completo</span>
+          <span class="auth-feature">${uiIcon('stock')} Estoque atualizado</span>
+          <span class="auth-feature">${uiIcon('orders')} Pedidos organizados</span>
+          <span class="auth-feature">${uiIcon('history')} Histórico completo</span>
         </div>
       </div>
-      <div class="auth-footer">Acesso seguro para gerente, vendedores e estoquistas</div>
+      <div class="auth-footer"><span aria-hidden="true"></span>Acesso interno e seguro</div>
     </section>`;
 }
 
@@ -607,17 +608,18 @@ function renderLogin(message = '') {
   root.innerHTML = `
     <main class="auth-page">${authVisual()}
       <section class="auth-panel"><div class="auth-card">
-        <p class="auth-card__eyebrow">Bem-vindo</p><h2>Entre na sua conta</h2>
-        <p class="auth-card__intro">Use o acesso fornecido pelo gerente.</p>
+        <div class="auth-card__badge"><div class="brand-mark" aria-hidden="true"><img src="/estoque-symbol.svg" alt=""></div></div>
+        <p class="auth-card__eyebrow">Bem-vindo de volta</p><h2>Acesse sua conta</h2>
+        <p class="auth-card__intro">Entre com seu e-mail ou código RE.</p>
         <form data-form="login" novalidate>
           <div class="form-error" data-form-error ${message ? '' : 'hidden'}>${escapeHtml(message)}</div>
           <div class="form-grid form-grid--single">
-            <div class="field"><label for="login-identifier">E-mail ou RE</label><input class="input" id="login-identifier" name="identifier" type="text" autocomplete="username" maxlength="160" required placeholder="seuemail@empresa.com ou 81000000"><p class="field-hint">Funcionários podem usar o código RE fornecido pela gerência.</p></div>
-            <div class="field"><label for="login-password">Senha</label><input class="input" id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" required></div>
+            <div class="field"><label for="login-identifier">E-mail ou RE</label><input class="input" id="login-identifier" name="identifier" type="text" autocomplete="username" maxlength="160" required placeholder="Digite seu e-mail ou RE"></div>
+            <div class="field"><label for="login-password">Senha</label><input class="input" id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" required placeholder="Digite sua senha"></div>
           </div>
-          <button class="btn" type="submit">Entrar no sistema</button>
+          <button class="btn auth-submit" type="submit"><span>Entrar no sistema</span>${uiIcon('chevron')}</button>
         </form>
-        <p class="auth-help">Problemas com o acesso? Solicite uma nova senha ao gerente.</p>
+        <p class="auth-help">Esqueceu sua senha? <strong>Fale com o gerente.</strong></p>
       </div></section>
     </main>`;
 }

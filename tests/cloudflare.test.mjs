@@ -2502,4 +2502,33 @@ describe('Controle de estoque por código material', () => {
     assert.equal(byCode('TGSA58664000').quantity, 9);
     assert.ok(showcase.payload.serials.some((serial) => serial.serialNumber === '351008263818229'));
   });
+
+  test('atualiza a loja e toda a rede com as bases de 15/09', async () => {
+    const migrations = await Promise.all([
+      readFile(new URL('../migrations/0086_inventory_refresh_2026_09_15.sql', import.meta.url), 'utf8'),
+      readFile(new URL('../migrations/0087_incoming_inventory_details_2026_09_15.sql', import.meta.url), 'utf8'),
+      readFile(new URL('../migrations/0088_network_inventory_2026_09_15.sql', import.meta.url), 'utf8'),
+      readFile(new URL('../migrations/0089_network_inventory_serials_2026_09_15.sql', import.meta.url), 'utf8'),
+    ]);
+    for (const migration of migrations) await applyMigration(migration);
+
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-09-15');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, '209H15.09.2026.xlsx');
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM repair_inventory')).count), 111);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM incoming_inventory_serials')).count), 160);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM network_inventory_serials')).count), 3474);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM network_inventory_serials WHERE stock_status = 'available'`)).count), 3216);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM network_inventory_serials WHERE stock_status = 'incoming'`)).count), 208);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM network_inventory_serials WHERE stock_status = 'repair'`)).count), 50);
+
+    const response = await manager.request('/api/network-inventory');
+    assert.equal(response.status, 200);
+    assert.deepEqual(response.payload.stores.map((store) => store.center), ['209H', '210H', '89MN', '283H']);
+    const otherStores = response.payload.stores.filter((store) => store.center !== '209H');
+    assert.equal(otherStores.reduce((sum, store) => sum + store.totalUnits, 0), 3474);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.available, 0), 3216);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.incoming, 0), 208);
+    assert.equal(otherStores.reduce((sum, store) => sum + store.repair, 0), 50);
+    assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-15'));
+  });
 });

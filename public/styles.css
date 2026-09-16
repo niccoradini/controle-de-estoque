@@ -1741,6 +1741,7 @@ button:focus-visible, a:focus-visible {
 .cart-payment-options > span { display: grid; gap: 3px; padding: 8px; border: 1px solid rgba(181,140,255,.15); border-radius: 8px; color: #eee8f3; background: rgba(181,140,255,.055); font-size: 10px; text-transform: none; }
 .cart-payment-options > span b { color: #bda0e9; font-size: 8px; text-transform: uppercase; }
 .cart-payment-options > span small { color: #8f8497; font-size: 7px; }
+.cart-payment-options > span.is-selected { border-color:rgba(181,140,255,.48);background:rgba(181,140,255,.14);box-shadow:0 8px 18px rgba(79,42,124,.16); }
 
 @media (max-width: 980px) {
   .management-dashboard-grid { grid-template-columns: 1fr; }
@@ -6316,9 +6317,10 @@ html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card_
 .store-inventory-panel header p:last-child { max-width:720px;margin:0;color:var(--muted); }
 .store-simulator-layout {
   display:grid;
-  grid-template-columns:minmax(0,1.65fr) minmax(330px,.9fr);
+  grid-template-columns:minmax(0,1fr) minmax(360px,430px);
   align-items:start;
-  gap:24px;
+  gap:20px;
+  width:100%;
 }
 .store-builder-panel,
 .store-offer-panel,
@@ -6328,7 +6330,7 @@ html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card_
   background:linear-gradient(160deg,rgba(37,31,46,.98),rgba(20,18,25,.98));
   box-shadow:0 24px 60px rgba(8,5,14,.28),inset 0 1px rgba(255,255,255,.045);
 }
-.store-builder-panel { min-width:0;padding:24px; }
+.store-builder-panel { min-width:0;padding:24px;overflow:hidden; }
 .store-builder-panel > header { display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px; }
 .store-builder-panel > header span,
 .store-offer-summary__head > span { color:#d9c4ff;font-size:11px;font-weight:800;letter-spacing:.11em; }
@@ -6359,13 +6361,24 @@ html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card_
 .store-builder-panel .store-card__price strong { color:#e1ccff;font-size:15px;font-weight:750; }
 .store-builder-panel .store-card__stock span { color:#b1a7b7;font-size:10px; }
 .store-builder-panel .store-card__button { min-height:44px;font-size:11px;font-weight:750; }
-.store-offer-panel { position:sticky;top:82px;overflow:hidden; }
+.store-offer-panel {
+  position:sticky;
+  top:82px;
+  min-width:0;
+  min-height:536px;
+  max-height:calc(100vh - 102px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(187,145,255,.35) transparent;
+}
+.store-offer-panel.has-live-offer { box-shadow:0 28px 70px rgba(28,12,52,.34),inset 0 1px rgba(255,255,255,.055); }
 .store-offer-summary__head { display:grid;gap:5px;padding:24px 22px 18px; }
 .store-offer-summary__head strong { font-size:22px;letter-spacing:-.025em; }
 .store-offer-summary__head small { color:#aaa0b5;font-size:11px; }
-.store-offer-total { margin:0 18px;padding:24px 18px;border:1px solid rgba(255,255,255,.11);border-radius:20px;color:white;background:radial-gradient(circle at 20% 0,rgba(199,165,255,.28),transparent 42%),linear-gradient(145deg,#7547bc,#493078);box-shadow:0 15px 35px rgba(70,39,119,.3);text-align:center; }
+.store-offer-total { margin:0 18px;padding:24px 18px;border:1px solid rgba(255,255,255,.14);border-radius:20px;color:white;background:radial-gradient(circle at 18% 0,rgba(231,211,255,.3),transparent 42%),linear-gradient(145deg,#7845c2,#4b2c7f);box-shadow:0 16px 38px rgba(70,39,119,.32);text-align:center;transition:background-color .2s ease,box-shadow .2s ease,transform .2s ease; }
 .store-offer-total > span { display:block;color:#eee4ff;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase; }
-.store-offer-total > strong { display:block;margin:8px 0 4px;font-size:36px;letter-spacing:-.045em; }
+.store-offer-total > strong { display:block;margin:8px 0 4px;font-size:clamp(32px,3vw,42px);line-height:1;letter-spacing:-.05em;animation:offer-value-in .22s ease-out; }
 .store-offer-total > strong small { font-size:15px;font-weight:650;letter-spacing:0; }
 .store-offer-total p { margin:0;color:#e6daf9;font-size:11px;font-weight:600; }
 .store-installment-picker { display:grid;gap:8px;margin:16px 18px 0;padding:14px;border:1px solid rgba(194,156,255,.2);border-radius:15px;background:rgba(151,102,226,.08); }
@@ -6386,6 +6399,7 @@ html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card_
 .store-offer-items > div { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px; }
 .store-offer-items > div span { color:#b8aebe;font-size:10px;font-weight:750;letter-spacing:.06em;text-transform:uppercase; }
 .store-offer-items button { padding:0;border:0;color:#d3b9ff;background:none;font-size:10px;font-weight:700;cursor:pointer; }
+.store-offer-items > div small { color:#978c9f;font-size:9px; }
 .store-offer-items ul { display:grid;gap:7px;margin:0;padding:0;list-style:none; }
 .store-offer-items li { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid rgba(255,255,255,.045);border-radius:12px;background:rgba(255,255,255,.035); }
 .store-offer-items li span,.store-offer-items li strong,.store-offer-items li small { display:block;min-width:0; }
@@ -6393,7 +6407,8 @@ html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card_
 .store-offer-items li small { margin-top:3px;color:#9d93a5;font-size:9px; }
 .store-offer-items li b { flex:0 0 auto;color:#decaff;font-size:11px; }
 .store-offer-renova { display:flex;justify-content:space-between;gap:15px;margin:0 18px 14px;padding:12px 14px;border:1px solid rgba(93,218,157,.17);border-radius:12px;color:#8ae0b8;background:rgba(40,167,107,.1);font-size:11px; }
-.store-offer-review { width:calc(100% - 36px);min-height:48px;margin:0 18px 20px;font-size:12px;font-weight:800; }
+.store-offer-review { position:sticky;bottom:0;width:calc(100% - 36px);min-height:48px;margin:0 18px 20px;font-size:12px;font-weight:800;box-shadow:0 12px 28px rgba(95,52,157,.28); }
+@keyframes offer-value-in { from { opacity:.55;transform:translateY(3px); } to { opacity:1;transform:translateY(0); } }
 .store-inventory-panel { margin-top:22px;padding:20px; }
 .store-inventory-panel > header { margin-bottom:17px; }
 .store-inventory-summary { display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px; }
@@ -6443,12 +6458,14 @@ html[data-theme="light"] .store-installment-picker select { border-color:#cab8d8
 html[data-theme="light"] .store-offer-options article.is-pix { border-color:#bfe4d2;background:#eef9f4; }
 html[data-theme="light"] .store-offer-options .is-pix b { color:#14754e; }
 @media (max-width:1100px) {
-  .store-simulator-layout { grid-template-columns:minmax(0,1fr) 310px; }
+  .store-simulator-layout { grid-template-columns:minmax(0,1fr) minmax(320px,36vw); }
   .store-builder-panel { padding:16px; }
 }
 @media (max-width:860px) {
   .store-simulator-layout { grid-template-columns:1fr; }
-  .store-offer-panel { position:static; }
+  .store-offer-panel { position:static;order:-1;min-height:0;max-height:none;overflow:visible; }
+  .store-offer-empty { min-height:150px; }
+  .store-offer-review { position:static; }
   .store-inventory-row { grid-template-columns:repeat(4,minmax(0,1fr)); }
   .store-inventory-row__product { grid-column:1/-1; }
   .store-inventory-number { text-align:left; }
@@ -6458,9 +6475,18 @@ html[data-theme="light"] .store-offer-options .is-pix b { color:#14754e; }
   .store-builder-panel,.store-offer-panel,.store-inventory-panel { border-radius:18px; }
   .store-builder-panel,.store-inventory-panel { padding:14px; }
   .store-builder-panel > header { align-items:flex-start;flex-direction:column;gap:5px; }
+  .store-offer-summary__head { padding:19px 17px 14px; }
+  .store-offer-total { margin-inline:14px;padding:20px 14px; }
+  .store-installment-picker { margin:13px 14px 0; }
+  .store-offer-options { padding:10px 14px 14px; }
+  .store-offer-items,.store-offer-renova { margin-inline:14px; }
+  .store-offer-review { width:calc(100% - 28px);margin:0 14px 16px; }
   .store-inventory-summary { grid-template-columns:repeat(2,1fr); }
   .store-inventory-row { grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:8px; }
   .store-inventory-row__image { width:40px;height:40px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .store-offer-total,.store-offer-total > strong { animation:none;transition:none; }
 }
 html[data-theme="light"] .device-family-summary span { border-color:#ddd4e1; color:#5e5564; background:#f7f3f8; }
 html[data-theme="light"] .device-configurator { border-color:#ded7e2; }

@@ -5,6 +5,7 @@ import {
   normalizeCatalogName,
   parseDeviceName,
 } from './catalog-groups.js';
+import { calculateInstallmentPriceCents, calculateInstallmentTotalCents } from './offer-pricing.js';
 
 const root = document.querySelector('#root');
 const modalRoot = document.querySelector('#modal-root');
@@ -289,16 +290,11 @@ function pixPriceCents(totalCents) {
 }
 
 function installmentTotalCents(totalCents, installments) {
-  const total = Math.max(0, Number(totalCents || 0));
-  const count = Math.max(1, Number(installments || 1));
-  if (count <= 12) return total;
-  const surcharge = Number(paymentPolicy().installmentSurchargePartsPerMillion?.[count] || 0);
-  return Math.round(total * (1000000 + surcharge) / 1000000);
+  return calculateInstallmentTotalCents(totalCents, installments, paymentPolicy().installmentSurchargePartsPerMillion);
 }
 
 function installmentPriceCents(totalCents, installments) {
-  const count = Math.max(1, Number(installments || 1));
-  return Math.round(installmentTotalCents(totalCents, count) / count);
+  return calculateInstallmentPriceCents(totalCents, installments, paymentPolicy().installmentSurchargePartsPerMillion);
 }
 
 function paymentPriceLines(totalCents) {
@@ -396,6 +392,47 @@ function renovaDiscountFor(selected) {
   const bonusCents = Math.max(0, Number(automaticBonus));
   const voucherCents = Math.max(0, Number(state.renova.condition === 'defeituoso' ? tradeIn?.defectiveCents : tradeIn?.goodCents) || 0);
   return { deviceSubtotalCents, bonusCents, voucherCents, discountCents: Math.min(deviceSubtotalCents, bonusCents + voucherCents) };
+}
+
+function cartOfferSelection() {
+  return [...state.cart].map(([variantId, quantity]) => {
+    const found = findCatalogVariant(variantId);
+    return found ? { ...found, quantity, unitPriceCents: selectedProductPrice(found.product, found.variant) } : null;
+  }).filter(Boolean);
+}
+
+function draftOfferSelection() {
+  if (state.cart.size || !state.expandedDeviceFamily) return [];
+  const group = deviceGroupByKey(state.expandedDeviceFamily);
+  if (!group) return [];
+  const { selection, option } = selectionForDeviceGroup(group);
+  if (!option) return [];
+  const quantity = Math.max(1, Number(selection.quantity) || 1);
+  const draft = [{ product: option.product, variant: option.variant, quantity, unitPriceCents: selectedProductPrice(option.product, option.variant) }];
+  for (const [cluster, key] of [['cases', selection.caseKey], ['screen_protectors', selection.filmKey]]) {
+    const choice = accessoryChoiceByKey(cluster, group, key);
+    const product = choice?.products?.[0];
+    const variant = product?.variants?.find((item) => variantRemaining(item) > 0) || product?.variants?.[0];
+    if (product && variant) draft.push({ product, variant, quantity, unitPriceCents: selectedProductPrice(product, variant) });
+  }
+  return draft;
+}
+
+function calculateOffer(selected, requestedInstallments = state.offerInstallments) {
+  const items = Array.isArray(selected) ? selected : [];
+  const units = items.reduce((sum, item) => sum + Math.max(0, Number(item.quantity) || 0), 0);
+  const subtotalCents = items.reduce((sum, item) => sum + (item.unitPriceCents == null ? 0 : Number(item.unitPriceCents) * Number(item.quantity || 0)), 0);
+  const hasUnpricedItem = items.some((item) => item.unitPriceCents == null);
+  const renova = renovaDiscountFor(items);
+  const totalCents = Math.max(0, subtotalCents - renova.discountCents);
+  const maxInstallments = installmentCount(totalCents);
+  const installments = Math.min(maxInstallments, Math.max(1, Number(requestedInstallments) || maxInstallments));
+  return {
+    items, units, materials: items.length, subtotalCents, totalCents, hasUnpricedItem, renova, installments,
+    payment: totalCents > 0 ? paymentPriceLines(totalCents) : null,
+    installmentCents: totalCents > 0 ? installmentPriceCents(totalCents, installments) : 0,
+    installmentTotalCents: totalCents > 0 ? installmentTotalCents(totalCents, installments) : 0,
+  };
 }
 
 function statusBadge(status) {
@@ -1829,34 +1866,28 @@ function renderCartBar() {
     document.body.classList.remove('cart-drawer-open');
     return;
   }
-  const units = [...state.cart.values()].reduce((sum, quantity) => sum + quantity, 0);
-  const pricedSelection = [...state.cart].map(([variantId, quantity]) => {
-    const found = findCatalogVariant(variantId);
-    return found ? { ...found, quantity, unitPriceCents: selectedProductPrice(found.product, found.variant) } : null;
-  }).filter(Boolean);
-  const subtotal = pricedSelection.reduce((sum, item) => sum + (item.unitPriceCents == null ? 0 : item.unitPriceCents * item.quantity), 0);
-  const renova = renovaDiscountFor(pricedSelection);
-  const orderTotal = Math.max(0, subtotal - renova.discountCents);
-  const hasUnpricedItem = pricedSelection.some((item) => item.unitPriceCents == null);
+  const cartOffer = calculateOffer(cartOfferSelection());
+  const draftSelection = draftOfferSelection();
+  const displayedOffer = cartOffer.units ? cartOffer : calculateOffer(draftSelection);
+  const isDraft = !cartOffer.units && displayedOffer.units > 0;
+  const { units, subtotalCents: subtotal, totalCents: orderTotal, hasUnpricedItem, renova } = cartOffer;
+  if (displayedOffer.totalCents > 0) state.offerInstallments = displayedOffer.installments;
   const subtotalLabel = hasUnpricedItem ? 'Subtotal dos itens com preço' : 'Subtotal ao vivo';
   const renovaSummary = renova.discountCents > 0
     ? `<div class="cart-drawer__renova"><span>Desconto Renova</span><strong>− ${formatMoney(renova.discountCents)}</strong></div><div class="cart-drawer__total"><span>Total após Renova</span><strong>${formatMoney(orderTotal)}</strong></div>`
     : '';
   const offerTarget = document.querySelector('[data-store-offer-summary]');
   if (offerTarget) {
-    const payment = orderTotal > 0 ? paymentPriceLines(orderTotal) : null;
-    const maximumInstallments = payment ? installmentCount(orderTotal) : 1;
-    state.offerInstallments = Math.min(maximumInstallments, Math.max(1, Number(state.offerInstallments || maximumInstallments)));
-    const selectedInstallment = payment ? installmentPriceCents(orderTotal, state.offerInstallments) : 0;
-    const selectedInstallmentTotal = payment ? installmentTotalCents(orderTotal, state.offerInstallments) : 0;
-    const offerItems = pricedSelection.map(({ product, variant, quantity, unitPriceCents }) => `<li><span><strong>${escapeHtml(product.name)}</strong><small>${quantity} un. · ${escapeHtml(variant.materialCode || '')}</small></span><b>${unitPriceCents == null ? 'Pendente' : formatMoney(unitPriceCents * quantity)}</b></li>`).join('');
-    offerTarget.innerHTML = `<div class="store-offer-summary__head"><span>OFERTA</span><strong>${units ? `${units} ${units === 1 ? 'item' : 'itens'} selecionados` : 'Monte sua oferta'}</strong><small>${units ? `${state.cart.size} ${state.cart.size === 1 ? 'material' : 'materiais'} no pedido` : 'Escolha um produto para começar.'}</small></div>
-      ${payment ? `<div class="store-offer-total"><span>${state.offerInstallments}x no cartão</span><strong>${formatMoney(selectedInstallment)}<small>/mês</small></strong><p>Total no cartão ${formatMoney(selectedInstallmentTotal)}</p></div><div class="store-installment-picker"><label for="offer-installments"><span>Quantidade de parcelas</span><small>${state.offerInstallments <= 12 ? 'Sem juros' : 'Com acréscimo progressivo'}</small></label><select id="offer-installments" data-action="offer-installments">${installmentOptions(orderTotal)}</select></div><div class="store-offer-options"><article><span>12x sem juros</span><b>${formatMoney(payment.twelve)}</b></article><article><span>À vista</span><b>${formatMoney(orderTotal)}</b></article><article class="is-pix"><span>PIX / Vivo Pay</span><b>${formatMoney(payment.pix)}</b></article></div>` : `<div class="store-offer-empty">${uiIcon('orders')}<p>Os valores e as formas de pagamento aparecerão aqui.</p></div>`}
-      ${offerItems ? `<div class="store-offer-items"><div><span>Itens da venda</span><button type="button" data-action="open-cart-summary">Abrir carrinho</button></div><ul>${offerItems}</ul></div>` : ''}
-      ${renova.discountCents > 0 ? `<div class="store-offer-renova"><span>Desconto Renova</span><strong>− ${formatMoney(renova.discountCents)}</strong></div>` : ''}
+    const { payment } = displayedOffer;
+    const offerItems = displayedOffer.items.map(({ product, variant, quantity, unitPriceCents }) => `<li><span><strong>${escapeHtml(product.name)}</strong><small>${quantity} un. · ${escapeHtml(variant.materialCode || '')}</small></span><b>${unitPriceCents == null ? 'Escolha o plano' : formatMoney(unitPriceCents * quantity)}</b></li>`).join('');
+    offerTarget.classList.toggle('has-live-offer', Boolean(displayedOffer.units));
+    offerTarget.innerHTML = `<div class="store-offer-summary__head"><span>${isDraft ? 'PRÉVIA EM TEMPO REAL' : 'OFERTA'}</span><strong>${displayedOffer.units ? `${displayedOffer.units} ${displayedOffer.units === 1 ? 'item' : 'itens'} ${isDraft ? 'na prévia' : 'selecionados'}` : 'Monte sua oferta'}</strong><small>${displayedOffer.units ? `${displayedOffer.materials} ${displayedOffer.materials === 1 ? 'material' : 'materiais'} · ${state.priceCategory ? `plano ${escapeHtml(state.priceCategory)}` : 'selecione o plano'}` : 'Escolha um produto para começar.'}</small></div>
+      ${payment ? `<div class="store-offer-total" aria-live="polite"><span>${displayedOffer.installments}x no cartão</span><strong>${formatMoney(displayedOffer.installmentCents)}<small>/mês</small></strong><p>Total no cartão ${formatMoney(displayedOffer.installmentTotalCents)}</p></div><div class="store-installment-picker"><label for="offer-installments"><span>Quantidade de parcelas</span><small>${displayedOffer.installments <= 12 ? 'Sem juros' : 'Com acréscimo progressivo'}</small></label><select id="offer-installments" data-action="offer-installments">${installmentOptions(displayedOffer.totalCents, displayedOffer.installments)}</select></div><div class="store-offer-options"><article><span>12x sem juros</span><b>${formatMoney(payment.twelve)}</b></article><article><span>À vista</span><b>${formatMoney(displayedOffer.totalCents)}</b></article><article class="is-pix"><span>PIX / Vivo Pay</span><b>${formatMoney(payment.pix)}</b></article></div>` : `<div class="store-offer-empty">${uiIcon('orders')}<p>${displayedOffer.units ? 'Selecione a categoria do plano para ver o preço desta oferta.' : 'Selecione um produto para acompanhar os valores em tempo real.'}</p></div>`}
+      ${offerItems ? `<div class="store-offer-items"><div><span>${isDraft ? 'Prévia do conjunto' : 'Itens da venda'}</span>${isDraft ? '<small>Adicione ao pedido para finalizar</small>' : '<button type="button" data-action="open-cart-summary">Abrir carrinho</button>'}</div><ul>${offerItems}</ul></div>` : ''}
+      ${displayedOffer.renova.discountCents > 0 ? `<div class="store-offer-renova"><span>Desconto Renova</span><strong>− ${formatMoney(displayedOffer.renova.discountCents)}</strong></div>` : ''}
       <button type="button" class="btn store-offer-review" data-action="review-request" ${units ? '' : 'disabled'}>Revisar e finalizar pedido</button>`;
   }
-  const cartItems = pricedSelection.map(({ product: produto, variant, quantity, unitPriceCents }) => {
+  const cartItems = cartOffer.items.map(({ product: produto, variant, quantity, unitPriceCents }) => {
     const lineTotal = unitPriceCents == null ? null : unitPriceCents * quantity;
     const price = unitPriceCents == null
       ? 'Preço pendente'
@@ -3413,17 +3444,15 @@ function deleteUserModal(user) {
 }
 
 function requestReviewModal() {
-  const selected = [...state.cart].map(([variantId, quantity]) => {
-    const found = findCatalogVariant(variantId);
-    return found ? { ...found, quantity, unitPriceCents: selectedProductPrice(found.product, found.variant) } : null;
-  }).filter(Boolean);
+  const selected = cartOfferSelection();
   if (!selected.length) return;
-  const units = selected.reduce((sum, item) => sum + item.quantity, 0);
+  const offer = calculateOffer(selected);
+  const { units } = offer;
   const pricedItems = selected.filter((item) => item.unitPriceCents != null);
   if (selected.some((item) => item.product.pricing) && !state.priceCategory) {
     throw new ApiError('Escolha a categoria do plano antes de revisar o pedido.', 400);
   }
-  const subtotalCents = pricedItems.reduce((sum, item) => sum + item.unitPriceCents * item.quantity, 0);
+  const subtotalCents = offer.subtotalCents;
   const deviceUnits = selected.filter((item) => item.product.cluster === 'devices').reduce((sum, item) => sum + item.quantity, 0);
   if (state.renova.enabled && deviceUnits !== 1) {
     throw new ApiError('O Vivo Renova deve ser usado com exatamente um aparelho novo por pedido.', 400);
@@ -3431,11 +3460,9 @@ function requestReviewModal() {
   if (state.renova.enabled && !selectedRenovaTradeIn()) {
     throw new ApiError('Selecione o aparelho usado na tabela ASSURANT.', 400);
   }
-  const renova = renovaDiscountFor(selected);
-  const orderTotalCents = Math.max(0, subtotalCents - renova.discountCents);
-  const payment = orderTotalCents > 0 ? paymentPriceLines(orderTotalCents) : null;
+  const { renova, totalCents: orderTotalCents, payment } = offer;
   const priceSummary = pricedItems.length
-    ? `<div class="cart-pricing-summary">${state.priceCategory ? `<div><span>Categoria do plano</span><strong>${escapeHtml(state.priceCategory)}</strong></div>` : ''}${state.renova.enabled ? `<div><span>Preço normal dos produtos</span><strong>${formatMoney(subtotalCents)}</strong></div><div class="renova-summary-line"><span>Bônus do fabricante</span><strong>− ${formatMoney(renova.bonusCents)}</strong></div><div class="renova-summary-line"><span>Voucher ASSURANT</span><strong>− ${formatMoney(renova.voucherCents)}</strong></div><p>Renova: ${escapeHtml(selectedRenovaTradeIn()?.name || 'aparelho usado não informado')} · ${state.renova.condition === 'defeituoso' ? 'Defeituoso' : 'Bom'}. Os abatimentos foram limitados ao valor dos aparelhos.</p>` : ''}<div><span>Total do pedido</span><strong>${formatMoney(orderTotalCents)}</strong></div>${payment ? `<div class="cart-payment-options"><span><b>PIX / Vivo Pay</b>${formatMoney(payment.pix)}</span><span><b>12x sem juros</b>${formatMoney(payment.twelve)}</span><span><b>${payment.longCount}x</b>${formatMoney(payment.longInstallment)} <small>total ${formatMoney(payment.longTotal)}</small></span></div><p>Todos os produtos estão incluídos. De 13x a 21x há acréscimo progressivo; confirme a elegibilidade antes de concluir.</p>` : '<p>Sem cobrança para os itens selecionados.</p>'}</div>`
+    ? `<div class="cart-pricing-summary">${state.priceCategory ? `<div><span>Categoria do plano</span><strong>${escapeHtml(state.priceCategory)}</strong></div>` : ''}${state.renova.enabled ? `<div><span>Preço normal dos produtos</span><strong>${formatMoney(subtotalCents)}</strong></div><div class="renova-summary-line"><span>Bônus do fabricante</span><strong>− ${formatMoney(renova.bonusCents)}</strong></div><div class="renova-summary-line"><span>Voucher ASSURANT</span><strong>− ${formatMoney(renova.voucherCents)}</strong></div><p>Renova: ${escapeHtml(selectedRenovaTradeIn()?.name || 'aparelho usado não informado')} · ${state.renova.condition === 'defeituoso' ? 'Defeituoso' : 'Bom'}. Os abatimentos foram limitados ao valor dos aparelhos.</p>` : ''}<div><span>Total do pedido</span><strong>${formatMoney(orderTotalCents)}</strong></div>${payment ? `<div class="cart-payment-options"><span><b>PIX / Vivo Pay</b>${formatMoney(payment.pix)}</span><span><b>12x sem juros</b>${formatMoney(payment.twelve)}</span><span class="is-selected"><b>${offer.installments}x selecionado</b>${formatMoney(offer.installmentCents)} <small>total ${formatMoney(offer.installmentTotalCents)}</small></span></div><p>Todos os produtos estão incluídos. O parcelamento selecionado é o mesmo exibido no resumo em tempo real. De 13x a 21x há acréscimo progressivo.</p>` : '<p>Sem cobrança para os itens selecionados.</p>'}</div>`
     : '';
   showModal(`<form class="request-review-form" data-form="create-request" novalidate>
     <div class="modal__head"><div><h2>Revisar pedido</h2><p>${units} ${units === 1 ? 'item selecionado' : 'itens selecionados'} · o IMEI será definido automaticamente</p></div>${modalCloseButton()}</div>
@@ -3554,6 +3581,7 @@ root.addEventListener('click', async (event) => {
     if (action === 'clear-store-simulation' && state.user.role === 'seller') {
       state.cart.clear();
       state.priceCategory = '';
+      state.offerInstallments = 21;
       state.catalogSearch = '';
       state.catalogCategory = '';
       state.renova = { enabled: false, deviceId: 0, condition: 'bom' };
@@ -3565,6 +3593,7 @@ root.addEventListener('click', async (event) => {
     if (action === 'toggle-device-family') {
       state.expandedDeviceFamily = state.expandedDeviceFamily === button.dataset.familyKey ? '' : button.dataset.familyKey;
       renderCatalogGrid();
+      renderCartBar();
       if (state.expandedDeviceFamily) {
         window.requestAnimationFrame(() => document.querySelector(`.device-family-card[data-family-key="${CSS.escape(state.expandedDeviceFamily)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
       }
@@ -3812,6 +3841,7 @@ root.addEventListener('change', (event) => {
   if (action === 'device-film') selection.filmKey = event.target.value;
   state.deviceSelections.set(group.key, selection);
   renderCatalogGrid();
+  renderCartBar();
 });
 
 root.addEventListener('input', (event) => {
@@ -3833,6 +3863,7 @@ root.addEventListener('input', (event) => {
     const { selection } = selectionForDeviceGroup(group);
     selection.quantity = Math.max(1, Number(event.target.value) || 1);
     state.deviceSelections.set(group.key, selection);
+    renderCartBar();
   }
 });
 

@@ -8,6 +8,7 @@ import {
   groupDeviceProducts,
   parseDeviceName,
 } from '../public/catalog-groups.js';
+import { calculateInstallmentPriceCents, calculateInstallmentTotalCents } from '../public/offer-pricing.js';
 
 let mf;
 let database;
@@ -282,6 +283,25 @@ before(async () => {
 after(async () => mf?.dispose());
 
 describe('Controle de estoque por código material', () => {
+  test('calcula de 1x a 21x com acréscimo individual após 12x', () => {
+    const baseCents = 149900;
+    const surcharge = {
+      13: 77440, 14: 83130, 15: 88820, 16: 94540, 17: 100280,
+      18: 106020, 19: 111810, 20: 117610, 21: 123416,
+    };
+    const rows = Array.from({ length: 21 }, (_, index) => {
+      const installments = index + 1;
+      return {
+        installments,
+        total: calculateInstallmentTotalCents(baseCents, installments, surcharge),
+        installment: calculateInstallmentPriceCents(baseCents, installments, surcharge),
+      };
+    });
+    assert.ok(rows.slice(0, 12).every((row) => row.total === baseCents));
+    assert.deepEqual(rows.slice(12).map((row) => row.total), [161508, 162361, 163214, 164072, 164932, 165792, 166660, 167530, 168400]);
+    assert.equal(new Set(rows.slice(11).map((row) => row.total)).size, 10);
+    assert.equal(rows[20].installment, 8019);
+  });
   const manager = new Client('198.51.100.10');
   const seller = new Client('198.51.100.11');
   const stocker = new Client('198.51.100.12');
@@ -1975,7 +1995,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.39.0');
+    assert.equal(JSON.parse(packageSource).version, '6.40.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2223,8 +2243,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.39\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.39\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.40\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.40\.0/);
     assert.match(appSource, /showcases: 'Vitrines'/);
     assert.match(appSource, /async function renderShowcases/);
     assert.match(appSource, /data-form="showcase-slot"/);
@@ -2311,7 +2331,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.39.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.40.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

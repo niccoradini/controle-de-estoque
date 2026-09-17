@@ -1886,6 +1886,7 @@ function renderCartBar() {
       ${offerItems ? `<div class="store-offer-items"><div><span>${isDraft ? 'Prévia do conjunto' : 'Itens da venda'}</span>${isDraft ? '<small>Adicione ao pedido para finalizar</small>' : '<button type="button" data-action="open-cart-summary">Abrir carrinho</button>'}</div><ul>${offerItems}</ul></div>` : ''}
       ${displayedOffer.renova.discountCents > 0 ? `<div class="store-offer-renova"><span>Desconto Renova</span><strong>− ${formatMoney(displayedOffer.renova.discountCents)}</strong></div>` : ''}
       <div class="store-offer-live-status"><span></span>Resumo atualizado automaticamente</div><button type="button" class="btn store-offer-review" data-action="review-request" ${units ? '' : 'disabled'}>Revisar e finalizar pedido</button>`;
+    window.requestAnimationFrame(syncFixedOfferPanel);
   }
   const cartItems = cartOffer.items.map(({ product: produto, variant, quantity, unitPriceCents }) => {
     const lineTotal = unitPriceCents == null ? null : unitPriceCents * quantity;
@@ -1922,6 +1923,24 @@ function renderCartBar() {
     </aside>`;
   document.body.classList.toggle('cart-drawer-open', state.cartDrawerOpen);
 }
+
+function syncFixedOfferPanel() {
+  const slot = document.querySelector('.store-offer-slot');
+  const panel = slot?.querySelector('.store-offer-panel');
+  if (!slot || !panel) return;
+  if (window.matchMedia('(max-width: 860px)').matches) {
+    panel.classList.remove('is-fixed');
+    panel.style.removeProperty('--offer-panel-left');
+    panel.style.removeProperty('--offer-panel-width');
+    return;
+  }
+  const bounds = slot.getBoundingClientRect();
+  panel.style.setProperty('--offer-panel-left', `${Math.round(bounds.left)}px`);
+  panel.style.setProperty('--offer-panel-width', `${Math.round(bounds.width)}px`);
+  panel.classList.add('is-fixed');
+}
+
+window.addEventListener('resize', syncFixedOfferPanel, { passive: true });
 
 function setCartDrawer(open, restoreFocus = true) {
   state.cartDrawerOpen = Boolean(open);
@@ -1990,7 +2009,7 @@ async function renderSellerStore(title = 'Monte seu pedido', description = 'Esco
     <div class="store-simulator-layout">
       <div class="store-simulator-main"><main class="store-builder-panel"><header><div><span>MONTAR OFERTA</span><h3>Escolha os produtos</h3></div><small>Preço e estoque atualizados</small></header>${pricingSelector()}${catalogToolbar()}<div data-incoming-catalog></div><div data-catalog-grid></div></main>
       <section class="store-inventory-panel"><header><div><p class="page-eyebrow">Estoque da loja</p><h2>Estoque completo</h2><p>Saldo físico, reservado, disponível e produtos em chegada por código material.</p></div><button class="btn btn--secondary" data-action="navigate" data-view="network-stock">Consultar estoque da rede</button></header><div data-store-inventory></div></section></div>
-      <aside class="store-offer-panel" data-store-offer-summary aria-live="polite"></aside>
+      <div class="store-offer-slot"><aside class="store-offer-panel" data-store-offer-summary aria-live="polite"></aside></div>
     </div>`;
   renderCatalogGrid();
   renderCartBar();

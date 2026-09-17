@@ -1995,7 +1995,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.44.0');
+    assert.equal(JSON.parse(packageSource).version, '6.45.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2243,10 +2243,11 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.44\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.44\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.45\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.45\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
-    assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?right:[^;]+;[\s\S]*?width:\s*clamp\(360px,36vw,430px\)/);
+    assert.match(stylesSource, /\.store-offer-panel\.is-fixed\s*\{\s*position:fixed;left:var\(--offer-panel-left\);width:var\(--offer-panel-width\)/);
+    assert.match(appSource, /function syncFixedOfferPanel\(\)[\s\S]*?getBoundingClientRect\(\)[\s\S]*?--offer-panel-left[\s\S]*?--offer-panel-width/);
     assert.match(stylesSource, /@media \(min-width:861px\)[\s\S]*?\.main,\.content,#view-content\s*\{\s*overflow:visible/);
     assert.match(appSource, /showcases: 'Vitrines'/);
     assert.match(appSource, /async function renderShowcases/);
@@ -2334,7 +2335,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.44.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.45.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

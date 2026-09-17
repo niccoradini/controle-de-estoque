@@ -1813,7 +1813,8 @@ html {
 
 body {
   min-width: 320px;
-  overflow-x: hidden;
+  /* `hidden` cria um ancestral de rolagem e impede o resumo sticky de seguir a página. */
+  overflow-x: clip;
   background:
     radial-gradient(circle at 82% -8%, rgba(255, 45, 85, .16), transparent 30rem),
     radial-gradient(circle at 8% 82%, rgba(118, 44, 76, .10), transparent 32rem),
@@ -6321,6 +6322,7 @@ html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card_
   align-items:start;
   gap:20px;
   width:100%;
+  overflow:visible;
 }
 .store-builder-panel,
 .store-offer-panel,
@@ -6364,6 +6366,8 @@ html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card_
 .store-offer-panel {
   position:sticky;
   top:82px;
+  align-self:start;
+  height:fit-content;
   min-width:0;
   min-height:min(680px,calc(100vh - 102px));
   max-height:calc(100vh - 102px);
@@ -6371,6 +6375,10 @@ html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card_
   overflow-y:auto;
   scrollbar-width:thin;
   scrollbar-color:rgba(187,145,255,.35) transparent;
+}
+/* Nenhum ancestral desktop pode virar contêiner de rolagem do quadro da oferta. */
+@media (min-width:861px) {
+  .main,.content,#view-content { overflow:visible; }
 }
 .store-offer-panel::before { content:"";position:sticky;top:0;z-index:3;display:block;width:100%;height:4px;background:linear-gradient(90deg,#7c3fc7,#c084fc,#6d28d9); }
 .store-offer-panel.has-live-offer { box-shadow:0 28px 70px rgba(28,12,52,.34),inset 0 1px rgba(255,255,255,.055); }

@@ -1995,7 +1995,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.42.0');
+    assert.equal(JSON.parse(packageSource).version, '6.43.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2243,8 +2243,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.42\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.42\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.43\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.43\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:\s*sticky;[\s\S]*?align-self:\s*start;[\s\S]*?height:\s*fit-content/);
     assert.match(stylesSource, /@media \(min-width:861px\)[\s\S]*?\.main,\.content,#view-content\s*\{\s*overflow:visible/);
@@ -2334,7 +2334,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.42.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.43.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

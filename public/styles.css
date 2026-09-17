@@ -6324,6 +6324,7 @@ html[data-theme="light"] .store-card__meta,html[data-theme="light"] .store-card_
   width:100%;
   overflow:visible;
 }
+.store-simulator-main { min-width:0; }
 .store-builder-panel,
 .store-offer-panel,
 .store-inventory-panel {
@@ -6483,7 +6484,10 @@ html[data-theme="light"] .store-offer-options .is-pix b { color:#14754e; }
 }
 @media (max-width:860px) {
   .store-simulator-layout { grid-template-columns:1fr; }
+  .store-simulator-main { display:contents; }
+  .store-builder-panel { order:1; }
   .store-offer-panel { position:static;order:-1;min-height:0;max-height:none;overflow:visible; }
+  .store-inventory-panel { order:2; }
   .store-offer-empty { min-height:150px; }
   .store-offer-review { position:static; }
   .store-inventory-row { grid-template-columns:repeat(4,minmax(0,1fr)); }

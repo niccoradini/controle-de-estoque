@@ -1988,10 +1988,10 @@ async function renderSellerStore(title = 'Monte seu pedido', description = 'Esco
   await loadCatalog();
   content.innerHTML = `<section class="store-simulator-hero"><div><p class="page-eyebrow">Consulta e venda</p><h2>${escapeHtml(title)}</h2><p>${escapeHtml(description)} Consulte também todo o saldo da loja sem sair desta página.</p></div><button class="btn btn--secondary" data-action="clear-store-simulation">↺ Nova simulação</button></section>
     <div class="store-simulator-layout">
-      <main class="store-builder-panel"><header><div><span>MONTAR OFERTA</span><h3>Escolha os produtos</h3></div><small>Preço e estoque atualizados</small></header>${pricingSelector()}${catalogToolbar()}<div data-incoming-catalog></div><div data-catalog-grid></div></main>
+      <div class="store-simulator-main"><main class="store-builder-panel"><header><div><span>MONTAR OFERTA</span><h3>Escolha os produtos</h3></div><small>Preço e estoque atualizados</small></header>${pricingSelector()}${catalogToolbar()}<div data-incoming-catalog></div><div data-catalog-grid></div></main>
+      <section class="store-inventory-panel"><header><div><p class="page-eyebrow">Estoque da loja</p><h2>Estoque completo</h2><p>Saldo físico, reservado, disponível e produtos em chegada por código material.</p></div><button class="btn btn--secondary" data-action="navigate" data-view="network-stock">Consultar estoque da rede</button></header><div data-store-inventory></div></section></div>
       <aside class="store-offer-panel" data-store-offer-summary aria-live="polite"></aside>
-    </div>
-    <section class="store-inventory-panel"><header><div><p class="page-eyebrow">Estoque da loja</p><h2>Estoque completo</h2><p>Saldo físico, reservado, disponível e produtos em chegada por código material.</p></div><button class="btn btn--secondary" data-action="navigate" data-view="network-stock">Consultar estoque da rede</button></header><div data-store-inventory></div></section>`;
+    </div>`;
   renderCatalogGrid();
   renderCartBar();
 }

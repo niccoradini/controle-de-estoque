@@ -1995,7 +1995,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.47.0');
+    assert.equal(JSON.parse(packageSource).version, '6.48.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2243,8 +2243,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.47\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.47\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.48\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.48\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2337,7 +2337,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.47.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.48.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2556,5 +2556,37 @@ describe('Controle de estoque por código material', () => {
     assert.equal(otherStores.reduce((sum, store) => sum + store.incoming, 0), 208);
     assert.equal(otherStores.reduce((sum, store) => sum + store.repair, 0), 50);
     assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-15'));
+  });
+
+  test('atualiza o estoque da loja 209H com a base de 18/09', async () => {
+    const migrations = await Promise.all([
+      readFile(new URL('../migrations/0090_inventory_refresh_2026_09_18.sql', import.meta.url), 'utf8'),
+      readFile(new URL('../migrations/0091_incoming_inventory_details_2026_09_18.sql', import.meta.url), 'utf8'),
+    ]);
+    for (const migration of migrations) await applyMigration(migration);
+
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-09-18');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, '209H-18.09.26.xlsx');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_incoming_units'`)).value, '261');
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM repair_inventory')).count), 111);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM incoming_inventory_serials')).count), 261);
+    assert.equal(Number((await row('SELECT COUNT(DISTINCT material_code) AS count FROM incoming_inventory_serials')).count), 45);
+    assert.equal((await row('SELECT MIN(snapshot_date) AS snapshot FROM incoming_inventory_serials')).snapshot, '2026-09-18');
+    assert.equal(Number((await row(`SELECT quantity_on_hand AS count FROM product_variants WHERE sku = 'YBSC001A4000'`)).count), 40);
+    assert.equal(Number((await row(`
+      SELECT incoming.quantity AS count
+      FROM incoming_inventory incoming
+      JOIN product_variants variant ON variant.id = incoming.variant_id
+      WHERE variant.sku = 'YBSC001A2000'
+    `)).count), 103);
+    assert.equal(Number((await row(`SELECT quantity_on_hand AS count FROM product_variants WHERE sku = '22025219'`)).count), 5);
+
+    const response = await manager.request('/api/network-inventory');
+    assert.equal(response.status, 200);
+    const store = response.payload.stores.find((item) => item.center === '209H');
+    assert.equal(store.snapshotDate, '2026-09-18');
+    assert.equal(store.available, 1016);
+    assert.equal(store.incoming, 261);
+    assert.equal(store.repair, 111);
   });
 });

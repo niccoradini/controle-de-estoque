@@ -793,7 +793,9 @@ async function listCatalog(env, user) {
         'retail_pricing_table_date', 'retail_pricing_table_source',
         'payment_policy_effective_date', 'payment_policy_max_installments',
         'payment_policy_minimum_installment_cents', 'payment_policy_pix_discount_basis_points',
-        'payment_policy_installment_surcharge_ppm', 'payment_policy_note'
+        'payment_policy_installment_surcharge_ppm', 'payment_policy_note',
+        'renova_voucher_table_date', 'renova_voucher_source',
+        'renova_boost_table_date', 'renova_boost_source'
       )
     `).all(),
     env.DB.prepare(`
@@ -848,7 +850,10 @@ async function listCatalog(env, user) {
       },
     },
     renova: {
-      tableDate: renovaRows.results?.[0]?.table_date || '',
+      tableDate: pricingState.renova_voucher_table_date || renovaRows.results?.[0]?.table_date || '',
+      source: pricingState.renova_voucher_source || '',
+      boostTableDate: pricingState.renova_boost_table_date || '',
+      boostSource: pricingState.renova_boost_source || '',
       devices: renovaDevices,
       boosts: renovaBoosts,
     },

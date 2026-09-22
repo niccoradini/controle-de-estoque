@@ -1185,7 +1185,7 @@ async function outletInventory(env) {
       brand: catalogEntry?.product?.brand || '',
       category: rule.category || catalogEntry?.product?.cluster || 'misc',
       promotionGroup: rule.promotion_group || 'Produto',
-      imageUrl: catalogEntry?.product?.imagem_url || '',
+      imageUrl: catalogEntry?.product?.imagem_url || rule.image_url || '',
       discount: rule.discount_percent == null ? null : Number(rule.discount_percent),
       discountText: rule.discount_text || 'Oferta',
       regularPriceCents: rule.regular_price_cents == null ? null : Number(rule.regular_price_cents),

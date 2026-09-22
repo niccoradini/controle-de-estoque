@@ -110,7 +110,7 @@ const viewTitles = {
   labels: 'Etiquetas do estoque',
   stock: 'Loja e estoque',
   'network-stock': 'Estoque da rede',
-  outlet: 'Outlet',
+  outlet: 'PROMOÇÕES',
   showcases: 'Vitrines',
   'new-request': 'Novo pedido',
   requests: 'Pedidos de retirada',
@@ -664,18 +664,18 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['network-stock', 'stock', 'Estoque da rede'], ['stock', 'stock', 'Estoque da loja'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'Outlet'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['network-stock', 'stock', 'Estoque da rede'], ['stock', 'stock', 'Estoque da loja'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['feedback', 'briefing', 'Sugestões recebidas'], ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
   if (state.user.role === 'stocker') {
     return [
-      ['dashboard', 'home', 'Visão do estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
+      ['dashboard', 'home', 'Visão do estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['stock', 'stock', 'Conferir estoque'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'],
       ['requests', 'orders', 'Pedidos para separar'], ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
     ];
   }
   return [
-    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'Outlet'], ['stock', 'stock', 'Loja / estoque'],
+    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['stock', 'stock', 'Loja / estoque'],
     ['new-request', 'plus', 'Novo pedido'], ['chips', 'sim', 'Meus chips'], ['requests', 'orders', 'Meus pedidos'],
     ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
   ];
@@ -683,8 +683,9 @@ function navItems() {
 
 function renderShell() {
   const links = navItems().map(([view, icon, label]) => `
-    <button class="nav-link ${state.view === view ? 'is-active' : ''}" data-action="navigate" data-view="${view}">
+    <button class="nav-link ${view === 'outlet' ? 'nav-link--promotions' : ''} ${state.view === view ? 'is-active' : ''}" data-action="navigate" data-view="${view}">
       <span class="nav-icon">${uiIcon(icon)}</span><span>${escapeHtml(label)}</span>
+      ${view === 'outlet' ? '<span class="nav-offer-badge">OFERTAS</span>' : ''}
       ${view === 'requests' && state.pendingCount ? `<span class="nav-badge">${state.pendingCount}</span>` : ''}
     </button>`).join('');
   root.innerHTML = `
@@ -984,18 +985,20 @@ function renderOutletProducts() {
   const query = normalizeCatalogName(state.outletSearch);
   const storeNames = new Map(state.outletStores.map((store) => [store.code, store.name]));
   const products = state.outletProducts.filter((product) => (
-    (state.outletDiscount === 'all' || Number(product.discount) === Number(state.outletDiscount))
+    (state.outletDiscount === 'all' || product.discountText === state.outletDiscount)
     && (state.outletCategory === 'all' || product.category === state.outletCategory || (state.outletCategory === 'accessories' && product.category !== 'devices'))
     && (state.outletStore === 'all' || Number(product.stores?.[state.outletStore] || 0) > 0)
-    && (!query || normalizeCatalogName(`${product.name} ${Object.keys(product.stores || {}).map((code) => `${code} ${storeNames.get(code) || ''}`).join(' ')}`).includes(query))
+    && (!query || normalizeCatalogName(`${product.name} ${product.materialCode || ''} ${product.promotionGroup || ''} ${product.conditions || ''} ${Object.keys(product.stores || {}).map((code) => `${code} ${storeNames.get(code) || ''}`).join(' ')}`).includes(query))
   ));
   const available = products.reduce((sum, product) => sum + (state.outletStore === 'all' ? product.available : Number(product.stores?.[state.outletStore] || 0)), 0);
-  const categoryLabels = { devices: 'Celular', wearables: 'Relógio', chargers: 'Carregador', cases: 'Capa', screen_protectors: 'Película', misc: 'Acessório' };
+  const categoryLabels = { devices: 'Smartphone', wearables: 'Relógio', chargers: 'Carregador', cables: 'Cabo', cases: 'Capa', screen_protectors: 'Película', speakers: 'Áudio', misc: 'Eletrônico' };
   target.innerHTML = `<div class="outlet-results__head"><div><p class="page-eyebrow">Disponibilidade da campanha</p><h3>${products.length} ${products.length === 1 ? 'produto encontrado' : 'produtos encontrados'}</h3><p>${available} ${available === 1 ? 'unidade disponível' : 'unidades disponíveis'}${state.outletStore === 'all' ? ' nas lojas da rede' : ` na ${escapeHtml(storeNames.get(state.outletStore) || state.outletStore)}`}</p></div></div>${products.length ? `<div class="outlet-grid">${products.map((product) => {
     const relevantStores = state.outletStores.filter((store) => Number(product.stores?.[store.code] || 0) > 0 && (state.outletStore === 'all' || state.outletStore === store.code));
     const visibleAvailable = state.outletStore === 'all' ? product.available : Number(product.stores?.[state.outletStore] || 0);
-    const graphicCategory = product.category === 'wearables' ? 'devices' : product.category;
-    return `<article class="outlet-card outlet-card--${product.discount}"><div class="outlet-card__top"><span class="outlet-card__discount"><b>${product.discount}%</b> de desconto</span><span class="outlet-card__visual product-visual--${escapeHtml(graphicCategory)}">${clusterGraphic(graphicCategory)}</span></div><div class="outlet-card__body"><p>${escapeHtml(categoryLabels[product.category] || 'Produto')}</p><h3>${escapeHtml(product.name)}</h3><span class="outlet-card__campaign">Oferta disponível em ${relevantStores.length} ${relevantStores.length === 1 ? 'loja' : 'lojas'}</span></div><div class="outlet-card__availability"><strong><b>${visibleAvailable}</b> ${visibleAvailable === 1 ? 'unidade disponível' : 'unidades disponíveis'}</strong><div class="outlet-store-list">${relevantStores.map((store) => `<div class="outlet-store-row"><span><strong>${escapeHtml(store.name)}</strong><small>Centro ${escapeHtml(store.center || store.code)}</small></span><b>${Number(product.stores[store.code])}<small> un.</small></b></div>`).join('')}</div></div><footer>Lista promocional importada em ${escapeHtml(formatDateOnly(state.outletImportedOn))}</footer></article>`;
+    const price = product.promotionalPriceCents ? formatMoney(product.promotionalPriceCents) : '';
+    const regularPrice = product.regularPriceCents ? formatMoney(product.regularPriceCents) : '';
+    const validity = product.validTo ? `Válida até ${formatDateOnly(product.validTo)}` : 'Validade não informada';
+    return `<article class="outlet-card"><div class="outlet-card__media">${promotionImageMarkup(product)}<span class="outlet-card__discount">${escapeHtml(product.discountText || 'Oferta')}</span></div><div class="outlet-card__body"><p>${escapeHtml(product.promotionGroup || categoryLabels[product.category] || 'Promoção')}</p><h3>${escapeHtml(product.name)}</h3><small class="outlet-card__material">Cód. ${escapeHtml(product.materialCode || 'Não informado')}</small>${price ? `<div class="outlet-card__price">${regularPrice ? `<del>${regularPrice}</del>` : ''}<strong>${price}</strong>${product.installmentCount && product.installmentPriceCents ? `<small>${product.installmentCount}x de ${formatMoney(product.installmentPriceCents)}</small>` : ''}</div>` : ''}<dl class="outlet-card__details"><div><dt>Condições</dt><dd>${escapeHtml(product.conditions || 'Não informado')}</dd></div><div><dt>Validade</dt><dd>${escapeHtml(validity)}</dd></div>${product.notes ? `<div><dt>Observações</dt><dd>${escapeHtml(product.notes)}</dd></div>` : ''}</dl></div><div class="outlet-card__availability"><strong><b>${visibleAvailable}</b> ${visibleAvailable === 1 ? 'unidade disponível' : 'unidades disponíveis'}</strong><div class="outlet-store-list">${relevantStores.map((store) => `<div class="outlet-store-row"><span><strong>${escapeHtml(store.name)}</strong><small>Centro ${escapeHtml(store.center || store.code)}</small></span><b>${Number(product.stores[store.code])}<small> un.</small></b></div>`).join('')}</div></div><footer>Dados promocionais atualizados em ${escapeHtml(formatDateOnly(state.outletImportedOn))}</footer></article>`;
   }).join('')}</div>` : emptyState('Nenhuma oferta encontrada', 'Altere a busca ou os filtros para visualizar os itens da promoção.')}`;
 }
 
@@ -1006,9 +1009,9 @@ async function renderOutlet() {
   state.outletImportedOn = data.importedOn || '';
   const content = document.querySelector('#view-content');
   const totalAvailable = state.outletProducts.reduce((sum, product) => sum + product.available, 0);
-  const bestDiscount = Math.max(0, ...state.outletProducts.map((product) => product.discount));
+  const discountOptions = [...new Set(state.outletProducts.map((product) => product.discountText).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
   const accessoryCount = state.outletProducts.filter((product) => product.category !== 'devices').length;
-  content.innerHTML = `<section class="outlet-hero"><div><p class="page-eyebrow">Campanha Vivo Outlet</p><h2>Ofertas de todas as lojas em um só lugar</h2><p>Consulte o produto, o desconto, a loja, o centro e a quantidade disponível antes de oferecer ao cliente.</p><div class="outlet-hero__metrics"><span><b>${state.outletProducts.length}</b> modelos em promoção</span><span><b>${totalAvailable}</b> unidades disponíveis</span><span><b>${state.outletStores.length}</b> lojas participantes</span><span><b>${accessoryCount}</b> acessórios e wearables</span></div></div><div class="outlet-hero__seal"><small>desconto de até</small><strong>${bestDiscount}%</strong><span>OUTLET</span></div></section><section class="outlet-toolbar outlet-toolbar--detailed"><label class="outlet-search">${uiIcon('search')}<input type="search" data-action="outlet-search" value="${escapeHtml(state.outletSearch)}" placeholder="Buscar aparelho, acessório, loja ou centro"></label><label class="outlet-select"><span>Loja</span><select class="select" data-action="outlet-store"><option value="all">Todas as lojas (${totalAvailable} un.)</option>${state.outletStores.map((store) => `<option value="${escapeHtml(store.code)}" ${state.outletStore === store.code ? 'selected' : ''}>${escapeHtml(store.name)} · ${store.center} (${store.available})</option>`).join('')}</select></label><div class="outlet-filter-groups"><div class="filter-tabs"><button class="chip ${state.outletCategory === 'all' ? 'is-active' : ''}" data-action="outlet-category" data-category="all">Tudo</button><button class="chip ${state.outletCategory === 'devices' ? 'is-active' : ''}" data-action="outlet-category" data-category="devices">Celulares</button><button class="chip ${state.outletCategory === 'accessories' ? 'is-active' : ''}" data-action="outlet-category" data-category="accessories">Acessórios</button></div><div class="filter-tabs"><button class="chip ${state.outletDiscount === 'all' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="all">Todos</button><button class="chip ${state.outletDiscount === '30' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="30">30% OFF</button><button class="chip ${state.outletDiscount === '40' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="40">40% OFF</button></div></div></section><section class="outlet-results" data-outlet-results></section>`;
+  content.innerHTML = `<section class="outlet-hero"><div><p class="page-eyebrow">Ofertas selecionadas</p><h2>Promoções Vivo</h2><p>Consulte condições, validade, lojas participantes e quantidades antes de oferecer ao cliente.</p><div class="outlet-hero__metrics"><span><b>${state.outletProducts.length}</b> produtos em promoção</span><span><b>${totalAvailable}</b> unidades disponíveis</span><span><b>${state.outletStores.length}</b> lojas participantes</span><span><b>${accessoryCount}</b> eletrônicos e acessórios</span></div></div><div class="outlet-hero__seal"><small>seleção de</small><strong>OFERTAS</strong><span>PROMOÇÕES</span></div></section><section class="outlet-toolbar outlet-toolbar--detailed"><label class="outlet-search">${uiIcon('search')}<input type="search" data-action="outlet-search" value="${escapeHtml(state.outletSearch)}" placeholder="Buscar produto, código, condição ou loja"></label><label class="outlet-select"><span>Loja</span><select class="select" data-action="outlet-store"><option value="all">Todas as lojas (${totalAvailable} un.)</option>${state.outletStores.map((store) => `<option value="${escapeHtml(store.code)}" ${state.outletStore === store.code ? 'selected' : ''}>${escapeHtml(store.name)} · ${store.center} (${store.available})</option>`).join('')}</select></label><div class="outlet-filter-groups"><div class="filter-tabs"><button class="chip ${state.outletCategory === 'all' ? 'is-active' : ''}" data-action="outlet-category" data-category="all">Tudo</button><button class="chip ${state.outletCategory === 'devices' ? 'is-active' : ''}" data-action="outlet-category" data-category="devices">Smartphones</button><button class="chip ${state.outletCategory === 'accessories' ? 'is-active' : ''}" data-action="outlet-category" data-category="accessories">Eletrônicos e acessórios</button></div><div class="filter-tabs"><button class="chip ${state.outletDiscount === 'all' ? 'is-active' : ''}" data-action="outlet-discount" data-discount="all">Todas as ofertas</button>${discountOptions.map((discount) => `<button class="chip ${state.outletDiscount === discount ? 'is-active' : ''}" data-action="outlet-discount" data-discount="${escapeHtml(discount)}">${escapeHtml(discount)}</button>`).join('')}</div></div></section><section class="outlet-results" data-outlet-results></section>`;
   renderOutletProducts();
 }
 
@@ -1346,9 +1349,23 @@ function productImageMarkup(produto, className, width, height) {
   return `<img src="${escapeHtml(productImageUrl(produto))}" alt="${escapeHtml(produto.nome || produto.name || 'Produto')}" class="${escapeHtml(className)}" width="${width}" height="${height}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-product-image="true" data-photo-fallback="${escapeHtml(productPhotoFallbackUrl(produto))}">`;
 }
 
+function promotionImageMarkup(product) {
+  const imageUrl = typeof product?.imageUrl === 'string' ? product.imageUrl.trim() : '';
+  if (!imageUrl) return `<div class="promotion-image__fallback"><img src="${PRODUCT_IMAGE_FALLBACK}" alt=""><span>Imagem não disponível</span></div>`;
+  return `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.name || 'Produto')}" class="promotion-image__product" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-promotion-image="true">`;
+}
+
 function handleProductImageError(event) {
   const image = event.target;
-  if (!(image instanceof HTMLImageElement) || image.dataset.productImage !== 'true') return;
+  if (!(image instanceof HTMLImageElement)) return;
+  if (image.dataset.promotionImage === 'true') {
+    image.dataset.promotionImage = 'fallback';
+    image.classList.add('is-fallback');
+    image.alt = '';
+    image.src = PRODUCT_IMAGE_FALLBACK;
+    return;
+  }
+  if (image.dataset.productImage !== 'true') return;
   if (image.dataset.fallbackApplied === 'photo') {
     image.dataset.fallbackApplied = 'symbol';
     image.classList.add('is-fallback');

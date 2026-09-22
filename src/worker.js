@@ -1134,61 +1134,90 @@ async function networkInventoryDashboard(env) {
 }
 
 async function outletInventory(env) {
-  const [storesResult, itemsResult, sourceResult] = await env.DB.batch([
+  const [catalog, rulesResult, networkResult, networkStoresResult] = await Promise.all([
+    catalogData(env, { role: 'manager' }),
     env.DB.prepare(`
-      SELECT center_code, store_name, SUM(quantity) AS available
-      FROM outlet_stock
-      GROUP BY center_code, store_name
-      ORDER BY store_name COLLATE NOCASE
-    `),
+      SELECT * FROM promotion_rules
+      WHERE active = 1
+      ORDER BY sort_order, product_name COLLATE NOCASE
+    `).all(),
     env.DB.prepare(`
-      SELECT center_code, store_name, product_id, product_name, category,
-             quantity, discount, imported_on, source_name
-      FROM outlet_stock
-      WHERE quantity > 0
-      ORDER BY product_name COLLATE NOCASE, store_name COLLATE NOCASE
-    `),
-    env.DB.prepare('SELECT MAX(imported_on) AS imported_on, MAX(source_name) AS source_name FROM outlet_stock'),
+      SELECT inventory.store_code, store.name AS store_name, store.center,
+             inventory.material_code, inventory.available_quantity
+      FROM network_inventory inventory
+      JOIN network_stores store ON store.code = inventory.store_code
+      WHERE inventory.available_quantity > 0
+    `).all(),
+    env.DB.prepare('SELECT code, name, center FROM network_stores ORDER BY name COLLATE NOCASE').all(),
   ]);
-  const products = new Map();
-  for (const item of itemsResult.results || []) {
-    let product = products.get(item.product_id);
-    if (!product) {
-      product = {
-        id: item.product_id,
-        name: item.product_name,
-        category: item.category,
-        discount: Number(item.discount),
-        available: 0,
-        stores: new Map(),
-      };
-      products.set(item.product_id, product);
+  const localStore = { code: 'sao-joao-del-rei', name: 'São João del-Rei', center: '209H' };
+  const catalogByMaterial = new Map();
+  for (const product of catalog) {
+    for (const variant of product.variants || []) {
+      const materialCode = String(variant.materialCode || '').trim().toUpperCase();
+      if (materialCode) catalogByMaterial.set(materialCode, { product, variant });
     }
-    const quantity = Number(item.quantity || 0);
-    product.available += quantity;
-    product.stores.set(item.center_code, (product.stores.get(item.center_code) || 0) + quantity);
   }
-  const availableProducts = [...products.values()]
-    .filter((product) => product.available > 0)
-    .sort((a, b) => b.discount - a.discount || a.name.localeCompare(b.name, 'pt-BR'));
-  const payloadProducts = availableProducts.map((product) => ({
-    id: product.id,
-    name: product.name,
-    category: product.category,
-    discount: product.discount,
-    available: product.available,
-    stores: Object.fromEntries(product.stores),
-  }));
-  const source = sourceResult.results?.[0] || {};
+  const networkByMaterial = new Map();
+  for (const row of networkResult.results || []) {
+    const materialCode = String(row.material_code || '').trim().toUpperCase();
+    if (!networkByMaterial.has(materialCode)) networkByMaterial.set(materialCode, []);
+    networkByMaterial.get(materialCode).push(row);
+  }
+  const payloadProducts = [];
+  for (const rule of rulesResult.results || []) {
+    const materialCode = String(rule.material_code || '').trim().toUpperCase();
+    const catalogEntry = catalogByMaterial.get(materialCode);
+    const stores = {};
+    const localAvailable = Number(catalogEntry?.variant?.available || 0);
+    if (localAvailable > 0) stores[localStore.code] = localAvailable;
+    for (const item of networkByMaterial.get(materialCode) || []) {
+      const quantity = Number(item.available_quantity || 0);
+      if (quantity > 0) stores[item.store_code] = quantity;
+    }
+    const available = Object.values(stores).reduce((sum, quantity) => sum + Number(quantity || 0), 0);
+    if (available <= 0) continue;
+    payloadProducts.push({
+      id: materialCode,
+      materialCode,
+      name: rule.product_name,
+      catalogName: catalogEntry?.product?.name || '',
+      brand: catalogEntry?.product?.brand || '',
+      category: rule.category || catalogEntry?.product?.cluster || 'misc',
+      promotionGroup: rule.promotion_group || 'Produto',
+      imageUrl: catalogEntry?.product?.imagem_url || '',
+      discount: rule.discount_percent == null ? null : Number(rule.discount_percent),
+      discountText: rule.discount_text || 'Oferta',
+      regularPriceCents: rule.regular_price_cents == null ? null : Number(rule.regular_price_cents),
+      promotionalPriceCents: rule.promotional_price_cents == null ? null : Number(rule.promotional_price_cents),
+      installmentCount: rule.installment_count == null ? null : Number(rule.installment_count),
+      installmentPriceCents: rule.installment_price_cents == null ? null : Number(rule.installment_price_cents),
+      conditions: rule.conditions || '',
+      validFrom: rule.valid_from || '',
+      validTo: rule.valid_to || '',
+      notes: rule.notes || '',
+      sourceName: rule.source_name || '',
+      available,
+      stores,
+      sortOrder: Number(rule.sort_order || 1000),
+    });
+  }
+  payloadProducts.sort((left, right) => left.sortOrder - right.sortOrder
+    || Number(right.discount || 0) - Number(left.discount || 0)
+    || left.name.localeCompare(right.name, 'pt-BR'));
+  const storeTotals = new Map([[localStore.code, { ...localStore, available: 0 }]]);
+  for (const store of networkStoresResult.results || []) {
+    storeTotals.set(store.code, { code: store.code, name: store.name, center: store.center, available: 0 });
+  }
+  for (const product of payloadProducts) {
+    for (const [code, quantity] of Object.entries(product.stores)) {
+      if (storeTotals.has(code)) storeTotals.get(code).available += Number(quantity || 0);
+    }
+  }
   return json({
-    importedOn: source.imported_on || '',
-    sourceName: source.source_name || '',
-    stores: (storesResult.results || []).map((store) => ({
-      code: store.center_code,
-      center: store.center_code,
-      name: store.store_name,
-      available: Number(store.available || 0),
-    })),
+    importedOn: '2026-09-22',
+    sourceName: 'Portfólio promocional setembro/2026 e campanhas enviadas em 21/09',
+    stores: [...storeTotals.values()].filter((store) => store.available > 0),
     products: payloadProducts,
     items: payloadProducts,
   });

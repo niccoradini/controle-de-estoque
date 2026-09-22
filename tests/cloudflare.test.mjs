@@ -1997,7 +1997,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.49.0');
+    assert.equal(JSON.parse(packageSource).version, '6.50.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2245,8 +2245,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.49\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.49\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.50\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.50\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2339,7 +2339,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.49.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.50.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2590,5 +2590,42 @@ describe('Controle de estoque por código material', () => {
     assert.equal(store.available, 1016);
     assert.equal(store.incoming, 261);
     assert.equal(store.repair, 111);
+  });
+
+  test('atualiza as quatro lojas com as bases de 21/09', async () => {
+    const migrations = await Promise.all([
+      readFile(new URL('../migrations/0093_inventory_refresh_2026_09_21.sql', import.meta.url), 'utf8'),
+      readFile(new URL('../migrations/0094_incoming_inventory_details_2026_09_21.sql', import.meta.url), 'utf8'),
+      readFile(new URL('../migrations/0095_network_inventory_2026_09_21.sql', import.meta.url), 'utf8'),
+      readFile(new URL('../migrations/0096_network_inventory_serials_2026_09_21.sql', import.meta.url), 'utf8'),
+    ]);
+    for (const migration of migrations) await applyMigration(migration);
+
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-09-21');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, '209h.21.09.xlsx');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_incoming_units'`)).value, '277');
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM repair_inventory')).count), 111);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM incoming_inventory_serials')).count), 277);
+    assert.equal(Number((await row('SELECT COUNT(DISTINCT material_code) AS count FROM incoming_inventory_serials')).count), 54);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM network_inventory_serials')).count), 3555);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM network_inventory_serials WHERE stock_status = 'available'`)).count), 3092);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM network_inventory_serials WHERE stock_status = 'incoming'`)).count), 414);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM network_inventory_serials WHERE stock_status = 'repair'`)).count), 49);
+
+    const response = await manager.request('/api/network-inventory');
+    assert.equal(response.status, 200);
+    assert.deepEqual(response.payload.stores.map((store) => store.center), ['209H', '210H', '89MN', '283H']);
+    const totals = Object.fromEntries(response.payload.stores.map((store) => [store.center, {
+      available: store.available,
+      incoming: store.incoming,
+      repair: store.repair,
+    }]));
+    assert.deepEqual(totals, {
+      '209H': { available: 1001, incoming: 277, repair: 111 },
+      '210H': { available: 1033, incoming: 133, repair: 0 },
+      '89MN': { available: 1280, incoming: 199, repair: 48 },
+      '283H': { available: 779, incoming: 82, repair: 1 },
+    });
+    assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-21'));
   });
 });

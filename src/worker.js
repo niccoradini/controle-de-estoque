@@ -3562,8 +3562,8 @@ async function createStockCount(request, env, user) {
       INSERT INTO stock_count_items
         (count_id,variant_id,material_code,product_name,category,stock_mode,expected_quantity)
       SELECT ?, v.id, COALESCE(v.sku,''), COALESCE(p.display_name,p.name), COALESCE(p.cluster,'misc'),
-             CASE WHEN v.serial_tracking = 1 THEN 'serialized' ELSE 'quantity' END,
-             CASE WHEN v.serial_tracking = 1 THEN COALESCE((SELECT COUNT(*) FROM inventory_serials serial WHERE serial.variant_id=v.id AND serial.status='available'),0) ELSE v.quantity_on_hand END
+             CASE WHEN v.serial_tracking = 1 AND (COALESCE(p.cluster,'') = 'devices' OR UPPER(COALESCE(p.display_name,p.name,'')) LIKE '%SIM CARD%') THEN 'serialized' ELSE 'quantity' END,
+             CASE WHEN v.serial_tracking = 1 AND (COALESCE(p.cluster,'') = 'devices' OR UPPER(COALESCE(p.display_name,p.name,'')) LIKE '%SIM CARD%') THEN COALESCE((SELECT COUNT(*) FROM inventory_serials serial WHERE serial.variant_id=v.id AND serial.status='available'),0) ELSE v.quantity_on_hand END
       FROM product_variants v JOIN products p ON p.id=v.product_id
       WHERE v.active=1 AND p.active=1 AND v.sku IS NOT NULL AND TRIM(v.sku)<>'' AND ${where}
     `).bind(id),
@@ -3623,6 +3623,60 @@ async function saveStockCountSerial(request, env, user, id) {
     auditStatement(env, user.id, 'stock_count.serial_found', 'stock_count', id, { variantId, serialNumber, note: note.value }),
   ]);
   return json(await stockCountDetails(env, id));
+}
+
+async function scanStockCountCode(request, env, user, id) {
+  const count = await stockCountRow(env, id);
+  if (!count) throw new HttpError(404, 'Contagem não encontrada.');
+  if (count.status !== 'draft') throw new HttpError(409, 'Esta contagem já foi finalizada.');
+  const input = await readJson(request);
+  const code = String(input.code || '').trim().toUpperCase();
+  if (!code || code.length > 80 || !/^[A-Z0-9._/-]+$/.test(code)) throw new HttpError(400, 'Leia ou digite um código válido.');
+
+  const serial = await env.DB.prepare(`
+    SELECT item.variant_id, item.material_code, item.product_name, item.stock_mode, serial.expected, serial.found
+    FROM stock_count_serials serial
+    JOIN stock_count_items item ON item.count_id=serial.count_id AND item.variant_id=serial.variant_id
+    WHERE serial.count_id=? AND serial.serial_number=? COLLATE NOCASE
+    LIMIT 1
+  `).bind(id, code).first() || await env.DB.prepare(`
+    SELECT item.variant_id, item.material_code, item.product_name, item.stock_mode, 0 AS expected, 0 AS found
+    FROM inventory_serials inventory
+    JOIN stock_count_items item ON item.count_id=? AND item.variant_id=inventory.variant_id
+    WHERE inventory.serial_number=? COLLATE NOCASE
+    LIMIT 1
+  `).bind(id, code).first();
+
+  const timestamp = nowIso();
+  if (serial) {
+    if (serial.stock_mode !== 'serialized') throw new HttpError(409, 'Use o código do material para contar este produto.');
+    if (serial.found) throw new HttpError(409, 'Este IMEI ou serial já foi contado.');
+    await env.DB.batch([
+      env.DB.prepare(`INSERT INTO stock_count_serials (count_id,variant_id,serial_number,expected,found,created_at) VALUES (?,?,?,?,1,?) ON CONFLICT(count_id,serial_number) DO UPDATE SET found=1`)
+        .bind(id, Number(serial.variant_id), code, Number(serial.expected || 0), timestamp),
+      env.DB.prepare(`UPDATE stock_count_items SET counted_quantity=(SELECT COUNT(*) FROM stock_count_serials WHERE count_id=? AND variant_id=? AND found=1),updated_at=? WHERE count_id=? AND variant_id=?`)
+        .bind(id, Number(serial.variant_id), timestamp, id, Number(serial.variant_id)),
+      env.DB.prepare('UPDATE stock_counts SET updated_at=? WHERE id=?').bind(timestamp, id),
+      auditStatement(env, user.id, 'stock_count.quick_serial_scanned', 'stock_count', id, { variantId: Number(serial.variant_id), serialNumber: code }),
+    ]);
+    const details = await stockCountDetails(env, id);
+    return json({ ...details, scan: { type: 'serial', variantId: Number(serial.variant_id), materialCode: serial.material_code, productName: serial.product_name, code } });
+  }
+
+  const item = await env.DB.prepare(`
+    SELECT * FROM stock_count_items WHERE count_id=? AND material_code=? COLLATE NOCASE LIMIT 1
+  `).bind(id, code).first();
+  if (!item) throw new HttpError(404, 'Código não encontrado nesta contagem.');
+  if (item.stock_mode === 'serialized') throw new HttpError(409, `${item.product_name}: leia o IMEI ou número de série para contar com segurança.`);
+  await env.DB.batch([
+    env.DB.prepare(`UPDATE stock_count_items SET counted_quantity=COALESCE(counted_quantity,0)+1,updated_at=? WHERE count_id=? AND variant_id=?`)
+      .bind(timestamp, id, Number(item.variant_id)),
+    env.DB.prepare('UPDATE stock_counts SET updated_at=? WHERE id=?').bind(timestamp, id),
+    auditStatement(env, user.id, 'stock_count.quick_item_scanned', 'stock_count', id, { variantId: Number(item.variant_id), materialCode: item.material_code, increment: 1 }),
+  ]);
+  const details = await stockCountDetails(env, id);
+  const saved = details.items.find((entry) => entry.variantId === Number(item.variant_id));
+  return json({ ...details, scan: { type: 'material', variantId: Number(item.variant_id), materialCode: item.material_code, productName: item.product_name, countedQuantity: saved?.countedQuantity ?? 0 } });
 }
 
 async function finalizeStockCount(env, user, id) {
@@ -4173,6 +4227,11 @@ async function routeApi(request, env) {
   if (method === 'POST' && stockCountSerialMatch) {
     requireRole(user, 'manager');
     return saveStockCountSerial(request, env, user, decodeURIComponent(stockCountSerialMatch[1]));
+  }
+  const stockCountScanMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/scan$/);
+  if (method === 'POST' && stockCountScanMatch) {
+    requireRole(user, 'manager');
+    return scanStockCountCode(request, env, user, decodeURIComponent(stockCountScanMatch[1]));
   }
   const stockCountFinalizeMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/finalize$/);
   if (method === 'POST' && stockCountFinalizeMatch) {

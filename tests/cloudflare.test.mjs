@@ -1343,13 +1343,14 @@ describe('Controle de estoque por código material', () => {
     assert.ok(expectedSerial);
     const originalQuantity = Number((await row('SELECT quantity_on_hand FROM product_variants WHERE id = ?', item.variantId)).quantity_on_hand);
 
-    const found = await manager.request(`/api/stock-counts/${created.payload.count.id}/serials`, {
-      method: 'POST', body: { variantId: item.variantId, serialNumber: expectedSerial.serialNumber },
+    const found = await manager.request(`/api/stock-counts/${created.payload.count.id}/scan`, {
+      method: 'POST', body: { code: expectedSerial.serialNumber },
     });
     assert.equal(found.status, 200);
+    assert.equal(found.payload.scan.type, 'serial');
     assert.equal(found.payload.items.find((entry) => entry.variantId === item.variantId).difference, 0);
-    assert.equal((await manager.request(`/api/stock-counts/${created.payload.count.id}/serials`, {
-      method: 'POST', body: { variantId: item.variantId, serialNumber: expectedSerial.serialNumber },
+    assert.equal((await manager.request(`/api/stock-counts/${created.payload.count.id}/scan`, {
+      method: 'POST', body: { code: expectedSerial.serialNumber },
     })).status, 409);
 
     const unexpectedSerial = `TEST${Date.now()}`;
@@ -1389,6 +1390,32 @@ describe('Controle de estoque por código material', () => {
     const history = await manager.request('/api/stock-counts');
     assert.equal(history.status, 200);
     assert.ok(history.payload.counts.some((entry) => entry.id === created.payload.count.id && entry.status === 'adjusted'));
+
+    const quickCount = await manager.request('/api/stock-counts', {
+      method: 'POST', body: { name: 'Leitura contínua', category: 'chargers' },
+    });
+    assert.equal(quickCount.status, 201);
+    const quickItem = quickCount.payload.items.find((entry) => entry.stockMode === 'quantity');
+    assert.ok(quickItem, 'acessórios devem aceitar contagem rápida por material');
+    const firstQuickScan = await manager.request(`/api/stock-counts/${quickCount.payload.count.id}/scan`, {
+      method: 'POST', body: { code: quickItem.materialCode.toLowerCase() },
+    });
+    assert.equal(firstQuickScan.status, 200);
+    assert.equal(firstQuickScan.payload.scan.type, 'material');
+    assert.equal(firstQuickScan.payload.scan.variantId, quickItem.variantId);
+    assert.equal(firstQuickScan.payload.items.find((entry) => entry.variantId === quickItem.variantId).countedQuantity, 1);
+    const secondQuickScan = await manager.request(`/api/stock-counts/${quickCount.payload.count.id}/scan`, {
+      method: 'POST', body: { code: quickItem.materialCode },
+    });
+    assert.equal(secondQuickScan.status, 200);
+    assert.equal(secondQuickScan.payload.items.find((entry) => entry.variantId === quickItem.variantId).countedQuantity, 2);
+    assert.equal((await manager.request(`/api/stock-counts/${quickCount.payload.count.id}/scan`, {
+      method: 'POST', body: { code: 'CODIGO-INEXISTENTE' },
+    })).status, 404);
+    assert.equal((await seller.request(`/api/stock-counts/${quickCount.payload.count.id}/scan`, {
+      method: 'POST', body: { code: quickItem.materialCode },
+    })).status, 403);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action = 'stock_count.quick_item_scanned'`)).count), 2);
   });
 
   test('controla vitrines com visualização geral e edição de gerente ou estoquista', async () => {
@@ -2073,7 +2100,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.54.0');
+    assert.equal(JSON.parse(packageSource).version, '6.55.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2090,8 +2117,13 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /\['stock-count', 'check', 'Contagem de Estoque'\]/);
     assert.match(appSource, /async function startStockCountScanner/);
     assert.match(appSource, /Somar ao valor já contado/);
+    assert.match(appSource, /Modo rápido/);
+    assert.match(appSource, /data-form="stock-count-quick"/);
+    assert.match(appSource, /Contar \+1/);
     assert.match(stylesSource, /Contagem de Estoque — inventário gerencial mobile-first/);
+    assert.match(stylesSource, /\.stock-count-quick/);
     assert.match(workerSource, /stock_count\.adjustment_approved/);
+    assert.match(workerSource, /stock_count\.quick_item_scanned/);
     assert.match(workerSource, /Permissions-Policy.*camera=\(self\)/);
     assert.match(appSource, /Cada loja aparece separadamente/);
     assert.match(appSource, /network-store-switcher/);
@@ -2331,8 +2363,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.54\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.54\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.55\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.55\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2425,7 +2457,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.54.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.55.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

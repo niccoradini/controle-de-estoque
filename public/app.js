@@ -93,6 +93,7 @@ const state = {
   stockCount: null,
   stockCountSearch: '',
   stockCountFilter: 'all',
+  stockCountLastScan: null,
 };
 
 const RENOVA_INTAKE_ROLES = new Set(['manager', 'stocker']);
@@ -1047,18 +1048,21 @@ function renderStockCountWorkspace() {
     return (!query || normalizeCatalogName(`${item.materialCode} ${item.name}`).includes(query))
       && (state.stockCountFilter === 'all' || (state.stockCountFilter === 'divergent' ? ['missing','surplus'].includes(situation.key) : situation.key === state.stockCountFilter));
   });
-  target.innerHTML = `<section class="stock-count-head"><button class="btn btn--ghost" data-action="close-stock-count">← Histórico</button><div><p class="page-eyebrow">${escapeHtml(stockCountCategoryLabels[count.category] || count.category)}</p><h2>${escapeHtml(count.name)}</h2><p>${escapeHtml(count.responsibleName)} · iniciada em ${escapeHtml(formatDate(count.createdAt))}</p></div><div class="stock-count-head__actions"><a class="btn btn--secondary" href="/api/stock-counts/${encodeURIComponent(count.id)}/export">Exportar planilha</a>${count.status === 'draft' ? '<button class="btn" data-action="review-stock-count">Finalizar contagem</button>' : count.status === 'completed' ? '<button class="btn" data-action="approve-stock-count">Revisar e aprovar ajustes</button>' : '<span class="stock-count-adjusted">Ajustes aprovados</span>'}</div></section><section class="stock-count-metrics"><article><small>Produtos contados</small><strong>${summary.countedProducts}</strong><span>de ${summary.products}</span></article><article><small>Unidades contadas</small><strong>${summary.countedUnits}</strong></article><article><small>Ainda não contados</small><strong>${summary.remainingProducts}</strong></article><article class="is-alert"><small>Com divergência</small><strong>${summary.divergentProducts}</strong></article><article class="is-progress"><small>Concluído</small><strong>${summary.progress}%</strong><span>${escapeHtml(formatDate(count.updatedAt))}</span></article></section><section class="stock-count-tools"><label class="stock-count-search">${uiIcon('search')}<input type="search" data-action="stock-count-search" value="${escapeHtml(state.stockCountSearch)}" placeholder="Código do material ou nome" autocomplete="off" autofocus></label><button class="btn btn--secondary stock-count-scan" data-action="scan-stock-count">${uiIcon('copy')} Ler código</button><div class="filter-tabs"><button class="chip ${state.stockCountFilter==='all'?'is-active':''}" data-action="filter-stock-count" data-filter="all">Todos</button><button class="chip ${state.stockCountFilter==='pending'?'is-active':''}" data-action="filter-stock-count" data-filter="pending">Não contados</button><button class="chip ${state.stockCountFilter==='divergent'?'is-active':''}" data-action="filter-stock-count" data-filter="divergent">Divergências</button><button class="chip ${state.stockCountFilter==='correct'?'is-active':''}" data-action="filter-stock-count" data-filter="correct">Corretos</button></div></section><section class="stock-count-results"><header><strong>${filtered.length} produto(s)</strong><span>Progresso salvo automaticamente a cada confirmação.</span></header><div class="stock-count-product-list">${filtered.length ? filtered.map(stockCountProductCard).join('') : emptyState('Nenhum produto encontrado', 'Confira o código ou altere o filtro.')}</div></section>`;
-  if (query) {
-    const exact = filtered.find((item) => normalizeCatalogName(item.materialCode) === query);
-    if (exact) window.requestAnimationFrame(() => document.querySelector(`[data-stock-count-item="${exact.variantId}"] input[name="${exact.stockMode === 'serialized' ? 'serialNumber' : 'countedQuantity'}"]`)?.focus());
-    else window.requestAnimationFrame(() => { const input=document.querySelector('[data-action="stock-count-search"]'); input?.focus(); input?.setSelectionRange(input.value.length,input.value.length); });
-  }
+  const lastScan = state.stockCountLastScan;
+  target.innerHTML = `<section class="stock-count-head"><button class="btn btn--ghost" data-action="close-stock-count">← Histórico</button><div><p class="page-eyebrow">${escapeHtml(stockCountCategoryLabels[count.category] || count.category)}</p><h2>${escapeHtml(count.name)}</h2><p>${escapeHtml(count.responsibleName)} · iniciada em ${escapeHtml(formatDate(count.createdAt))}</p></div><div class="stock-count-head__actions"><a class="btn btn--secondary" href="/api/stock-counts/${encodeURIComponent(count.id)}/export">Exportar planilha</a>${count.status === 'draft' ? '<button class="btn" data-action="review-stock-count">Finalizar contagem</button>' : count.status === 'completed' ? '<button class="btn" data-action="approve-stock-count">Revisar e aprovar ajustes</button>' : '<span class="stock-count-adjusted">Ajustes aprovados</span>'}</div></section>
+    <section class="stock-count-metrics"><article><small>Produtos contados</small><strong>${summary.countedProducts}</strong><span>de ${summary.products}</span></article><article><small>Unidades contadas</small><strong>${summary.countedUnits}</strong></article><article><small>Ainda não contados</small><strong>${summary.remainingProducts}</strong></article><article class="is-alert"><small>Com divergência</small><strong>${summary.divergentProducts}</strong></article><article class="is-progress"><small>Concluído</small><strong>${summary.progress}%</strong><span>${escapeHtml(formatDate(count.updatedAt))}</span></article></section>
+    ${count.status === 'draft' ? `<section class="stock-count-quick"><div><p class="page-eyebrow">Modo rápido</p><h3>Leia, conte e siga para o próximo</h3><p>Use o código do material para acessórios ou o IMEI/serial para aparelhos.</p></div><form data-form="stock-count-quick"><label><span>Código, IMEI ou serial</span><input class="input mono" name="code" data-stock-count-quick-input autocomplete="off" autocapitalize="characters" enterkeyhint="done" placeholder="Leia ou digite e confirme" required autofocus></label><button class="btn stock-count-quick__camera" type="button" data-action="scan-stock-count">${uiIcon('copy')} Câmera</button><button class="btn" type="submit">Contar +1</button></form>${lastScan ? `<div class="stock-count-quick__success" role="status">${uiIcon('check')}<div><strong>${escapeHtml(lastScan.productName)}</strong><span>${escapeHtml(lastScan.materialCode)}${lastScan.type === 'material' ? ` · agora ${lastScan.countedQuantity} unidade(s)` : ' · IMEI/serial registrado'}</span></div></div>` : ''}</section>` : ''}
+    <section class="stock-count-tools"><label class="stock-count-search">${uiIcon('search')}<input type="search" data-action="stock-count-search" value="${escapeHtml(state.stockCountSearch)}" placeholder="Filtrar lista por código ou nome" autocomplete="off"></label><div class="filter-tabs"><button class="chip ${state.stockCountFilter==='all'?'is-active':''}" data-action="filter-stock-count" data-filter="all">Todos</button><button class="chip ${state.stockCountFilter==='pending'?'is-active':''}" data-action="filter-stock-count" data-filter="pending">Não contados</button><button class="chip ${state.stockCountFilter==='divergent'?'is-active':''}" data-action="filter-stock-count" data-filter="divergent">Divergências</button><button class="chip ${state.stockCountFilter==='correct'?'is-active':''}" data-action="filter-stock-count" data-filter="correct">Corretos</button></div></section>
+    <section class="stock-count-results"><header><strong>${filtered.length} produto(s)</strong><span>A lista abaixo serve para consulta e correções manuais.</span></header><div class="stock-count-product-list">${filtered.length ? filtered.map(stockCountProductCard).join('') : emptyState('Nenhum produto encontrado', 'Confira o texto ou altere o filtro.')}</div></section>`;
+  if (query) window.requestAnimationFrame(() => { const input=document.querySelector('[data-action="stock-count-search"]'); input?.focus(); input?.setSelectionRange(input.value.length,input.value.length); });
+  else if (count.status === 'draft') window.requestAnimationFrame(() => document.querySelector('[data-stock-count-quick-input]')?.focus());
 }
 
 async function openStockCount(id) {
   state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(id)}`);
   state.stockCountSearch = '';
   state.stockCountFilter = 'all';
+  state.stockCountLastScan = null;
   renderStockCountWorkspace();
 }
 
@@ -1092,7 +1096,10 @@ async function startStockCountScanner() {
       const codes = await detector.detect(video);
       if (codes[0]?.rawValue) {
         stream.getTracks().forEach((track) => track.stop()); closeModal(true);
-        state.stockCountSearch = codes[0].rawValue.trim(); renderStockCountWorkspace(); return;
+        const form = document.querySelector('form[data-form="stock-count-quick"]');
+        const input = form?.querySelector('[data-stock-count-quick-input]');
+        if (input) { input.value = codes[0].rawValue.trim(); form.requestSubmit(); }
+        return;
       }
       window.setTimeout(scan, 250);
     };
@@ -4010,6 +4017,15 @@ document.addEventListener('submit', async (event) => {
   const data = Object.fromEntries(new FormData(form));
   await withBusy(submit, async () => {
     try {
+      if (form.dataset.form === 'stock-count-quick') {
+        const result = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/scan`, { method: 'POST', body: { code: data.code } });
+        state.stockCount = result;
+        state.stockCountLastScan = result.scan;
+        state.stockCountSearch = '';
+        renderStockCountWorkspace();
+        showToast(result.scan.type === 'serial' ? 'IMEI ou serial contado.' : `${result.scan.productName}: +1 unidade.`);
+        window.requestAnimationFrame(() => document.querySelector('[data-stock-count-quick-input]')?.focus());
+      }
       if (form.dataset.form === 'create-stock-count') {
         state.stockCount = await api('/api/stock-counts', { method: 'POST', body: { name: data.name, category: data.category } });
         closeModal(true); showToast('Contagem iniciada. O progresso será salvo a cada item.'); await renderStockCount();

@@ -73,7 +73,7 @@ function securityHeaders(headers = {}) {
     'Content-Security-Policy': "default-src 'self'; base-uri 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: https:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'",
     'Cross-Origin-Opener-Policy': 'same-origin',
     'Cross-Origin-Resource-Policy': 'same-origin',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Permissions-Policy': 'camera=(self), microphone=(), geolocation=()',
     'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
@@ -3443,6 +3443,261 @@ async function deleteUser(env, manager, id) {
   return noContent();
 }
 
+const STOCK_COUNT_CATEGORIES = new Set(['all', 'devices', 'cases', 'screen_protectors', 'chargers', 'chips', 'accessories']);
+
+function stockCountCategoryWhere(category) {
+  if (category === 'devices') return "COALESCE(p.cluster, '') = 'devices'";
+  if (category === 'cases') return "COALESCE(p.cluster, '') = 'cases'";
+  if (category === 'screen_protectors') return "COALESCE(p.cluster, '') = 'screen_protectors'";
+  if (category === 'chargers') return "COALESCE(p.cluster, '') = 'chargers'";
+  if (category === 'chips') return "(UPPER(COALESCE(p.display_name,p.name,'')) LIKE '%SIM CARD%' OR UPPER(COALESCE(p.technical_name,'')) LIKE '%SIM CARD%')";
+  if (category === 'accessories') return "COALESCE(p.cluster, '') <> 'devices' AND NOT (UPPER(COALESCE(p.display_name,p.name,'')) LIKE '%SIM CARD%' OR UPPER(COALESCE(p.technical_name,'')) LIKE '%SIM CARD%')";
+  return '1 = 1';
+}
+
+async function stockCountRow(env, id) {
+  return env.DB.prepare(`
+    SELECT count.*, creator.name AS responsible_name, approver.name AS adjusted_by_name
+    FROM stock_counts count
+    JOIN users creator ON creator.id = count.created_by
+    LEFT JOIN users approver ON approver.id = count.adjusted_by
+    WHERE count.id = ?
+  `).bind(id).first();
+}
+
+function stockCountSummary(items) {
+  const counted = items.filter((item) => item.countedQuantity != null);
+  const divergent = counted.filter((item) => item.difference !== 0);
+  return {
+    products: items.length,
+    countedProducts: counted.length,
+    countedUnits: counted.reduce((sum, item) => sum + item.countedQuantity, 0),
+    remainingProducts: items.length - counted.length,
+    divergentProducts: divergent.length,
+    progress: items.length ? Math.round((counted.length / items.length) * 100) : 100,
+  };
+}
+
+async function stockCountDetails(env, id) {
+  const count = await stockCountRow(env, id);
+  if (!count) throw new HttpError(404, 'Contagem não encontrada.');
+  const rows = (await env.DB.prepare(`
+    SELECT item.*, p.imagem_url,
+           COALESCE((SELECT COUNT(*) FROM stock_count_serials serial WHERE serial.count_id = item.count_id AND serial.variant_id = item.variant_id AND serial.expected = 1), 0) AS expected_serials,
+           COALESCE((SELECT COUNT(*) FROM stock_count_serials serial WHERE serial.count_id = item.count_id AND serial.variant_id = item.variant_id AND serial.found = 1), 0) AS found_serials
+    FROM stock_count_items item
+    JOIN product_variants variant ON variant.id = item.variant_id
+    JOIN products p ON p.id = variant.product_id
+    WHERE item.count_id = ?
+    ORDER BY item.product_name COLLATE NOCASE, item.material_code COLLATE NOCASE
+  `).bind(id).all()).results || [];
+  const serialRows = (await env.DB.prepare(`
+    SELECT serial.*, item.material_code, item.product_name
+    FROM stock_count_serials serial
+    JOIN stock_count_items item ON item.count_id = serial.count_id AND item.variant_id = serial.variant_id
+    WHERE serial.count_id = ?
+    ORDER BY item.product_name COLLATE NOCASE, serial.serial_number COLLATE NOCASE
+  `).bind(id).all()).results || [];
+  const items = rows.map((row) => {
+    const countedQuantity = row.counted_quantity == null
+      ? (row.stock_mode === 'serialized' && Number(row.found_serials) > 0 ? Number(row.found_serials) : null)
+      : Number(row.counted_quantity);
+    return {
+      variantId: Number(row.variant_id), materialCode: row.material_code, name: row.product_name,
+      category: row.category, stockMode: row.stock_mode, imageUrl: row.imagem_url || '',
+      expectedQuantity: Number(row.expected_quantity), countedQuantity,
+      difference: countedQuantity == null ? null : countedQuantity - Number(row.expected_quantity),
+      note: row.note || '', updatedAt: row.updated_at || '',
+      expectedSerials: Number(row.expected_serials), foundSerials: Number(row.found_serials),
+    };
+  });
+  return {
+    count: {
+      id: count.id, name: count.name, category: count.category, status: count.status,
+      responsibleName: count.responsible_name, createdAt: count.created_at, updatedAt: count.updated_at,
+      finalizedAt: count.finalized_at || '', adjustedAt: count.adjusted_at || '', adjustedByName: count.adjusted_by_name || '',
+    },
+    summary: stockCountSummary(items), items,
+    serials: serialRows.map((row) => ({
+      variantId: Number(row.variant_id), materialCode: row.material_code, productName: row.product_name,
+      serialNumber: row.serial_number, expected: Boolean(row.expected), found: Boolean(row.found),
+      status: row.expected && row.found ? 'correct' : row.expected ? 'missing' : 'unexpected',
+    })),
+  };
+}
+
+async function listStockCounts(env) {
+  const rows = (await env.DB.prepare(`
+    SELECT count.*, user.name AS responsible_name,
+           COUNT(item.variant_id) AS product_count,
+           SUM(CASE WHEN item.counted_quantity IS NOT NULL THEN 1 ELSE 0 END) AS counted_count,
+           SUM(CASE WHEN item.counted_quantity IS NOT NULL AND item.counted_quantity <> item.expected_quantity THEN 1 ELSE 0 END) AS divergence_count
+    FROM stock_counts count
+    JOIN users user ON user.id = count.created_by
+    LEFT JOIN stock_count_items item ON item.count_id = count.id
+    GROUP BY count.id
+    ORDER BY count.updated_at DESC
+  `).all()).results || [];
+  return json({ counts: rows.map((row) => ({
+    id: row.id, name: row.name, category: row.category, status: row.status,
+    responsibleName: row.responsible_name, productCount: Number(row.product_count || 0),
+    countedCount: Number(row.counted_count || 0), divergenceCount: Number(row.divergence_count || 0),
+    createdAt: row.created_at, updatedAt: row.updated_at, finalizedAt: row.finalized_at || '',
+  })) });
+}
+
+async function createStockCount(request, env, user) {
+  const input = await readJson(request);
+  const name = textRule('um nome para a contagem', { min: 3, max: 100 })(input.name);
+  if (name.error) throw new HttpError(400, name.error, { name: name.error });
+  const category = String(input.category || 'all');
+  if (!STOCK_COUNT_CATEGORIES.has(category)) throw new HttpError(400, 'Selecione uma categoria válida.');
+  const id = crypto.randomUUID();
+  const timestamp = nowIso();
+  const where = stockCountCategoryWhere(category);
+  await env.DB.batch([
+    env.DB.prepare(`INSERT INTO stock_counts (id,name,category,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?)`)
+      .bind(id, name.value, category, user.id, timestamp, timestamp),
+    env.DB.prepare(`
+      INSERT INTO stock_count_items
+        (count_id,variant_id,material_code,product_name,category,stock_mode,expected_quantity)
+      SELECT ?, v.id, COALESCE(v.sku,''), COALESCE(p.display_name,p.name), COALESCE(p.cluster,'misc'),
+             CASE WHEN v.serial_tracking = 1 THEN 'serialized' ELSE 'quantity' END,
+             CASE WHEN v.serial_tracking = 1 THEN COALESCE((SELECT COUNT(*) FROM inventory_serials serial WHERE serial.variant_id=v.id AND serial.status='available'),0) ELSE v.quantity_on_hand END
+      FROM product_variants v JOIN products p ON p.id=v.product_id
+      WHERE v.active=1 AND p.active=1 AND v.sku IS NOT NULL AND TRIM(v.sku)<>'' AND ${where}
+    `).bind(id),
+    auditStatement(env, user.id, 'stock_count.created', 'stock_count', id, { name: name.value, category }),
+  ]);
+  await env.DB.prepare(`
+    INSERT INTO stock_count_serials (count_id,variant_id,serial_number,expected,found,created_at)
+    SELECT ?, serial.variant_id, serial.serial_number, 1, 0, ?
+    FROM inventory_serials serial
+    JOIN stock_count_items item ON item.count_id=? AND item.variant_id=serial.variant_id
+    WHERE serial.status='available'
+  `).bind(id, timestamp, id).run();
+  return json(await stockCountDetails(env, id), 201);
+}
+
+async function saveStockCountItem(request, env, user, id, variantId) {
+  const count = await stockCountRow(env, id);
+  if (!count) throw new HttpError(404, 'Contagem não encontrada.');
+  if (count.status !== 'draft') throw new HttpError(409, 'Esta contagem já foi finalizada.');
+  const input = await readJson(request);
+  const quantity = Number(input.countedQuantity);
+  if (!Number.isInteger(quantity) || quantity < 0 || quantity > 100000) throw new HttpError(400, 'Informe uma quantidade válida.');
+  const note = textRule('a observação', { max: 500, optional: true })(input.note);
+  if (note.error) throw new HttpError(400, note.error);
+  const timestamp = nowIso();
+  const result = await env.DB.prepare(`UPDATE stock_count_items SET counted_quantity=?,note=?,updated_at=? WHERE count_id=? AND variant_id=?`)
+    .bind(quantity, note.value, timestamp, id, variantId).run();
+  if (!result.meta.changes) throw new HttpError(404, 'Produto não encontrado nesta contagem.');
+  await env.DB.batch([
+    env.DB.prepare('UPDATE stock_counts SET updated_at=? WHERE id=?').bind(timestamp, id),
+    auditStatement(env, user.id, 'stock_count.item_saved', 'stock_count', id, { variantId, countedQuantity: quantity }),
+  ]);
+  return json(await stockCountDetails(env, id));
+}
+
+async function saveStockCountSerial(request, env, user, id) {
+  const count = await stockCountRow(env, id);
+  if (!count) throw new HttpError(404, 'Contagem não encontrada.');
+  if (count.status !== 'draft') throw new HttpError(409, 'Esta contagem já foi finalizada.');
+  const input = await readJson(request);
+  const variantId = Number(input.variantId);
+  const serialNumber = String(input.serialNumber || '').trim().toUpperCase();
+  const note = textRule('a observação', { max: 500, optional: true })(input.note);
+  if (note.error) throw new HttpError(400, note.error);
+  if (!Number.isInteger(variantId) || !serialNumber || serialNumber.length > 40 || !/^[A-Z0-9-]+$/.test(serialNumber)) throw new HttpError(400, 'Informe um IMEI ou número de série válido.');
+  const item = await env.DB.prepare(`SELECT * FROM stock_count_items WHERE count_id=? AND variant_id=? AND stock_mode='serialized'`).bind(id, variantId).first();
+  if (!item) throw new HttpError(404, 'Produto serializado não encontrado nesta contagem.');
+  const duplicate = await env.DB.prepare(`SELECT expected,found FROM stock_count_serials WHERE count_id=? AND serial_number=? COLLATE NOCASE`).bind(id, serialNumber).first();
+  if (duplicate?.found) throw new HttpError(409, 'Este IMEI ou serial já foi contado.');
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`INSERT INTO stock_count_serials (count_id,variant_id,serial_number,expected,found,created_at) VALUES (?,?,?,?,1,?) ON CONFLICT(count_id,serial_number) DO UPDATE SET found=1`)
+      .bind(id, variantId, serialNumber, duplicate ? Number(duplicate.expected) : 0, timestamp),
+    env.DB.prepare(`UPDATE stock_count_items SET counted_quantity=(SELECT COUNT(*) FROM stock_count_serials WHERE count_id=? AND variant_id=? AND found=1),note=?,updated_at=? WHERE count_id=? AND variant_id=?`)
+      .bind(id, variantId, note.value, timestamp, id, variantId),
+    env.DB.prepare('UPDATE stock_counts SET updated_at=? WHERE id=?').bind(timestamp, id),
+    auditStatement(env, user.id, 'stock_count.serial_found', 'stock_count', id, { variantId, serialNumber, note: note.value }),
+  ]);
+  return json(await stockCountDetails(env, id));
+}
+
+async function finalizeStockCount(env, user, id) {
+  const count = await stockCountRow(env, id);
+  if (!count) throw new HttpError(404, 'Contagem não encontrada.');
+  if (count.status !== 'draft') throw new HttpError(409, 'Esta contagem já foi finalizada.');
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(`UPDATE stock_counts SET status='completed',finalized_at=?,updated_at=? WHERE id=?`).bind(timestamp, timestamp, id),
+    auditStatement(env, user.id, 'stock_count.finalized', 'stock_count', id, { stockChanged: false }),
+  ]);
+  return json(await stockCountDetails(env, id));
+}
+
+async function approveStockCount(env, user, id) {
+  const count = await stockCountRow(env, id);
+  if (!count) throw new HttpError(404, 'Contagem não encontrada.');
+  if (count.status !== 'completed') throw new HttpError(409, 'Finalize a contagem antes de aprovar ajustes.');
+  const details = await stockCountDetails(env, id);
+  const changed = details.items.filter((item) => item.countedQuantity != null && item.difference !== 0);
+  const statements = [];
+  for (const item of changed) {
+    if (item.stockMode === 'quantity') {
+      const reserved = Number((await env.DB.prepare('SELECT COALESCE(SUM(quantity),0) AS total FROM active_quantity_reservations WHERE variant_id=?').bind(item.variantId).first()).total || 0);
+      if (item.countedQuantity < reserved) throw new HttpError(409, `${item.name}: a quantidade contada é menor que ${reserved} unidade(s) reservada(s) em pedidos.`);
+      statements.push(env.DB.prepare('UPDATE product_variants SET quantity_on_hand=?,updated_at=? WHERE id=?').bind(item.countedQuantity, nowIso(), item.variantId));
+    } else {
+      const serials = details.serials.filter((serial) => serial.variantId === item.variantId);
+      for (const serial of serials.filter((entry) => entry.status === 'missing')) {
+        const assigned = await env.DB.prepare('SELECT 1 AS found FROM request_serial_assignments WHERE serial_number_snapshot=? LIMIT 1').bind(serial.serialNumber).first();
+        if (assigned) throw new HttpError(409, `${item.name}: o IMEI ${serial.serialNumber} está vinculado a um pedido e não pode ser retirado automaticamente.`);
+        statements.push(env.DB.prepare("UPDATE inventory_serials SET status='withdrawn',updated_at=? WHERE variant_id=? AND serial_number=?").bind(nowIso(), item.variantId, serial.serialNumber));
+      }
+      for (const serial of serials.filter((entry) => entry.status === 'unexpected')) {
+        statements.push(env.DB.prepare(`INSERT INTO inventory_serials (variant_id,serial_number,status,created_at,updated_at) VALUES (?,?,'available',?,?) ON CONFLICT(serial_number) DO UPDATE SET variant_id=excluded.variant_id,status='available',updated_at=excluded.updated_at`)
+          .bind(item.variantId, serial.serialNumber, nowIso(), nowIso()));
+      }
+      statements.push(env.DB.prepare(`UPDATE product_variants SET quantity_on_hand=(SELECT COUNT(*) FROM inventory_serials WHERE variant_id=? AND status='available'),updated_at=? WHERE id=?`)
+        .bind(item.variantId, nowIso(), item.variantId));
+    }
+    statements.push(auditStatement(env, user.id, 'stock_count.adjustment_approved', 'product_variant', item.variantId, {
+      countId: id, materialCode: item.materialCode, previousQuantity: item.expectedQuantity, newQuantity: item.countedQuantity,
+    }));
+  }
+  const timestamp = nowIso();
+  statements.push(env.DB.prepare(`UPDATE stock_counts SET status='adjusted',adjusted_at=?,adjusted_by=?,updated_at=? WHERE id=?`).bind(timestamp, user.id, timestamp, id));
+  statements.push(auditStatement(env, user.id, 'stock_count.adjusted', 'stock_count', id, { adjustedItems: changed.length }));
+  await env.DB.batch(statements);
+  return json(await stockCountDetails(env, id));
+}
+
+function stockCountWorkbook(details) {
+  const headers = ['Código do material','Produto','Quantidade esperada','Quantidade contada','Diferença','Observação','Responsável','Data da contagem'];
+  const rows = [headers, ...details.items.map((item) => [item.materialCode,item.name,item.expectedQuantity,item.countedQuantity ?? '',item.difference ?? '',item.note,details.count.responsibleName,details.count.createdAt])];
+  const letters = 'ABCDEFGH';
+  const sheetRows = rows.map((row, index) => `<row r="${index + 1}">${row.map((value, column) => `<c r="${letters[column]}${index + 1}" t="inlineStr"><is><t>${xmlCell(value)}</t></is></c>`).join('')}</row>`).join('');
+  const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheetRows}</sheetData><autoFilter ref="A1:H${rows.length}"/></worksheet>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="Aptos"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="1"><xf/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0"/></cellStyles></styleSheet>`;
+  return zipWorkbook({
+    '[Content_Types].xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
+    '_rels/.rels': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+    'xl/workbook.xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Contagem de estoque" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+    'xl/_rels/workbook.xml.rels': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
+    'xl/worksheets/sheet1.xml': sheet, 'xl/styles.xml': styles,
+  });
+}
+
+async function exportStockCount(env, id) {
+  const details = await stockCountDetails(env, id);
+  return new Response(stockCountWorkbook(details), { headers: {
+    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'Content-Disposition': `attachment; filename="contagem-estoque-${id}.xlsx"`, 'Cache-Control': 'private, no-store',
+  } });
+}
+
 async function auditLog(env) {
   const rows = (await env.DB.prepare(`
     SELECT a.*, u.name AS actor_name FROM audit_logs a
@@ -3895,6 +4150,44 @@ async function routeApi(request, env) {
   if (method === 'GET' && path === '/api/network-inventory') {
     requireRole(user, 'manager');
     return networkInventoryDashboard(env);
+  }
+  if (method === 'GET' && path === '/api/stock-counts') {
+    requireRole(user, 'manager');
+    return listStockCounts(env);
+  }
+  if (method === 'POST' && path === '/api/stock-counts') {
+    requireRole(user, 'manager');
+    return createStockCount(request, env, user);
+  }
+  const stockCountExportMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/export$/);
+  if (method === 'GET' && stockCountExportMatch) {
+    requireRole(user, 'manager');
+    return exportStockCount(env, decodeURIComponent(stockCountExportMatch[1]));
+  }
+  const stockCountItemMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/items\/(\d+)$/);
+  if (method === 'PUT' && stockCountItemMatch) {
+    requireRole(user, 'manager');
+    return saveStockCountItem(request, env, user, decodeURIComponent(stockCountItemMatch[1]), Number(stockCountItemMatch[2]));
+  }
+  const stockCountSerialMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/serials$/);
+  if (method === 'POST' && stockCountSerialMatch) {
+    requireRole(user, 'manager');
+    return saveStockCountSerial(request, env, user, decodeURIComponent(stockCountSerialMatch[1]));
+  }
+  const stockCountFinalizeMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/finalize$/);
+  if (method === 'POST' && stockCountFinalizeMatch) {
+    requireRole(user, 'manager');
+    return finalizeStockCount(env, user, decodeURIComponent(stockCountFinalizeMatch[1]));
+  }
+  const stockCountApproveMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/approve$/);
+  if (method === 'POST' && stockCountApproveMatch) {
+    requireRole(user, 'manager');
+    return approveStockCount(env, user, decodeURIComponent(stockCountApproveMatch[1]));
+  }
+  const stockCountMatch = path.match(/^\/api\/stock-counts\/([^/]+)$/);
+  if (method === 'GET' && stockCountMatch) {
+    requireRole(user, 'manager');
+    return json(await stockCountDetails(env, decodeURIComponent(stockCountMatch[1])));
   }
   if (method === 'GET' && path === '/api/outlet') return outletInventory(env);
   if (method === 'GET' && path === '/api/showcases') return showcaseOverview(env, user);

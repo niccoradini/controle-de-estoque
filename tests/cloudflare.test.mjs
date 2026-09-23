@@ -66,7 +66,7 @@ async function row(sql, ...params) {
 
 before(async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
-  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60, migration61, migration62, migration63, migration64, migration65, migration66, migration67, migration73, migration74, migration75, migration79, migration82, migration83, migration92, migration97, migration98, migration99] = await Promise.all([
+  const [workerSource, securitySource, migration1, migration2, migration3, migration4, migration5, migration6, migration7, migration8, migration9, migration10, migration11, migration12, migration13, migration14, migration15, migration16, migration17, migration18, migration19, migration20, migration21, migration22, migration23, migration24, migration25, migration26, migration27, migration28, migration29, migration30, migration31, migration32, migration33, migration34, migration35, migration36, migration37, migration38, migration39, migration40, migration41, migration42, migration45, migration46, migration47, migration48, migration49, migration50, migration51, migration52, migration53, migration54, migration55, migration56, migration57, migration58, migration59, migration60, migration61, migration62, migration63, migration64, migration65, migration66, migration67, migration73, migration74, migration75, migration79, migration82, migration83, migration92, migration97, migration98, migration99, migration100] = await Promise.all([
     readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     readFile(new URL('../src/security.js', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0001_initial.sql', import.meta.url), 'utf8'),
@@ -144,6 +144,7 @@ before(async () => {
     readFile(new URL('../migrations/0097_promotions_page_2026_09_22.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0098_promotion_image_fixes_2026_09_22.sql', import.meta.url), 'utf8'),
     readFile(new URL('../migrations/0099_promotion_remaining_images_2026_09_22.sql', import.meta.url), 'utf8'),
+    readFile(new URL('../migrations/0100_stock_counts.sql', import.meta.url), 'utf8'),
   ]);
   mf = new Miniflare({
     compatibilityDate: '2026-07-15',
@@ -286,6 +287,7 @@ before(async () => {
   await applyMigration(migration97);
   await applyMigration(migration98);
   await applyMigration(migration99);
+  await applyMigration(migration100);
 });
 
 after(async () => mf?.dispose());
@@ -1320,6 +1322,75 @@ describe('Controle de estoque por código material', () => {
     assert.equal((await stocker.request('/api/audit')).status, 403);
   });
 
+  test('faz contagem de estoque exclusiva do gerente, retoma, finaliza sem alterar e aprova com auditoria', async () => {
+    assert.equal((await seller.request('/api/stock-counts')).status, 403);
+    assert.equal((await stocker.request('/api/stock-counts')).status, 403);
+    assert.equal((await stocker.request('/api/stock-counts', {
+      method: 'POST', body: { name: 'Tentativa indevida', category: 'all' },
+    })).status, 403);
+
+    const created = await manager.request('/api/stock-counts', {
+      method: 'POST', body: { name: 'Contagem semanal – 23/09', category: 'devices' },
+    });
+    assert.equal(created.status, 201);
+    assert.equal(created.payload.count.status, 'draft');
+    assert.equal(created.payload.count.responsibleName, 'Gerente Geral');
+    assert.ok(created.payload.items.length > 0);
+    assert.ok(created.payload.items.every((item) => item.category === 'devices'));
+    const item = created.payload.items.find((entry) => entry.stockMode === 'serialized' && entry.expectedQuantity === 1);
+    assert.ok(item, 'deve existir um aparelho com uma unidade para testar IMEI');
+    const expectedSerial = created.payload.serials.find((serial) => serial.variantId === item.variantId && serial.expected);
+    assert.ok(expectedSerial);
+    const originalQuantity = Number((await row('SELECT quantity_on_hand FROM product_variants WHERE id = ?', item.variantId)).quantity_on_hand);
+
+    const found = await manager.request(`/api/stock-counts/${created.payload.count.id}/serials`, {
+      method: 'POST', body: { variantId: item.variantId, serialNumber: expectedSerial.serialNumber },
+    });
+    assert.equal(found.status, 200);
+    assert.equal(found.payload.items.find((entry) => entry.variantId === item.variantId).difference, 0);
+    assert.equal((await manager.request(`/api/stock-counts/${created.payload.count.id}/serials`, {
+      method: 'POST', body: { variantId: item.variantId, serialNumber: expectedSerial.serialNumber },
+    })).status, 409);
+
+    const unexpectedSerial = `TEST${Date.now()}`;
+    const surplus = await manager.request(`/api/stock-counts/${created.payload.count.id}/serials`, {
+      method: 'POST', body: { variantId: item.variantId, serialNumber: unexpectedSerial, note: 'Série localizada na loja' },
+    });
+    assert.equal(surplus.status, 200);
+    const surplusItem = surplus.payload.items.find((entry) => entry.variantId === item.variantId);
+    assert.equal(surplusItem.difference, 1);
+    assert.equal(surplusItem.note, 'Série localizada na loja');
+
+    const resumed = await manager.request(`/api/stock-counts/${created.payload.count.id}`);
+    assert.equal(resumed.status, 200);
+    assert.equal(resumed.payload.summary.countedProducts, 1);
+    assert.equal(resumed.payload.summary.divergentProducts, 1);
+    assert.ok(resumed.payload.summary.remainingProducts > 0);
+
+    const finished = await manager.request(`/api/stock-counts/${created.payload.count.id}/finalize`, { method: 'POST', body: {} });
+    assert.equal(finished.status, 200);
+    assert.equal(finished.payload.count.status, 'completed');
+    assert.equal(Number((await row('SELECT quantity_on_hand FROM product_variants WHERE id = ?', item.variantId)).quantity_on_hand), originalQuantity);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM inventory_serials WHERE serial_number = ?', unexpectedSerial)).count), 0);
+
+    const exported = await mf.dispatchFetch(`https://controleestoque.app.br/api/stock-counts/${created.payload.count.id}/export`, {
+      headers: { Cookie: manager.cookie, 'CF-Connecting-IP': manager.ip },
+    });
+    assert.equal(exported.status, 200);
+    assert.match(exported.headers.get('content-type'), /spreadsheetml/);
+    assert.ok((await exported.arrayBuffer()).byteLength > 500);
+
+    const approved = await manager.request(`/api/stock-counts/${created.payload.count.id}/approve`, { method: 'POST', body: {} });
+    assert.equal(approved.status, 200);
+    assert.equal(approved.payload.count.status, 'adjusted');
+    assert.equal(Number((await row('SELECT quantity_on_hand FROM product_variants WHERE id = ?', item.variantId)).quantity_on_hand), originalQuantity + 1);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action = 'stock_count.adjustment_approved' AND entity_id = ?`, String(item.variantId))).count), 1);
+
+    const history = await manager.request('/api/stock-counts');
+    assert.equal(history.status, 200);
+    assert.ok(history.payload.counts.some((entry) => entry.id === created.payload.count.id && entry.status === 'adjusted'));
+  });
+
   test('controla vitrines com visualização geral e edição de gerente ou estoquista', async () => {
     const initial = await manager.request('/api/showcases');
     assert.equal(initial.status, 200);
@@ -1995,12 +2066,14 @@ describe('Controle de estoque por código material', () => {
       readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     ]);
     assert.doesNotMatch(appSource, /ZXing|scan-device|\/api\/devices/i);
-    assert.doesNotMatch(appSource, /BarcodeDetector|getUserMedia|start-chip-camera/i);
+    assert.doesNotMatch(appSource, /start-chip-camera/i);
+    assert.match(appSource, /BarcodeDetector/);
+    assert.match(appSource, /getUserMedia/);
     assert.doesNotMatch(appSource, /[▯▢◇♫▰▣ϟ⌁◆♙◷⇄⌂☰↪×]/);
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.doesNotMatch(packageSource, /@zxing/i);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.53.0');
+    assert.equal(JSON.parse(packageSource).version, '6.54.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2013,6 +2086,13 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /Dados promocionais atualizados/);
     assert.match(stylesSource, /Promoções — mantém a linguagem do sistema/);
     assert.match(stylesSource, /object-fit:contain/);
+    assert.match(appSource, /Contagem de Estoque/);
+    assert.match(appSource, /\['stock-count', 'check', 'Contagem de Estoque'\]/);
+    assert.match(appSource, /async function startStockCountScanner/);
+    assert.match(appSource, /Somar ao valor já contado/);
+    assert.match(stylesSource, /Contagem de Estoque — inventário gerencial mobile-first/);
+    assert.match(workerSource, /stock_count\.adjustment_approved/);
+    assert.match(workerSource, /Permissions-Policy.*camera=\(self\)/);
     assert.match(appSource, /Cada loja aparece separadamente/);
     assert.match(appSource, /network-store-switcher/);
     assert.match(appSource, /function networkProductGroups/);
@@ -2251,8 +2331,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.53\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.53\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.54\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.54\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2345,7 +2425,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.53.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.54.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2364,7 +2444,7 @@ describe('Controle de estoque por código material', () => {
       'bundle-apple-2026-08-card.jpg',
     ].map((fileName) => mf.dispatchFetch(`https://controleestoque.app.br/news/${fileName}`)));
     assert.equal(page.headers.get('cache-control'), 'no-store');
-    assert.equal(page.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=()');
+    assert.equal(page.headers.get('permissions-policy'), 'camera=(self), microphone=(), geolocation=()');
     assert.match(page.headers.get('content-security-policy') || '', /img-src 'self' data: https:/);
     assert.equal(script.headers.get('cache-control'), 'no-cache');
     assert.equal(groupsScript.headers.get('cache-control'), 'no-cache');

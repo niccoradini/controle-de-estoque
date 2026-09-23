@@ -89,6 +89,10 @@ const state = {
   plannerItems: [],
   feedback: [],
   feedbackFilter: 'all',
+  stockCounts: [],
+  stockCount: null,
+  stockCountSearch: '',
+  stockCountFilter: 'all',
 };
 
 const RENOVA_INTAKE_ROLES = new Set(['manager', 'stocker']);
@@ -110,6 +114,7 @@ const viewTitles = {
   labels: 'Etiquetas do estoque',
   stock: 'Loja e estoque',
   'network-stock': 'Estoque da rede',
+  'stock-count': 'Contagem de Estoque',
   outlet: 'PROMOÇÕES',
   showcases: 'Vitrines',
   'new-request': 'Novo pedido',
@@ -664,7 +669,7 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['network-stock', 'stock', 'Estoque da rede'], ['stock', 'stock', 'Estoque da loja'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['network-stock', 'stock', 'Estoque da rede'], ['stock', 'stock', 'Estoque da loja'], ['stock-count', 'check', 'Contagem de Estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['feedback', 'briefing', 'Sugestões recebidas'], ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
@@ -1000,6 +1005,99 @@ function renderOutletProducts() {
     const validity = product.validTo ? `Válida até ${formatDateOnly(product.validTo)}` : 'Validade não informada';
     return `<article class="outlet-card"><div class="outlet-card__media"><div class="outlet-card__image-frame">${promotionImageMarkup(product)}</div><span class="outlet-card__discount">${escapeHtml(product.discountText || 'Oferta')}</span></div><div class="outlet-card__body"><p>${escapeHtml(product.promotionGroup || categoryLabels[product.category] || 'Promoção')}</p><h3>${escapeHtml(product.name)}</h3><small class="outlet-card__material">Cód. ${escapeHtml(product.materialCode || 'Não informado')}</small>${price ? `<div class="outlet-card__price">${regularPrice ? `<del>${regularPrice}</del>` : ''}<strong>${price}</strong>${product.installmentCount && product.installmentPriceCents ? `<small>${product.installmentCount}x de ${formatMoney(product.installmentPriceCents)}</small>` : ''}</div>` : ''}<dl class="outlet-card__details"><div><dt>Condições</dt><dd>${escapeHtml(product.conditions || 'Não informado')}</dd></div><div><dt>Validade</dt><dd>${escapeHtml(validity)}</dd></div>${product.notes ? `<div><dt>Observações</dt><dd>${escapeHtml(product.notes)}</dd></div>` : ''}</dl></div><div class="outlet-card__availability"><strong><b>${visibleAvailable}</b> ${visibleAvailable === 1 ? 'unidade disponível' : 'unidades disponíveis'}</strong><div class="outlet-store-list">${relevantStores.map((store) => `<div class="outlet-store-row"><span><strong>${escapeHtml(store.name)}</strong><small>Centro ${escapeHtml(store.center || store.code)}</small></span><b>${Number(product.stores[store.code])}<small> un.</small></b></div>`).join('')}</div></div><footer>Dados promocionais atualizados em ${escapeHtml(formatDateOnly(state.outletImportedOn))}</footer></article>`;
   }).join('')}</div>` : emptyState('Nenhuma oferta encontrada', 'Altere a busca ou os filtros para visualizar os itens da promoção.')}`;
+}
+
+const stockCountCategoryLabels = Object.freeze({ all: 'Estoque completo', devices: 'Aparelhos', cases: 'Capas', screen_protectors: 'Películas', chargers: 'Carregadores', chips: 'Chips', accessories: 'Demais acessórios' });
+const stockCountStatusLabels = Object.freeze({ draft: 'Em andamento', completed: 'Aguardando revisão', adjusted: 'Ajustes aprovados' });
+
+function stockCountDifference(item) {
+  if (item.countedQuantity == null) return { key: 'pending', label: 'Não contado', difference: null };
+  if (item.difference === 0) return { key: 'correct', label: 'Correto', difference: 0 };
+  if (item.difference < 0) return { key: 'missing', label: 'Faltando', difference: item.difference };
+  return { key: 'surplus', label: 'Sobrando', difference: item.difference };
+}
+
+function stockCountNewModal() {
+  const today = new Date().toLocaleDateString('pt-BR');
+  showModal(`<form data-form="create-stock-count" novalidate><div class="modal__head"><div><p class="page-eyebrow">Inventário gerencial</p><h2>Nova contagem</h2><p>O saldo será apenas comparado. Nenhuma quantidade será alterada nesta etapa.</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid"><div class="field field--full"><label for="stock-count-name">Nome da contagem</label><input class="input" id="stock-count-name" name="name" maxlength="100" value="Contagem semanal – ${today}" required autofocus></div><div class="field field--full"><label for="stock-count-category">O que será contado?</label><select class="select" id="stock-count-category" name="category">${Object.entries(stockCountCategoryLabels).map(([value,label])=>`<option value="${value}">${label}</option>`).join('')}</select></div></div></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Iniciar contagem</button></div></form>`, { wide: true });
+}
+
+function stockCountHistoryMarkup() {
+  if (!state.stockCounts.length) return emptyState('Nenhuma contagem registrada', 'Crie a primeira contagem para começar o inventário da loja.');
+  return `<div class="stock-count-history">${state.stockCounts.map((count) => {
+    const progress = count.productCount ? Math.round((count.countedCount / count.productCount) * 100) : 100;
+    return `<article><div><span class="stock-count-status is-${escapeHtml(count.status)}">${escapeHtml(stockCountStatusLabels[count.status] || count.status)}</span><h3>${escapeHtml(count.name)}</h3><p>${escapeHtml(count.responsibleName)} · ${escapeHtml(formatDate(count.createdAt))}</p></div><dl><div><dt>Progresso</dt><dd>${progress}%</dd></div><div><dt>Itens</dt><dd>${count.countedCount}/${count.productCount}</dd></div><div><dt>Divergências</dt><dd>${count.divergenceCount}</dd></div></dl><button class="btn btn--secondary" data-action="open-stock-count" data-id="${escapeHtml(count.id)}">${count.status === 'draft' ? 'Continuar' : 'Consultar'}</button></article>`;
+  }).join('')}</div>`;
+}
+
+function stockCountProductCard(item) {
+  const situation = stockCountDifference(item);
+  const serials = state.stockCount?.serials?.filter((serial) => serial.variantId === item.variantId) || [];
+  const canEdit = state.stockCount.count.status === 'draft';
+  return `<article class="stock-count-product is-${situation.key}" data-stock-count-item="${item.variantId}"><div class="stock-count-product__identity">${promotionImageMarkup({ imageUrl:item.imageUrl,name:item.name })}<div><span>${escapeHtml(clusterLabels[item.category] || item.category || 'Produto')}</span><h3>${escapeHtml(item.name)}</h3><code>${escapeHtml(item.materialCode)}</code></div><em>${escapeHtml(situation.label)}</em></div><div class="stock-count-product__numbers"><span><small>Esperado</small><strong>${item.expectedQuantity}</strong></span><span><small>Contado</small><strong>${item.countedQuantity == null ? '—' : item.countedQuantity}</strong></span><span><small>Diferença</small><strong>${item.difference == null ? '—' : item.difference > 0 ? `+${item.difference}` : item.difference}</strong></span></div>${canEdit ? item.stockMode === 'serialized' ? `<form class="stock-count-serial-form" data-form="stock-count-serial" data-variant-id="${item.variantId}"><label><span>IMEI ou número de série</span><input class="input mono" name="serialNumber" autocomplete="off" inputmode="numeric" maxlength="40" placeholder="Leia ou digite o código" required></label><label class="stock-count-note"><span>Observação</span><input class="input" name="note" maxlength="500" value="${escapeHtml(item.note || '')}" placeholder="Opcional para divergências"></label><button class="btn" type="submit">Confirmar serial</button></form>` : `<form class="stock-count-quantity-form" data-form="stock-count-item" data-variant-id="${item.variantId}"><div class="stock-count-stepper"><button type="button" data-action="stock-count-step" data-delta="-1" aria-label="Diminuir">−</button><input class="input" type="number" name="countedQuantity" min="0" max="100000" inputmode="numeric" value="${item.countedQuantity == null ? 0 : item.countedQuantity}" aria-label="Quantidade contada"><button type="button" data-action="stock-count-step" data-delta="1" aria-label="Aumentar">+</button></div>${item.countedQuantity == null ? '' : `<label class="stock-count-repeat"><span>Produto já contado</span><select class="select" name="repeatMode"><option value="replace">Substituir ${item.countedQuantity} pelo novo valor</option><option value="sum">Somar ao valor já contado</option></select></label>`}<label class="stock-count-note"><span>Observação</span><input class="input" name="note" maxlength="500" value="${escapeHtml(item.note || '')}" placeholder="Opcional"></label><button class="btn" type="submit">Salvar item</button></form>` : ''}${item.stockMode === 'serialized' ? `<details class="stock-count-serial-list"><summary>${item.foundSerials} encontrado(s) de ${item.expectedSerials} esperado(s)</summary><div>${serials.map((serial)=>`<span class="is-${serial.status}"><code>${escapeHtml(serial.serialNumber)}</code><b>${serial.status === 'correct' ? 'Encontrado' : serial.status === 'missing' ? 'Não encontrado' : 'Fora do estoque'}</b></span>`).join('')}</div></details>` : ''}</article>`;
+}
+
+function renderStockCountWorkspace() {
+  const target = document.querySelector('[data-stock-count-workspace]');
+  if (!target || !state.stockCount) return;
+  const { count, summary, items } = state.stockCount;
+  const query = normalizeCatalogName(state.stockCountSearch);
+  const filtered = items.filter((item) => {
+    const situation = stockCountDifference(item);
+    return (!query || normalizeCatalogName(`${item.materialCode} ${item.name}`).includes(query))
+      && (state.stockCountFilter === 'all' || (state.stockCountFilter === 'divergent' ? ['missing','surplus'].includes(situation.key) : situation.key === state.stockCountFilter));
+  });
+  target.innerHTML = `<section class="stock-count-head"><button class="btn btn--ghost" data-action="close-stock-count">← Histórico</button><div><p class="page-eyebrow">${escapeHtml(stockCountCategoryLabels[count.category] || count.category)}</p><h2>${escapeHtml(count.name)}</h2><p>${escapeHtml(count.responsibleName)} · iniciada em ${escapeHtml(formatDate(count.createdAt))}</p></div><div class="stock-count-head__actions"><a class="btn btn--secondary" href="/api/stock-counts/${encodeURIComponent(count.id)}/export">Exportar planilha</a>${count.status === 'draft' ? '<button class="btn" data-action="review-stock-count">Finalizar contagem</button>' : count.status === 'completed' ? '<button class="btn" data-action="approve-stock-count">Revisar e aprovar ajustes</button>' : '<span class="stock-count-adjusted">Ajustes aprovados</span>'}</div></section><section class="stock-count-metrics"><article><small>Produtos contados</small><strong>${summary.countedProducts}</strong><span>de ${summary.products}</span></article><article><small>Unidades contadas</small><strong>${summary.countedUnits}</strong></article><article><small>Ainda não contados</small><strong>${summary.remainingProducts}</strong></article><article class="is-alert"><small>Com divergência</small><strong>${summary.divergentProducts}</strong></article><article class="is-progress"><small>Concluído</small><strong>${summary.progress}%</strong><span>${escapeHtml(formatDate(count.updatedAt))}</span></article></section><section class="stock-count-tools"><label class="stock-count-search">${uiIcon('search')}<input type="search" data-action="stock-count-search" value="${escapeHtml(state.stockCountSearch)}" placeholder="Código do material ou nome" autocomplete="off" autofocus></label><button class="btn btn--secondary stock-count-scan" data-action="scan-stock-count">${uiIcon('copy')} Ler código</button><div class="filter-tabs"><button class="chip ${state.stockCountFilter==='all'?'is-active':''}" data-action="filter-stock-count" data-filter="all">Todos</button><button class="chip ${state.stockCountFilter==='pending'?'is-active':''}" data-action="filter-stock-count" data-filter="pending">Não contados</button><button class="chip ${state.stockCountFilter==='divergent'?'is-active':''}" data-action="filter-stock-count" data-filter="divergent">Divergências</button><button class="chip ${state.stockCountFilter==='correct'?'is-active':''}" data-action="filter-stock-count" data-filter="correct">Corretos</button></div></section><section class="stock-count-results"><header><strong>${filtered.length} produto(s)</strong><span>Progresso salvo automaticamente a cada confirmação.</span></header><div class="stock-count-product-list">${filtered.length ? filtered.map(stockCountProductCard).join('') : emptyState('Nenhum produto encontrado', 'Confira o código ou altere o filtro.')}</div></section>`;
+  if (query) {
+    const exact = filtered.find((item) => normalizeCatalogName(item.materialCode) === query);
+    if (exact) window.requestAnimationFrame(() => document.querySelector(`[data-stock-count-item="${exact.variantId}"] input[name="${exact.stockMode === 'serialized' ? 'serialNumber' : 'countedQuantity'}"]`)?.focus());
+    else window.requestAnimationFrame(() => { const input=document.querySelector('[data-action="stock-count-search"]'); input?.focus(); input?.setSelectionRange(input.value.length,input.value.length); });
+  }
+}
+
+async function openStockCount(id) {
+  state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(id)}`);
+  state.stockCountSearch = '';
+  state.stockCountFilter = 'all';
+  renderStockCountWorkspace();
+}
+
+function stockCountReviewModal(approve = false) {
+  const details = state.stockCount;
+  const divergent = details.items.filter((item) => item.countedQuantity != null && item.difference !== 0);
+  const title = approve ? 'Aprovar ajustes de estoque?' : 'Finalizar esta contagem?';
+  const explanation = approve ? 'Somente agora os saldos divergentes serão atualizados. A operação ficará registrada na auditoria.' : 'A contagem será encerrada para edição, mas nenhum saldo será alterado.';
+  showModal(`<form data-form="${approve ? 'approve-stock-count' : 'finalize-stock-count'}"><div class="modal__head"><div><p class="page-eyebrow">Revisão obrigatória</p><h2>${title}</h2><p>${explanation}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="stock-count-review-summary"><span><b>${details.summary.countedProducts}</b> produtos contados</span><span><b>${divergent.length}</b> divergências</span></div><div class="stock-count-review-list">${divergent.length ? divergent.map((item)=>`<article class="is-${item.difference < 0 ? 'missing' : 'surplus'}"><div><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(item.materialCode)}</code></div><span>${item.expectedQuantity} → ${item.countedQuantity}</span><b>${item.difference > 0 ? '+' : ''}${item.difference}</b></article>`).join('') : '<p>Nenhuma divergência encontrada.</p>'}</div></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn ${approve ? 'btn--danger' : ''}">${approve ? 'Aprovar e ajustar estoque' : 'Finalizar sem ajustar estoque'}</button></div></form>`, { wide: true });
+}
+
+async function renderStockCount() {
+  if (state.user.role !== 'manager') return navigate('dashboard');
+  const data = await api('/api/stock-counts');
+  state.stockCounts = data.counts || [];
+  const content = document.querySelector('#view-content');
+  content.innerHTML = `<section class="stock-count-hero"><div><p class="page-eyebrow">Inventário seguro</p><h2>Contagem de Estoque</h2><p>Conte rapidamente pelo celular, compare divergências e aprove ajustes somente depois da revisão.</p></div><button class="btn" data-action="new-stock-count">${uiIcon('plus')} Nova contagem</button></section><section data-stock-count-workspace>${state.stockCount ? '' : `<div class="stock-count-history-head"><div><p class="page-eyebrow">Histórico</p><h3>Contagens realizadas</h3></div></div>${stockCountHistoryMarkup()}`}</section>`;
+  if (state.stockCount) renderStockCountWorkspace();
+}
+
+async function startStockCountScanner() {
+  if (!('BarcodeDetector' in window) || !navigator.mediaDevices?.getUserMedia) return showToast('A leitura pela câmera não está disponível neste aparelho. Use o leitor físico ou digite o código.', 'error');
+  showModal(`<div class="modal__head"><div><h2>Ler código de barras</h2><p>Aponte a câmera para o código do material.</p></div>${modalCloseButton()}</div><div class="modal__body"><video class="stock-count-camera" data-stock-count-camera autoplay playsinline muted></video><p class="field-hint">A câmera será desligada automaticamente após a leitura.</p></div>`, { small: true });
+  try {
+    const video = document.querySelector('[data-stock-count-camera]');
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    video.srcObject = stream;
+    const detector = new BarcodeDetector({ formats: ['code_128','ean_13','ean_8','qr_code'] });
+    const scan = async () => {
+      if (!document.body.contains(video)) return stream.getTracks().forEach((track) => track.stop());
+      const codes = await detector.detect(video);
+      if (codes[0]?.rawValue) {
+        stream.getTracks().forEach((track) => track.stop()); closeModal(true);
+        state.stockCountSearch = codes[0].rawValue.trim(); renderStockCountWorkspace(); return;
+      }
+      window.setTimeout(scan, 250);
+    };
+    scan();
+  } catch { closeModal(true); showToast('Não foi possível acessar a câmera. Digite o código manualmente.', 'error'); }
 }
 
 async function renderOutlet() {
@@ -3037,7 +3135,7 @@ async function renderFeedback() {
 
 async function navigate(view) {
   if (!viewTitles[view]) return;
-  if (state.user.role !== 'manager' && ['users', 'audit'].includes(view)) return;
+  if (state.user.role !== 'manager' && ['users', 'audit', 'stock-count'].includes(view)) return;
   if (view === 'network-stock' && state.user.role !== 'manager') return;
   if (state.user.role === 'stocker' && ['new-request', 'chips'].includes(view)) return;
   if (view === 'renova-intake' && !canAccessRenovaIntake()) return;
@@ -3070,6 +3168,7 @@ async function navigate(view) {
       state.networkCategory = 'all';
       await renderNetworkStock();
     }
+    if (view === 'stock-count') await renderStockCount();
     if (view === 'stock') await renderStock();
     if (view === 'new-request') await renderNewRequest();
     if (view === 'requests') await renderRequests();
@@ -3563,6 +3662,17 @@ root.addEventListener('click', async (event) => {
       await navigate(button.dataset.view);
     }
     if (action === 'reload-view') await navigate(state.view);
+    if (action === 'new-stock-count' && state.user.role === 'manager') stockCountNewModal();
+    if (action === 'open-stock-count' && state.user.role === 'manager') await openStockCount(button.dataset.id);
+    if (action === 'close-stock-count' && state.user.role === 'manager') { state.stockCount = null; await renderStockCount(); }
+    if (action === 'filter-stock-count' && state.user.role === 'manager') { state.stockCountFilter = button.dataset.filter || 'all'; renderStockCountWorkspace(); }
+    if (action === 'stock-count-step' && state.user.role === 'manager') {
+      const input = button.closest('form')?.elements.countedQuantity;
+      if (input) input.value = String(Math.max(0, Number(input.value || 0) + Number(button.dataset.delta || 0)));
+    }
+    if (action === 'review-stock-count' && state.user.role === 'manager') stockCountReviewModal(false);
+    if (action === 'approve-stock-count' && state.user.role === 'manager') stockCountReviewModal(true);
+    if (action === 'scan-stock-count' && state.user.role === 'manager') await startStockCountScanner();
     if (action === 'open-showcase-slot') showcaseSlotModal(button.dataset.fixtureId, Number(button.dataset.slotNumber));
     if (action === 'open-menu') document.body.classList.add('menu-open');
     if (action === 'close-menu') document.body.classList.remove('menu-open');
@@ -3862,6 +3972,7 @@ root.addEventListener('change', (event) => {
 });
 
 root.addEventListener('input', (event) => {
+  if (event.target.dataset.action === 'stock-count-search') { state.stockCountSearch = event.target.value; renderStockCountWorkspace(); }
   if (event.target.dataset.action === 'replenishment-search') { state.replenishmentSearch = event.target.value; renderReplenishmentWorkspace(); }
   if (event.target.dataset.action === 'label-search') { state.labelSearch = event.target.value; renderLabelWorkspace(); }
   if (event.target.dataset.action === 'search-renova-intake') { state.renovaSearch = event.target.value; renderRenovaIntakeResults(); }
@@ -3899,6 +4010,34 @@ document.addEventListener('submit', async (event) => {
   const data = Object.fromEntries(new FormData(form));
   await withBusy(submit, async () => {
     try {
+      if (form.dataset.form === 'create-stock-count') {
+        state.stockCount = await api('/api/stock-counts', { method: 'POST', body: { name: data.name, category: data.category } });
+        closeModal(true); showToast('Contagem iniciada. O progresso será salvo a cada item.'); await renderStockCount();
+      }
+      if (form.dataset.form === 'stock-count-item') {
+        const variantId = Number(form.dataset.variantId);
+        const item = state.stockCount.items.find((entry) => entry.variantId === variantId);
+        let countedQuantity = Number(data.countedQuantity);
+        if (!Number.isInteger(countedQuantity) || countedQuantity < 0) throw new ApiError('Informe uma quantidade válida.', 400);
+        if (item?.countedQuantity != null && data.repeatMode === 'sum') countedQuantity += item.countedQuantity;
+        state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/items/${variantId}`, { method: 'PUT', body: { countedQuantity, note: data.note } });
+        state.stockCountSearch = ''; showToast('Item salvo na contagem.'); renderStockCountWorkspace();
+        window.requestAnimationFrame(() => document.querySelector('[data-action="stock-count-search"]')?.focus());
+      }
+      if (form.dataset.form === 'stock-count-serial') {
+        const variantId = Number(form.dataset.variantId);
+        state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/serials`, { method: 'POST', body: { variantId, serialNumber: data.serialNumber, note: data.note } });
+        state.stockCountSearch = ''; showToast('IMEI ou serial confirmado.'); renderStockCountWorkspace();
+        window.requestAnimationFrame(() => document.querySelector('[data-action="stock-count-search"]')?.focus());
+      }
+      if (form.dataset.form === 'finalize-stock-count') {
+        state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/finalize`, { method: 'POST', body: {} });
+        closeModal(true); showToast('Contagem finalizada sem alterar o estoque.'); await renderStockCount();
+      }
+      if (form.dataset.form === 'approve-stock-count') {
+        state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/approve`, { method: 'POST', body: {} });
+        closeModal(true); showToast('Ajustes aprovados e registrados na auditoria.'); await renderStockCount();
+      }
       if (form.dataset.form === 'setup') {
         if (data.password !== data.confirmPassword) throw new ApiError('As senhas não coincidem.', 400);
         const result = await api('/api/setup', { method: 'POST', body: { name: data.name, email: data.email, password: data.password } });

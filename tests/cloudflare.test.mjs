@@ -2092,15 +2092,21 @@ describe('Controle de estoque por código material', () => {
       readFile(new URL('../.github/workflows/deploy-cloudflare.yml', import.meta.url), 'utf8'),
       readFile(new URL('../src/worker.js', import.meta.url), 'utf8'),
     ]);
-    assert.doesNotMatch(appSource, /ZXing|scan-device|\/api\/devices/i);
+    assert.doesNotMatch(appSource, /scan-device|\/api\/devices/i);
     assert.doesNotMatch(appSource, /start-chip-camera/i);
     assert.match(appSource, /BarcodeDetector/);
     assert.match(appSource, /getUserMedia/);
+    assert.match(appSource, /ZXing\.BrowserMultiFormatReader/);
+    assert.match(appSource, /stopStockCountScanner/);
+    assert.match(appSource, /\/vendor\/zxing-browser\.min\.js/);
+    const barcodeDecoder = await mf.dispatchFetch('https://controleestoque.app.br/vendor/zxing-browser.min.js');
+    assert.equal(barcodeDecoder.status, 200);
+    assert.match((await barcodeDecoder.text()).slice(0, 260), /ZXingBrowser/);
     assert.doesNotMatch(appSource, /[▯▢◇♫▰▣ϟ⌁◆♙◷⇄⌂☰↪×]/);
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
-    assert.doesNotMatch(packageSource, /@zxing/i);
+    assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.55.0');
+    assert.equal(JSON.parse(packageSource).version, '6.56.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2363,8 +2369,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.55\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.55\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.56\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.56\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2457,7 +2463,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.55.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.56.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2800,5 +2806,31 @@ describe('Controle de estoque por código material', () => {
     assert.equal(store.available, 1191);
     assert.equal(store.incoming, 78);
     assert.equal(store.repair, 111);
+
+    const fresh = await manager.request('/api/stock-counts', {
+      method: 'POST', body: { name: 'Contagem de acessórios por série', category: 'all' },
+    });
+    assert.equal(fresh.status, 201);
+    const accessory = fresh.payload.items.find((item) => item.materialCode === '22023323');
+    assert.ok(accessory, 'a almofada deve constar na contagem');
+    assert.equal(accessory.stockMode, 'quantity');
+    const scanned = await manager.request(`/api/stock-counts/${fresh.payload.count.id}/scan`, {
+      method: 'POST', body: { code: '220233230017303' },
+    });
+    assert.equal(scanned.status, 200);
+    assert.equal(scanned.payload.scan.materialCode, '22023323');
+    assert.equal(scanned.payload.items.find((item) => item.materialCode === '22023323').countedQuantity, 1);
+    assert.equal((await manager.request(`/api/stock-counts/${fresh.payload.count.id}/scan`, {
+      method: 'POST', body: { code: '220233230017303' },
+    })).status, 409);
+    const byMaterial = await manager.request(`/api/stock-counts/${fresh.payload.count.id}/scan`, {
+      method: 'POST', body: { code: '22023323' },
+    });
+    assert.equal(byMaterial.status, 200);
+    assert.equal(byMaterial.payload.items.find((item) => item.materialCode === '22023323').countedQuantity, 2);
+    assert.equal((await seller.request(`/api/stock-counts/${fresh.payload.count.id}/scan`, {
+      method: 'POST', body: { code: '220233230017303' },
+    })).status, 403);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action='stock_count.quick_accessory_serial_scanned' AND entity_id=?`, fresh.payload.count.id)).count), 1);
   });
 });

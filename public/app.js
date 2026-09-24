@@ -1051,7 +1051,7 @@ function renderStockCountWorkspace() {
   const lastScan = state.stockCountLastScan;
   target.innerHTML = `<section class="stock-count-head"><button class="btn btn--ghost" data-action="close-stock-count">← Histórico</button><div><p class="page-eyebrow">${escapeHtml(stockCountCategoryLabels[count.category] || count.category)}</p><h2>${escapeHtml(count.name)}</h2><p>${escapeHtml(count.responsibleName)} · iniciada em ${escapeHtml(formatDate(count.createdAt))}</p></div><div class="stock-count-head__actions"><a class="btn btn--secondary" href="/api/stock-counts/${encodeURIComponent(count.id)}/export">Exportar planilha</a>${count.status === 'draft' ? '<button class="btn" data-action="review-stock-count">Finalizar contagem</button>' : count.status === 'completed' ? '<button class="btn" data-action="approve-stock-count">Revisar e aprovar ajustes</button>' : '<span class="stock-count-adjusted">Ajustes aprovados</span>'}</div></section>
     <section class="stock-count-metrics"><article><small>Produtos contados</small><strong>${summary.countedProducts}</strong><span>de ${summary.products}</span></article><article><small>Unidades contadas</small><strong>${summary.countedUnits}</strong></article><article><small>Ainda não contados</small><strong>${summary.remainingProducts}</strong></article><article class="is-alert"><small>Com divergência</small><strong>${summary.divergentProducts}</strong></article><article class="is-progress"><small>Concluído</small><strong>${summary.progress}%</strong><span>${escapeHtml(formatDate(count.updatedAt))}</span></article></section>
-    ${count.status === 'draft' ? `<section class="stock-count-quick"><div><p class="page-eyebrow">Modo rápido</p><h3>Leia, conte e siga para o próximo</h3><p>Use o código do material para acessórios ou o IMEI/serial para aparelhos.</p></div><form data-form="stock-count-quick"><label><span>Código, IMEI ou serial</span><input class="input mono" name="code" data-stock-count-quick-input autocomplete="off" autocapitalize="characters" enterkeyhint="done" placeholder="Leia ou digite e confirme" required autofocus></label><button class="btn stock-count-quick__camera" type="button" data-action="scan-stock-count">${uiIcon('copy')} Câmera</button><button class="btn" type="submit">Contar +1</button></form>${lastScan ? `<div class="stock-count-quick__success" role="status">${uiIcon('check')}<div><strong>${escapeHtml(lastScan.productName)}</strong><span>${escapeHtml(lastScan.materialCode)}${lastScan.type === 'material' ? ` · agora ${lastScan.countedQuantity} unidade(s)` : ' · IMEI/serial registrado'}</span></div></div>` : ''}</section>` : ''}
+    ${count.status === 'draft' ? `<section class="stock-count-quick"><div><p class="page-eyebrow">Modo rápido</p><h3>Leia, conte e siga para o próximo</h3><p>Use o código do material ou o número de série dos acessórios e aparelhos.</p></div><form data-form="stock-count-quick"><label><span>Código, IMEI ou serial</span><input class="input mono" name="code" data-stock-count-quick-input autocomplete="off" autocapitalize="characters" enterkeyhint="done" placeholder="Leia ou digite e confirme" required autofocus></label><button class="btn stock-count-quick__camera" type="button" data-action="scan-stock-count">${uiIcon('copy')} Câmera</button><button class="btn" type="submit">Contar +1</button></form>${lastScan ? `<div class="stock-count-quick__success" role="status">${uiIcon('check')}<div><strong>${escapeHtml(lastScan.productName)}</strong><span>${escapeHtml(lastScan.materialCode)}${lastScan.type === 'material' ? ` · agora ${lastScan.countedQuantity} unidade(s)` : ' · IMEI/serial registrado'}</span></div></div>` : ''}</section>` : ''}
     <section class="stock-count-tools"><label class="stock-count-search">${uiIcon('search')}<input type="search" data-action="stock-count-search" value="${escapeHtml(state.stockCountSearch)}" placeholder="Filtrar lista por código ou nome" autocomplete="off"></label><div class="filter-tabs"><button class="chip ${state.stockCountFilter==='all'?'is-active':''}" data-action="filter-stock-count" data-filter="all">Todos</button><button class="chip ${state.stockCountFilter==='pending'?'is-active':''}" data-action="filter-stock-count" data-filter="pending">Não contados</button><button class="chip ${state.stockCountFilter==='divergent'?'is-active':''}" data-action="filter-stock-count" data-filter="divergent">Divergências</button><button class="chip ${state.stockCountFilter==='correct'?'is-active':''}" data-action="filter-stock-count" data-filter="correct">Corretos</button></div></section>
     <section class="stock-count-results"><header><strong>${filtered.length} produto(s)</strong><span>A lista abaixo serve para consulta e correções manuais.</span></header><div class="stock-count-product-list">${filtered.length ? filtered.map(stockCountProductCard).join('') : emptyState('Nenhum produto encontrado', 'Confira o texto ou altere o filtro.')}</div></section>`;
   if (query) window.requestAnimationFrame(() => { const input=document.querySelector('[data-action="stock-count-search"]'); input?.focus(); input?.setSelectionRange(input.value.length,input.value.length); });
@@ -1083,28 +1083,75 @@ async function renderStockCount() {
   if (state.stockCount) renderStockCountWorkspace();
 }
 
+let stockCountScanner = null;
+let stockCountDecoderPromise = null;
+
+function stopStockCountScanner() {
+  const scanner = stockCountScanner;
+  stockCountScanner = null;
+  if (!scanner) return;
+  scanner.stopped = true;
+  scanner.controls?.stop();
+  scanner.stream?.getTracks().forEach((track) => track.stop());
+}
+
+function loadStockCountDecoder() {
+  if (window.ZXingBrowser) return Promise.resolve(window.ZXingBrowser);
+  if (!stockCountDecoderPromise) {
+    stockCountDecoderPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = '/vendor/zxing-browser.min.js';
+      script.onload = () => window.ZXingBrowser ? resolve(window.ZXingBrowser) : reject(new Error('Leitor não carregado.'));
+      script.onerror = () => reject(new Error('Leitor não carregado.'));
+      document.head.append(script);
+    }).catch((error) => { stockCountDecoderPromise = null; throw error; });
+  }
+  return stockCountDecoderPromise;
+}
+
 async function startStockCountScanner() {
-  if (!('BarcodeDetector' in window) || !navigator.mediaDevices?.getUserMedia) return showToast('A leitura pela câmera não está disponível neste aparelho. Use o leitor físico ou digite o código.', 'error');
-  showModal(`<div class="modal__head"><div><h2>Ler código de barras</h2><p>Aponte a câmera para o código do material.</p></div>${modalCloseButton()}</div><div class="modal__body"><video class="stock-count-camera" data-stock-count-camera autoplay playsinline muted></video><p class="field-hint">A câmera será desligada automaticamente após a leitura.</p></div>`, { small: true });
+  if (!navigator.mediaDevices?.getUserMedia) return showToast('Este navegador não permite acesso à câmera. Digite o código manualmente.', 'error');
+  showModal(`<div class="modal__head"><div><h2>Ler código de barras</h2><p>Aponte a câmera para o código do produto.</p></div>${modalCloseButton()}</div><div class="modal__body"><video class="stock-count-camera" data-stock-count-camera autoplay playsinline muted></video><p class="field-hint">A câmera será desligada automaticamente após a leitura.</p></div>`, { small: true });
+  const video = document.querySelector('[data-stock-count-camera]');
+  const scanner = { stopped: false, controls: null, stream: null };
+  stockCountScanner = scanner;
+  const onRead = (code) => {
+    if (scanner.stopped || !code?.trim()) return;
+    closeModal(true);
+    const form = document.querySelector('form[data-form="stock-count-quick"]');
+    const input = form?.querySelector('[data-stock-count-quick-input]');
+    if (input) { input.value = code.trim(); form.requestSubmit(); }
+  };
   try {
-    const video = document.querySelector('[data-stock-count-camera]');
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-    video.srcObject = stream;
-    const detector = new BarcodeDetector({ formats: ['code_128','ean_13','ean_8','qr_code'] });
-    const scan = async () => {
-      if (!document.body.contains(video)) return stream.getTracks().forEach((track) => track.stop());
-      const codes = await detector.detect(video);
-      if (codes[0]?.rawValue) {
-        stream.getTracks().forEach((track) => track.stop()); closeModal(true);
-        const form = document.querySelector('form[data-form="stock-count-quick"]');
-        const input = form?.querySelector('[data-stock-count-quick-input]');
-        if (input) { input.value = codes[0].rawValue.trim(); form.requestSubmit(); }
-        return;
-      }
-      window.setTimeout(scan, 250);
-    };
-    scan();
-  } catch { closeModal(true); showToast('Não foi possível acessar a câmera. Digite o código manualmente.', 'error'); }
+    if (typeof window.BarcodeDetector === 'function') {
+      scanner.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+      if (scanner.stopped) return scanner.stream.getTracks().forEach((track) => track.stop());
+      video.srcObject = scanner.stream;
+      await video.play();
+      const detector = new window.BarcodeDetector({ formats: ['code_128', 'ean_13', 'ean_8', 'qr_code'] });
+      const scan = async () => {
+        if (scanner.stopped) return;
+        try {
+          const codes = await detector.detect(video);
+          if (codes[0]?.rawValue) return onRead(codes[0].rawValue);
+        } catch { /* A imagem pode não estar pronta neste quadro. */ }
+        if (!scanner.stopped) window.setTimeout(scan, 250);
+      };
+      scan();
+    } else {
+      const ZXing = await loadStockCountDecoder();
+      if (scanner.stopped) return;
+      const reader = new ZXing.BrowserMultiFormatReader(undefined, { delayBetweenScanAttempts: 200 });
+      scanner.controls = await reader.decodeFromConstraints({ video: { facingMode: { ideal: 'environment' } }, audio: false }, video, (result) => {
+        if (result) onRead(result.getText());
+      });
+      if (scanner.stopped) scanner.controls.stop();
+    }
+  } catch {
+    if (scanner.stopped) return;
+    closeModal(true);
+    showToast('Não foi possível acessar a câmera. Verifique a permissão ou digite o código.', 'error');
+  }
 }
 
 async function renderOutlet() {
@@ -3188,6 +3235,7 @@ async function navigate(view) {
 }
 
 function showModal(content, { required = false, small = false, wide = false } = {}) {
+  stopStockCountScanner();
   cancelChipCandidateLookup();
   modalRoot.innerHTML = `<div class="modal-backdrop" data-action="${required ? '' : 'backdrop-close'}"><section class="modal ${small ? 'modal--small' : ''} ${wide ? 'modal--wide' : ''}" role="dialog" aria-modal="true">${content}</section></div>`;
   modalRoot.dataset.required = required ? 'true' : 'false';
@@ -3197,6 +3245,7 @@ function showModal(content, { required = false, small = false, wide = false } = 
 
 function closeModal(force = false) {
   if (modalRoot.dataset.required === 'true' && !force) return;
+  stopStockCountScanner();
   cancelChipCandidateLookup();
   modalRoot.innerHTML = '';
   modalRoot.dataset.required = '';

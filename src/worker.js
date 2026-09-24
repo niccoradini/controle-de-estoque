@@ -3649,8 +3649,26 @@ async function scanStockCountCode(request, env, user, id) {
 
   const timestamp = nowIso();
   if (serial) {
-    if (serial.stock_mode !== 'serialized') throw new HttpError(409, 'Use o código do material para contar este produto.');
     if (serial.found) throw new HttpError(409, 'Este IMEI ou serial já foi contado.');
+    if (serial.stock_mode === 'quantity') {
+      if (!serial.expected) throw new HttpError(409, 'Esta série não constava no estoque disponível desta contagem. Use o código do material.');
+      await env.DB.batch([
+        env.DB.prepare('UPDATE stock_count_serials SET found=1 WHERE count_id=? AND serial_number=? COLLATE NOCASE AND found=0')
+          .bind(id, code),
+        env.DB.prepare(`UPDATE stock_count_items SET counted_quantity=COALESCE(counted_quantity,0)+1,updated_at=? WHERE count_id=? AND variant_id=?`)
+          .bind(timestamp, id, Number(serial.variant_id)),
+        env.DB.prepare('UPDATE stock_counts SET updated_at=? WHERE id=?').bind(timestamp, id),
+        auditStatement(env, user.id, 'stock_count.quick_accessory_serial_scanned', 'stock_count', id, {
+          variantId: Number(serial.variant_id), materialCode: serial.material_code, serialNumber: code, increment: 1,
+        }),
+      ]);
+      const details = await stockCountDetails(env, id);
+      const saved = details.items.find((entry) => entry.variantId === Number(serial.variant_id));
+      return json({ ...details, scan: {
+        type: 'material', variantId: Number(serial.variant_id), materialCode: serial.material_code,
+        productName: serial.product_name, countedQuantity: saved?.countedQuantity ?? 0,
+      } });
+    }
     await env.DB.batch([
       env.DB.prepare(`INSERT INTO stock_count_serials (count_id,variant_id,serial_number,expected,found,created_at) VALUES (?,?,?,?,1,?) ON CONFLICT(count_id,serial_number) DO UPDATE SET found=1`)
         .bind(id, Number(serial.variant_id), code, Number(serial.expected || 0), timestamp),

@@ -1009,6 +1009,7 @@ function renderOutletProducts() {
 }
 
 const stockCountCategoryLabels = Object.freeze({ all: 'Estoque completo', devices: 'Aparelhos', cases: 'Capas', screen_protectors: 'Películas', chargers: 'Carregadores', chips: 'Chips', accessories: 'Demais acessórios' });
+const stockCountCreationCategories = Object.freeze(['all', 'devices', 'cases', 'chargers', 'accessories']);
 const stockCountStatusLabels = Object.freeze({ draft: 'Em andamento', completed: 'Aguardando revisão', adjusted: 'Ajustes aprovados' });
 
 function stockCountDifference(item) {
@@ -1020,7 +1021,7 @@ function stockCountDifference(item) {
 
 function stockCountNewModal() {
   const today = new Date().toLocaleDateString('pt-BR');
-  showModal(`<form data-form="create-stock-count" novalidate><div class="modal__head"><div><p class="page-eyebrow">Inventário gerencial</p><h2>Nova contagem</h2><p>O saldo será apenas comparado. Nenhuma quantidade será alterada nesta etapa.</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid"><div class="field field--full"><label for="stock-count-name">Nome da contagem</label><input class="input" id="stock-count-name" name="name" maxlength="100" value="Contagem semanal – ${today}" required autofocus></div><div class="field field--full"><label for="stock-count-category">O que será contado?</label><select class="select" id="stock-count-category" name="category">${Object.entries(stockCountCategoryLabels).map(([value,label])=>`<option value="${value}">${label}</option>`).join('')}</select></div></div></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Iniciar contagem</button></div></form>`, { wide: true });
+  showModal(`<form data-form="create-stock-count" novalidate><div class="modal__head"><div><p class="page-eyebrow">Inventário gerencial</p><h2>Nova contagem</h2><p>O saldo será apenas comparado. Chips e películas ficam fora da contagem.</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid"><div class="field field--full"><label for="stock-count-name">Nome da contagem</label><input class="input" id="stock-count-name" name="name" maxlength="100" value="Contagem semanal – ${today}" required autofocus></div><div class="field field--full"><label for="stock-count-category">O que será contado?</label><select class="select" id="stock-count-category" name="category">${stockCountCreationCategories.map((value)=>`<option value="${value}">${stockCountCategoryLabels[value]}</option>`).join('')}</select></div></div></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Iniciar contagem</button></div></form>`, { wide: true });
 }
 
 function stockCountHistoryMarkup() {

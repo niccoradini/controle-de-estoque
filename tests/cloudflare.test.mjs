@@ -2106,7 +2106,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.56.0');
+    assert.equal(JSON.parse(packageSource).version, '6.57.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2369,8 +2369,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.56\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.56\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.57\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.57\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2463,7 +2463,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.56.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.57.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2753,7 +2753,7 @@ describe('Controle de estoque por código material', () => {
     assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-21'));
   });
 
-  test('atualiza a loja 209H em 24/09 e remove somente a contagem iniciada solicitada', async () => {
+  test('atualiza a loja 209H, limpa a contagem solicitada e exclui chips e películas', async () => {
     const targetCountId = '8d349f6a-e62e-48af-9fa6-c8a794ce7f56';
     const managerId = Number((await row(`SELECT id FROM users WHERE role = 'manager' ORDER BY id LIMIT 1`)).id);
     await database.batch([
@@ -2807,10 +2807,58 @@ describe('Controle de estoque por código material', () => {
     assert.equal(store.incoming, 78);
     assert.equal(store.repair, 111);
 
+    const currentCountId = 'c47b79b7-ace3-42be-810f-ff8306b461e2';
+    await database.batch([
+      database.prepare(`
+        INSERT INTO stock_counts (id,name,category,status,created_by,created_at,updated_at)
+        VALUES (?, 'Contagem semanal – 24/09/2026', 'all', 'draft', ?, '2026-09-24T12:59:36.786Z', '2026-09-24T13:14:24.628Z')
+      `).bind(currentCountId, managerId),
+      database.prepare(`
+        INSERT INTO stock_count_items
+          (count_id,variant_id,material_code,product_name,category,stock_mode,expected_quantity,counted_quantity,updated_at)
+        SELECT ?, variant.id, variant.sku, product.display_name, product.cluster,
+               CASE WHEN variant.sku LIKE 'YBSC%' THEN 'serialized' ELSE 'quantity' END,
+               variant.quantity_on_hand,
+               CASE variant.sku WHEN '22023262' THEN 2 WHEN 'YBSC001A2000' THEN 1 ELSE 4 END,
+               '2026-09-24T13:14:24.628Z'
+        FROM product_variants variant
+        JOIN products product ON product.id = variant.product_id
+        WHERE variant.sku IN ('22023262', 'YBSC001A2000', '22023323')
+      `).bind(currentCountId),
+      database.prepare(`
+        INSERT INTO stock_count_serials
+          (count_id,variant_id,serial_number,expected,found,created_at)
+        SELECT ?, item.variant_id,
+               (SELECT serial.serial_number FROM inventory_serials serial WHERE serial.variant_id=item.variant_id LIMIT 1),
+               1, 1, '2026-09-24T13:14:24.628Z'
+        FROM stock_count_items item
+        WHERE item.count_id=?
+          AND EXISTS (SELECT 1 FROM inventory_serials serial WHERE serial.variant_id=item.variant_id)
+      `).bind(currentCountId, currentCountId),
+    ]);
+    await applyMigration(await readFile(new URL('../migrations/0104_exclude_chips_and_films_from_stock_count_2026_09_24.sql', import.meta.url), 'utf8'));
+
+    const retainedItems = (await database.prepare(`SELECT * FROM stock_count_items WHERE count_id=? ORDER BY material_code`).bind(currentCountId).all()).results;
+    assert.deepEqual(retainedItems.map((item) => item.material_code), ['22023323']);
+    assert.equal(Number(retainedItems[0].counted_quantity), 4);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM stock_count_serials WHERE count_id=?`, currentCountId)).count), 1);
+    const exclusionAudit = await row(`SELECT details_json FROM audit_logs WHERE action='stock_count.excluded_items_removed' AND entity_id=?`, currentCountId);
+    assert.deepEqual(JSON.parse(exclusionAudit.details_json), {
+      source: 'requested-exclusion-2026-09-24', removedItems: 2, removedCountedItems: 2, removedCountedUnits: 3,
+    });
+
     const fresh = await manager.request('/api/stock-counts', {
       method: 'POST', body: { name: 'Contagem de acessórios por série', category: 'all' },
     });
     assert.equal(fresh.status, 201);
+    assert.ok(fresh.payload.items.every((item) => item.category !== 'screen_protectors'));
+    assert.ok(fresh.payload.items.every((item) => !/SIM CARD|PELÍCULA|PELICULA|FILME/i.test(item.name)));
+    assert.equal((await manager.request('/api/stock-counts', {
+      method: 'POST', body: { name: 'Películas bloqueadas', category: 'screen_protectors' },
+    })).status, 400);
+    assert.equal((await manager.request('/api/stock-counts', {
+      method: 'POST', body: { name: 'Chips bloqueados', category: 'chips' },
+    })).status, 400);
     const accessory = fresh.payload.items.find((item) => item.materialCode === '22023323');
     assert.ok(accessory, 'a almofada deve constar na contagem');
     assert.equal(accessory.stockMode, 'quantity');

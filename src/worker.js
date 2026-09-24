@@ -3443,16 +3443,26 @@ async function deleteUser(env, manager, id) {
   return noContent();
 }
 
-const STOCK_COUNT_CATEGORIES = new Set(['all', 'devices', 'cases', 'screen_protectors', 'chargers', 'chips', 'accessories']);
+const STOCK_COUNT_CATEGORIES = new Set(['all', 'devices', 'cases', 'chargers', 'accessories']);
+
+const STOCK_COUNT_INCLUDED_PRODUCTS = `
+  COALESCE(p.cluster, '') <> 'screen_protectors'
+  AND UPPER(COALESCE(p.display_name,p.name,'')) NOT LIKE '%PELÍCULA%'
+  AND UPPER(COALESCE(p.display_name,p.name,'')) NOT LIKE '%PELICULA%'
+  AND UPPER(COALESCE(p.display_name,p.name,'')) NOT LIKE '%FILME%'
+  AND UPPER(COALESCE(p.technical_name,'')) NOT LIKE '%PELÍCULA%'
+  AND UPPER(COALESCE(p.technical_name,'')) NOT LIKE '%PELICULA%'
+  AND UPPER(COALESCE(p.technical_name,'')) NOT LIKE '%FILME%'
+  AND UPPER(COALESCE(p.display_name,p.name,'')) NOT LIKE '%SIM CARD%'
+  AND UPPER(COALESCE(p.technical_name,'')) NOT LIKE '%SIM CARD%'
+`;
 
 function stockCountCategoryWhere(category) {
-  if (category === 'devices') return "COALESCE(p.cluster, '') = 'devices'";
-  if (category === 'cases') return "COALESCE(p.cluster, '') = 'cases'";
-  if (category === 'screen_protectors') return "COALESCE(p.cluster, '') = 'screen_protectors'";
-  if (category === 'chargers') return "COALESCE(p.cluster, '') = 'chargers'";
-  if (category === 'chips') return "(UPPER(COALESCE(p.display_name,p.name,'')) LIKE '%SIM CARD%' OR UPPER(COALESCE(p.technical_name,'')) LIKE '%SIM CARD%')";
-  if (category === 'accessories') return "COALESCE(p.cluster, '') <> 'devices' AND NOT (UPPER(COALESCE(p.display_name,p.name,'')) LIKE '%SIM CARD%' OR UPPER(COALESCE(p.technical_name,'')) LIKE '%SIM CARD%')";
-  return '1 = 1';
+  if (category === 'devices') return `(${STOCK_COUNT_INCLUDED_PRODUCTS}) AND COALESCE(p.cluster, '') = 'devices'`;
+  if (category === 'cases') return `(${STOCK_COUNT_INCLUDED_PRODUCTS}) AND COALESCE(p.cluster, '') = 'cases'`;
+  if (category === 'chargers') return `(${STOCK_COUNT_INCLUDED_PRODUCTS}) AND COALESCE(p.cluster, '') = 'chargers'`;
+  if (category === 'accessories') return `(${STOCK_COUNT_INCLUDED_PRODUCTS}) AND COALESCE(p.cluster, '') <> 'devices'`;
+  return `(${STOCK_COUNT_INCLUDED_PRODUCTS})`;
 }
 
 async function stockCountRow(env, id) {

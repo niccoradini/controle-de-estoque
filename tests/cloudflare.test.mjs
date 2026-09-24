@@ -2746,4 +2746,59 @@ describe('Controle de estoque por código material', () => {
     });
     assert.ok(response.payload.stores.every((store) => store.snapshotDate === '2026-09-21'));
   });
+
+  test('atualiza a loja 209H em 24/09 e remove somente a contagem iniciada solicitada', async () => {
+    const targetCountId = '8d349f6a-e62e-48af-9fa6-c8a794ce7f56';
+    const managerId = Number((await row(`SELECT id FROM users WHERE role = 'manager' ORDER BY id LIMIT 1`)).id);
+    await database.batch([
+      database.prepare(`
+        INSERT INTO stock_counts (id,name,category,status,created_by,created_at,updated_at)
+        VALUES (?, 'Contagem semanal – 23/09/2026', 'all', 'draft', ?, '2026-09-23T13:06:03.864Z', '2026-09-24T12:23:52.099Z')
+      `).bind(targetCountId, managerId),
+      database.prepare(`
+        INSERT INTO stock_count_items
+          (count_id,variant_id,material_code,product_name,category,stock_mode,expected_quantity,counted_quantity)
+        SELECT ?, variant.id, variant.sku, product.display_name, product.cluster, 'quantity', variant.quantity_on_hand, 1
+        FROM product_variants variant
+        JOIN products product ON product.id = variant.product_id
+        WHERE variant.sku = '22022613'
+      `).bind(targetCountId),
+      database.prepare(`
+        INSERT INTO stock_counts (id,name,category,status,created_by,created_at,updated_at,finalized_at)
+        VALUES ('preserved-completed-count', 'Contagem concluída preservada', 'all', 'completed', ?, '2026-09-22T10:00:00.000Z', '2026-09-22T11:00:00.000Z', '2026-09-22T11:00:00.000Z')
+      `).bind(managerId),
+    ]);
+
+    const migrations = await Promise.all([
+      readFile(new URL('../migrations/0101_inventory_refresh_2026_09_24.sql', import.meta.url), 'utf8'),
+      readFile(new URL('../migrations/0102_incoming_inventory_details_2026_09_24.sql', import.meta.url), 'utf8'),
+      readFile(new URL('../migrations/0103_remove_started_stock_count_2026_09_24.sql', import.meta.url), 'utf8'),
+    ]);
+    for (const migration of migrations) await applyMigration(migration);
+
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_date'`)).value, '2026-09-24');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_source'`)).value, '209H.24.09.xlsx');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_incoming_units'`)).value, '78');
+    assert.equal((await row(`SELECT value FROM system_state WHERE key = 'inventory_snapshot_incoming_depots'`)).value, '9,LVUT');
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM repair_inventory')).count), 111);
+    assert.equal(Number((await row('SELECT COUNT(*) AS count FROM incoming_inventory_serials')).count), 78);
+    assert.equal(Number((await row('SELECT COUNT(DISTINCT material_code) AS count FROM incoming_inventory_serials')).count), 57);
+    // Seis unidades da base de teste são liberadas para pedidos pendentes preservados.
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM inventory_serials WHERE status = 'available'`)).count), 1191);
+    // Mantém consultáveis os materiais previamente ativos, mesmo quando não aparecem na nova base.
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM product_variants WHERE active = 1`)).count), 355);
+
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM stock_counts WHERE id = ?`, targetCountId)).count), 0);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM stock_count_items WHERE count_id = ?`, targetCountId)).count), 0);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM stock_counts WHERE id = 'preserved-completed-count'`)).count), 1);
+    assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action = 'stock_count.draft_removed' AND entity_id = ?`, targetCountId)).count), 1);
+
+    const response = await manager.request('/api/network-inventory');
+    assert.equal(response.status, 200);
+    const store = response.payload.stores.find((item) => item.center === '209H');
+    assert.equal(store.snapshotDate, '2026-09-24');
+    assert.equal(store.available, 1191);
+    assert.equal(store.incoming, 78);
+    assert.equal(store.repair, 111);
+  });
 });

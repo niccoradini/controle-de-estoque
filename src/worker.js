@@ -87,6 +87,7 @@ function json(payload, status = 200, headers = {}) {
     headers: securityHeaders({
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
+      'X-Robots-Tag': 'noindex, nofollow',
       ...headers,
     }),
   });
@@ -3536,6 +3537,32 @@ async function stockCountDetails(env, id) {
   };
 }
 
+async function stockCountScanResponse(env, id, scan, updatedAt, scannedSerial = '') {
+  const item = await env.DB.prepare(`
+    SELECT item.variant_id, item.expected_quantity, item.counted_quantity,
+           (SELECT COUNT(*) FROM stock_count_serials serial
+            WHERE serial.count_id = item.count_id AND serial.variant_id = item.variant_id AND serial.found = 1) AS found_serials
+    FROM stock_count_items item
+    WHERE item.count_id = ? AND item.variant_id = ?
+  `).bind(id, scan.variantId).first();
+  if (!item) throw new HttpError(404, 'Produto não encontrado nesta contagem.');
+  const countedQuantity = Number(item.counted_quantity);
+  return json({
+    scan: { ...scan, countedQuantity },
+    item: {
+      variantId: Number(item.variant_id), countedQuantity,
+      difference: countedQuantity - Number(item.expected_quantity),
+      foundSerials: Number(item.found_serials), updatedAt,
+    },
+    updatedAt,
+    ...(scannedSerial ? { serial: {
+      variantId: scan.variantId, serialNumber: scannedSerial,
+      expected: Boolean(scan.expected), found: true,
+      status: scan.expected ? 'correct' : 'unexpected',
+    } } : {}),
+  });
+}
+
 async function listStockCounts(env) {
   const rows = (await env.DB.prepare(`
     SELECT count.*, user.name AS responsible_name,
@@ -3672,12 +3699,10 @@ async function scanStockCountCode(request, env, user, id) {
           variantId: Number(serial.variant_id), materialCode: serial.material_code, serialNumber: code, increment: 1,
         }),
       ]);
-      const details = await stockCountDetails(env, id);
-      const saved = details.items.find((entry) => entry.variantId === Number(serial.variant_id));
-      return json({ ...details, scan: {
+      return stockCountScanResponse(env, id, {
         type: 'material', variantId: Number(serial.variant_id), materialCode: serial.material_code,
-        productName: serial.product_name, countedQuantity: saved?.countedQuantity ?? 0,
-      } });
+        productName: serial.product_name, expected: Number(serial.expected || 0),
+      }, timestamp, code);
     }
     await env.DB.batch([
       env.DB.prepare(`INSERT INTO stock_count_serials (count_id,variant_id,serial_number,expected,found,created_at) VALUES (?,?,?,?,1,?) ON CONFLICT(count_id,serial_number) DO UPDATE SET found=1`)
@@ -3687,8 +3712,10 @@ async function scanStockCountCode(request, env, user, id) {
       env.DB.prepare('UPDATE stock_counts SET updated_at=? WHERE id=?').bind(timestamp, id),
       auditStatement(env, user.id, 'stock_count.quick_serial_scanned', 'stock_count', id, { variantId: Number(serial.variant_id), serialNumber: code }),
     ]);
-    const details = await stockCountDetails(env, id);
-    return json({ ...details, scan: { type: 'serial', variantId: Number(serial.variant_id), materialCode: serial.material_code, productName: serial.product_name, code } });
+    return stockCountScanResponse(env, id, {
+      type: 'serial', variantId: Number(serial.variant_id), materialCode: serial.material_code,
+      productName: serial.product_name, code, expected: Number(serial.expected || 0),
+    }, timestamp, code);
   }
 
   const item = await env.DB.prepare(`
@@ -3702,9 +3729,10 @@ async function scanStockCountCode(request, env, user, id) {
     env.DB.prepare('UPDATE stock_counts SET updated_at=? WHERE id=?').bind(timestamp, id),
     auditStatement(env, user.id, 'stock_count.quick_item_scanned', 'stock_count', id, { variantId: Number(item.variant_id), materialCode: item.material_code, increment: 1 }),
   ]);
-  const details = await stockCountDetails(env, id);
-  const saved = details.items.find((entry) => entry.variantId === Number(item.variant_id));
-  return json({ ...details, scan: { type: 'material', variantId: Number(item.variant_id), materialCode: item.material_code, productName: item.product_name, countedQuantity: saved?.countedQuantity ?? 0 } });
+  return stockCountScanResponse(env, id, {
+    type: 'material', variantId: Number(item.variant_id), materialCode: item.material_code,
+    productName: item.product_name,
+  }, timestamp);
 }
 
 async function finalizeStockCount(env, user, id) {
@@ -4204,7 +4232,15 @@ async function routeApi(request, env) {
   const path = url.pathname;
   const method = request.method;
 
-  if (method === 'GET' && path === '/api/health') return json({ ok: true, platform: 'cloudflare', time: nowIso() });
+  if (method === 'GET' && path === '/api/health') {
+    try {
+      await env.DB.prepare('SELECT 1 AS healthy').first();
+      return json({ ok: true, database: 'available', platform: 'cloudflare', time: nowIso() });
+    } catch (error) {
+      console.error(JSON.stringify({ message: 'D1 health check failed', error: error instanceof Error ? error.message : String(error) }));
+      return json({ ok: false, database: 'unavailable', time: nowIso() }, 503, { 'Retry-After': '60' });
+    }
+  }
   if (method === 'GET' && path === '/api/setup') return setupStatus(env);
   if (method === 'POST' && path === '/api/setup') return initialSetup(request, env);
   if (method === 'POST' && path === '/api/auth/login') return login(request, env);

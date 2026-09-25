@@ -452,6 +452,9 @@ describe('Controle de estoque por código material', () => {
   });
 
   test('configura o gerente e protege a sessão', async () => {
+    const health = await manager.request('/api/health');
+    assert.equal(health.status, 200);
+    assert.equal(health.payload.database, 'available');
     const initial = await manager.request('/api/setup');
     assert.equal(initial.status, 200);
     assert.equal(initial.payload.needsSetup, true);
@@ -1348,7 +1351,9 @@ describe('Controle de estoque por código material', () => {
     });
     assert.equal(found.status, 200);
     assert.equal(found.payload.scan.type, 'serial');
-    assert.equal(found.payload.items.find((entry) => entry.variantId === item.variantId).difference, 0);
+    assert.equal(found.headers.get('x-robots-tag'), 'noindex, nofollow');
+    assert.equal(found.payload.item.difference, 0);
+    assert.equal(found.payload.items, undefined, 'leitura rápida não deve retornar toda a contagem');
     assert.equal((await manager.request(`/api/stock-counts/${created.payload.count.id}/scan`, {
       method: 'POST', body: { code: expectedSerial.serialNumber },
     })).status, 409);
@@ -1403,12 +1408,13 @@ describe('Controle de estoque por código material', () => {
     assert.equal(firstQuickScan.status, 200);
     assert.equal(firstQuickScan.payload.scan.type, 'material');
     assert.equal(firstQuickScan.payload.scan.variantId, quickItem.variantId);
-    assert.equal(firstQuickScan.payload.items.find((entry) => entry.variantId === quickItem.variantId).countedQuantity, 1);
+    assert.equal(firstQuickScan.payload.item.countedQuantity, 1);
+    assert.equal(firstQuickScan.payload.items, undefined, 'cada leitura retorna somente o item atualizado');
     const secondQuickScan = await manager.request(`/api/stock-counts/${quickCount.payload.count.id}/scan`, {
       method: 'POST', body: { code: quickItem.materialCode },
     });
     assert.equal(secondQuickScan.status, 200);
-    assert.equal(secondQuickScan.payload.items.find((entry) => entry.variantId === quickItem.variantId).countedQuantity, 2);
+    assert.equal(secondQuickScan.payload.item.countedQuantity, 2);
     assert.equal((await manager.request(`/api/stock-counts/${quickCount.payload.count.id}/scan`, {
       method: 'POST', body: { code: 'CODIGO-INEXISTENTE' },
     })).status, 404);
@@ -2106,7 +2112,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.57.0');
+    assert.equal(JSON.parse(packageSource).version, '6.58.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2369,8 +2375,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.57\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.57\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.58\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.58\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2463,7 +2469,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.57.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.58.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2867,7 +2873,8 @@ describe('Controle de estoque por código material', () => {
     });
     assert.equal(scanned.status, 200);
     assert.equal(scanned.payload.scan.materialCode, '22023323');
-    assert.equal(scanned.payload.items.find((item) => item.materialCode === '22023323').countedQuantity, 1);
+    assert.equal(scanned.payload.item.countedQuantity, 1);
+    assert.equal(scanned.payload.serial.serialNumber, '220233230017303');
     assert.equal((await manager.request(`/api/stock-counts/${fresh.payload.count.id}/scan`, {
       method: 'POST', body: { code: '220233230017303' },
     })).status, 409);
@@ -2875,7 +2882,7 @@ describe('Controle de estoque por código material', () => {
       method: 'POST', body: { code: '22023323' },
     });
     assert.equal(byMaterial.status, 200);
-    assert.equal(byMaterial.payload.items.find((item) => item.materialCode === '22023323').countedQuantity, 2);
+    assert.equal(byMaterial.payload.item.countedQuantity, 2);
     assert.equal((await seller.request(`/api/stock-counts/${fresh.payload.count.id}/scan`, {
       method: 'POST', body: { code: '220233230017303' },
     })).status, 403);

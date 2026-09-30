@@ -57,7 +57,7 @@ const state = {
   showcases: { canEdit: false, summary: {}, fixtures: [], products: [], serials: [] },
   labelSelection: new Map(),
   labelSearch: '',
-  labelMode: 'cases',
+  labelMode: 'store',
   renovaSearch: '',
   renovaStatus: 'awaiting_pickup',
   chipSellers: [],
@@ -2950,15 +2950,25 @@ function visibleLabelRows() {
     .some((value) => String(value || '').toLocaleLowerCase('pt-BR').includes(search)));
 }
 
+function compactShelfName(name) {
+  return String(name || 'Produto').replace(/\b(?:ACESS[ÓO]RIO|EMBALAGEM|BLISTER)\b/gi, '')
+    .replace(/\bTRANSPARENTE\b/gi, 'Transp.')
+    .replace(/\bMAGN[ÉE]TIC([AO])\b/gi, 'Magn.')
+    .replace(/\bCARREGADOR\b/gi, 'Carreg.')
+    .replace(/\bPEL[ÍI]CULA\b/gi, 'Pelíc.')
+    .replace(/\bSEM FIO\b/gi, 's/ fio')
+    .replace(/\bCOMPAT[ÍI]VEL COM\b/gi, 'p/')
+    .replace(/\s+/g, ' ').trim();
+}
+
 function storeLabelCatalogRows() {
-  return state.catalog.filter((product) => product.cluster !== 'cases').flatMap((product) => product.variants
-    .filter((variant) => Number(variant.available || 0) > 0)
-    .map((variant) => ({ product, variant, price: selectedProductPrice(product, variant) }))
-    .filter((item) => item.price != null && productPriceKind(item.product, item.variant) !== 'no_charge')
+  return state.catalog.filter((product) => product.cluster !== 'devices').flatMap((product) => product.variants
+    .map((variant) => ({ product, variant, price: productPriceKind(product, variant) === 'no_charge' ? null : selectedProductPrice(product, variant) }))
     .map((item) => ({
       ...item,
       key: `store|${item.variant.id}`,
-      name: item.product.name,
+      name: compactShelfName(item.product.name),
+      productNames: [item.product.name, item.product.technicalName],
       material: item.variant.materialCode || materialCode(item.product),
       available: Number(item.variant.available || 0),
     })))
@@ -2971,8 +2981,9 @@ function printableCaseLabel(item) {
 }
 
 function printableStoreLabel(item) {
+  if (item.price == null) return `<article class="shelf-label store-shelf-label"><div class="store-shelf-label__brand"><b>vivo</b><span>${escapeHtml(item.material)}</span></div><strong>${escapeHtml(item.name)}</strong><div class="store-shelf-label__consult">Consultar preço</div><p>Consulte a equipe da loja.</p></article>`;
   const payment = paymentPriceLines(item.price);
-  return `<article class="shelf-label store-shelf-label"><div class="store-shelf-label__brand"><b>vivo</b><span>Oferta</span></div><strong>${escapeHtml(item.name)}</strong><div class="store-shelf-label__pricing"><div><span>À vista</span><b>${escapeHtml(formatMoney(item.price))}</b></div><div class="is-pix"><span>PIX / Vivo Pay</span><b>${escapeHtml(formatMoney(payment.pix))}</b></div><div><span>12x sem juros</span><b>${escapeHtml(formatMoney(payment.twelve))}</b></div><div class="is-long"><span>${payment.longCount}x</span><b>${escapeHtml(formatMoney(payment.longInstallment))}</b><small>total ${escapeHtml(formatMoney(payment.longTotal))}</small></div></div><p>De 13x a 21x há acréscimo progressivo. Consulte as condições de parcelamento do seu cartão.</p></article>`;
+  return `<article class="shelf-label store-shelf-label"><div class="store-shelf-label__brand"><b>vivo</b><span>${escapeHtml(item.material)}</span></div><strong>${escapeHtml(item.name)}</strong><div class="store-shelf-label__pricing"><div><span>À vista</span><b>${escapeHtml(formatMoney(item.price))}</b></div><div class="is-pix"><span>PIX / Vivo Pay</span><b>${escapeHtml(formatMoney(payment.pix))}</b></div><div><span>12x</span><b>${escapeHtml(formatMoney(payment.twelve))}</b></div><div class="is-long"><span>${payment.longCount}x</span><b>${escapeHtml(formatMoney(payment.longInstallment))}</b><small>total ${escapeHtml(formatMoney(payment.longTotal))}</small></div></div><p>13–21x com acréscimo. Consulte as condições de parcelamento do seu cartão.</p></article>`;
 }
 
 function printableLabel(item) {
@@ -3003,9 +3014,9 @@ function renderLabelWorkspace() {
     const selected = state.labelSelection.has(item.key);
     const isStore = state.labelMode === 'store';
     const variationText = isStore ? `${item.material} · ${item.available} disponíveis` : `${item.variations} ${item.variations === 1 ? 'material' : 'materiais'} · ${item.priceLines.length} ${item.priceLines.length === 1 ? 'valor' : 'valores'}`;
-    const knownPrices = isStore ? [item.price] : item.priceLines.map((line) => line.price).filter((price) => price != null);
+    const knownPrices = isStore ? (item.price == null ? [] : [item.price]) : item.priceLines.map((line) => line.price).filter((price) => price != null);
     const priceSummary = knownPrices.length ? (Math.min(...knownPrices) === Math.max(...knownPrices) ? formatMoney(knownPrices[0]) : `${formatMoney(Math.min(...knownPrices))} a ${formatMoney(Math.max(...knownPrices))}`) : 'Consultar';
-    return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || (isStore ? 'Produto' : 'Capa'))}</small><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(variationText)}</code></span><span class="label-product-card__price"><strong>${escapeHtml(priceSummary)}</strong><small>${isStore ? `PIX ${formatMoney(pixPriceCents(item.price))} · 21x disponível` : `${item.available} disponíveis`}</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
+    return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || (isStore ? 'Produto' : 'Capa'))}</small><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(variationText)}</code></span><span class="label-product-card__price"><strong>${escapeHtml(priceSummary)}</strong><small>${isStore ? (item.price == null ? 'Preço a consultar' : `PIX ${formatMoney(pixPriceCents(item.price))} · até 21x`) : `${item.available} disponíveis`}</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
   }).join('') : emptyState(state.labelMode === 'store' ? 'Nenhum produto com preço encontrado' : 'Nenhuma capa encontrada', 'Altere a busca para localizar outro produto.');
   const selected = [...state.labelSelection.values()];
   selection.innerHTML = selected.length ? `<div class="label-selection__head"><div><small>Folha de impressão</small><strong>${selected.length} ${selected.length === 1 ? 'etiqueta selecionada' : 'etiquetas selecionadas'}</strong></div><button class="btn btn--ghost btn--small" data-action="clear-labels">Limpar tudo</button></div><div class="label-preview-list">${selected.slice(0, 6).map((item) => `<div>${printableLabel(item)}<button data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></div>`).join('')}${selected.length > 6 ? `<p>+ ${selected.length - 6} etiquetas selecionadas</p>` : ''}</div><div class="label-format"><span>Formato</span><strong>${state.labelMode === 'store' ? '100 x 55 mm · 10 por folha A4' : '45 x 30 mm · 32 por folha A4'}</strong></div><button class="btn label-print-button" data-action="print-labels">${uiIcon('copy')} Imprimir etiquetas</button>` : `<div class="label-selection__empty">${uiIcon('copy')}<strong>Nenhuma etiqueta selecionada</strong><span>Escolha os produtos na lista ao lado.</span></div>`;
@@ -3017,7 +3028,7 @@ async function renderLabels() {
   if (!canAccessRenovaIntake()) return navigate('dashboard');
   if (!state.catalog.length) await loadCatalog();
   const content = document.querySelector('#view-content');
-  content.innerHTML = `<section class="label-hero"><div><p class="page-eyebrow">Organização das prateleiras</p><h2>Etiquetas do estoque</h2><p>Crie etiquetas para capas ou para os demais produtos da loja usando os preços já cadastrados no sistema.</p><div class="label-mode-tabs" role="tablist" aria-label="Tipo de etiqueta"><button class="chip ${state.labelMode === 'cases' ? 'is-active' : ''}" data-action="label-mode" data-mode="cases" role="tab" aria-selected="${state.labelMode === 'cases'}">Etiquetas de capas</button><button class="chip ${state.labelMode === 'store' ? 'is-active' : ''}" data-action="label-mode" data-mode="store" role="tab" aria-selected="${state.labelMode === 'store'}">Etiquetas da loja</button></div></div><div class="label-hero__sample"><span>${state.labelMode === 'store' ? '21X · NOVA POLÍTICA' : 'EXEMPLO'}</span><strong>${state.labelMode === 'store' ? 'SMARTPHONE 5G' : 'CAPA A36'}</strong><small>${state.labelMode === 'store' ? 'PIX · 12x · 21x' : 'R$ 49,00'}</small></div></section><section class="label-builder"><div class="label-products"><header><div><p class="page-eyebrow">${state.labelMode === 'store' ? 'Produtos com preço cadastrado' : 'Capas disponíveis'}</p><h3>Escolha os produtos</h3><span><b data-label-visible-count>0</b> produtos e valores encontrados</span></div><button class="btn btn--secondary btn--small" data-action="select-visible-labels">Selecionar exibidas</button></header><label class="incoming-search label-search">${uiIcon('search')}<input type="search" data-action="label-search" value="${escapeHtml(state.labelSearch)}" placeholder="Buscar produto ou código material" aria-label="Buscar produto para etiqueta"></label><div class="label-product-grid" data-label-products></div></div><aside class="label-selection" data-label-selection></aside></section><section class="label-print-sheet" data-label-print-sheet aria-hidden="true"></section>`;
+  content.innerHTML = `<section class="label-hero"><div><p class="page-eyebrow">Organização das prateleiras</p><h2>Etiquetas do estoque</h2><p>Etiquetas para todos os produtos do catálogo, exceto aparelhos. Textos compactos para a vitrine.</p><div class="label-mode-tabs" role="tablist" aria-label="Tipo de etiqueta"><button class="chip ${state.labelMode === 'cases' ? 'is-active' : ''}" data-action="label-mode" data-mode="cases" role="tab" aria-selected="${state.labelMode === 'cases'}">Etiquetas de capas</button><button class="chip ${state.labelMode === 'store' ? 'is-active' : ''}" data-action="label-mode" data-mode="store" role="tab" aria-selected="${state.labelMode === 'store'}">Etiquetas da loja</button></div></div><div class="label-hero__sample"><span>${state.labelMode === 'store' ? '21X · NOVA POLÍTICA' : 'EXEMPLO'}</span><strong>${state.labelMode === 'store' ? 'CARREG. USB-C 25W' : 'CAPA A36'}</strong><small>${state.labelMode === 'store' ? 'PIX · 12x · 21x' : 'R$ 49,00'}</small></div></section><section class="label-builder"><div class="label-products"><header><div><p class="page-eyebrow">${state.labelMode === 'store' ? 'Todos os produtos · exceto aparelhos' : 'Capas disponíveis'}</p><h3>Escolha os produtos</h3><span><b data-label-visible-count>0</b> produtos e valores encontrados</span></div><button class="btn btn--secondary btn--small" data-action="select-visible-labels">Selecionar exibidas</button></header><label class="incoming-search label-search">${uiIcon('search')}<input type="search" data-action="label-search" value="${escapeHtml(state.labelSearch)}" placeholder="Buscar produto ou código material" aria-label="Buscar produto para etiqueta"></label><div class="label-product-grid" data-label-products></div></div><aside class="label-selection" data-label-selection></aside></section><section class="label-print-sheet" data-label-print-sheet aria-hidden="true"></section>`;
   renderLabelWorkspace();
 }
 

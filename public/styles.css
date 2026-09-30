@@ -5877,11 +5877,11 @@ body.cart-drawer-open { overflow: hidden; }
 .shelf-label__prices li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .shelf-label__prices li b { flex: 0 0 auto; color: #17141a; font-size: 7px; }
 .shelf-label__foot { display: flex; justify-content: space-between; gap: 6px; margin-top: 5px; padding-top: 4px; border-top: 1px solid #e1dde4; color: #716b75; font-size: 5px; }
-.store-shelf-label { display: grid; grid-template-rows: auto auto 1fr auto; align-content: stretch; padding: 8px 10px; border: 1px solid #4f2380; font-family: "Vivo Type", Arial, sans-serif; }
+.store-shelf-label { display: grid; grid-template-rows: auto minmax(0, auto) 1fr auto; align-content: stretch; padding: 8px 10px; border: 1px solid #4f2380; font-family: "Vivo Type", Arial, sans-serif; }
 .store-shelf-label__brand { display: flex; align-items: center; justify-content: space-between; color: #5c258d; text-transform: uppercase; }
 .store-shelf-label__brand b { font-size: 10px; font-style: italic; letter-spacing: -.06em; text-transform: lowercase; }
 .store-shelf-label__brand span { font-size: 5px; font-weight: 800; letter-spacing: .1em; }
-.store-shelf-label > strong { margin: 4px 0 6px; color: #1d1722; font-size: 12px; line-height: 1.05; text-align: center; }
+.store-shelf-label > strong { white-space: normal; overflow-wrap: anywhere; margin: 4px 0 6px; color: #1d1722; font-size: 12px; line-height: 1.05; text-align: center; }
 .store-shelf-label__pricing { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
 .store-shelf-label__pricing > div { display: grid; align-content: center; gap: 1px; padding: 4px 5px; border: 1px solid #e1d8e8; border-radius: 5px; background: #faf8fb; }
 .store-shelf-label__pricing span { color: #655d69; font-size: 5px; font-weight: 700; text-transform: uppercase; }
@@ -6129,9 +6129,9 @@ body.cart-drawer-open { overflow: hidden; }
   .label-print-portal--store .store-shelf-label { width: 100mm; height: 55mm; padding: 3mm 4mm 2mm; border: .3mm solid #4f2380; }
   .label-print-portal--store .store-shelf-label__brand b { font-size: 13pt; }
   .label-print-portal--store .store-shelf-label__brand span { font-size: 7pt; }
-  .label-print-portal--store .store-shelf-label > strong { margin: 1.5mm 0 2mm; font-size: 15pt; }
+  .label-print-portal--store .store-shelf-label > strong { margin: 1.5mm 0 2mm; font-size: 11pt; line-height: 1.1; max-height: 13mm; }
   .label-print-portal--store .store-shelf-label__pricing { gap: 1.5mm; }
-  .label-print-portal--store .store-shelf-label__pricing > div { gap: .5mm; padding: 1.6mm 2mm; border-radius: 1.5mm; }
+  .label-print-portal--store .store-shelf-label__pricing > div { gap: .5mm; padding: 1mm 1.5mm; border-radius: 1.5mm; }
   .label-print-portal--store .store-shelf-label__pricing span { font-size: 7pt; }
   .label-print-portal--store .store-shelf-label__pricing b { font-size: 13pt; }
   .label-print-portal--store .store-shelf-label__pricing small { font-size: 6pt; }
@@ -7003,3 +7003,5 @@ button.showcase-slot:not(:disabled):hover { z-index: 2; transform: translateY(-3
   background: linear-gradient(135deg, #ad83e9, #8055b7);
   box-shadow: 0 15px 30px rgba(117, 75, 171, .29), inset 0 1px 0 rgba(255, 255, 255, .30);
 }
+
+.store-shelf-label__consult { display: grid; place-items: center; color: #5c258d; font-weight: 700; font-size: 14px; }

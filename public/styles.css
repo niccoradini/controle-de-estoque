@@ -7005,3 +7005,9 @@ button.showcase-slot:not(:disabled):hover { z-index: 2; transform: translateY(-3
 }
 
 .store-shelf-label__consult { display: grid; place-items: center; color: #5c258d; font-weight: 700; font-size: 14px; }
+
+.label-price-editor { display: grid; gap: 7px; padding: 10px; margin: 6px 0 12px; border: 1px solid var(--border, #78628b); border-radius: 9px; }
+.label-price-editor > small { font-size: 11px; }
+.label-price-editor label { display: grid; grid-template-columns: minmax(0, 1fr) 95px; align-items: center; gap: 8px; font-size: 12px; }
+.label-price-editor input { width: 100%; min-width: 0; box-sizing: border-box; padding: 8px; border: 1px solid #9984ad; border-radius: 6px; background: #fff; color: #221927; font-size: 16px; }
+.label-price-editor .btn { justify-self: start; }

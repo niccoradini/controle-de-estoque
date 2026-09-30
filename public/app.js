@@ -3004,6 +3004,20 @@ function printSelectedLabels() {
   requestAnimationFrame(() => window.print());
 }
 
+function labelPriceEditor(item) {
+  const lines = state.labelMode === 'store' ? [{ label: 'Preço da etiqueta', price: item.price }] : item.priceLines;
+  return `<div class="label-price-editor"><small>Personalizar preço (R$)</small>${lines.map((line, index) => `<label><span>${escapeHtml(line.label)}</span><input type="text" inputmode="decimal" data-action="label-custom-price" data-key="${escapeHtml(item.key)}" data-line="${index}" value="${line.price == null ? '' : (line.price / 100).toFixed(2).replace('.', ',')}" placeholder="Consultar" aria-label="Preço de ${escapeHtml(item.name)} — ${escapeHtml(line.label)}"></label>`).join('')}<button type="button" class="btn btn--ghost btn--small" data-action="restore-label-price" data-key="${escapeHtml(item.key)}">Restaurar preço original</button></div>`;
+}
+
+function parseLabelPrice(value) {
+  const text = String(value).trim();
+  if (!text) return null;
+  const normalized = text.includes(',') ? text.replace(/\./g, '').replace(',', '.') : text;
+  if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) return undefined;
+  const cents = Math.round(Number(normalized) * 100);
+  return Number.isSafeInteger(cents) ? cents : undefined;
+}
+
 function renderLabelWorkspace() {
   const grid = document.querySelector('[data-label-products]');
   const selection = document.querySelector('[data-label-selection]');
@@ -3019,7 +3033,7 @@ function renderLabelWorkspace() {
     return `<button type="button" class="label-product-card ${selected ? 'is-selected' : ''}" data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-pressed="${selected}">${productImageMarkup(item.product, 'label-product-card__image', 76, 76)}<span><small>${escapeHtml(item.product.brand || (isStore ? 'Produto' : 'Capa'))}</small><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(variationText)}</code></span><span class="label-product-card__price"><strong>${escapeHtml(priceSummary)}</strong><small>${isStore ? (item.price == null ? 'Preço a consultar' : `PIX ${formatMoney(pixPriceCents(item.price))} · até 21x`) : `${item.available} disponíveis`}</small></span><i>${selected ? uiIcon('check') : uiIcon('plus')}</i></button>`;
   }).join('') : emptyState(state.labelMode === 'store' ? 'Nenhum produto com preço encontrado' : 'Nenhuma capa encontrada', 'Altere a busca para localizar outro produto.');
   const selected = [...state.labelSelection.values()];
-  selection.innerHTML = selected.length ? `<div class="label-selection__head"><div><small>Folha de impressão</small><strong>${selected.length} ${selected.length === 1 ? 'etiqueta selecionada' : 'etiquetas selecionadas'}</strong></div><button class="btn btn--ghost btn--small" data-action="clear-labels">Limpar tudo</button></div><div class="label-preview-list">${selected.slice(0, 6).map((item) => `<div>${printableLabel(item)}<button data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></div>`).join('')}${selected.length > 6 ? `<p>+ ${selected.length - 6} etiquetas selecionadas</p>` : ''}</div><div class="label-format"><span>Formato</span><strong>${state.labelMode === 'store' ? '100 x 55 mm · 10 por folha A4' : '45 x 30 mm · 32 por folha A4'}</strong></div><button class="btn label-print-button" data-action="print-labels">${uiIcon('copy')} Imprimir etiquetas</button>` : `<div class="label-selection__empty">${uiIcon('copy')}<strong>Nenhuma etiqueta selecionada</strong><span>Escolha os produtos na lista ao lado.</span></div>`;
+  selection.innerHTML = selected.length ? `<div class="label-selection__head"><div><small>Folha de impressão</small><strong>${selected.length} ${selected.length === 1 ? 'etiqueta selecionada' : 'etiquetas selecionadas'}</strong></div><button class="btn btn--ghost btn--small" data-action="clear-labels">Limpar tudo</button></div><div class="label-preview-list">${selected.map((item) => `<div>${printableLabel(item)}${labelPriceEditor(item)}<button data-action="toggle-label-product" data-key="${escapeHtml(item.key)}" aria-label="Remover ${escapeHtml(item.name)}">&times;</button></div>`).join('')}</div><div class="label-format"><span>Formato</span><strong>${state.labelMode === 'store' ? '100 x 55 mm · 10 por folha A4' : '45 x 30 mm · 32 por folha A4'}</strong></div><button class="btn label-print-button" data-action="print-labels">${uiIcon('copy')} Imprimir etiquetas</button>` : `<div class="label-selection__empty">${uiIcon('copy')}<strong>Nenhuma etiqueta selecionada</strong><span>Escolha os produtos na lista ao lado.</span></div>`;
   printSheet.innerHTML = selected.map(printableLabel).join('');
   document.querySelector('[data-label-visible-count]').textContent = products.length;
 }
@@ -3858,7 +3872,12 @@ root.addEventListener('click', async (event) => {
     }
     if (action === 'clear-labels' && canAccessRenovaIntake()) { state.labelSelection.clear(); renderLabelWorkspace(); }
     if (action === 'select-visible-labels' && canAccessRenovaIntake()) {
-      visibleLabelRows().forEach((item) => state.labelSelection.set(item.key, item));
+      visibleLabelRows().forEach((item) => { if (!state.labelSelection.has(item.key)) state.labelSelection.set(item.key, item); });
+      renderLabelWorkspace();
+    }
+    if (action === 'restore-label-price' && canAccessRenovaIntake()) {
+      const item = (state.labelMode === 'store' ? storeLabelCatalogRows() : labelCatalogRows()).find((row) => row.key === button.dataset.key);
+      if (item) state.labelSelection.set(item.key, item);
       renderLabelWorkspace();
     }
     if (action === 'print-labels' && canAccessRenovaIntake()) printSelectedLabels();
@@ -4042,6 +4061,24 @@ modalRoot.addEventListener('change', (event) => {
 
 root.addEventListener('change', (event) => {
   const action = event.target.dataset.action;
+  if (action === 'label-custom-price' && canAccessRenovaIntake()) {
+    const price = parseLabelPrice(event.target.value);
+    if (price === undefined) {
+      showToast('Informe um preço válido, como 49,90.', 'error');
+      renderLabelWorkspace();
+      return;
+    }
+    const key = event.target.dataset.key;
+    const item = state.labelSelection.get(key);
+    if (!item) return;
+    if (state.labelMode === 'store') state.labelSelection.set(key, { ...item, price });
+    else {
+      const index = Number(event.target.dataset.line);
+      state.labelSelection.set(key, { ...item, priceLines: item.priceLines.map((line, i) => i === index ? { ...line, price } : line) });
+    }
+    renderLabelWorkspace();
+    return;
+  }
   if (action === 'outlet-store') { state.outletStore = event.target.value || 'all'; renderOutletProducts(); return; }
   if (action === 'replenishment-threshold') { state.replenishmentThreshold = Number(event.target.value || 2); renderReplenishment(); return; }
   if (action === 'planner-date') { state.plannerDate = event.target.value || localDateValue(); renderMyDay(); return; }

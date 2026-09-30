@@ -2436,7 +2436,7 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /function caseMaterialLabel/);
     assert.match(appSource, /shelf-label__prices/);
     assert.match(appSource, /S\\d\{2,3\}\(\?:\\\+\|/);
-    assert.match(appSource, /45 x 30 mm/);
+    assert.match(appSource, /45 x 35 mm/);
     assert.match(appSource, /window\.print\(\)/);
     assert.match(appSource, /function printSelectedLabels/);
     assert.match(appSource, /label-print-portal/);

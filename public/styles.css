@@ -6111,11 +6111,11 @@ body.cart-drawer-open { overflow: hidden; }
 @media (max-width: 430px) { .replenishment-hero { padding: 20px 16px; } .replenishment-hero__metrics { grid-template-columns: 1fr; } .replenishment-card__action { grid-template-columns: 1fr; } .replenishment-card__action .btn { width: 100%; } }
 @media print {
   @page { size: A4 portrait; margin: 10mm 15mm; }
-  html, body { width: 210mm !important; min-height: 297mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  html, body { width: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
   body > *:not(.label-print-portal) { display: none !important; }
-  body > .label-print-portal { position: static !important; width: 180mm !important; display: grid !important; grid-template-columns: repeat(4, 45mm) !important; grid-auto-rows: 30mm !important; margin: 0 !important; padding: 0 !important; visibility: visible !important; }
+  body > .label-print-portal { position: static !important; width: 180mm !important; display: grid !important; grid-template-columns: repeat(4, 45mm) !important; grid-auto-rows: 35mm !important; margin: 0 !important; padding: 0 !important; visibility: visible !important; }
   .label-print-portal, .label-print-portal * { visibility: visible !important; }
-  .label-print-sheet .shelf-label { width: 45mm; height: 30mm; padding: 3mm 3.5mm; border: .25mm dashed #8b858e; break-inside: avoid; page-break-inside: avoid; }
+  .label-print-sheet .shelf-label { width: 45mm; height: 35mm; padding: 1.5mm 2mm; border: .25mm dashed #8b858e; break-inside: avoid; page-break-inside: avoid; }
   .label-print-sheet .shelf-label__brand { font-size: 6pt; }
   .label-print-sheet .shelf-label > strong { margin: 2mm 0 1mm; font-size: 13pt; }
   .label-print-sheet .shelf-label__price small { font-size: 6pt; }
@@ -6125,17 +6125,21 @@ body.cart-drawer-open { overflow: hidden; }
   .label-print-sheet .shelf-label__prices li { font-size: 6.2pt; line-height: 1; }
   .label-print-sheet .shelf-label__prices li b { font-size: 6.5pt; }
   .label-print-sheet .shelf-label__foot { margin-top: 1.5mm; padding-top: 1mm; font-size: 6pt; }
-  body > .label-print-portal--store { width: 200mm !important; grid-template-columns: repeat(2, 100mm) !important; grid-auto-rows: 55mm !important; }
-  .label-print-portal--store .store-shelf-label { width: 100mm; height: 55mm; padding: 3mm 4mm 2mm; border: .3mm solid #4f2380; }
-  .label-print-portal--store .store-shelf-label__brand b { font-size: 13pt; }
-  .label-print-portal--store .store-shelf-label__brand span { font-size: 7pt; }
-  .label-print-portal--store .store-shelf-label > strong { margin: 1.5mm 0 2mm; font-size: 11pt; line-height: 1.1; max-height: 13mm; }
-  .label-print-portal--store .store-shelf-label__pricing { gap: 1.5mm; }
-  .label-print-portal--store .store-shelf-label__pricing > div { gap: .5mm; padding: 1mm 1.5mm; border-radius: 1.5mm; }
-  .label-print-portal--store .store-shelf-label__pricing span { font-size: 7pt; }
-  .label-print-portal--store .store-shelf-label__pricing b { font-size: 13pt; }
-  .label-print-portal--store .store-shelf-label__pricing small { font-size: 6pt; }
-  .label-print-portal--store .store-shelf-label > p { margin-top: 1.5mm; font-size: 6.5pt; }
+  body > .label-print-portal--store { width: 180mm !important; grid-template-columns: repeat(4, 45mm) !important; grid-auto-rows: 35mm !important; }
+  .label-print-portal--store .store-shelf-label { width: 45mm; height: 35mm; padding: 1.5mm 2mm; border: .3mm solid #4f2380; }
+  .label-print-portal--store .store-shelf-label__brand b { font-size: 8pt; }
+  .label-print-portal--store .store-shelf-label__brand span { font-size: 5pt; }
+  .label-print-portal--store .store-shelf-label > strong { margin: .7mm 0; font-size: 7.5pt; line-height: 1.1; max-height: 8.7mm; }
+  .label-print-portal--store .store-shelf-label__pricing { gap: .6mm; }
+  .label-print-portal--store .store-shelf-label__pricing > div { gap: .2mm; padding: .5mm .7mm; border-radius: 1.5mm; }
+  .label-print-portal--store .store-shelf-label__pricing span { font-size: 4.5pt; }
+  .label-print-portal--store .store-shelf-label__pricing b { font-size: 7pt; white-space: nowrap; }
+  .label-print-portal--store .store-shelf-label__pricing small { font-size: 4pt; }
+  .label-print-portal--store .store-shelf-label > p { margin-top: .6mm; font-size: 4pt; line-height: 1.15; }
+  .label-print-portal .shelf-label > strong { white-space: normal; overflow-wrap: anywhere; }
+  .label-print-portal .shelf-label__prices li span { white-space: normal; }
+  .label-print-portal .store-shelf-label__consult { font-size: 9pt; }
+  .label-print-portal { gap: 0 !important; }
 }
 
 /* Tema claro por preferência do usuário */

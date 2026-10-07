@@ -2914,4 +2914,32 @@ describe('Controle de estoque por código material', () => {
     assert.equal(Number((await row('SELECT COUNT(*) AS n FROM inventory_backup_20260930_serials')).n) > 0, true);
   });
 
+  test('atualiza todo o estoque 209H pela planilha de 06/10 e preserva contagens', async () => {
+    const counts = (await database.prepare('SELECT * FROM stock_counts ORDER BY id').all()).results;
+    const countItems = (await database.prepare('SELECT * FROM stock_count_items ORDER BY count_id,variant_id').all()).results;
+    const migration = await readFile(new URL('../migrations/0109_inventory_refresh_2026_10_06.sql', import.meta.url), 'utf8');
+    const sourceRows = [...migration.matchAll(/\('([^']+)', '(?:[^']|'')*', '([^']+)', '209H', '([^']*)', '[^']*', '([^']*)', \d+, '[^']*'\)/g)]
+      .map((match) => ({ material: match[1], serial: match[2], deposit: match[3], status: match[4] }));
+    assert.equal(sourceRows.length, 1372);
+    const requests = (await database.prepare('SELECT * FROM withdrawal_requests ORDER BY id').all()).results;
+    const chips = (await database.prepare('SELECT * FROM chips ORDER BY id').all()).results;
+    await applyMigration(migration);
+    const serials = (await database.prepare('SELECT i.serial_number,v.sku FROM inventory_serials i JOIN product_variants v ON v.id=i.variant_id').all()).results;
+    const serialMaterials = new Map(serials.map((item) => [item.serial_number.toUpperCase(), item.sku.toUpperCase()]));
+    for (const item of sourceRows.filter((item) => item.status === 'DEPS' && ['LVUT','EXPO','LOJA'].includes(item.deposit))) {
+      assert.equal(serialMaterials.get(item.serial.toUpperCase()), item.material.toUpperCase());
+    }
+    assert.deepEqual((await database.prepare('SELECT * FROM withdrawal_requests ORDER BY id').all()).results, requests);
+    assert.deepEqual((await database.prepare('SELECT * FROM chips ORDER BY id').all()).results, chips);
+    assert.equal((await row("SELECT value FROM system_state WHERE key='inventory_snapshot_date'")).value, '2026-10-06');
+    assert.equal(Number((await row('SELECT COUNT(*) AS n FROM incoming_inventory_serials')).n), 147);
+    assert.equal(Number((await row('SELECT COUNT(*) AS n FROM repair_inventory')).n), 111);
+    assert.deepEqual((await database.prepare('SELECT * FROM stock_counts ORDER BY id').all()).results, counts);
+    assert.deepEqual((await database.prepare('SELECT * FROM stock_count_items ORDER BY count_id,variant_id').all()).results, countItems);
+    const audit = JSON.parse((await row("SELECT details_json FROM audit_logs WHERE action='inventory.snapshot_imported' AND entity_id='2026-10-06'")).details_json);
+    assert.equal(audit.availableRows, 1107);
+    assert.equal(audit.incomingRows, 147);
+    assert.equal(Number((await row('SELECT COUNT(*) AS n FROM inventory_backup_20261006_serials')).n) > 0, true);
+  });
+
 });

@@ -4226,6 +4226,54 @@ async function deleteShowcaseSlot(env, user, fixtureId, slotNumber) {
   return noContent();
 }
 
+async function salesTracking(request, env, user, url, id = null) {
+  if (!['manager', 'seller'].includes(user.role)) throw new HttpError(403, 'Acesso exclusivo para gerência e vendedores.');
+  if (request.method === 'GET') {
+    const clauses = [], args = [];
+    if (user.role !== 'manager') { clauses.push('s.seller_id = ?'); args.push(user.id); }
+    for (const [key, column, op] of [['from','sale_date','>='], ['to','sale_date','<='], ['seller','seller_id','='], ['status','status','=']]) {
+      const value = url.searchParams.get(key);
+      if (value) { clauses.push(`s.${column} ${op} ?`); args.push(value); }
+    }
+    const q = (url.searchParams.get('q') || '').trim().slice(0,160);
+    if (q) { clauses.push('(s.customer_name LIKE ? OR s.cpf LIKE ? OR s.order_number LIKE ?)'); args.push(`%${q}%`, `%${q.replace(/\D/g,'') || q}%`, `%${q}%`); }
+    const rows = await env.DB.prepare(`SELECT s.*, u.name AS seller_name FROM sales_tracking s JOIN users u ON u.id = s.seller_id ${clauses.length ? 'WHERE '+clauses.join(' AND ') : ''} ORDER BY s.sale_date DESC, s.id DESC LIMIT 501`).bind(...args).all();
+    const sellers = await env.DB.prepare(`SELECT id, name FROM users WHERE deleted_at IS NULL AND active = 1 AND role IN ('seller','manager') ${user.role === 'manager' ? '' : 'AND id = ?'} ORDER BY name`).bind(...(user.role === 'manager' ? [] : [user.id])).all();
+    return json({ sales: (rows.results || []).slice(0,500), hasMore: rows.results.length > 500, sellers: sellers.results || [] });
+  }
+  if (id) {
+    const existing = await env.DB.prepare('SELECT * FROM sales_tracking WHERE id = ?').bind(id).first();
+    if (!existing || (user.role !== 'manager' && existing.seller_id !== user.id)) throw new HttpError(404, 'Venda não encontrada.');
+  }
+  const input = await readJson(request);
+  const text = (key, max) => String(input[key] || '').trim().slice(0,max);
+  const cpf = text('cpf',30).replace(/\D/g,'');
+  if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) throw new HttpError(400, 'Informe um CPF válido.');
+  for (const length of [9,10]) {
+    const sum = [...cpf.slice(0,length)].reduce((n,d,i) => n + Number(d)*(length+1-i),0);
+    const digit = (sum*10)%11%10;
+    if (digit !== Number(cpf[length])) throw new HttpError(400, 'Informe um CPF válido.');
+  }
+  const date = key => {
+    const value = text(key,10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || !Number.isFinite(Date.parse(value)) || new Date(value).toISOString().slice(0,10) !== value) throw new HttpError(400, 'Informe uma data válida.');
+    return value;
+  };
+  const saleDate = date('sale_date'), installationDate = input.installation_date ? date('installation_date') : '';
+  if (installationDate && installationDate < saleDate) throw new HttpError(400, 'A instalação não pode ser anterior à venda.');
+  const amount = Number(input.amount_cents), sellerId = user.role === 'manager' ? Number(input.seller_id) : user.id;
+  if (!Number.isSafeInteger(amount) || amount < 0 || amount > 100000000) throw new HttpError(400, 'Informe um valor válido.');
+  if (!text('customer_name',160)) throw new HttpError(400, 'Informe o nome do cliente.');
+  if (!['pending','scheduled','installed','cancelled'].includes(input.status)) throw new HttpError(400, 'Status inválido.');
+  if (['scheduled','installed'].includes(input.status) && !installationDate) throw new HttpError(400, 'Informe a data de instalação.');
+  const seller = await env.DB.prepare("SELECT id FROM users WHERE id = ? AND active = 1 AND deleted_at IS NULL AND role IN ('seller','manager')").bind(sellerId).first();
+  if (!seller) throw new HttpError(400, 'Selecione um vendedor ativo.');
+  const values = [text('customer_name',160), cpf, text('phone',30), saleDate, amount, installationDate, sellerId, text('product',160), text('order_number',80), input.status, text('notes',2000), nowIso()];
+  if (id) await env.DB.prepare(`UPDATE sales_tracking SET customer_name=?, cpf=?, phone=?, sale_date=?, amount_cents=?, installation_date=?, seller_id=?, product=?, order_number=?, status=?, notes=?, updated_at=? WHERE id=?`).bind(...values,id).run();
+  else await env.DB.prepare(`INSERT INTO sales_tracking (customer_name,cpf,phone,sale_date,amount_cents,installation_date,seller_id,product,order_number,status,notes,updated_at,created_at,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(...values,nowIso(),user.id).run();
+  return json({ saved: true }, id ? 200 : 201);
+}
+
 async function routeApi(request, env) {
   validateRequestSource(request);
   const url = new URL(request.url);
@@ -4254,6 +4302,9 @@ async function routeApi(request, env) {
   if (method === 'PATCH' && path === '/api/auth/password') return changePassword(request, env, user);
   if (method === 'PATCH' && path === '/api/preferences/theme') return saveUserTheme(request, env, user);
   if (user.must_change_password) throw new HttpError(403, 'Altere a senha provisória para continuar.');
+  if (path === '/api/sales-tracking' && ['GET','POST'].includes(method)) return salesTracking(request, env, user, url);
+  const saleMatch = path.match(/^\/api\/sales-tracking\/(\d+)$/);
+  if (saleMatch && method === 'PUT') return salesTracking(request, env, user, url, Number(saleMatch[1]));
   if (method === 'GET' && path === '/api/dashboard') return dashboard(env, user);
   if (method === 'GET' && path === '/api/site-feedback') return listSiteFeedback(env, user, url);
   if (method === 'POST' && path === '/api/site-feedback') return createSiteFeedback(request, env, user);

@@ -103,6 +103,7 @@ function canAccessRenovaIntake() {
 }
 
 const viewTitles = {
+  sales: 'Acompanhamento de vendas',
   point: 'Meu ponto',
   dashboard: 'Visão geral',
   'my-day': 'Planner',
@@ -670,7 +671,7 @@ function renderLogin(message = '') {
 function navItems() {
   if (state.user.role === 'manager') {
     return [
-      ['dashboard', 'home', 'Visão geral'], ['network-stock', 'stock', 'Estoque da rede'], ['stock', 'stock', 'Estoque da loja'], ['stock-count', 'check', 'Contagem de Estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
+      ['dashboard', 'home', 'Visão geral'], ['sales', 'orders', 'Acompanhamento de vendas'], ['network-stock', 'stock', 'Estoque da rede'], ['stock', 'stock', 'Estoque da loja'], ['stock-count', 'check', 'Contagem de Estoque'], ['my-day', 'tasks', 'Planner'], ['point', 'history', 'Meu ponto'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['replenishment', 'orders', 'Reposição'], ['labels', 'copy', 'Etiquetas do estoque'], ['incoming', 'orders', 'Produtos a caminho'], ['repairs', 'stock', 'Produtos em reparo'], ['renova-intake', 'renova', 'Renova'], ['chips', 'sim', 'Chips'], ['requests', 'orders', 'Pedidos'],
       ['feedback', 'briefing', 'Sugestões recebidas'], ['alignment', 'briefing', 'Alinhamento'], ['users', 'users', 'Usuários'], ['audit', 'history', 'Histórico'],
     ];
   }
@@ -681,7 +682,7 @@ function navItems() {
     ];
   }
   return [
-    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['stock', 'stock', 'Loja / estoque'],
+    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['sales', 'orders', 'Acompanhamento de vendas'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['stock', 'stock', 'Loja / estoque'],
     ['new-request', 'plus', 'Novo pedido'], ['chips', 'sim', 'Meus chips'], ['requests', 'orders', 'Meus pedidos'],
     ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
   ];
@@ -3260,6 +3261,25 @@ async function renderFeedback() {
     </section>`;
 }
 
+let salesData = { sales: [], sellers: [] };
+let salesFilters = {};
+const saleStatuses = { pending: 'Pendente', scheduled: 'Agendada', installed: 'Instalada', cancelled: 'Cancelada' };
+const saleDateLabel = value => value ? value.split('-').reverse().join('/') : '—';
+async function renderSales() {
+  salesData = await api('/api/sales-tracking?' + new URLSearchParams(salesFilters));
+  if (state.view !== 'sales') return;
+  const e = escapeHtml;
+  const total = salesData.sales.filter(x => x.status !== 'cancelled').reduce((n,x) => n+x.amount_cents,0);
+  document.querySelector('#view-content').innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Vendas e instalações</p><h2>Acompanhamento de vendas</h2><p>${state.user.role === 'manager' ? 'Acompanhe as vendas da equipe.' : 'Cadastre e acompanhe suas vendas.'}</p></div><button class="btn" data-action="sale-new">+ Nova venda</button></div>
+  <section class="card"><div class="card__body"><strong>${salesData.sales.length} vendas • ${formatMoney(total)}</strong><p>${salesData.sales.filter(x=>x.status==='pending').length} pendentes • ${salesData.sales.filter(x=>x.status==='scheduled').length} agendadas • ${salesData.sales.filter(x=>x.status==='installed').length} instaladas</p><form data-form="sales-filter" class="form-grid"><div class="field"><label>Cliente, CPF ou pedido</label><input class="input" name="q" value="${e(salesFilters.q||'')}" placeholder="Pesquisar"></div><div class="field"><label>Vendedor</label><select class="input" name="seller"><option value="">Todos</option>${salesData.sellers.map(x=>`<option value="${x.id}" ${String(x.id)===salesFilters.seller?'selected':''}>${e(x.name)}</option>`).join('')}</select></div><div class="field"><label>Status</label><select class="input" name="status"><option value="">Todos</option>${Object.entries(saleStatuses).map(([k,v])=>`<option value="${k}" ${salesFilters.status===k?'selected':''}>${v}</option>`).join('')}</select></div><div class="field"><label>Venda a partir de</label><input class="input" name="from" type="date" value="${e(salesFilters.from||'')}"></div><div class="field"><label>Venda até</label><input class="input" name="to" type="date" value="${e(salesFilters.to||'')}"></div><button class="btn" type="submit">Filtrar</button></form><p>Totais dos registros exibidos, excluindo cancelamentos do valor. ${salesData.hasMore?'Mostrando 500 registros; refine o período.':''}</p></div></section>
+  <div class="sales-records">${salesData.sales.map(x=>`<article class="card"><div class="card__body"><div class="card__head"><h3>${e(x.customer_name)}</h3><span>${saleStatuses[x.status]}</span></div><p>CPF: ${e(x.cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4'))} • ${e(x.phone)}</p><p><strong>${formatMoney(x.amount_cents)}</strong> • ${e(x.product||'Produto não informado')}</p><p>Venda: ${saleDateLabel(x.sale_date)} • Instalação: ${saleDateLabel(x.installation_date)}</p><p>Vendedor: ${e(x.seller_name)} • Pedido: ${e(x.order_number||'—')}</p>${x.notes?`<p>${e(x.notes)}</p>`:''}<button class="btn btn--secondary" data-action="sale-edit" data-id="${x.id}">Editar / atualizar instalação</button></div></article>`).join('') || emptyState('Nenhuma venda encontrada', 'Cadastre uma venda ou ajuste os filtros.')}</div>`;
+}
+function saleForm(id) {
+  const item = salesData.sales.find(x=>x.id===Number(id)) || { sale_date: localDateValue(), seller_id: state.user.id, status: 'pending' };
+  const field = (key,label,type='text',required=false,max=160) => `<div class="field"><label for="sale-${key}">${label}</label><input class="input" id="sale-${key}" name="${key}" type="${type}" ${required?'required':''} maxlength="${max}" ${type==='number'?'min="0" max="1000000" step="0.01"':''} value="${escapeHtml(key==='amount' ? (item.amount_cents == null ? '' : (item.amount_cents/100).toFixed(2)) : item[key]||'')}"></div>`;
+  showModal(`<div class="modal__head"><h2>${id?'Editar venda':'Nova venda'}</h2><button class="btn btn--ghost" data-action="close-modal" aria-label="Fechar">&times;</button></div><form data-form="sale-save" data-id="${id||''}"><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid">${field('customer_name','Nome do cliente','text',true)}${field('cpf','CPF','text',true,14)}${field('phone','Telefone','tel',false,30)}${field('sale_date','Dia da venda','date',true)}${field('amount','Valor (R$)','number',true)}${field('installation_date','Dia da instalação','date')}${field('product','Produto / plano')}${field('order_number','Número do pedido','text',false,80)}<div class="field"><label for="sale-seller">Vendedor</label><select class="input" id="sale-seller" name="seller_id" required>${salesData.sellers.map(x=>`<option value="${x.id}" ${x.id===item.seller_id?'selected':''}>${escapeHtml(x.name)}</option>`).join('')}</select></div><div class="field"><label for="sale-status">Status</label><select class="input" id="sale-status" name="status">${Object.entries(saleStatuses).map(([k,v])=>`<option value="${k}" ${item.status===k?'selected':''}>${v}</option>`).join('')}</select></div><div class="field"><label for="sale-notes">Observações</label><textarea class="input" id="sale-notes" name="notes" maxlength="2000">${escapeHtml(item.notes||'')}</textarea></div></div></div><div class="modal__footer"><button type="submit" class="btn">Salvar venda</button></div></form>`, { wide: true });
+}
+
 async function navigate(view) {
   if (!viewTitles[view]) return;
   if (state.user.role !== 'manager' && ['users', 'audit', 'stock-count'].includes(view)) return;
@@ -3278,6 +3298,7 @@ async function navigate(view) {
   const content = document.querySelector('#view-content');
   content.innerHTML = '<div class="loading-block"><span class="loading-inline">Carregando</span></div>';
   try {
+    if (view === 'sales') await renderSales();
     if (view === 'point') await renderPoint();
     if (view === 'dashboard') await renderDashboard();
     if (view === 'my-day') await renderMyDay();
@@ -3779,6 +3800,8 @@ root.addEventListener('click', async (event) => {
   if (!button) return;
   const action = button.dataset.action;
   try {
+    if (action === 'sale-new') saleForm();
+    if (action === 'sale-edit') saleForm(button.dataset.id);
     if (action === 'navigate') {
       if (['manager', 'stocker'].includes(state.user.role) && button.dataset.view === 'stock') {
         state.stockSearch = '';
@@ -4169,6 +4192,13 @@ document.addEventListener('submit', async (event) => {
   const data = Object.fromEntries(new FormData(form));
   try { await withBusy(submit, async () => {
     try {
+      if (form.dataset.form === 'sales-filter') { salesFilters = data; await renderSales(); }
+      if (form.dataset.form === 'sale-save') {
+        const amount = Number(data.amount);
+        if (!Number.isFinite(amount) || data.amount === '') throw new Error('Informe o valor da venda.');
+        await api('/api/sales-tracking' + (form.dataset.id ? '/' + form.dataset.id : ''), { method: form.dataset.id ? 'PUT' : 'POST', body: { ...data, amount_cents: Math.round(amount*100) } });
+        closeModal(); await renderSales(); showToast('Venda salva.');
+      }
       if (form.dataset.form === 'stock-count-quick') {
         const result = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/scan`, { method: 'POST', body: { code: data.code } });
         applyStockCountScan(result);

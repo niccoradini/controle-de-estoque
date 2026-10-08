@@ -2034,6 +2034,29 @@ describe('Controle de estoque por código material', () => {
     assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE entity_type = 'site_feedback'`)).count), 3);
   });
 
+  test('salva vendas, valida dados e restringe acesso por vendedor', async () => {
+    await applyMigration(await readFile(new URL('../migrations/0110_sales_tracking.sql', import.meta.url), 'utf8'));
+    const me = await seller.request('/api/auth/me');
+    const data = { customer_name: 'Cliente Teste', cpf: '52998224725', sale_date: '2026-10-08', amount_cents: 19990, seller_id: me.payload.user.id, status: 'pending' };
+    assert.equal((await seller.request('/api/sales-tracking', { method: 'POST', body: data })).status, 201);
+    const list = await seller.request('/api/sales-tracking');
+    assert.equal(list.payload.sales.length, 1);
+    const id = list.payload.sales[0].id;
+    assert.equal(list.payload.sales[0].amount_cents, 19990);
+    assert.equal((await seller.request(`/api/sales-tracking/${id}`, { method: 'PUT', body: { ...data, status: 'installed', installation_date: '2026-10-10' } })).status, 200);
+    assert.equal((await seller.request('/api/sales-tracking', { method: 'POST', body: { ...data, cpf: '11111111111' } })).status, 400);
+    assert.equal((await manager.request('/api/sales-tracking', { method: 'POST', body: { ...data, installation_date: '2026-10-01' } })).status, 400);
+    assert.equal((await stocker.request('/api/sales-tracking')).status, 403);
+    const otherId = (await row("SELECT id FROM users WHERE role = 'manager' AND deleted_at IS NULL LIMIT 1")).id;
+    await manager.request('/api/sales-tracking', { method: 'POST', body: { ...data, seller_id: otherId } });
+    assert.equal((await seller.request('/api/sales-tracking')).payload.sales.length, 1);
+    const all = await manager.request('/api/sales-tracking');
+    assert.equal(all.payload.sales.length, 2);
+    const other = all.payload.sales.find(x => x.seller_id !== me.payload.user.id);
+    assert.equal((await seller.request(`/api/sales-tracking/${other.id}`, { method: 'PUT', body: data })).status, 404);
+    assert.equal((await manager.request('/api/sales-tracking?status=installed')).payload.sales.length, 1);
+  });
+
   test('exclui acessos, encerra sessões e preserva pedidos e histórico anonimizados', async () => {
     const removable = await manager.request('/api/users', {
       method: 'POST',
@@ -2112,7 +2135,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.60.0');
+    assert.equal(JSON.parse(packageSource).version, '6.61.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2375,8 +2398,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.60\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.60\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.61\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.61\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2469,7 +2492,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.60.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.61.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

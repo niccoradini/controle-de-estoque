@@ -7059,3 +7059,6 @@ button.showcase-slot:not(:disabled):hover { z-index: 2; transform: translateY(-3
   .store-offer-options article { flex-wrap:wrap; }
   .store-offer-items li { flex-wrap:wrap; }
 }
+
+.sales-records { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr)); gap:16px; margin-top:20px; }
+.sales-records .card { min-width:0; overflow-wrap:anywhere; }

@@ -4231,7 +4231,7 @@ async function salesTracking(request, env, user, url, id = null) {
   if (request.method === 'GET') {
     const clauses = [], args = [];
     if (user.role !== 'manager') { clauses.push('s.seller_id = ?'); args.push(user.id); }
-    for (const [key, column, op] of [['from','sale_date','>='], ['to','sale_date','<='], ['seller','seller_id','='], ['status','status','=']]) {
+    for (const [key, column, op] of [['from','sale_date','>='], ['to','sale_date','<='], ['seller','seller_id','='], ['status','status','='], ['revenue','revenue_line','=']]) {
       const value = url.searchParams.get(key);
       if (value) { clauses.push(`s.${column} ${op} ?`); args.push(value); }
     }
@@ -4268,9 +4268,11 @@ async function salesTracking(request, env, user, url, id = null) {
   if (['scheduled','installed'].includes(input.status) && !installationDate) throw new HttpError(400, 'Informe a data de instalação.');
   const seller = await env.DB.prepare("SELECT id FROM users WHERE id = ? AND active = 1 AND deleted_at IS NULL AND role IN ('seller','manager')").bind(sellerId).first();
   if (!seller) throw new HttpError(400, 'Selecione um vendedor ativo.');
-  const values = [text('customer_name',160), cpf, text('phone',30), saleDate, amount, installationDate, sellerId, text('product',160), text('order_number',80), input.status, text('notes',2000), nowIso()];
-  if (id) await env.DB.prepare(`UPDATE sales_tracking SET customer_name=?, cpf=?, phone=?, sale_date=?, amount_cents=?, installation_date=?, seller_id=?, product=?, order_number=?, status=?, notes=?, updated_at=? WHERE id=?`).bind(...values,id).run();
-  else await env.DB.prepare(`INSERT INTO sales_tracking (customer_name,cpf,phone,sale_date,amount_cents,installation_date,seller_id,product,order_number,status,notes,updated_at,created_at,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(...values,nowIso(),user.id).run();
+  const revenueLine = text('revenue_line',20);
+  if (!['CONTROLE','POS','SVA','FIXA','UPGRADE','SEGURO','B2B'].includes(revenueLine)) throw new HttpError(400, 'Selecione a linha de receita.');
+  const values = [revenueLine, text('customer_name',160), cpf, text('phone',30), saleDate, amount, installationDate, sellerId, text('product',160), text('order_number',80), input.status, text('notes',2000), nowIso()];
+  if (id) await env.DB.prepare(`UPDATE sales_tracking SET revenue_line=?, customer_name=?, cpf=?, phone=?, sale_date=?, amount_cents=?, installation_date=?, seller_id=?, product=?, order_number=?, status=?, notes=?, updated_at=? WHERE id=?`).bind(...values,id).run();
+  else await env.DB.prepare(`INSERT INTO sales_tracking (revenue_line,customer_name,cpf,phone,sale_date,amount_cents,installation_date,seller_id,product,order_number,status,notes,updated_at,created_at,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(...values,nowIso(),user.id).run();
   return json({ saved: true }, id ? 200 : 201);
 }
 

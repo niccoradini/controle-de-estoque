@@ -4226,8 +4226,34 @@ async function deleteShowcaseSlot(env, user, fixtureId, slotNumber) {
   return noContent();
 }
 
+async function salesStatistics(env, url) {
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  const month = url.searchParams.get('month') || today.slice(0,7);
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new HttpError(400, 'Mês inválido.');
+  const start = month + '-01';
+  const days = new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5)),0)).getUTCDate();
+  const end = month + '-' + days;
+  const elapsed = month < today.slice(0,7) ? days : month === today.slice(0,7) ? Number(today.slice(8)) : 0;
+  const cutoff = elapsed ? month + '-' + String(elapsed).padStart(2,'0') : start;
+  const prevDate = new Date(start+'T12:00:00Z'); prevDate.setUTCMonth(prevDate.getUTCMonth()-1);
+  const previous = prevDate.toISOString().slice(0,7);
+  const previousDays = new Date(Date.UTC(prevDate.getUTCFullYear(),prevDate.getUTCMonth()+1,0)).getUTCDate();
+  const prevCutoff = previous + '-' + String(Math.min(elapsed,previousDays) || 1).padStart(2,'0');
+  const aggregate = `COUNT(*) AS count, COALESCE(SUM(amount_cents),0) AS amount`;
+  const [summary, previousRow, daily, sellers, revenue, status] = await Promise.all([
+    env.DB.prepare(`SELECT ${aggregate} FROM sales_tracking WHERE sale_date BETWEEN ? AND ? AND status != 'cancelled'`).bind(start,elapsed ? cutoff : start).first(),
+    env.DB.prepare(`SELECT ${aggregate} FROM sales_tracking WHERE sale_date BETWEEN ? AND ? AND status != 'cancelled'`).bind(previous+'-01',prevCutoff).first(),
+    env.DB.prepare(`SELECT sale_date AS label, ${aggregate} FROM sales_tracking WHERE sale_date BETWEEN ? AND ? AND status != 'cancelled' GROUP BY sale_date ORDER BY sale_date`).bind(start,end).all(),
+    env.DB.prepare(`SELECT u.name AS label, ${aggregate.replace('SUM(amount_cents)','SUM(s.amount_cents)')} FROM sales_tracking s JOIN users u ON u.id=s.seller_id WHERE sale_date BETWEEN ? AND ? AND s.status != 'cancelled' GROUP BY s.seller_id,u.name ORDER BY amount DESC`).bind(start,end).all(),
+    env.DB.prepare(`SELECT CASE WHEN revenue_line='' THEN 'Não informada' ELSE revenue_line END AS label, ${aggregate} FROM sales_tracking WHERE sale_date BETWEEN ? AND ? AND status != 'cancelled' GROUP BY revenue_line ORDER BY amount DESC`).bind(start,end).all(),
+    env.DB.prepare(`SELECT status AS label, ${aggregate}, SUM(CASE WHEN status IN ('pending','scheduled') AND installation_date != '' AND installation_date < ? THEN 1 ELSE 0 END) AS overdue FROM sales_tracking WHERE sale_date BETWEEN ? AND ? GROUP BY status`).bind(today,start,end).all(),
+  ]);
+  const amount = elapsed ? summary.amount : 0, count = elapsed ? summary.count : 0;
+  return { month, days, elapsed, amount, count, average: count ? Math.round(amount/count) : 0, projection: elapsed ? Math.round(amount/elapsed*days) : null, projectedCount: elapsed ? Math.round(count/elapsed*days) : null, previousAmount: elapsed ? previousRow.amount : 0, change: elapsed && previousRow.amount ? (amount/previousRow.amount-1)*100 : null, daily: daily.results, sellers: sellers.results, revenue: revenue.results, status: status.results };
+}
+
 async function salesTracking(request, env, user, url, id = null) {
-  if (!['manager', 'seller'].includes(user.role)) throw new HttpError(403, 'Acesso exclusivo para gerência e vendedores.');
+  requireRole(user, 'manager');
   if (request.method === 'GET') {
     const clauses = [], args = [];
     if (user.role !== 'manager') { clauses.push('s.seller_id = ?'); args.push(user.id); }
@@ -4239,7 +4265,7 @@ async function salesTracking(request, env, user, url, id = null) {
     if (q) { clauses.push('(s.customer_name LIKE ? OR s.cpf LIKE ? OR s.order_number LIKE ?)'); args.push(`%${q}%`, `%${q.replace(/\D/g,'') || q}%`, `%${q}%`); }
     const rows = await env.DB.prepare(`SELECT s.*, u.name AS seller_name FROM sales_tracking s JOIN users u ON u.id = s.seller_id ${clauses.length ? 'WHERE '+clauses.join(' AND ') : ''} ORDER BY s.sale_date DESC, s.id DESC LIMIT 501`).bind(...args).all();
     const sellers = await env.DB.prepare(`SELECT id, name FROM users WHERE deleted_at IS NULL AND active = 1 AND role IN ('seller','manager') ${user.role === 'manager' ? '' : 'AND id = ?'} ORDER BY name`).bind(...(user.role === 'manager' ? [] : [user.id])).all();
-    return json({ sales: (rows.results || []).slice(0,500), hasMore: rows.results.length > 500, sellers: sellers.results || [] });
+    return json({ sales: (rows.results || []).slice(0,500), hasMore: rows.results.length > 500, sellers: sellers.results || [], statistics: await salesStatistics(env, url) });
   }
   if (id) {
     const existing = await env.DB.prepare('SELECT * FROM sales_tracking WHERE id = ?').bind(id).first();

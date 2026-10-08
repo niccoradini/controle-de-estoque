@@ -682,7 +682,7 @@ function navItems() {
     ];
   }
   return [
-    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'], ['sales', 'orders', 'Acompanhamento de vendas'], ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['stock', 'stock', 'Loja / estoque'],
+    ['point', 'history', 'Meu ponto'], ['dashboard', 'home', 'Visão geral'],  ['my-day', 'tasks', 'Planner'], ['news', 'news', 'Notícias'], ['showcases', 'stock', 'Vitrines'], ['outlet', 'sparkles', 'PROMOÇÕES'], ['stock', 'stock', 'Loja / estoque'],
     ['new-request', 'plus', 'Novo pedido'], ['chips', 'sim', 'Meus chips'], ['requests', 'orders', 'Meus pedidos'],
     ['feedback', 'briefing', 'Sugestões'], ['alignment', 'briefing', 'Alinhamento rápido'],
   ];
@@ -3266,13 +3266,26 @@ let salesFilters = {};
 const revenueLines = ['CONTROLE', 'POS', 'SVA', 'FIXA', 'UPGRADE', 'SEGURO', 'B2B'];
 const saleStatuses = { pending: 'Pendente', scheduled: 'Agendada', installed: 'Instalada', cancelled: 'Cancelada' };
 const saleDateLabel = value => value ? value.split('-').reverse().join('/') : '—';
+function salesStatisticsPanel(stats) {
+  const money = formatMoney, e = escapeHtml;
+  const statuses = Object.fromEntries(stats.status.map(x=>[x.label,x]));
+  const totalCount = stats.status.reduce((n,x)=>n+x.count,0);
+  const overdue = stats.status.reduce((n,x)=>n+Number(x.overdue||0),0);
+  const kpi = (label,value,note='') => `<section class="card"><div class="card__body"><p>${label}</p><h3>${value}</h3><small>${note}</small></div></section>`;
+  const table = (title,rows) => `<section class="card"><div class="card__body"><h3>${title}</h3><div class="table-scroll"><table class="table"><thead><tr><th>Grupo</th><th>Vendas</th><th>Valor</th><th>Participação</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${e(x.label)}</td><td>${x.count}</td><td>${money(x.amount)}</td><td>${(rows.reduce((n,r)=>n+r.amount,0) ? x.amount/rows.reduce((n,r)=>n+r.amount,0)*100 : 0).toFixed(1)}%</td></tr>`).join('') || '<tr><td colspan="4">Sem vendas neste mês.</td></tr>'}</tbody></table></div></div></section>`;
+  return `<section class="card"><div class="card__body"><div class="card__head"><h3>Painel mensal da gerência</h3><form data-form="sales-month"><label for="sales-month">Mês de análise</label><input class="input" type="month" id="sales-month" name="month" value="${stats.month}" required><button class="btn" type="submit">Analisar</button></form></div><p>Dados de todo o mês selecionado, independentes dos filtros da lista. Valores de vendas registradas; não representam faturamento recebido.</p></div></section>
+  <div class="sales-records">${kpi('Valor acumulado',money(stats.amount),'Até o dia de referência; exclui canceladas')}${kpi('Vendas acumuladas',stats.count)}${kpi('Ticket médio',money(stats.average))}${kpi('Projeção do mês',stats.projection===null?'Sem projeção':money(stats.projection),stats.projectedCount===null?'Mês ainda não iniciado':`${stats.projectedCount} vendas estimadas`)}${kpi('Comparação com mês anterior',stats.change===null?'Sem base':`${stats.change>=0?'+':''}${stats.change.toFixed(1)}%`,'Mesmo número de dias, limitado à duração do mês anterior')}${kpi('Instaladas',statuses.installed?.count||0,`${totalCount-(statuses.cancelled?.count||0) ? ((statuses.installed?.count||0)/(totalCount-(statuses.cancelled?.count||0))*100).toFixed(1) : 0}% das vendas não canceladas`)}${kpi('Pendentes / agendadas',`${statuses.pending?.count||0} / ${statuses.scheduled?.count||0}`,`${overdue} com data de instalação vencida`)}${kpi('Canceladas',statuses.cancelled?.count||0,money(statuses.cancelled?.amount||0))}</div>
+  <section class="card"><div class="card__body"><p>Projeção linear: valor acumulado ÷ ${stats.elapsed} dias corridos &times; ${stats.days} dias do mês. Mantém o ritmo observado, sem ajustar sazonalidade; é uma estimativa. Meses encerrados mostram o resultado final. Vendas com data futura não entram no acumulado.</p></div></section>
+  <div class="sales-records">${table('Desempenho por vendedor',stats.sellers)}${table('Linhas de receita',stats.revenue)}${table('Evolução diária',stats.daily.map(x=>({...x,label:saleDateLabel(x.label)})))}</div>`;
+}
 async function renderSales() {
+  if (state.user.role !== 'manager') return;
   salesData = await api('/api/sales-tracking?' + new URLSearchParams(salesFilters));
   if (state.view !== 'sales') return;
   const e = escapeHtml;
   const total = salesData.sales.filter(x => x.status !== 'cancelled').reduce((n,x) => n+x.amount_cents,0);
-  document.querySelector('#view-content').innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Vendas e instalações</p><h2>Acompanhamento de vendas</h2><p>${state.user.role === 'manager' ? 'Acompanhe as vendas da equipe.' : 'Cadastre e acompanhe suas vendas.'}</p></div><button class="btn" data-action="sale-new">+ Nova venda</button></div>
-  <section class="card"><div class="card__body"><strong>${salesData.sales.length} vendas • ${formatMoney(total)}</strong><p>${salesData.sales.filter(x=>x.status==='pending').length} pendentes • ${salesData.sales.filter(x=>x.status==='scheduled').length} agendadas • ${salesData.sales.filter(x=>x.status==='installed').length} instaladas</p><form data-form="sales-filter" class="form-grid"><div class="field"><label>Cliente, CPF ou pedido</label><input class="input" name="q" value="${e(salesFilters.q||'')}" placeholder="Pesquisar"></div><div class="field"><label>Vendedor</label><select class="input" name="seller"><option value="">Todos</option>${salesData.sellers.map(x=>`<option value="${x.id}" ${String(x.id)===salesFilters.seller?'selected':''}>${e(x.name)}</option>`).join('')}</select></div><div class="field"><label>Status</label><select class="input" name="status"><option value="">Todos</option>${Object.entries(saleStatuses).map(([k,v])=>`<option value="${k}" ${salesFilters.status===k?'selected':''}>${v}</option>`).join('')}</select></div><div class="field"><label>Linha de receita</label><select class="input" name="revenue"><option value="">Todas</option>${revenueLines.map(x=>`<option value="${x}" ${salesFilters.revenue===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Venda a partir de</label><input class="input" name="from" type="date" value="${e(salesFilters.from||'')}"></div><div class="field"><label>Venda até</label><input class="input" name="to" type="date" value="${e(salesFilters.to||'')}"></div><button class="btn" type="submit">Filtrar</button></form><p>Totais dos registros exibidos, excluindo cancelamentos do valor. ${salesData.hasMore?'Mostrando 500 registros; refine o período.':''}</p></div></section>
+  document.querySelector('#view-content').innerHTML = `<div class="page-heading"><div><p class="page-eyebrow">Vendas e instalações</p><h2>Acompanhamento de vendas</h2><p>Gestão de resultados e instalações da equipe.</p></div><button class="btn" data-action="sale-new">+ Nova venda</button></div>
+  ${salesStatisticsPanel(salesData.statistics)}<section class="card"><div class="card__body"><strong>${salesData.sales.length} vendas • ${formatMoney(total)}</strong><p>${salesData.sales.filter(x=>x.status==='pending').length} pendentes • ${salesData.sales.filter(x=>x.status==='scheduled').length} agendadas • ${salesData.sales.filter(x=>x.status==='installed').length} instaladas</p><form data-form="sales-filter" class="form-grid"><div class="field"><label>Cliente, CPF ou pedido</label><input class="input" name="q" value="${e(salesFilters.q||'')}" placeholder="Pesquisar"></div><div class="field"><label>Vendedor</label><select class="input" name="seller"><option value="">Todos</option>${salesData.sellers.map(x=>`<option value="${x.id}" ${String(x.id)===salesFilters.seller?'selected':''}>${e(x.name)}</option>`).join('')}</select></div><div class="field"><label>Status</label><select class="input" name="status"><option value="">Todos</option>${Object.entries(saleStatuses).map(([k,v])=>`<option value="${k}" ${salesFilters.status===k?'selected':''}>${v}</option>`).join('')}</select></div><div class="field"><label>Linha de receita</label><select class="input" name="revenue"><option value="">Todas</option>${revenueLines.map(x=>`<option value="${x}" ${salesFilters.revenue===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>Venda a partir de</label><input class="input" name="from" type="date" value="${e(salesFilters.from||'')}"></div><div class="field"><label>Venda até</label><input class="input" name="to" type="date" value="${e(salesFilters.to||'')}"></div><button class="btn" type="submit">Filtrar</button></form><p>Totais dos registros exibidos, excluindo cancelamentos do valor. ${salesData.hasMore?'Mostrando 500 registros; refine o período.':''}</p></div></section>
   <div class="sales-records">${salesData.sales.map(x=>`<article class="card"><div class="card__body"><div class="card__head"><h3>${e(x.customer_name)}</h3><span>${saleStatuses[x.status]}</span></div><p>CPF: ${e(x.cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4'))} • ${e(x.phone)}</p><p><strong>${formatMoney(x.amount_cents)}</strong> • ${e(x.revenue_line || 'Linha de receita não informada')} • ${e(x.product||'Produto não informado')}</p><p>Venda: ${saleDateLabel(x.sale_date)} • Instalação: ${saleDateLabel(x.installation_date)}</p><p>Vendedor: ${e(x.seller_name)} • Pedido: ${e(x.order_number||'—')}</p>${x.notes?`<p>${e(x.notes)}</p>`:''}<button class="btn btn--secondary" data-action="sale-edit" data-id="${x.id}">Editar venda</button></div></article>`).join('') || emptyState('Nenhuma venda encontrada', 'Cadastre uma venda ou ajuste os filtros.')}</div>`;
 }
 function saleForm(id) {
@@ -3283,7 +3296,7 @@ function saleForm(id) {
 
 async function navigate(view) {
   if (!viewTitles[view]) return;
-  if (state.user.role !== 'manager' && ['users', 'audit', 'stock-count'].includes(view)) return;
+  if (state.user.role !== 'manager' && ['users', 'audit', 'stock-count', 'sales'].includes(view)) return;
   if (view === 'network-stock' && state.user.role !== 'manager') return;
   if (state.user.role === 'stocker' && ['new-request', 'chips'].includes(view)) return;
   if (view === 'renova-intake' && !canAccessRenovaIntake()) return;
@@ -4193,7 +4206,8 @@ document.addEventListener('submit', async (event) => {
   const data = Object.fromEntries(new FormData(form));
   try { await withBusy(submit, async () => {
     try {
-      if (form.dataset.form === 'sales-filter') { salesFilters = data; await renderSales(); }
+      if (form.dataset.form === 'sales-filter') { salesFilters = { ...data, month: salesFilters.month || '' }; await renderSales(); }
+      if (form.dataset.form === 'sales-month') { salesFilters.month = data.month; await renderSales(); }
       if (form.dataset.form === 'sale-save') {
         const amount = Number(data.amount);
         if (!Number.isFinite(amount) || data.amount === '') throw new Error('Informe o valor da venda.');

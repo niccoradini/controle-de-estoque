@@ -2039,31 +2039,50 @@ describe('Controle de estoque por código material', () => {
     await applyMigration(await readFile(new URL('../migrations/0111_sales_revenue_line.sql', import.meta.url), 'utf8'));
     const me = await seller.request('/api/auth/me');
     const data = { revenue_line: 'CONTROLE', customer_name: 'Cliente Teste', cpf: '52998224725', sale_date: '2026-10-08', amount_cents: 19990, seller_id: me.payload.user.id, status: 'pending' };
-    assert.equal((await seller.request('/api/sales-tracking', { method: 'POST', body: data })).status, 201);
-    const list = await seller.request('/api/sales-tracking');
+    assert.equal((await manager.request('/api/sales-tracking', { method: 'POST', body: data })).status, 201);
+    assert.equal((await seller.request('/api/sales-tracking')).status, 403);
+    assert.equal((await seller.request('/api/sales-tracking', { method: 'POST', body: data })).status, 403);
+    const list = await manager.request('/api/sales-tracking');
     assert.equal(list.payload.sales.length, 1);
     const id = list.payload.sales[0].id;
     assert.equal(list.payload.sales[0].amount_cents, 19990);
-    assert.equal((await seller.request(`/api/sales-tracking/${id}`, { method: 'PUT', body: { ...data, status: 'installed', installation_date: '2026-10-10' } })).status, 200);
-    assert.equal((await seller.request('/api/sales-tracking', { method: 'POST', body: { ...data, cpf: '11111111111' } })).status, 400);
+    assert.equal((await manager.request(`/api/sales-tracking/${id}`, { method: 'PUT', body: { ...data, status: 'installed', installation_date: '2026-10-10' } })).status, 200);
+    assert.equal((await manager.request('/api/sales-tracking', { method: 'POST', body: { ...data, cpf: '11111111111' } })).status, 400);
     assert.equal((await manager.request('/api/sales-tracking', { method: 'POST', body: { ...data, installation_date: '2026-10-01' } })).status, 400);
     assert.equal((await stocker.request('/api/sales-tracking')).status, 403);
     const otherId = (await row("SELECT id FROM users WHERE role = 'manager' AND deleted_at IS NULL LIMIT 1")).id;
     await manager.request('/api/sales-tracking', { method: 'POST', body: { ...data, seller_id: otherId } });
-    assert.equal((await seller.request('/api/sales-tracking')).payload.sales.length, 1);
+    assert.equal((await manager.request('/api/sales-tracking')).payload.sales.length, 2);
     const all = await manager.request('/api/sales-tracking');
     assert.equal(all.payload.sales.length, 2);
     const other = all.payload.sales.find(x => x.seller_id !== me.payload.user.id);
-    assert.equal((await seller.request(`/api/sales-tracking/${other.id}`, { method: 'PUT', body: data })).status, 404);
+    assert.equal((await seller.request(`/api/sales-tracking/${other.id}`, { method: 'PUT', body: data })).status, 403);
     assert.equal((await manager.request('/api/sales-tracking?status=installed')).payload.sales.length, 1);
     const edited = { ...data, revenue_line: 'FIXA', amount_cents: 29990, notes: 'Aguardar contato do cliente', customer_name: 'Cliente atualizado', phone: '32999999999', product: 'Fibra', order_number: '12345', sale_date: '2026-10-09', installation_date: '2026-10-11', status: 'scheduled' };
-    assert.equal((await seller.request(`/api/sales-tracking/${id}`, { method: 'PUT', body: edited })).status, 200);
-    const saved = (await seller.request('/api/sales-tracking?revenue=FIXA')).payload.sales[0];
+    assert.equal((await manager.request(`/api/sales-tracking/${id}`, { method: 'PUT', body: edited })).status, 200);
+    const saved = (await manager.request('/api/sales-tracking?revenue=FIXA')).payload.sales[0];
     for (const key of Object.keys(edited)) assert.equal(saved[key], edited[key]);
-    assert.equal((await seller.request('/api/sales-tracking?revenue=CONTROLE')).payload.sales.length, 0);
-    assert.equal((await seller.request(`/api/sales-tracking/${id}`, { method: 'PUT', body: { ...edited, revenue_line: 'INVALIDA' } })).status, 400);
-    for (const revenue_line of ['CONTROLE','POS','SVA','FIXA','UPGRADE','SEGURO','B2B']) assert.equal((await seller.request(`/api/sales-tracking/${id}`, { method: 'PUT', body: { ...edited, revenue_line } })).status, 200);
+    assert.equal((await manager.request('/api/sales-tracking?revenue=CONTROLE')).payload.sales.length, 1);
+    assert.equal((await manager.request(`/api/sales-tracking/${id}`, { method: 'PUT', body: { ...edited, revenue_line: 'INVALIDA' } })).status, 400);
+    for (const revenue_line of ['CONTROLE','POS','SVA','FIXA','UPGRADE','SEGURO','B2B']) assert.equal((await manager.request(`/api/sales-tracking/${id}`, { method: 'PUT', body: { ...edited, revenue_line } })).status, 200);
 
+  });
+
+  test('estatísticas mensais agregam vendas e projetam meses encerrados sem canceladas', async () => {
+    const stats = (await manager.request('/api/sales-tracking?month=2026-10')).payload.statistics;
+    assert.equal(stats.month, '2026-10');
+    assert.equal(stats.days, 31);
+    assert.equal(stats.revenue.reduce((n,x)=>n+x.amount,0), 49980);
+    assert.equal(stats.sellers.reduce((n,x)=>n+x.count,0), 2);
+    assert.equal((await manager.request('/api/sales-tracking?month=2026-99')).status, 400);
+    await database.prepare("INSERT INTO sales_tracking (customer_name,cpf,sale_date,amount_cents,seller_id,status,created_by,created_at,updated_at,revenue_line) SELECT 'Histórico','52998224725','2025-02-10',10000,seller_id,'installed',created_by,created_at,updated_at,'FIXA' FROM sales_tracking LIMIT 1").run();
+    await database.prepare("INSERT INTO sales_tracking (customer_name,cpf,sale_date,amount_cents,seller_id,status,created_by,created_at,updated_at,revenue_line) SELECT 'Cancelada','52998224725','2025-02-11',90000,seller_id,'cancelled',created_by,created_at,updated_at,'FIXA' FROM sales_tracking LIMIT 1").run();
+    const past = (await manager.request('/api/sales-tracking?month=2025-02')).payload.statistics;
+    assert.equal(past.days, 28);
+    assert.equal(past.projection, 10000);
+    assert.equal(past.count, 1);
+    assert.equal(past.average, 10000);
+    assert.equal(past.status.find(x=>x.label==='cancelled').amount, 90000);
   });
 
   test('exclui acessos, encerra sessões e preserva pedidos e histórico anonimizados', async () => {
@@ -2144,7 +2163,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.62.0');
+    assert.equal(JSON.parse(packageSource).version, '6.63.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2407,8 +2426,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.62\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.62\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.63\.0/);
+    assert.match(indexSource, /app\.js\?v=6\.63\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2501,7 +2520,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.62.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.0');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

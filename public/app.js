@@ -292,16 +292,20 @@ function installmentCount(totalCents) {
 
 function pixPriceCents(totalCents) {
   const total = Math.max(0, Number(totalCents || 0));
+  const exact = paymentPolicy().exactTotals?.[total]?.[0];
+  if (Number.isSafeInteger(exact) && exact > 0) return exact;
   const discount = Number(paymentPolicy().pixDiscountBasisPoints || 0);
   return Math.round(total * (10000 - discount) / 10000);
 }
 
 function installmentTotalCents(totalCents, installments) {
-  return calculateInstallmentTotalCents(totalCents, installments, paymentPolicy().installmentSurchargePartsPerMillion);
+  const policy = paymentPolicy();
+  return calculateInstallmentTotalCents(totalCents, installments, policy.installmentSurchargePartsPerMillion, policy.exactTotals);
 }
 
 function installmentPriceCents(totalCents, installments) {
-  return calculateInstallmentPriceCents(totalCents, installments, paymentPolicy().installmentSurchargePartsPerMillion);
+  const policy = paymentPolicy();
+  return calculateInstallmentPriceCents(totalCents, installments, policy.installmentSurchargePartsPerMillion, policy.exactTotals);
 }
 
 function paymentPriceLines(totalCents) {
@@ -367,7 +371,9 @@ function normalizeSearch(value = '') {
     .trim();
 }
 
-function manufacturerRenovaBonus(productName = '') {
+function manufacturerRenovaBonus(productName = '', product = null) {
+  const official = product?.pricing?.renovaBonuses?.[state.priceCategory];
+  if (official != null) return Number(official);
   const productKey = normalizeRenovaModelKey(productName);
   const matchingBoost = [...(state.renovaCatalog.boosts || [])]
     .filter((boost) => productKey.includes(String(boost.matchKey || '')))
@@ -394,7 +400,7 @@ function renovaDiscountFor(selected) {
   if (!state.renova.enabled) return { deviceSubtotalCents: 0, bonusCents: 0, voucherCents: 0, discountCents: 0 };
   const devices = selected.filter((item) => item.product.cluster === 'devices' && item.unitPriceCents != null);
   const deviceSubtotalCents = devices.reduce((sum, item) => sum + item.unitPriceCents * item.quantity, 0);
-  const automaticBonus = devices.length ? manufacturerRenovaBonus(devices[0].product.name) : 0;
+  const automaticBonus = devices.length ? manufacturerRenovaBonus(devices[0].product.name, devices[0].product) : 0;
   const tradeIn = selectedRenovaTradeIn();
   const bonusCents = Math.max(0, Number(automaticBonus));
   const voucherCents = Math.max(0, Number(state.renova.condition === 'defeituoso' ? tradeIn?.defectiveCents : tradeIn?.goodCents) || 0);
@@ -1710,7 +1716,7 @@ function selectedDevicePrice(product, variant = null) {
 }
 
 function renovaConfigurator(product) {
-  const bonusCents = manufacturerRenovaBonus(product?.name || '');
+  const bonusCents = manufacturerRenovaBonus(product?.name || '', product);
   const tradeIn = selectedRenovaTradeIn();
   const voucherCents = state.renova.condition === 'defeituoso' ? tradeIn?.defectiveCents : tradeIn?.goodCents;
   const tableDate = renovaTableDateLabel(state.renovaCatalog.tableDate) || 'vigência cadastrada';

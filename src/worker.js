@@ -642,17 +642,57 @@ async function changePassword(request, env, user) {
   return json({ message: 'Senha alterada com sucesso.' }, 200, { 'Set-Cookie': sessionCookie(token) });
 }
 
+let officialPricingCache = null;
+
+async function officialPricingData(env) {
+  const version = (await env.DB.prepare("SELECT value FROM system_state WHERE key = 'pricing_table_date'").first())?.value || '';
+  if (officialPricingCache?.database === env.DB && officialPricingCache.version === version
+    && officialPricingCache.expiresAt > Date.now()) return officialPricingCache.promise;
+  // Somente a tabela de preços é reaproveitada. Saldos e reservas são lidos
+  // novamente em cada consulta; uma nova data invalida o cache imediatamente.
+  const promise = env.DB.batch([
+    env.DB.prepare(`
+      SELECT profile.price_key, profile.display_name, profile.table_date, profile.source_label,
+             value.category, value.price_cents, value.renova_cents
+      FROM device_price_profiles profile
+      JOIN (
+        SELECT price_key, category, price_cents, NULL AS renova_cents FROM device_price_values
+        UNION ALL
+        SELECT price_key, category, price_cents, renova_cents FROM vivo_plan_prices
+      ) value ON value.price_key = profile.price_key
+      ORDER BY profile.display_name COLLATE NOCASE, value.price_cents DESC
+    `),
+    env.DB.prepare('SELECT base_cents, totals_json FROM vivo_payment_totals'),
+  ]);
+  const cache = { database: env.DB, version, expiresAt: Date.now() + 300000, promise };
+  officialPricingCache = cache;
+  try { return await promise; } catch (error) {
+    if (officialPricingCache === cache) officialPricingCache = null;
+    throw error;
+  }
+}
+
 async function catalogData(env, user) {
-  const [productsResult, variantsResult, pricesResult] = await env.DB.batch([
+  const [[productsResult, variantsResult], [pricesResult]] = await Promise.all([env.DB.batch([
     env.DB.prepare(`
       SELECT p.*,
-        (
+        CASE WHEN EXISTS (
+          SELECT 1 FROM vivo_retail_materials retail
+          JOIN product_variants variant ON variant.sku = retail.material_code COLLATE NOCASE
+          WHERE variant.product_id = p.id
+        ) THEN NULL ELSE COALESCE((
+          SELECT material.price_key
+          FROM vivo_material_price_profiles material
+          JOIN product_variants variant ON variant.sku = material.material_code COLLATE NOCASE
+          WHERE variant.product_id = p.id
+          LIMIT 1
+        ), (
           SELECT rule.price_key
           FROM device_price_match_rules rule
           WHERE UPPER(COALESCE(p.display_name, p.name)) LIKE rule.match_pattern COLLATE NOCASE
           ORDER BY rule.priority, length(rule.match_pattern) DESC
           LIMIT 1
-        ) AS price_key
+        )) END AS price_key
       FROM products p
       WHERE p.active = 1
       ORDER BY p.sort_order, p.brand COLLATE NOCASE, p.name COLLATE NOCASE
@@ -688,13 +728,7 @@ async function catalogData(env, user) {
       ORDER BY v.product_id, v.option1_value COLLATE NOCASE,
                v.option2_value COLLATE NOCASE, v.option3_value COLLATE NOCASE
     `),
-    env.DB.prepare(`
-      SELECT profile.price_key, profile.display_name, profile.table_date, profile.source_label,
-             value.category, value.price_cents
-      FROM device_price_profiles profile
-      JOIN device_price_values value ON value.price_key = profile.price_key
-      ORDER BY profile.display_name COLLATE NOCASE, value.price_cents DESC
-    `),
+  ]), officialPricingData(env),
   ]);
   const pricingByKey = new Map();
   for (const row of pricesResult.results || []) {
@@ -705,9 +739,11 @@ async function catalogData(env, user) {
         tableDate: row.table_date,
         source: row.source_label,
         prices: {},
+        renovaBonuses: {},
       });
     }
     pricingByKey.get(row.price_key).prices[row.category] = Number(row.price_cents);
+    if (row.renova_cents != null) pricingByKey.get(row.price_key).renovaBonuses[row.category] = Number(row.renova_cents);
   }
   const variantsByProduct = new Map();
   for (const row of variantsResult.results || []) {
@@ -785,7 +821,7 @@ async function catalogData(env, user) {
 }
 
 async function listCatalog(env, user) {
-  const [products, stateRows, renovaRows, renovaBoostRows] = await Promise.all([
+  const [products, stateRows, renovaRows, renovaBoostRows, exactPaymentRows] = await Promise.all([
     catalogData(env, user),
     env.DB.prepare(`
       SELECT key, value FROM system_state
@@ -813,6 +849,7 @@ async function listCatalog(env, user) {
         AND ends_on >= date('now', '-3 hours')
       ORDER BY LENGTH(match_key) DESC, device_name COLLATE NOCASE
     `).all(),
+    officialPricingData(env).then(results => results[1]),
   ]);
   const pricingState = Object.fromEntries((stateRows.results || []).map((row) => [row.key, row.value]));
   const renovaDevices = (renovaRows.results || []).map((row) => ({
@@ -836,7 +873,7 @@ async function listCatalog(env, user) {
   return json({
     products,
     pricing: {
-      categories: PRICE_CATEGORIES,
+      categories: [...new Set(products.flatMap(product => Object.keys(product.pricing?.prices || {})))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
       tableDate: pricingState.pricing_table_date || '',
       source: pricingState.pricing_table_source || '',
       retailTableDate: pricingState.retail_pricing_table_date || '',
@@ -848,6 +885,7 @@ async function listCatalog(env, user) {
         pixDiscountBasisPoints: Number(pricingState.payment_policy_pix_discount_basis_points || 1000),
         installmentSurchargePartsPerMillion: parseJsonObject(pricingState.payment_policy_installment_surcharge_ppm),
         note: pricingState.payment_policy_note || '',
+        exactTotals: Object.fromEntries((exactPaymentRows.results || []).map(row => [row.base_cents, JSON.parse(row.totals_json)])),
       },
     },
     renova: {
@@ -1786,7 +1824,9 @@ async function createWithdrawal(request, env, user) {
   const linesResult = requestLinesRule(input?.lines);
   if (linesResult.error) throw new HttpError(400, linesResult.error, { lines: linesResult.error });
   const priceCategory = typeof input?.priceCategory === 'string' ? input.priceCategory.trim().toUpperCase() : '';
-  if (priceCategory && !PRICE_CATEGORY_SET.has(priceCategory)) {
+  if (priceCategory && !PRICE_CATEGORY_SET.has(priceCategory) && !await env.DB.prepare(
+    'SELECT 1 AS found FROM vivo_plan_prices WHERE category = ? LIMIT 1'
+  ).bind(priceCategory).first()) {
     throw new HttpError(400, 'Selecione uma categoria de plano válida.', { priceCategory: 'Categoria de plano inválida.' });
   }
   const renovaInput = input?.renova && typeof input.renova === 'object' ? input.renova : null;
@@ -1826,6 +1866,7 @@ async function createWithdrawal(request, env, user) {
   for (const line of linesResult.value) {
     const variant = await env.DB.prepare(`
       SELECT v.id, v.sku, v.serial_tracking, v.quantity_on_hand,
+             EXISTS(SELECT 1 FROM vivo_retail_materials retail WHERE retail.material_code = v.sku COLLATE NOCASE) AS vivo_retail,
              COALESCE(p.display_name, p.name) AS product_name,
              COALESCE(p.cluster, 'misc') AS product_cluster,
              COALESCE((
@@ -1853,7 +1894,16 @@ async function createWithdrawal(request, env, user) {
       throw new HttpError(409, `${variant.product_name} não possui mais a quantidade solicitada.`);
     }
     let pricing = null;
-    if (variant.product_cluster === 'devices') {
+    // O código material é a referência principal da tabela Vivo, inclusive
+    // para tablets, relógios e roteadores classificados como acessórios.
+    pricing = await env.DB.prepare(`
+      SELECT profile.price_key, profile.table_date, value.price_cents AS unit_price_cents, value.renova_cents
+      FROM vivo_material_price_profiles material
+      JOIN device_price_profiles profile ON profile.price_key = material.price_key
+      LEFT JOIN vivo_plan_prices value ON value.price_key = profile.price_key AND value.category = ?
+      WHERE material.material_code = ? COLLATE NOCASE
+    `).bind(priceCategory, variant.sku || '').first();
+    if (!pricing && !variant.vivo_retail && variant.product_cluster === 'devices') {
       pricing = await env.DB.prepare(`
         SELECT profile.price_key, profile.table_date,
                (
@@ -1867,14 +1917,14 @@ async function createWithdrawal(request, env, user) {
         ORDER BY rule.priority, length(rule.match_pattern) DESC
         LIMIT 1
       `).bind(priceCategory, variant.product_name).first();
-      if (pricing && !priceCategory) {
-        throw new HttpError(400, 'Escolha a categoria do plano para calcular o preço do aparelho.', {
-          priceCategory: 'Selecione a categoria do plano.',
-        });
-      }
-      if (pricing && pricing.unit_price_cents == null) {
-        throw new HttpError(409, `Não há preço disponível para ${variant.product_name} nessa categoria.`);
-      }
+    }
+    if (pricing && !priceCategory) {
+      throw new HttpError(400, 'Escolha a categoria do plano para calcular o preço do aparelho.', {
+        priceCategory: 'Selecione a categoria do plano.',
+      });
+    }
+    if (pricing && pricing.unit_price_cents == null) {
+      throw new HttpError(409, `Não há preço disponível para ${variant.product_name} nessa categoria.`);
     }
     const retailPricing = pricing ? null : await env.DB.prepare(`
       SELECT material_code, price_cents AS unit_price_cents, price_kind, table_date
@@ -1911,6 +1961,7 @@ async function createWithdrawal(request, env, user) {
       materialCode: variant.sku || '',
       cluster: variant.product_cluster || 'misc',
       priceKey: pricing?.price_key || '',
+      officialRenovaBonusCents: pricing?.renova_cents == null ? null : Number(pricing.renova_cents),
       priceType,
       unitPriceCents: appliedPricing?.unit_price_cents == null ? null : Number(appliedPricing.unit_price_cents),
       priceTableDate: appliedPricing?.table_date || '',
@@ -1945,7 +1996,7 @@ async function createWithdrawal(request, env, user) {
       `).all()).results || []
     : [];
   renova.manufacturerBonusCents = renova.enabled
-    ? manufacturerRenovaBonusCents(planPricedLines[0]?.productName || '', activeBoostRows)
+    ? (planPricedLines[0]?.officialRenovaBonusCents ?? manufacturerRenovaBonusCents(planPricedLines[0]?.productName || '', activeBoostRows))
     : 0;
   const renovaDiscountCents = renova.enabled && deviceTotalCents != null
     ? Math.min(deviceTotalCents, renova.voucherCents + renova.manufacturerBonusCents)

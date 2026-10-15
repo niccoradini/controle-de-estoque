@@ -288,6 +288,8 @@ before(async () => {
   await applyMigration(migration98);
   await applyMigration(migration99);
   await applyMigration(migration100);
+  await applyMigration(await readFile(new URL('../migrations/0113_vivo_exact_pricing_schema.sql', import.meta.url), 'utf8'));
+
 });
 
 after(async () => mf?.dispose());
@@ -2163,7 +2165,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.63.0');
+    assert.equal(JSON.parse(packageSource).version, '6.63.1');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2426,8 +2428,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.63\.0/);
-    assert.match(indexSource, /app\.js\?v=6\.63\.0/);
+    assert.match(indexSource, /styles\.css\?v=6\.63\.1/);
+    assert.match(indexSource, /app\.js\?v=6\.63\.1/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2520,7 +2522,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.0');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.1');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -2991,6 +2993,76 @@ describe('Controle de estoque por código material', () => {
     assert.equal(audit.availableRows, 1107);
     assert.equal(audit.incomingRows, 147);
     assert.equal(Number((await row('SELECT COUNT(*) AS n FROM inventory_backup_20261006_serials')).n) > 0, true);
+  });
+
+  test('importa os 320 códigos Vivo, preserva estoque e valida planos e totais exatos', async () => {
+    const source = JSON.parse(await readFile(new URL('../scripts/vivo-pricing-source-2026-10-15.json', import.meta.url), 'utf8'));
+    await applyMigration(await readFile(new URL('../migrations/0112_inventory_refresh_2026_10_15.sql', import.meta.url), 'utf8'));
+    const protectedTables = ['product_variants', 'inventory_serials', 'withdrawal_requests', 'withdrawal_quantity_items', 'stock_counts', 'stock_count_items', 'chips'];
+    const snapshot = {};
+    for (const table of protectedTables) snapshot[table] = (await database.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()).results;
+    await applyMigration(await readFile(new URL('../migrations/0114_vivo_pricing_refresh_2026_10_15.sql', import.meta.url), 'utf8'));
+    for (const table of protectedTables) assert.deepEqual((await database.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()).results, snapshot[table], table);
+    const materials = source.models.flatMap(model => model.codes).concat(source.accessories.map(item => item.code));
+    assert.equal(new Set(materials).size, 320);
+    assert.deepEqual(new Set(materials), new Set(source.targetCodes));
+    const storedPlans = (await database.prepare('SELECT * FROM vivo_plan_prices').all()).results;
+    const plansByKey = new Map(storedPlans.map(r => [`${r.price_key}|${r.category}`, r]));
+    for (const model of source.models) {
+      for (const price of model.prices) {
+        const actual = plansByKey.get(`${model.key}|${price.category}`);
+        assert.equal(actual.price_cents, price.baseCents);
+        assert.equal(actual.renova_cents, price.renovaCents);
+      }
+      for (const code of model.codes) assert.equal((await row('SELECT price_key FROM vivo_material_price_profiles WHERE material_code=?', code)).price_key, model.key);
+    }
+    for (const accessory of source.accessories) assert.equal((await row('SELECT price_cents FROM product_retail_prices WHERE material_code=?', accessory.code)).price_cents, accessory.baseCents);
+    const catalog = await manager.request('/api/catalog');
+    assert.equal(catalog.status, 200);
+    assert.equal(catalog.payload.pricing.tableDate, '2026-10-15');
+    assert.ok(catalog.payload.pricing.categories.some(c => c.includes('SEM SVAS')));
+    assert.ok(catalog.payload.pricing.categories.some(c => c.includes('ANUAL')));
+    const exactTotals = catalog.payload.pricing.paymentPolicy.exactTotals;
+    assert.deepEqual(exactTotals, source.exactTotals);
+    for (const [base, totals] of Object.entries(source.exactTotals)) {
+      for (let count = 1; count <= 21; count++) {
+        assert.equal(calculateInstallmentTotalCents(Number(base), count, {}, exactTotals), totals[count]);
+        assert.equal(calculateInstallmentPriceCents(Number(base), count, {}, exactTotals), Math.round(totals[count] / count));
+      }
+    }
+    const mapped = new Map(source.models.flatMap(m => m.codes.map(c => [c, m])));
+    const retail = new Map(source.accessories.map(a => [a.code, a]));
+    for (const product of catalog.payload.products) {
+      for (const variant of product.variants) {
+        const official = mapped.get(variant.materialCode);
+        if (official) {
+          assert.equal(product.pricing.key, official.key, variant.materialCode);
+          assert.deepEqual(product.pricing.prices, Object.fromEntries(official.prices.map(p => [p.category, p.baseCents])));
+          assert.deepEqual(product.pricing.renovaBonuses, Object.fromEntries(official.prices.map(p => [p.category, p.renovaCents])));
+        } else if (retail.has(variant.materialCode)) {
+          assert.equal(product.pricing, null, variant.materialCode);
+          assert.equal(variant.retailPrice.priceCents, retail.get(variant.materialCode).baseCents);
+        }
+      }
+    }
+    const sellerProducts = (await seller.request('/api/catalog')).payload.products;
+    const product = sellerProducts.find(p => p.cluster === 'devices' && p.pricing?.key.startsWith('vivo-') && p.available > 0 && Object.values(p.pricing.renovaBonuses).some(value => value > 0));
+    const category = Object.keys(product.pricing.prices).find(c => c.includes('SEM SVAS'));
+    const variant = product.variants.find(v => v.available > 0);
+    const created = await seller.request('/api/requests', {method: 'POST', body: {lines: [{variantId: variant.id, quantity: 1}], priceCategory: category}});
+    assert.equal(created.status, 201, JSON.stringify(created.payload));
+    assert.equal(created.payload.request.items[0].unitPriceCents, product.pricing.prices[category]);
+    assert.equal(created.payload.request.pricing.tableDate, '2026-10-15');
+    assert.equal((await manager.request(`/api/requests/${created.payload.request.id}/cancel`, {method: 'POST', body: {reason: 'Validação da tabela Vivo'}})).status, 200);
+    const tradeIn = catalog.payload.renova.devices[0];
+    const withRenova = await seller.request('/api/requests', {method: 'POST', body: {
+      lines: [{variantId: variant.id, quantity: 1}], priceCategory: category,
+      renova: {deviceId: tradeIn.id, condition: 'bom', manufacturerBonusCents: 99999999, voucherCents: 99999999},
+    }});
+    assert.equal(withRenova.status, 201, JSON.stringify(withRenova.payload));
+    assert.equal(withRenova.payload.request.pricing.renova.manufacturerBonusCents, product.pricing.renovaBonuses[category]);
+    assert.equal(withRenova.payload.request.pricing.renova.voucherCents, tradeIn.goodCents);
+    assert.equal((await manager.request(`/api/requests/${withRenova.payload.request.id}/cancel`, {method: 'POST', body: {reason: 'Validação do bônus Vivo'}})).status, 200);
   });
 
 });

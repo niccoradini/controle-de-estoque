@@ -2970,7 +2970,10 @@ function compactShelfName(name) {
 }
 
 function storeLabelCatalogRows() {
-  return state.catalog.filter((product) => product.cluster !== 'devices').flatMap((product) => product.variants
+  // A tabela oficial identifica acessórios com preço fixo, inclusive relógios
+  // e tablets que ainda pertencem ao agrupamento antigo de aparelhos.
+  return state.catalog.filter((product) => !product.pricing).flatMap((product) => product.variants
+    .filter((variant) => product.cluster !== 'devices' || productPriceKind(product, variant) === 'fixed')
     .map((variant) => ({ product, variant, price: productPriceKind(product, variant) === 'no_charge' ? null : selectedProductPrice(product, variant) }))
     .map((item) => ({
       ...item,

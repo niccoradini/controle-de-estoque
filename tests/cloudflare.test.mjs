@@ -2165,7 +2165,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.63.1');
+    assert.equal(JSON.parse(packageSource).version, '6.63.2');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2428,8 +2428,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.63\.1/);
-    assert.match(indexSource, /app\.js\?v=6\.63\.1/);
+    assert.match(indexSource, /styles\.css\?v=6\.63\.2/);
+    assert.match(indexSource, /app\.js\?v=6\.63\.2/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2522,7 +2522,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.1');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.2');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');
@@ -3063,6 +3063,35 @@ describe('Controle de estoque por código material', () => {
     assert.equal(withRenova.payload.request.pricing.renova.manufacturerBonusCents, product.pricing.renovaBonuses[category]);
     assert.equal(withRenova.payload.request.pricing.renova.voucherCents, tradeIn.goodCents);
     assert.equal((await manager.request(`/api/requests/${withRenova.payload.request.id}/cancel`, {method: 'POST', body: {reason: 'Validação do bônus Vivo'}})).status, 200);
+  });
+
+  test('inclui acessórios Vivo nas etiquetas mesmo no agrupamento antigo de aparelhos', async () => {
+    const appSource = await readFile(new URL('../public/app.js', import.meta.url), 'utf8');
+    const functionSource = (name) => {
+      const start = appSource.indexOf(`function ${name}(`);
+      assert.ok(start >= 0, name);
+      return appSource.slice(start, appSource.indexOf('\nfunction ', start + 1));
+    };
+    const catalog = (await manager.request('/api/catalog')).payload.products;
+    const buildLabels = new Function('state', 'materialCode', [
+      'selectedProductPrice', 'productPriceKind', 'compactShelfName', 'storeLabelCatalogRows',
+    ].map(functionSource).join('\n') + '\nreturn storeLabelCatalogRows();');
+    const labels = buildLabels({ catalog, priceCategory: '' }, (product) => product.variants[0]?.materialCode || '');
+    const byCode = new Map(labels.map((item) => [item.material, item]));
+    const source = JSON.parse(await readFile(new URL('../scripts/vivo-pricing-source-2026-10-15.json', import.meta.url), 'utf8'));
+    for (const accessory of source.accessories) {
+      assert.ok(byCode.has(accessory.code), `Acessório ausente: ${accessory.code}`);
+      assert.equal(byCode.get(accessory.code).price, accessory.baseCents, accessory.code);
+    }
+    for (const code of source.models.flatMap((model) => model.codes)) {
+      assert.equal(byCode.has(code), false, `Celular incluído nas etiquetas: ${code}`);
+    }
+    // Um acessório recém-chegado sem preço continua disponível para etiqueta,
+    // com "Consultar preço", sem reaproveitar o valor de outro modelo.
+    const unknown = { id: 999999, materialCode: '22025645', available: 0, retailPrice: null };
+    const pending = buildLabels({ catalog: [{ name: 'APPLE WATCH SE 3 GPS 40MM SPORT BR', cluster: 'misc', variants: [unknown] }] }, () => unknown.materialCode);
+    assert.equal(pending.length, 1);
+    assert.equal(pending[0].price, null);
   });
 
 });

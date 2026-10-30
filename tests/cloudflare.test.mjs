@@ -1466,6 +1466,15 @@ describe('Controle de estoque por código material', () => {
     const scanned=await manager.request(`/api/avenue-stock-counts/${id}/scan`,{method:'POST',body:{code:serial.serialNumber}});
     assert.equal(scanned.status,200);
     assert.equal(scanned.payload.item.countedQuantity,1);
+    const exportResponse=await mf.dispatchFetch(`https://controleestoque.app.br/api/avenue-stock-counts/${id}/missing`,{headers:{Cookie:manager.cookie,'CF-Connecting-IP':manager.ip}});
+    assert.equal(exportResponse.status,200);
+    assert.match(exportResponse.headers.get('content-type'),/spreadsheetml/);
+    const exportText=Buffer.from(await exportResponse.arrayBuffer()).toString('utf8');
+    const absent=created.payload.serials.find((entry)=>entry.expected && entry.serialNumber!==serial.serialNumber && created.payload.items.some((item)=>item.variantId===entry.variantId && item.stockMode==='serialized'));
+    assert.ok(exportText.includes(absent.serialNumber));
+    assert.ok(!exportText.includes(serial.serialNumber),'serial encontrado não pode aparecer como faltante');
+    assert.ok(exportText.includes('IMEI / número de série'));
+
     assert.equal((await manager.request(`/api/avenue-stock-counts/${id}/scan`,{method:'POST',body:{code:serial.serialNumber}})).status,409);
     const chip=await row("SELECT serial_number FROM network_inventory_serials WHERE store_code='avenida' AND material_code LIKE 'YBSC%' LIMIT 1");
     if(chip) assert.equal((await manager.request(`/api/avenue-stock-counts/${id}/scan`,{method:'POST',body:{code:chip.serial_number}})).status,404);
@@ -2216,7 +2225,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.63.6');
+    assert.equal(JSON.parse(packageSource).version, '6.63.7');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2479,8 +2488,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.63\.6/);
-    assert.match(indexSource, /app\.js\?v=6\.63\.6/);
+    assert.match(indexSource, /styles\.css\?v=6\.63\.7/);
+    assert.match(indexSource, /app\.js\?v=6\.63\.7/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2573,7 +2582,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.6');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.7');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

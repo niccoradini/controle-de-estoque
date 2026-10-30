@@ -3890,7 +3890,7 @@ async function createAvenueCount(request, env, user) {
   await env.DB.batch([
     env.DB.prepare('INSERT INTO avenue_stock_counts (id,name,category,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?)').bind(id,name.value,category,user.id,timestamp,timestamp),
     env.DB.prepare(`INSERT INTO avenue_stock_count_items (count_id,material_code,product_name,category,stock_mode,expected_quantity)
-      SELECT ?,material_code,product_name,category,CASE WHEN category='devices' THEN 'serialized' ELSE 'quantity' END,expected_quantity FROM avenue_count_source WHERE (?='all' OR category=?)`).bind(id,category,category),
+      SELECT ?,material_code,product_name,category,CASE WHEN category='devices' OR UPPER(product_name) LIKE '%WATCH%' OR UPPER(product_name) LIKE '%RELOGIO%' OR UPPER(product_name) LIKE '%RELÓGIO%' OR UPPER(product_name) LIKE '%TABLET%' OR UPPER(product_name) LIKE '% TAB %' THEN 'serialized' ELSE 'quantity' END,expected_quantity FROM avenue_count_source WHERE (?='all' OR category=?)`).bind(id,category,category),
     auditStatement(env,user.id,'avenue_stock_count.created','avenue_stock_count',id,{name:name.value,category,source:'210h30.10.xlsx'}),
   ]);
   await env.DB.prepare(`INSERT INTO avenue_stock_count_serials (count_id,item_id,serial_number,expected)

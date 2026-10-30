@@ -3858,7 +3858,7 @@ async function avenueCountDetails(env, id) {
       note: row.note || '', expectedSerials: Number(row.expected_serials), foundSerials: Number(row.found_serials) };
   });
   const serialRows = (await env.DB.prepare(`SELECT serial.*,item.material_code,item.product_name FROM avenue_stock_count_serials serial JOIN avenue_stock_count_items item ON item.id=serial.item_id WHERE serial.count_id=? ORDER BY item.product_name COLLATE NOCASE,serial.serial_number COLLATE NOCASE`).bind(id).all()).results || [];
-  return { count: { id: count.id, name: count.name, category: 'all', storeCode: 'avenida', status: count.status,
+  return { count: { id: count.id, name: count.name, category: count.category || 'all', storeCode: 'avenida', status: count.status,
     responsibleName: count.responsible_name, createdAt: count.created_at, updatedAt: count.updated_at,
     finalizedAt: count.finalized_at || '', adjustedAt: count.adjusted_at || '' },
     summary: stockCountSummary(items), items,
@@ -3873,7 +3873,7 @@ async function listAvenueCounts(env) {
     SUM(CASE WHEN i.counted_quantity IS NOT NULL AND i.counted_quantity<>i.expected_quantity THEN 1 ELSE 0 END) AS divergence_count
     FROM avenue_stock_counts c JOIN users u ON u.id=c.created_by
     LEFT JOIN avenue_stock_count_items i ON i.count_id=c.id GROUP BY c.id ORDER BY c.updated_at DESC`).all()).results || [];
-  return json({ counts: rows.map((row) => ({ id: row.id, name: row.name, category: 'all', storeCode: 'avenida', status: row.status,
+  return json({ counts: rows.map((row) => ({ id: row.id, name: row.name, category: row.category || 'all', storeCode: 'avenida', status: row.status,
     responsibleName: row.responsible_name, productCount: Number(row.product_count || 0),
     countedCount: Number(row.counted_count || 0), divergenceCount: Number(row.divergence_count || 0),
     createdAt: row.created_at, updatedAt: row.updated_at, finalizedAt: row.finalized_at || '' })) });
@@ -3883,13 +3883,15 @@ async function createAvenueCount(request, env, user) {
   const input = await readJson(request);
   const name = textRule('um nome para a contagem', { min: 3, max: 100 })(input.name);
   if (name.error) throw new HttpError(400, name.error, { name: name.error });
+  const category = String(input.category || 'all');
+  if (!['all','devices','cases','screen_protectors','chargers','accessories'].includes(category)) throw new HttpError(400,'Selecione uma categoria válida.');
   const id = crypto.randomUUID();
   const timestamp = nowIso();
   await env.DB.batch([
-    env.DB.prepare('INSERT INTO avenue_stock_counts (id,name,created_by,created_at,updated_at) VALUES (?,?,?,?,?)').bind(id,name.value,user.id,timestamp,timestamp),
+    env.DB.prepare('INSERT INTO avenue_stock_counts (id,name,category,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?)').bind(id,name.value,category,user.id,timestamp,timestamp),
     env.DB.prepare(`INSERT INTO avenue_stock_count_items (count_id,material_code,product_name,category,stock_mode,expected_quantity)
-      SELECT ?,material_code,product_name,category,CASE WHEN category='devices' THEN 'serialized' ELSE 'quantity' END,expected_quantity FROM avenue_count_source`).bind(id),
-    auditStatement(env,user.id,'avenue_stock_count.created','avenue_stock_count',id,{name:name.value,source:'210h30.10.xlsx'}),
+      SELECT ?,material_code,product_name,category,CASE WHEN category='devices' THEN 'serialized' ELSE 'quantity' END,expected_quantity FROM avenue_count_source WHERE (?='all' OR category=?)`).bind(id,category,category),
+    auditStatement(env,user.id,'avenue_stock_count.created','avenue_stock_count',id,{name:name.value,category,source:'210h30.10.xlsx'}),
   ]);
   await env.DB.prepare(`INSERT INTO avenue_stock_count_serials (count_id,item_id,serial_number,expected)
     SELECT ?,item.id,source.serial_number,source.expected FROM avenue_count_source_serials source

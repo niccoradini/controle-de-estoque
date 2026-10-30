@@ -288,6 +288,7 @@ before(async () => {
   await applyMigration(migration98);
   await applyMigration(migration99);
   await applyMigration(migration100);
+  await applyMigration(await readFile(new URL('../migrations/0116_avenue_stock_count_2026_10_30.sql', import.meta.url), 'utf8'));
   await applyMigration(await readFile(new URL('../migrations/0113_vivo_exact_pricing_schema.sql', import.meta.url), 'utf8'));
 
 });
@@ -1426,6 +1427,38 @@ describe('Controle de estoque por código material', () => {
     assert.equal(Number((await row(`SELECT COUNT(*) AS count FROM audit_logs WHERE action = 'stock_count.quick_item_scanned'`)).count), 2);
   });
 
+  test('conta a Avenida 210H pela planilha sem chips, com películas, serial e histórico próprio', async () => {
+    assert.equal((await seller.request('/api/avenue-stock-counts')).status, 403);
+    assert.equal((await stocker.request('/api/avenue-stock-counts', {method:'POST',body:{name:'Não autorizado'}})).status, 403);
+    const created = await manager.request('/api/avenue-stock-counts', {method:'POST',body:{name:'Avenida 210H – 30/10'}});
+    assert.equal(created.status,201);
+    assert.equal(created.payload.items.length,275);
+    assert.ok(created.payload.items.some((item)=>item.category==='screen_protectors'));
+    assert.ok(created.payload.items.every((item)=>!item.name.toUpperCase().includes('SIM CARD')));
+    assert.equal(created.payload.items.reduce((sum,item)=>sum+item.expectedQuantity,0),851);
+    assert.equal(created.payload.serials.filter((item)=>item.expected).length,851);
+    assert.ok(created.payload.items.some((item)=>item.expectedQuantity===0),'itens em trânsito devem continuar localizáveis');
+    const id=created.payload.count.id;
+    const film=created.payload.items.find((item)=>item.category==='screen_protectors' && item.expectedQuantity>0);
+    const serial=created.payload.serials.find((entry)=>created.payload.items.some((item)=>item.variantId===entry.variantId && item.stockMode==='serialized') && entry.expected);
+    assert.ok(film && serial);
+    const read=await manager.request(`/api/avenue-stock-counts/${id}/scan`,{method:'POST',body:{code:film.materialCode}});
+    assert.equal(read.status,200);
+    assert.equal(read.payload.item.countedQuantity,1);
+    const scanned=await manager.request(`/api/avenue-stock-counts/${id}/scan`,{method:'POST',body:{code:serial.serialNumber}});
+    assert.equal(scanned.status,200);
+    assert.equal(scanned.payload.item.countedQuantity,1);
+    assert.equal((await manager.request(`/api/avenue-stock-counts/${id}/scan`,{method:'POST',body:{code:serial.serialNumber}})).status,409);
+    const chip=await row("SELECT serial_number FROM network_inventory_serials WHERE store_code='avenida' AND material_code LIKE 'YBSC%' LIMIT 1");
+    if(chip) assert.equal((await manager.request(`/api/avenue-stock-counts/${id}/scan`,{method:'POST',body:{code:chip.serial_number}})).status,404);
+    assert.equal((await manager.request(`/api/avenue-stock-counts/${id}`)).payload.count.storeCode,'avenida');
+    assert.ok((await manager.request('/api/avenue-stock-counts')).payload.counts.some((entry)=>entry.id===id));
+    assert.ok(!(await manager.request('/api/stock-counts')).payload.counts.some((entry)=>entry.id===id));
+    assert.equal((await manager.request(`/api/avenue-stock-counts/${id}/finalize`,{method:'POST',body:{}})).payload.count.status,'completed');
+    assert.equal((await manager.request(`/api/avenue-stock-counts/${id}/approve`,{method:'POST',body:{}})).payload.count.status,'adjusted');
+    assert.equal(Number((await row('SELECT expected_quantity FROM avenue_count_source WHERE material_code=?',film.materialCode)).expected_quantity),film.expectedQuantity,'revisão não altera o saldo-base');
+  });
+
   test('controla vitrines com visualização geral e edição de gerente ou estoquista', async () => {
     const initial = await manager.request('/api/showcases');
     assert.equal(initial.status, 200);
@@ -2165,7 +2198,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.63.3');
+    assert.equal(JSON.parse(packageSource).version, '6.63.4');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2428,8 +2461,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.63\.3/);
-    assert.match(indexSource, /app\.js\?v=6\.63\.3/);
+    assert.match(indexSource, /styles\.css\?v=6\.63\.4/);
+    assert.match(indexSource, /app\.js\?v=6\.63\.4/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2522,7 +2555,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.3');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.4');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

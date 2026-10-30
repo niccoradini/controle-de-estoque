@@ -3835,6 +3835,159 @@ async function approveStockCount(env, user, id) {
   return json(await stockCountDetails(env, id));
 }
 
+async function avenueCountRow(env, id) {
+  return env.DB.prepare(`SELECT count.*, creator.name AS responsible_name FROM avenue_stock_counts count JOIN users creator ON creator.id=count.created_by WHERE count.id=?`).bind(id).first();
+}
+
+async function avenueCountDetails(env, id) {
+  const count = await avenueCountRow(env, id);
+  if (!count) throw new HttpError(404, 'Contagem da Avenida não encontrada.');
+  const rows = (await env.DB.prepare(`
+    SELECT item.*, COALESCE((SELECT p.imagem_url FROM product_variants v JOIN products p ON p.id=v.product_id WHERE v.sku=item.material_code COLLATE NOCASE LIMIT 1),'') AS image_url,
+      (SELECT COUNT(*) FROM avenue_stock_count_serials serial WHERE serial.count_id=item.count_id AND serial.item_id=item.id AND serial.expected=1) AS expected_serials,
+      (SELECT COUNT(*) FROM avenue_stock_count_serials serial WHERE serial.count_id=item.count_id AND serial.item_id=item.id AND serial.found=1) AS found_serials
+    FROM avenue_stock_count_items item
+    WHERE item.count_id=? ORDER BY item.product_name COLLATE NOCASE,item.material_code COLLATE NOCASE
+  `).bind(id).all()).results || [];
+  const items = rows.map((row) => {
+    const countedQuantity = row.counted_quantity == null ? null : Number(row.counted_quantity);
+    return { variantId: Number(row.id), materialCode: row.material_code, name: row.product_name,
+      category: row.category, stockMode: row.stock_mode, imageUrl: row.image_url || '',
+      expectedQuantity: Number(row.expected_quantity), countedQuantity,
+      difference: countedQuantity == null ? null : countedQuantity - Number(row.expected_quantity),
+      note: row.note || '', expectedSerials: Number(row.expected_serials), foundSerials: Number(row.found_serials) };
+  });
+  const serialRows = (await env.DB.prepare(`SELECT serial.*,item.material_code,item.product_name FROM avenue_stock_count_serials serial JOIN avenue_stock_count_items item ON item.id=serial.item_id WHERE serial.count_id=? ORDER BY item.product_name COLLATE NOCASE,serial.serial_number COLLATE NOCASE`).bind(id).all()).results || [];
+  return { count: { id: count.id, name: count.name, category: 'all', storeCode: 'avenida', status: count.status,
+    responsibleName: count.responsible_name, createdAt: count.created_at, updatedAt: count.updated_at,
+    finalizedAt: count.finalized_at || '', adjustedAt: count.adjusted_at || '' },
+    summary: stockCountSummary(items), items,
+    serials: serialRows.map((row) => ({ variantId: Number(row.item_id), materialCode: row.material_code,
+      productName: row.product_name, serialNumber: row.serial_number, expected: Boolean(row.expected),
+      found: Boolean(row.found), status: row.expected && row.found ? 'correct' : row.expected ? 'missing' : 'unexpected' })) };
+}
+
+async function listAvenueCounts(env) {
+  const rows = (await env.DB.prepare(`SELECT c.*,u.name AS responsible_name,COUNT(i.id) AS product_count,
+    SUM(CASE WHEN i.counted_quantity IS NOT NULL THEN 1 ELSE 0 END) AS counted_count,
+    SUM(CASE WHEN i.counted_quantity IS NOT NULL AND i.counted_quantity<>i.expected_quantity THEN 1 ELSE 0 END) AS divergence_count
+    FROM avenue_stock_counts c JOIN users u ON u.id=c.created_by
+    LEFT JOIN avenue_stock_count_items i ON i.count_id=c.id GROUP BY c.id ORDER BY c.updated_at DESC`).all()).results || [];
+  return json({ counts: rows.map((row) => ({ id: row.id, name: row.name, category: 'all', storeCode: 'avenida', status: row.status,
+    responsibleName: row.responsible_name, productCount: Number(row.product_count || 0),
+    countedCount: Number(row.counted_count || 0), divergenceCount: Number(row.divergence_count || 0),
+    createdAt: row.created_at, updatedAt: row.updated_at, finalizedAt: row.finalized_at || '' })) });
+}
+
+async function createAvenueCount(request, env, user) {
+  const input = await readJson(request);
+  const name = textRule('um nome para a contagem', { min: 3, max: 100 })(input.name);
+  if (name.error) throw new HttpError(400, name.error, { name: name.error });
+  const id = crypto.randomUUID();
+  const timestamp = nowIso();
+  await env.DB.batch([
+    env.DB.prepare('INSERT INTO avenue_stock_counts (id,name,created_by,created_at,updated_at) VALUES (?,?,?,?,?)').bind(id,name.value,user.id,timestamp,timestamp),
+    env.DB.prepare(`INSERT INTO avenue_stock_count_items (count_id,material_code,product_name,category,stock_mode,expected_quantity)
+      SELECT ?,material_code,product_name,category,CASE WHEN category='devices' THEN 'serialized' ELSE 'quantity' END,expected_quantity FROM avenue_count_source`).bind(id),
+    auditStatement(env,user.id,'avenue_stock_count.created','avenue_stock_count',id,{name:name.value,source:'210h30.10.xlsx'}),
+  ]);
+  await env.DB.prepare(`INSERT INTO avenue_stock_count_serials (count_id,item_id,serial_number,expected)
+    SELECT ?,item.id,source.serial_number,source.expected FROM avenue_count_source_serials source
+    JOIN avenue_stock_count_items item ON item.count_id=? AND item.material_code=source.material_code COLLATE NOCASE`).bind(id,id).run();
+  return json(await avenueCountDetails(env,id),201);
+}
+
+async function avenueCountEditable(env,id) {
+  const count = await avenueCountRow(env,id);
+  if (!count) throw new HttpError(404,'Contagem da Avenida não encontrada.');
+  if (count.status !== 'draft') throw new HttpError(409,'Esta contagem já foi finalizada.');
+  return count;
+}
+
+async function saveAvenueCountItem(request,env,user,id,itemId) {
+  await avenueCountEditable(env,id);
+  const input = await readJson(request);
+  const quantity = Number(input.countedQuantity);
+  const note = textRule('a observação',{max:500,optional:true})(input.note);
+  if (!Number.isInteger(quantity) || quantity<0 || quantity>100000 || note.error) throw new HttpError(400,note.error || 'Informe uma quantidade válida.');
+  const timestamp = nowIso();
+  const item = await env.DB.prepare('SELECT stock_mode FROM avenue_stock_count_items WHERE count_id=? AND id=?').bind(id,itemId).first();
+  if (!item) throw new HttpError(404,'Produto não encontrado nesta contagem.');
+  if (item.stock_mode==='serialized') throw new HttpError(409,'Leia os números de série para contar este aparelho.');
+  await env.DB.batch([
+    env.DB.prepare('UPDATE avenue_stock_count_items SET counted_quantity=?,note=?,updated_at=? WHERE count_id=? AND id=?').bind(quantity,note.value,timestamp,id,itemId),
+    env.DB.prepare('UPDATE avenue_stock_counts SET updated_at=? WHERE id=?').bind(timestamp,id),
+    auditStatement(env,user.id,'avenue_stock_count.item_saved','avenue_stock_count',id,{itemId,countedQuantity:quantity}),
+  ]);
+  return json(await avenueCountDetails(env,id));
+}
+
+async function markAvenueSerial(env,user,id,item,serialNumber,note='') {
+  const found = await env.DB.prepare('SELECT item_id,expected,found FROM avenue_stock_count_serials WHERE count_id=? AND serial_number=? COLLATE NOCASE').bind(id,serialNumber).first();
+  if (found?.found) throw new HttpError(409,'Este IMEI ou serial já foi contado.');
+  if (found && Number(found.item_id)!==Number(item.id)) throw new HttpError(409,'Este serial pertence a outro produto da contagem.');
+  const timestamp=nowIso();
+  await env.DB.batch([
+    env.DB.prepare('INSERT INTO avenue_stock_count_serials (count_id,item_id,serial_number,expected,found) VALUES (?,?,?,?,1) ON CONFLICT(count_id,serial_number) DO UPDATE SET found=1').bind(id,item.id,serialNumber,found ? Number(found.expected) : 0),
+    env.DB.prepare(`UPDATE avenue_stock_count_items SET counted_quantity=(SELECT COUNT(*) FROM avenue_stock_count_serials WHERE count_id=? AND item_id=? AND found=1),note=?,updated_at=? WHERE id=?`).bind(id,item.id,note,timestamp,item.id),
+    env.DB.prepare('UPDATE avenue_stock_counts SET updated_at=? WHERE id=?').bind(timestamp,id),
+    auditStatement(env,user.id,'avenue_stock_count.serial_found','avenue_stock_count',id,{itemId:item.id,serialNumber}),
+  ]);
+  return {timestamp,expected:Boolean(found?.expected)};
+}
+
+async function saveAvenueCountSerial(request,env,user,id) {
+  await avenueCountEditable(env,id);
+  const input=await readJson(request);
+  const itemId=Number(input.variantId);
+  const serialNumber=String(input.serialNumber || '').trim().toUpperCase();
+  const note=textRule('a observação',{max:500,optional:true})(input.note);
+  if (!Number.isInteger(itemId) || !serialNumber || serialNumber.length>80 || !/^[A-Z0-9._/-]+$/.test(serialNumber) || note.error) throw new HttpError(400,note.error || 'Informe um IMEI ou serial válido.');
+  const item=await env.DB.prepare("SELECT * FROM avenue_stock_count_items WHERE count_id=? AND id=? AND stock_mode='serialized'").bind(id,itemId).first();
+  if (!item) throw new HttpError(404,'Aparelho não encontrado nesta contagem.');
+  await markAvenueSerial(env,user,id,item,serialNumber,note.value);
+  return json(await avenueCountDetails(env,id));
+}
+
+async function scanAvenueCount(request,env,user,id) {
+  await avenueCountEditable(env,id);
+  const input=await readJson(request);
+  const code=String(input.code || '').trim().toUpperCase();
+  if (!code || code.length>80 || !/^[A-Z0-9._/-]+$/.test(code)) throw new HttpError(400,'Leia ou digite um código válido.');
+  const known=await env.DB.prepare(`SELECT i.*,s.expected,s.found FROM avenue_stock_count_serials s JOIN avenue_stock_count_items i ON i.id=s.item_id WHERE s.count_id=? AND s.serial_number=? COLLATE NOCASE`).bind(id,code).first();
+  if (known) {
+    const result=await markAvenueSerial(env,user,id,known,code);
+    const item=await env.DB.prepare('SELECT counted_quantity,expected_quantity FROM avenue_stock_count_items WHERE id=?').bind(known.id).first();
+    return json({scan:{type:known.stock_mode==='serialized'?'serial':'material',variantId:Number(known.id),materialCode:known.material_code,productName:known.product_name,countedQuantity:Number(item.counted_quantity)},
+      item:{variantId:Number(known.id),countedQuantity:Number(item.counted_quantity),difference:Number(item.counted_quantity)-Number(item.expected_quantity),foundSerials:Number(item.counted_quantity)},
+      serial:{variantId:Number(known.id),serialNumber:code,expected:result.expected,found:true,status:result.expected?'correct':'unexpected'},updatedAt:result.timestamp});
+  }
+  const item=await env.DB.prepare('SELECT * FROM avenue_stock_count_items WHERE count_id=? AND material_code=? COLLATE NOCASE').bind(id,code).first();
+  if (!item) throw new HttpError(404,'Código não encontrado na contagem da Avenida.');
+  if (item.stock_mode==='serialized') throw new HttpError(409,`${item.product_name}: leia o IMEI ou número de série.`);
+  const timestamp=nowIso();
+  await env.DB.batch([
+    env.DB.prepare('UPDATE avenue_stock_count_items SET counted_quantity=COALESCE(counted_quantity,0)+1,updated_at=? WHERE id=?').bind(timestamp,item.id),
+    env.DB.prepare('UPDATE avenue_stock_counts SET updated_at=? WHERE id=?').bind(timestamp,id),
+    auditStatement(env,user.id,'avenue_stock_count.quick_item_scanned','avenue_stock_count',id,{itemId:item.id,materialCode:item.material_code}),
+  ]);
+  const counted=Number(item.counted_quantity || 0)+1;
+  return json({scan:{type:'material',variantId:Number(item.id),materialCode:item.material_code,productName:item.product_name,countedQuantity:counted},
+    item:{variantId:Number(item.id),countedQuantity:counted,difference:counted-Number(item.expected_quantity),foundSerials:0},updatedAt:timestamp});
+}
+
+async function completeAvenueCount(env,user,id,approve) {
+  const count=await avenueCountRow(env,id);
+  if (!count) throw new HttpError(404,'Contagem da Avenida não encontrada.');
+  if (count.status !== (approve?'completed':'draft')) throw new HttpError(409,'Esta etapa da contagem já foi concluída.');
+  const timestamp=nowIso();
+  await env.DB.batch([
+    env.DB.prepare(approve?"UPDATE avenue_stock_counts SET status='adjusted',adjusted_at=?,updated_at=? WHERE id=?":"UPDATE avenue_stock_counts SET status='completed',finalized_at=?,updated_at=? WHERE id=?").bind(timestamp,timestamp,id),
+    auditStatement(env,user.id,approve?'avenue_stock_count.reviewed':'avenue_stock_count.finalized','avenue_stock_count',id,{stockChanged:false}),
+  ]);
+  return json(await avenueCountDetails(env,id));
+}
+
 function stockCountWorkbook(details) {
   const headers = ['Código do material','Produto','Quantidade esperada','Quantidade contada','Diferença','Observação','Responsável','Data da contagem'];
   const rows = [headers, ...details.items.map((item) => [item.materialCode,item.name,item.expectedQuantity,item.countedQuantity ?? '',item.difference ?? '',item.note,details.count.responsibleName,details.count.createdAt])];
@@ -4402,6 +4555,34 @@ async function routeApi(request, env) {
   if (method === 'GET' && path === '/api/stock-counts') {
     requireRole(user, 'manager');
     return listStockCounts(env);
+  }
+  if (path === '/api/avenue-stock-counts' && method === 'GET') {
+    requireRole(user, 'manager');
+    return listAvenueCounts(env);
+  }
+  if (path === '/api/avenue-stock-counts' && method === 'POST') {
+    requireRole(user, 'manager');
+    return createAvenueCount(request,env,user);
+  }
+  const avenueCountMatch = path.match(/^\/api\/avenue-stock-counts\/([^/]+)(?:\/(.*))?$/);
+  if (avenueCountMatch) {
+    requireRole(user, 'manager');
+    const id=decodeURIComponent(avenueCountMatch[1]);
+    const action=avenueCountMatch[2] || '';
+    if (method==='GET' && !action) return json(await avenueCountDetails(env,id));
+    if (method==='GET' && action==='export') {
+      const details=await avenueCountDetails(env,id);
+      return new Response(stockCountWorkbook(details),{headers:{
+        'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition':`attachment; filename="contagem-avenida-210h-${id}.xlsx"`,
+        'Cache-Control':'private, no-store',
+      }});
+    }
+    if (method==='PUT' && /^items\/\d+$/.test(action)) return saveAvenueCountItem(request,env,user,id,Number(action.slice(6)));
+    if (method==='POST' && action==='serials') return saveAvenueCountSerial(request,env,user,id);
+    if (method==='POST' && action==='scan') return scanAvenueCount(request,env,user,id);
+    if (method==='POST' && action==='finalize') return completeAvenueCount(env,user,id,false);
+    if (method==='POST' && action==='approve') return completeAvenueCount(env,user,id,true);
   }
   if (method === 'POST' && path === '/api/stock-counts') {
     requireRole(user, 'manager');

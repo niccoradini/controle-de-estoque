@@ -91,6 +91,7 @@ const state = {
   feedbackFilter: 'all',
   stockCounts: [],
   stockCount: null,
+  stockCountStore: 'local',
   stockCountSearch: '',
   stockCountFilter: 'all',
   stockCountLastScan: null,
@@ -1018,6 +1019,7 @@ function renderOutletProducts() {
 const stockCountCategoryLabels = Object.freeze({ all: 'Estoque completo', devices: 'Aparelhos', cases: 'Capas', screen_protectors: 'Películas', chargers: 'Carregadores', chips: 'Chips', accessories: 'Demais acessórios' });
 const stockCountCreationCategories = Object.freeze(['all', 'devices', 'cases', 'chargers', 'accessories']);
 const stockCountStatusLabels = Object.freeze({ draft: 'Em andamento', completed: 'Aguardando revisão', adjusted: 'Ajustes aprovados' });
+function stockCountApiRoot() { return state.stockCountStore === 'avenida' ? '/api/avenue-stock-counts' : '/api/stock-counts'; }
 
 function stockCountDifference(item) {
   if (item.countedQuantity == null) return { key: 'pending', label: 'Não contado', difference: null };
@@ -1028,6 +1030,10 @@ function stockCountDifference(item) {
 
 function stockCountNewModal() {
   const today = new Date().toLocaleDateString('pt-BR');
+  if (state.stockCountStore === 'avenida') {
+    showModal(`<form data-form="create-stock-count" novalidate><div class="modal__head"><div><p class="page-eyebrow">Avenida · 210H</p><h2>Nova contagem</h2><p>Todos os produtos da planilha de 30/10, incluindo películas e itens de exposição. Somente chips ficam fora. O saldo será apenas comparado.</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="field"><label for="stock-count-name">Nome da contagem</label><input class="input" id="stock-count-name" name="name" maxlength="100" value="Avenida 210H – ${today}" required autofocus></div></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Iniciar contagem</button></div></form>`, { wide: true });
+    return;
+  }
   showModal(`<form data-form="create-stock-count" novalidate><div class="modal__head"><div><p class="page-eyebrow">Inventário gerencial</p><h2>Nova contagem</h2><p>O saldo será apenas comparado. Chips e películas ficam fora da contagem.</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="form-grid"><div class="field field--full"><label for="stock-count-name">Nome da contagem</label><input class="input" id="stock-count-name" name="name" maxlength="100" value="Contagem semanal – ${today}" required autofocus></div><div class="field field--full"><label for="stock-count-category">O que será contado?</label><select class="select" id="stock-count-category" name="category">${stockCountCreationCategories.map((value)=>`<option value="${value}">${stockCountCategoryLabels[value]}</option>`).join('')}</select></div></div></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn">Iniciar contagem</button></div></form>`, { wide: true });
 }
 
@@ -1035,7 +1041,7 @@ function stockCountHistoryMarkup() {
   if (!state.stockCounts.length) return emptyState('Nenhuma contagem registrada', 'Crie a primeira contagem para começar o inventário da loja.');
   return `<div class="stock-count-history">${state.stockCounts.map((count) => {
     const progress = count.productCount ? Math.round((count.countedCount / count.productCount) * 100) : 100;
-    return `<article><div><span class="stock-count-status is-${escapeHtml(count.status)}">${escapeHtml(stockCountStatusLabels[count.status] || count.status)}</span><h3>${escapeHtml(count.name)}</h3><p>${escapeHtml(count.responsibleName)} · ${escapeHtml(formatDate(count.createdAt))}</p></div><dl><div><dt>Progresso</dt><dd>${progress}%</dd></div><div><dt>Itens</dt><dd>${count.countedCount}/${count.productCount}</dd></div><div><dt>Divergências</dt><dd>${count.divergenceCount}</dd></div></dl><button class="btn btn--secondary" data-action="open-stock-count" data-id="${escapeHtml(count.id)}">${count.status === 'draft' ? 'Continuar' : 'Consultar'}</button></article>`;
+    return `<article><div><span class="stock-count-status is-${escapeHtml(count.status)}">${escapeHtml(count.storeCode === 'avenida' && count.status === 'adjusted' ? 'Revisão encerrada' : stockCountStatusLabels[count.status] || count.status)}</span><h3>${escapeHtml(count.name)}</h3><p>${escapeHtml(count.responsibleName)} · ${escapeHtml(formatDate(count.createdAt))}</p></div><dl><div><dt>Progresso</dt><dd>${progress}%</dd></div><div><dt>Itens</dt><dd>${count.countedCount}/${count.productCount}</dd></div><div><dt>Divergências</dt><dd>${count.divergenceCount}</dd></div></dl><button class="btn btn--secondary" data-action="open-stock-count" data-id="${escapeHtml(count.id)}">${count.status === 'draft' ? 'Continuar' : 'Consultar'}</button></article>`;
   }).join('')}</div>`;
 }
 
@@ -1100,7 +1106,7 @@ function renderStockCountWorkspace() {
       && (state.stockCountFilter === 'all' || (state.stockCountFilter === 'divergent' ? ['missing','surplus'].includes(situation.key) : situation.key === state.stockCountFilter));
   });
   const lastScan = state.stockCountLastScan;
-  target.innerHTML = `<section class="stock-count-head"><button class="btn btn--ghost" data-action="close-stock-count">← Histórico</button><div><p class="page-eyebrow">${escapeHtml(stockCountCategoryLabels[count.category] || count.category)}</p><h2>${escapeHtml(count.name)}</h2><p>${escapeHtml(count.responsibleName)} · iniciada em ${escapeHtml(formatDate(count.createdAt))}</p></div><div class="stock-count-head__actions"><a class="btn btn--secondary" href="/api/stock-counts/${encodeURIComponent(count.id)}/export">Exportar planilha</a>${count.status === 'draft' ? '<button class="btn" data-action="review-stock-count">Finalizar contagem</button>' : count.status === 'completed' ? '<button class="btn" data-action="approve-stock-count">Revisar e aprovar ajustes</button>' : '<span class="stock-count-adjusted">Ajustes aprovados</span>'}</div></section>
+  target.innerHTML = `<section class="stock-count-head"><button class="btn btn--ghost" data-action="close-stock-count">← Histórico</button><div><p class="page-eyebrow">${state.stockCountStore === 'avenida' ? 'Avenida · 210H' : escapeHtml(stockCountCategoryLabels[count.category] || count.category)}</p><h2>${escapeHtml(count.name)}</h2><p>${escapeHtml(count.responsibleName)} · iniciada em ${escapeHtml(formatDate(count.createdAt))}</p></div><div class="stock-count-head__actions"><a class="btn btn--secondary" href="${stockCountApiRoot()}/${encodeURIComponent(count.id)}/export">Exportar planilha</a>${count.status === 'draft' ? '<button class="btn" data-action="review-stock-count">Finalizar contagem</button>' : count.status === 'completed' ? `<button class="btn" data-action="approve-stock-count">${state.stockCountStore === 'avenida' ? 'Encerrar revisão' : 'Revisar e aprovar ajustes'}</button>` : `<span class="stock-count-adjusted">${state.stockCountStore === 'avenida' ? 'Revisão encerrada' : 'Ajustes aprovados'}</span>`}</div></section>
     <section class="stock-count-metrics">${stockCountMetricsMarkup(summary, count.updatedAt)}</section>
     ${count.status === 'draft' ? `<section class="stock-count-quick"><div><p class="page-eyebrow">Modo rápido</p><h3>Leia, conte e siga para o próximo</h3><p>Use o código do material ou o número de série dos acessórios e aparelhos.</p></div><form data-form="stock-count-quick"><label><span>Código, IMEI ou serial</span><input class="input mono" name="code" data-stock-count-quick-input autocomplete="off" autocapitalize="characters" enterkeyhint="done" placeholder="Leia ou digite e confirme" required autofocus></label><button class="btn stock-count-quick__camera" type="button" data-action="scan-stock-count">${uiIcon('copy')} Câmera</button><button class="btn" type="submit">Contar +1</button></form>${lastScan ? stockCountScanMarkup(lastScan) : ''}</section>` : ''}
     <section class="stock-count-tools"><label class="stock-count-search">${uiIcon('search')}<input type="search" data-action="stock-count-search" value="${escapeHtml(state.stockCountSearch)}" placeholder="Filtrar lista por código ou nome" autocomplete="off"></label><div class="filter-tabs"><button class="chip ${state.stockCountFilter==='all'?'is-active':''}" data-action="filter-stock-count" data-filter="all">Todos</button><button class="chip ${state.stockCountFilter==='pending'?'is-active':''}" data-action="filter-stock-count" data-filter="pending">Não contados</button><button class="chip ${state.stockCountFilter==='divergent'?'is-active':''}" data-action="filter-stock-count" data-filter="divergent">Divergências</button><button class="chip ${state.stockCountFilter==='correct'?'is-active':''}" data-action="filter-stock-count" data-filter="correct">Corretos</button></div></section>
@@ -1110,7 +1116,7 @@ function renderStockCountWorkspace() {
 }
 
 async function openStockCount(id) {
-  state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(id)}`);
+  state.stockCount = await api(`${stockCountApiRoot()}/${encodeURIComponent(id)}`);
   state.stockCountSearch = '';
   state.stockCountFilter = 'all';
   state.stockCountLastScan = null;
@@ -1120,17 +1126,18 @@ async function openStockCount(id) {
 function stockCountReviewModal(approve = false) {
   const details = state.stockCount;
   const divergent = details.items.filter((item) => item.countedQuantity != null && item.difference !== 0);
-  const title = approve ? 'Aprovar ajustes de estoque?' : 'Finalizar esta contagem?';
-  const explanation = approve ? 'Somente agora os saldos divergentes serão atualizados. A operação ficará registrada na auditoria.' : 'A contagem será encerrada para edição, mas nenhum saldo será alterado.';
-  showModal(`<form data-form="${approve ? 'approve-stock-count' : 'finalize-stock-count'}"><div class="modal__head"><div><p class="page-eyebrow">Revisão obrigatória</p><h2>${title}</h2><p>${explanation}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="stock-count-review-summary"><span><b>${details.summary.countedProducts}</b> produtos contados</span><span><b>${divergent.length}</b> divergências</span></div><div class="stock-count-review-list">${divergent.length ? divergent.map((item)=>`<article class="is-${item.difference < 0 ? 'missing' : 'surplus'}"><div><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(item.materialCode)}</code></div><span>${item.expectedQuantity} → ${item.countedQuantity}</span><b>${item.difference > 0 ? '+' : ''}${item.difference}</b></article>`).join('') : '<p>Nenhuma divergência encontrada.</p>'}</div></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn ${approve ? 'btn--danger' : ''}">${approve ? 'Aprovar e ajustar estoque' : 'Finalizar sem ajustar estoque'}</button></div></form>`, { wide: true });
+  const avenue = state.stockCountStore === 'avenida';
+  const title = approve ? (avenue ? 'Encerrar revisão da Avenida?' : 'Aprovar ajustes de estoque?') : 'Finalizar esta contagem?';
+  const explanation = approve ? (avenue ? 'A revisão será registrada. O estoque da 210H não será alterado automaticamente; use o relatório para conferir as divergências com a loja.' : 'Somente agora os saldos divergentes serão atualizados. A operação ficará registrada na auditoria.') : 'A contagem será encerrada para edição, mas nenhum saldo será alterado.';
+  showModal(`<form data-form="${approve ? 'approve-stock-count' : 'finalize-stock-count'}"><div class="modal__head"><div><p class="page-eyebrow">Revisão obrigatória</p><h2>${title}</h2><p>${explanation}</p></div>${modalCloseButton()}</div><div class="modal__body"><div class="form-error" data-form-error hidden></div><div class="stock-count-review-summary"><span><b>${details.summary.countedProducts}</b> produtos contados</span><span><b>${divergent.length}</b> divergências</span></div><div class="stock-count-review-list">${divergent.length ? divergent.map((item)=>`<article class="is-${item.difference < 0 ? 'missing' : 'surplus'}"><div><strong>${escapeHtml(item.name)}</strong><code>${escapeHtml(item.materialCode)}</code></div><span>${item.expectedQuantity} → ${item.countedQuantity}</span><b>${item.difference > 0 ? '+' : ''}${item.difference}</b></article>`).join('') : '<p>Nenhuma divergência encontrada.</p>'}</div></div><div class="modal__footer"><button type="button" class="btn btn--secondary" data-action="close-modal">Cancelar</button><button type="submit" class="btn ${approve && !avenue ? 'btn--danger' : ''}">${approve ? (avenue ? 'Encerrar revisão' : 'Aprovar e ajustar estoque') : 'Finalizar sem ajustar estoque'}</button></div></form>`, { wide: true });
 }
 
 async function renderStockCount() {
   if (state.user.role !== 'manager') return navigate('dashboard');
-  const data = await api('/api/stock-counts');
+  const data = await api(stockCountApiRoot());
   state.stockCounts = data.counts || [];
   const content = document.querySelector('#view-content');
-  content.innerHTML = `<section class="stock-count-hero"><div><p class="page-eyebrow">Inventário seguro</p><h2>Contagem de Estoque</h2><p>Conte rapidamente pelo celular, compare divergências e aprove ajustes somente depois da revisão.</p></div><button class="btn" data-action="new-stock-count">${uiIcon('plus')} Nova contagem</button></section><section data-stock-count-workspace>${state.stockCount ? '' : `<div class="stock-count-history-head"><div><p class="page-eyebrow">Histórico</p><h3>Contagens realizadas</h3></div></div>${stockCountHistoryMarkup()}`}</section>`;
+  content.innerHTML = `<section class="stock-count-hero"><div><p class="page-eyebrow">Inventário seguro</p><h2>Contagem de Estoque</h2><p>${state.stockCountStore === 'avenida' ? 'Avenida 210H · base de 30/10 · todos os produtos, exceto chips. Confira as divergências por código ou serial.' : 'Conte rapidamente pelo celular, compare divergências e aprove ajustes somente depois da revisão.'}</p></div><button class="btn" data-action="new-stock-count">${uiIcon('plus')} Nova contagem</button></section><div class="stock-count-store-tabs" role="tablist" aria-label="Loja da contagem"><button class="chip ${state.stockCountStore === 'local' ? 'is-active' : ''}" data-action="stock-count-store" data-store="local" role="tab" aria-selected="${state.stockCountStore === 'local'}">Loja atual · 209H</button><button class="chip ${state.stockCountStore === 'avenida' ? 'is-active' : ''}" data-action="stock-count-store" data-store="avenida" role="tab" aria-selected="${state.stockCountStore === 'avenida'}">Avenida · 210H</button></div><section data-stock-count-workspace>${state.stockCount ? '' : `<div class="stock-count-history-head"><div><p class="page-eyebrow">Histórico · ${state.stockCountStore === 'avenida' ? 'Avenida 210H' : 'Loja atual 209H'}</p><h3>Contagens realizadas</h3></div></div>${stockCountHistoryMarkup()}`}</section>`;
   if (state.stockCount) renderStockCountWorkspace();
 }
 
@@ -3838,6 +3845,12 @@ root.addEventListener('click', async (event) => {
     }
     if (action === 'reload-view') await navigate(state.view);
     if (action === 'new-stock-count' && state.user.role === 'manager') stockCountNewModal();
+    if (action === 'stock-count-store' && state.user.role === 'manager') {
+      state.stockCountStore = button.dataset.store === 'avenida' ? 'avenida' : 'local';
+      state.stockCount = null;
+      state.stockCountLastScan = null;
+      await renderStockCount();
+    }
     if (action === 'open-stock-count' && state.user.role === 'manager') await openStockCount(button.dataset.id);
     if (action === 'close-stock-count' && state.user.role === 'manager') { state.stockCount = null; await renderStockCount(); }
     if (action === 'filter-stock-count' && state.user.role === 'manager') { state.stockCountFilter = button.dataset.filter || 'all'; renderStockCountWorkspace(); }
@@ -4224,12 +4237,12 @@ document.addEventListener('submit', async (event) => {
         closeModal(); await renderSales(); showToast('Venda salva.');
       }
       if (form.dataset.form === 'stock-count-quick') {
-        const result = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/scan`, { method: 'POST', body: { code: data.code } });
+        const result = await api(`${stockCountApiRoot()}/${encodeURIComponent(state.stockCount.count.id)}/scan`, { method: 'POST', body: { code: data.code } });
         applyStockCountScan(result);
         showToast(result.scan.type === 'serial' ? 'IMEI ou serial contado.' : `${result.scan.productName}: +1 unidade.`);
       }
       if (form.dataset.form === 'create-stock-count') {
-        state.stockCount = await api('/api/stock-counts', { method: 'POST', body: { name: data.name, category: data.category } });
+        state.stockCount = await api(stockCountApiRoot(), { method: 'POST', body: { name: data.name, category: data.category } });
         closeModal(true); showToast('Contagem iniciada. O progresso será salvo a cada item.'); await renderStockCount();
       }
       if (form.dataset.form === 'stock-count-item') {
@@ -4238,23 +4251,23 @@ document.addEventListener('submit', async (event) => {
         let countedQuantity = Number(data.countedQuantity);
         if (!Number.isInteger(countedQuantity) || countedQuantity < 0) throw new ApiError('Informe uma quantidade válida.', 400);
         if (item?.countedQuantity != null && data.repeatMode === 'sum') countedQuantity += item.countedQuantity;
-        state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/items/${variantId}`, { method: 'PUT', body: { countedQuantity, note: data.note } });
+        state.stockCount = await api(`${stockCountApiRoot()}/${encodeURIComponent(state.stockCount.count.id)}/items/${variantId}`, { method: 'PUT', body: { countedQuantity, note: data.note } });
         state.stockCountSearch = ''; showToast('Item salvo na contagem.'); renderStockCountWorkspace();
         window.requestAnimationFrame(() => document.querySelector('[data-action="stock-count-search"]')?.focus());
       }
       if (form.dataset.form === 'stock-count-serial') {
         const variantId = Number(form.dataset.variantId);
-        state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/serials`, { method: 'POST', body: { variantId, serialNumber: data.serialNumber, note: data.note } });
+        state.stockCount = await api(`${stockCountApiRoot()}/${encodeURIComponent(state.stockCount.count.id)}/serials`, { method: 'POST', body: { variantId, serialNumber: data.serialNumber, note: data.note } });
         state.stockCountSearch = ''; showToast('IMEI ou serial confirmado.'); renderStockCountWorkspace();
         window.requestAnimationFrame(() => document.querySelector('[data-action="stock-count-search"]')?.focus());
       }
       if (form.dataset.form === 'finalize-stock-count') {
-        state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/finalize`, { method: 'POST', body: {} });
+        state.stockCount = await api(`${stockCountApiRoot()}/${encodeURIComponent(state.stockCount.count.id)}/finalize`, { method: 'POST', body: {} });
         closeModal(true); showToast('Contagem finalizada sem alterar o estoque.'); await renderStockCount();
       }
       if (form.dataset.form === 'approve-stock-count') {
-        state.stockCount = await api(`/api/stock-counts/${encodeURIComponent(state.stockCount.count.id)}/approve`, { method: 'POST', body: {} });
-        closeModal(true); showToast('Ajustes aprovados e registrados na auditoria.'); await renderStockCount();
+        state.stockCount = await api(`${stockCountApiRoot()}/${encodeURIComponent(state.stockCount.count.id)}/approve`, { method: 'POST', body: {} });
+        closeModal(true); showToast(state.stockCountStore === 'avenida' ? 'Revisão encerrada. Nenhum saldo da Avenida foi alterado.' : 'Ajustes aprovados e registrados na auditoria.'); await renderStockCount();
       }
       if (form.dataset.form === 'setup') {
         if (data.password !== data.confirmPassword) throw new ApiError('As senhas não coincidem.', 400);

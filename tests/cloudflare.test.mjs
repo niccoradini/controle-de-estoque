@@ -290,6 +290,7 @@ before(async () => {
   await applyMigration(migration100);
   await applyMigration(await readFile(new URL('../migrations/0116_avenue_stock_count_2026_10_30.sql', import.meta.url), 'utf8'));
   await applyMigration(await readFile(new URL('../migrations/0117_avenue_count_categories.sql', import.meta.url), 'utf8'));
+  await applyMigration(await readFile(new URL('../migrations/0118_avenue_tablets_watches_accessories.sql', import.meta.url), 'utf8'));
   await applyMigration(await readFile(new URL('../migrations/0113_vivo_exact_pricing_schema.sql', import.meta.url), 'utf8'));
 
 });
@@ -1434,6 +1435,14 @@ describe('Controle de estoque por código material', () => {
     const created = await manager.request('/api/avenue-stock-counts', {method:'POST',body:{name:'Avenida 210H – 30/10'}});
     assert.equal(created.status,201);
     assert.equal(created.payload.items.length,275);
+    const accessories=await manager.request('/api/avenue-stock-counts',{method:'POST',body:{name:'Relógios e tablets',category:'accessories'}});
+    assert.equal(accessories.status,201);
+    for(const code of ['22024185','DGAP22163000','TGSA57854000','22024315']) {
+      const item=accessories.payload.items.find((entry)=>entry.materialCode===code);
+      assert.ok(item,code+' deve estar em demais acessórios');
+      assert.equal(item.stockMode,'serialized');
+    }
+
     const films=await manager.request('/api/avenue-stock-counts',{method:'POST',body:{name:'Películas Avenida',category:'screen_protectors'}});
     assert.equal(films.status,201);
     assert.equal(films.payload.count.category,'screen_protectors');
@@ -2207,7 +2216,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.63.5');
+    assert.equal(JSON.parse(packageSource).version, '6.63.6');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2470,8 +2479,8 @@ describe('Controle de estoque por código material', () => {
     assert.match(appSource, /brand-mark[^>]*>\s*<img src="\/estoque-symbol\.svg" alt="">/);
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
-    assert.match(indexSource, /styles\.css\?v=6\.63\.5/);
-    assert.match(indexSource, /app\.js\?v=6\.63\.5/);
+    assert.match(indexSource, /styles\.css\?v=6\.63\.6/);
+    assert.match(indexSource, /app\.js\?v=6\.63\.6/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);
@@ -2564,7 +2573,7 @@ describe('Controle de estoque por código material', () => {
     }
 
     const page = await mf.dispatchFetch('https://controleestoque.app.br/');
-    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.5');
+    const script = await mf.dispatchFetch('https://controleestoque.app.br/app.js?v=6.63.6');
     const renderedScript = await script.text();
     const groupsScript = await mf.dispatchFetch('https://controleestoque.app.br/catalog-groups.js');
     const alignmentImage = await mf.dispatchFetch('https://controleestoque.app.br/alignment/atitudes-profissionais.webp');

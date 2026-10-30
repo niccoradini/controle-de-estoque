@@ -3990,12 +3990,28 @@ async function completeAvenueCount(env,user,id,approve) {
   return json(await avenueCountDetails(env,id));
 }
 
-function stockCountWorkbook(details) {
+function stockCountMissingRows(details) {
+  const rows = [];
+  for (const item of details.items) {
+    const pending = item.countedQuantity == null;
+    const quantity = pending ? item.expectedQuantity : Math.max(0, item.expectedQuantity - item.countedQuantity);
+    const serials = details.serials.filter((serial) => serial.variantId === item.variantId && serial.expected && !serial.found);
+    const append = (serial, units, status) => rows.push([item.materialCode, item.name, serial, units, status, item.note, details.count.responsibleName, details.count.createdAt]);
+    if (item.stockMode === 'serialized') {
+      for (const serial of serials) append(serial.serialNumber, 1, pending ? 'Não contado' : 'Faltante');
+    } else if (quantity > 0) {
+      append('', quantity, pending ? 'Não contado' : 'Faltante por quantidade');
+    }
+  }
+  return rows;
+}
+
+function stockCountWorkbook(details, missing = false) {
   const headers = ['Código do material','Produto','Quantidade esperada','Quantidade contada','Diferença','Observação','Responsável','Data da contagem'];
-  const rows = [headers, ...details.items.map((item) => [item.materialCode,item.name,item.expectedQuantity,item.countedQuantity ?? '',item.difference ?? '',item.note,details.count.responsibleName,details.count.createdAt])];
+  const rows = missing ? [['Código do material','Produto','IMEI / número de série','Quantidade faltante','Situação','Observação','Responsável','Data da contagem'], ...stockCountMissingRows(details)] : [headers, ...details.items.map((item) => [item.materialCode,item.name,item.expectedQuantity,item.countedQuantity ?? '',item.difference ?? '',item.note,details.count.responsibleName,details.count.createdAt])];
   const letters = 'ABCDEFGH';
   const sheetRows = rows.map((row, index) => `<row r="${index + 1}">${row.map((value, column) => `<c r="${letters[column]}${index + 1}" t="inlineStr"><is><t>${xmlCell(value)}</t></is></c>`).join('')}</row>`).join('');
-  const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheetRows}</sheetData><autoFilter ref="A1:H${rows.length}"/></worksheet>`;
+  const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="1" width="20" customWidth="1"/><col min="2" max="2" width="55" customWidth="1"/><col min="3" max="3" width="26" customWidth="1"/><col min="4" max="5" width="24" customWidth="1"/><col min="6" max="6" width="40" customWidth="1"/><col min="7" max="8" width="28" customWidth="1"/></cols><sheetData>${sheetRows}</sheetData><autoFilter ref="A1:H${rows.length}"/></worksheet>`;
   const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="Aptos"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="1"><xf/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0"/></cellStyles></styleSheet>`;
   return zipWorkbook({
     '[Content_Types].xml': `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
@@ -4006,11 +4022,11 @@ function stockCountWorkbook(details) {
   });
 }
 
-async function exportStockCount(env, id) {
+async function exportStockCount(env, id, missing = false) {
   const details = await stockCountDetails(env, id);
-  return new Response(stockCountWorkbook(details), { headers: {
+  return new Response(stockCountWorkbook(details, missing), { headers: {
     'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'Content-Disposition': `attachment; filename="contagem-estoque-${id}.xlsx"`, 'Cache-Control': 'private, no-store',
+    'Content-Disposition': `attachment; filename="${missing ? 'faltantes' : 'contagem-estoque'}-${id}.xlsx"`, 'Cache-Control': 'private, no-store',
   } });
 }
 
@@ -4572,11 +4588,11 @@ async function routeApi(request, env) {
     const id=decodeURIComponent(avenueCountMatch[1]);
     const action=avenueCountMatch[2] || '';
     if (method==='GET' && !action) return json(await avenueCountDetails(env,id));
-    if (method==='GET' && action==='export') {
+    if (method==='GET' && (action==='export' || action==='missing')) {
       const details=await avenueCountDetails(env,id);
-      return new Response(stockCountWorkbook(details),{headers:{
+      return new Response(stockCountWorkbook(details, action==='missing'),{headers:{
         'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition':`attachment; filename="contagem-avenida-210h-${id}.xlsx"`,
+        'Content-Disposition':`attachment; filename="${action==='missing' ? 'faltantes' : 'contagem'}-avenida-210h-${id}.xlsx"`,
         'Cache-Control':'private, no-store',
       }});
     }
@@ -4590,10 +4606,10 @@ async function routeApi(request, env) {
     requireRole(user, 'manager');
     return createStockCount(request, env, user);
   }
-  const stockCountExportMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/export$/);
+  const stockCountExportMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/(export|missing)$/);
   if (method === 'GET' && stockCountExportMatch) {
     requireRole(user, 'manager');
-    return exportStockCount(env, decodeURIComponent(stockCountExportMatch[1]));
+    return exportStockCount(env, decodeURIComponent(stockCountExportMatch[1]), stockCountExportMatch[2]==='missing');
   }
   const stockCountItemMatch = path.match(/^\/api\/stock-counts\/([^/]+)\/items\/(\d+)$/);
   if (method === 'PUT' && stockCountItemMatch) {

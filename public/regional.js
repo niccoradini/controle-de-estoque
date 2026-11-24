@@ -77,7 +77,7 @@ async function showGroup(key, page = 1) {
   root.querySelector('#regional-dialog-body').innerHTML = `<header><div><span class="eyebrow">UNIDADES POR LOJA</span><h2>${esc(group.name)}</h2></div><button data-close aria-label="Fechar">×</button></header><div class="regional-units"><p>Carregando unidades...</p></div>`;
   if (!dialog.open) dialog.showModal();
   try {
-    const result = await api('/devices?' + new URLSearchParams({ group:key,store:state.store,status:state.status,page }));
+    const result = await api('/devices?' + new URLSearchParams({ group:key,store:state.store,status:state.status,q:state.q,page }));
     if (detailRequest !== detailSequence || !dialog.open) return;
     state.items = result.items;
     const units = root.querySelector('.regional-units'); if (!units) return;

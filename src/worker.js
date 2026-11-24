@@ -4550,7 +4550,8 @@ async function regionalApi(request, env, url) {
     const result = await env.DB.prepare(`SELECT ${columns} FROM regional_devices${clause} ORDER BY store,model,imei`).bind(...values).all();
     if (detail) {
       const key = url.searchParams.get('group');
-      const matched = result.results.filter(item => regionalDeviceInfo(item).key === key);
+      const search = (url.searchParams.get('q') || '').slice(0,100);
+      const matched = result.results.filter(item => regionalDeviceInfo(item).key === key && (!search || regionalInventoryGroups([item], { search }).length));
       const page = Math.floor(Math.max(1, Math.min(100000, Number(url.searchParams.get('page')) || 1)));
       return json({ items:matched.slice((page-1)*100,page*100).map(item => ({ ...item, ...regionalDeviceInfo(item), status:item.status === 'sold' ? 'sold' : item.stock_state })),total:matched.length,page });
     }

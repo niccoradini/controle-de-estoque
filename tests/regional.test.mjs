@@ -67,6 +67,12 @@ test('Regional: anonymous shared inventory, unique IMEIs, atomic history and con
     assert.equal(catalog.data.total,705);
     assert.equal(catalog.data.groups.length,70);
     assert.equal(catalog.data.groups.reduce((n,g)=>n+g.total,0),705);
+    const probe = (await req('/api/regional/devices?status=all')).data.items[0];
+    const byImei = await req('/api/regional/groups?status=all&q=' + probe.imei);
+    assert.equal(byImei.data.total,1);
+    const selectedUnit = await req('/api/regional/devices?status=all&group='+byImei.data.groups[0].key+'&q='+probe.imei);
+    assert.equal(selectedUnit.data.total,1);
+    assert.equal(selectedUnit.data.items[0].imei,probe.imei);
     assert.equal(new Set(catalog.data.groups.map(g=>g.key)).size,70);
     for (const group of catalog.data.groups) {
       assert.equal(Object.values(group.stores).reduce((n,total)=>n+total,0),group.total);

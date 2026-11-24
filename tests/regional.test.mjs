@@ -3,11 +3,12 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { Miniflare } from 'miniflare';
+import { regionalDeviceInfo } from '../src/regional-catalog.js';
 
 test('Regional: anonymous shared inventory, unique IMEIs, atomic history and conflict protection', async () => {
   const modulesRoot = fileURLToPath(new URL('../src/', import.meta.url));
   const mf = new Miniflare({ compatibilityDate: '2026-07-15', modulesRoot,
-    modules: await Promise.all(['worker.js','security.js'].map(async name => ({ type: 'ESModule', path: modulesRoot + name, contents: await readFile(modulesRoot + name, 'utf8') }))),
+    modules: await Promise.all(['worker.js','security.js','regional-catalog.js'].map(async name => ({ type: 'ESModule', path: modulesRoot + name, contents: await readFile(modulesRoot + name, 'utf8') }))),
     d1Databases: { DB: 'regional-test' } });
   try {
     const db = await mf.getD1Database('DB');
@@ -61,6 +62,44 @@ test('Regional: anonymous shared inventory, unique IMEIs, atomic history and con
     await db.prepare('DELETE FROM regional_movements WHERE device_id=?').bind(id).run();
     await db.prepare('DELETE FROM regional_devices WHERE id=?').bind(id).run();
     await migrate('0121_regional_phones_2026_11_24.sql');
+    const catalog = await req('/api/regional/groups?status=all');
+    assert.equal(catalog.status,200);
+    assert.equal(catalog.data.total,705);
+    assert.equal(catalog.data.groups.length,70);
+    assert.equal(catalog.data.groups.reduce((n,g)=>n+g.total,0),705);
+    assert.equal(new Set(catalog.data.groups.map(g=>g.key)).size,70);
+    for (const group of catalog.data.groups) {
+      assert.equal(Object.values(group.stores).reduce((n,total)=>n+total,0),group.total);
+      assert.equal(Object.values(group.colors).reduce((n,total)=>n+total,0),group.total);
+      assert.ok(!/SMARTPHONE|PPB|XT\d|S948B|DGAP|TGMO/.test(group.name));
+      assert.match(group.imageUrl,/^\/regional-images\//);
+      const photo = await readFile(new URL('../public' + group.imageUrl,import.meta.url));
+      assert.ok(photo.length > 1000);
+      assert.ok(photo[0] === 137 || photo[0] === 255 || (photo.subarray(0,4).toString() === 'RIFF' && photo.subarray(8,12).toString() === 'WEBP'), 'PNG, JPEG or WebP original product photo');
+      const detail = await req('/api/regional/devices?status=all&group='+encodeURIComponent(group.key));
+      assert.equal(detail.status,200); assert.equal(detail.data.total,group.total);
+      assert.ok(detail.data.items.every(item=>item.key===group.key));
+      assert.ok(detail.data.items.every(item=>item.material_code && item.imei && item.model));
+    }
+    const g47 = await req('/api/regional/groups?status=all&q=moto%20g47');
+    const g37 = await req('/api/regional/groups?status=all&q=moto%20g37');
+    assert.equal(g47.data.groups.length,1); assert.equal(g37.data.groups.length,1);
+    assert.notEqual(g47.data.groups[0].key,g37.data.groups[0].key);
+    assert.equal(regionalDeviceInfo({model:'Samsung Galaxy S25 Ultra 256 GB'}).family,'Samsung Galaxy S25 Ultra');
+    assert.equal(regionalDeviceInfo({model:'Samsung Galaxy S26+ 256 GB'}).family,'Samsung Galaxy S26+');
+    assert.ok(catalog.data.groups.some(g=>g.name==='Samsung Galaxy S26+ 256 GB'));
+    assert.ok(catalog.data.groups.some(g=>g.name==='Samsung Galaxy S26 256 GB'));
+    assert.ok(catalog.data.groups.some(g=>g.name==='Samsung Galaxy A06 5G 128 GB'));
+    const proMax = await req('/api/regional/groups?status=all&q=iphone%2017%20pro%20max');
+    assert.ok(proMax.data.groups.length > 1);
+    assert.ok(proMax.data.groups.every(g=>g.name.startsWith('iPhone 17 Pro Max ')));
+    const samsung = await req('/api/regional/groups?brand=Samsung');
+    assert.ok(samsung.data.groups.every(g=>g.brand==='Samsung'));
+    const oneStore = await req('/api/regional/groups?store=120h');
+    assert.equal(oneStore.data.total,77);
+    assert.ok(oneStore.data.groups.every(g=>Object.keys(g.stores).every(s=>s==='120h')));
+    assert.equal((await req('/api/regional/groups?store=bad')).status,400);
+    assert.equal((await req('/api/regional/groups?status=invalid')).status,400);
     const expected = { '210h':[105,26,0], '209h':[156,27,2], '120h':[77,8,0], '89MN':[168,22,0], '283h':[94,19,1] };
     for (const [store,counts] of Object.entries(expected)) {
       for (const [offset,status] of ['available','incoming','repair'].entries()) {

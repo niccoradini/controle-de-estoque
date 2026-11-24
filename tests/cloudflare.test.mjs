@@ -152,6 +152,7 @@ before(async () => {
     modules: [
       { type: 'ESModule', path: `${modulesRoot}worker.js`, contents: workerSource },
       { type: 'ESModule', path: `${modulesRoot}security.js`, contents: securitySource },
+      { type: 'ESModule', path: `${modulesRoot}regional-catalog.js`, contents: await readFile(new URL('../src/regional-catalog.js', import.meta.url), 'utf8') },
     ],
     d1Databases: { DB: 'controle-estoque-test-v3' },
     assets: {

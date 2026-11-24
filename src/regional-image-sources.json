@@ -1,0 +1,314 @@
+{
+  "iphone-13": {
+    "model": "iPhone 13",
+    "source": "https://support.apple.com/pt-br/111872",
+    "image": "https://cdsassets.apple.com/live/SZLF0YNV/images/sp/111872_iphone13-colors-480.png",
+    "local": "/regional-images/iphone-13.png"
+  },
+  "iphone-15": {
+    "model": "iPhone 15",
+    "source": "https://lojasbecker.vtexassets.com/arquivos/ids/4314552/celular-apple-iphone-15-azul-01.jpg?v=639122905566270000",
+    "image": "https://lojasbecker.vtexassets.com/arquivos/ids/4314552/celular-apple-iphone-15-azul-01.jpg?v=639122905566270000",
+    "local": "/regional-images/iphone-15.jpg"
+  },
+  "iphone-16": {
+    "model": "iPhone 16",
+    "source": "https://www.apple.com/br/shop/buy-iphone/iphone-16",
+    "image": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-teal-select-202409?wid=940&hei=1112&fmt=png-alpha&.v=ZWQwWE02eFY3dENRdXRQQkhqUUNjZ1V5N29UUE5sYkU5bzFjbnV4MlZFK3h5cTNsSm9CeDJ4ZzdnY0xHQkpkNm53M0FRZHBXNTh1U1lFVEtSR2YzTmlKalFROW1uRVl3NkN0RVV1bzVNSHc",
+    "local": "/regional-images/iphone-16.png"
+  },
+  "iphone-16-pro-max": {
+    "model": "iPhone 16 Pro Max",
+    "source": "https://support.apple.com/pt-br/121032",
+    "image": "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/121032-iphone-16-pro-max.png",
+    "local": "/regional-images/iphone-16-pro-max.png"
+  },
+  "iphone-16e": {
+    "model": "iPhone 16e",
+    "source": "https://cdn.movertix.com/media/catalog/product/cache/image/i/p/iphone-16e-black-512gb.jpg",
+    "image": "https://cdn.movertix.com/media/catalog/product/cache/image/i/p/iphone-16e-black-512gb.jpg",
+    "local": "/regional-images/iphone-16e.jpg"
+  },
+  "iphone-17": {
+    "model": "iPhone 17",
+    "source": "https://www.apple.com/br/shop/buy-iphone/iphone-17",
+    "image": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-17-finish-select-white-202509?wid=940&hei=1112&fmt=png-alpha&.v=WGdCRlQ0YVlqbTdXTEkxRnVQb0oxcXFXRXVNZU9PTnQ3OTN2dlJVVVVMMDZZWWVuUzd1a0I0NDBmaU1xUHlJN05iYkdTUlNaelA5cmVIcElYY3o4K1NIY0pUWEVieVJZdHMyOW9BNndwM21rQXdpckhBZVgwUTNjSVA5bzI3LzU",
+    "local": "/regional-images/iphone-17.png"
+  },
+  "iphone-17-pro": {
+    "model": "iPhone 17 Pro",
+    "source": "https://support.apple.com/pt-pt/125090",
+    "image": "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/iphone-17-pro-17-pro-max-hero.png",
+    "local": "/regional-images/iphone-17-pro.png"
+  },
+  "iphone-17-pro-max": {
+    "model": "iPhone 17 Pro Max",
+    "source": "https://horizonplay.fbitsstatic.net/img/p/apple-iphone-17-pro-max-512gb-12ram-tela-super-retina-xdr-oled-6-9-prateado-193480/380179-1.jpg?h=670&v=202511152232&w=670",
+    "image": "https://horizonplay.fbitsstatic.net/img/p/apple-iphone-17-pro-max-512gb-12ram-tela-super-retina-xdr-oled-6-9-prateado-193480/380179-1.jpg?h=670&v=202511152232&w=670",
+    "local": "/regional-images/iphone-17-pro-max.jpg"
+  },
+  "iphone-17e": {
+    "model": "iPhone 17e",
+    "source": "https://www.apple.com/br/shop/buy-iphone/iphone-17e",
+    "image": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-17e-finish-select-softpink-202603?wid=940&hei=1112&fmt=png-alpha&.v=WEw4Mm90aWNESFd6NGRURjZZeWczVk9TZFRrcStTaFFFUEl5NVBQdnhTYkNUSFNLYWFuaDRXMkRQUHBjWXViYk01ZlZDa0xRSGNsZGN2cGtrRCtsV0FDcEplT2d6SndHT0tJeEpWbGxTK0FFQ1drQnYvT2p3OWwzT3FGNDJwWVY",
+    "local": "/regional-images/iphone-17e.png"
+  },
+  "iphone-18-pro": {
+    "model": "iPhone 18 Pro",
+    "source": "https://www.apple.com/br/shop/buy-iphone/iphone-18-pro",
+    "image": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-18-pro-finish-select-burgundy-202609?wid=940&hei=1112&fmt=png-alpha&.v=ODB3TEdtbk8ybkd3clM3dWVML3VCVmtqbnQyNWMvcld5Yy9DTnQyVUlQYWlwUGhxdXZuRTRGejlubW1oYWpjbUJ2MUJtQ2VhYWlBc1UxbHhMSzFTQjhlcC9qYU9xUXZmS1NmbGxtTVBCNVAvWncyUEszSEVwdS9nWVBDSFpPZmY",
+    "local": "/regional-images/iphone-18-pro.png"
+  },
+  "iphone-18-pro-max": {
+    "model": "iPhone 18 Pro Max",
+    "source": "https://www.apple.com/br/shop/buy-iphone/iphone-18-pro",
+    "image": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-18-pro-max-finish-select-black-202609?wid=940&hei=1112&fmt=png-alpha&.v=UmkydCsrWUVqOXF2VEM2dzB6cklhWUQ2cmRnWCtSNmVDd2t4cWxWSnIvNmxIMGwrWFVjeE1VUlRMRWVWaXVleHNjcXQ1U2FBY2RzWU80SEN4Z1NYZXA4TndFSGFWdWZMa21CRXlrUm45elpxZTk0czYvTGlFaFJ6MUo4NytKelc",
+    "local": "/regional-images/iphone-18-pro-max.png"
+  },
+  "iphone-air": {
+    "model": "iPhone Air",
+    "source": "https://www.apple.com/br/shop/buy-iphone/iphone-air",
+    "image": "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-air-finish-select-cloudwhite-202509?wid=940&hei=1112&fmt=png-alpha&.v=NUpaQVl1bitSNmJWZUdKdi9QZHhsTS8xdU11cWJCczZ1VVpEY09DWGZFdG9rUmM5L0VxemJPNnRHVmtSWFVtQVgyaWxBVG1PRTU2YzhCN2c2emhzWG1EbG02UTA1WVduVEpGbUMyTTJuNVZvSWRyb0g1dWM0TnhmcUpxVTA1bXc",
+    "local": "/regional-images/iphone-air.png"
+  },
+  "motorola-edge-60-fusion": {
+    "model": "Motorola Edge 60 Fusion",
+    "source": "https://www.motorola.com.br/smartphone-motorola-edge-60-fusion-5g/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/177189/EDGE60FUSION_MOCHA-MOUSSE_1000X1000PX_01-min.png?v=639032387652300000",
+    "local": "/regional-images/motorola-edge-60-fusion.png"
+  },
+  "motorola-edge-60-pro": {
+    "model": "Motorola Edge 60 Pro",
+    "source": "https://www.motorola.com.br/smartphone-motorola-edge-60-pro-5g-256gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/173782/frente-traseira-smartphone-motorola-edge-60-pro-azul.png.png?v=638830334256670000",
+    "local": "/regional-images/motorola-edge-60-pro.png"
+  },
+  "motorola-edge-70": {
+    "model": "Motorola Edge 70",
+    "source": "https://www.motorola.com.br/smartphone-motorola-edge-70-5g-512gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/181182/1000X1000PX_01.png?v=639173090848330000",
+    "local": "/regional-images/motorola-edge-70.png"
+  },
+  "motorola-edge-70-fusion": {
+    "model": "Motorola Edge 70 Fusion",
+    "source": "https://www.motorola.com.br/smartphone-motorola-edge-70-fusion-256gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/180882/EDGE70FUSION_1000X1000PX_01.png?v=639173059697170000",
+    "local": "/regional-images/motorola-edge-70-fusion.png"
+  },
+  "motorola-moto-g-max-5g": {
+    "model": "Motorola Moto G Max 5G",
+    "source": "https://www.motorola.com.br/smartphone-moto-g-max-5g/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/180406/MOTOGMAX_1000X1000PX_01.png?v=639146971961400000",
+    "local": "/regional-images/motorola-moto-g-max-5g.png"
+  },
+  "motorola-moto-g06": {
+    "model": "Motorola Moto G06",
+    "source": "https://www.motorola.com.br/smartphone-motorola-moto-g06-64gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/182948/traseira-frente-smartphone-moto-g06-azul-marinho.png?v=639264519514970000",
+    "local": "/regional-images/motorola-moto-g06.png"
+  },
+  "motorola-moto-g35-5g": {
+    "model": "Motorola Moto G35 5G",
+    "source": "https://www.motorola.com.br/smartphone-moto-g35-5g-256gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/171445/frente-smartphone-moto-g35-cinza-vegan-leather.png?v=638797959451100000",
+    "local": "/regional-images/motorola-moto-g35-5g.png"
+  },
+  "motorola-moto-g37-5g": {
+    "model": "Motorola Moto G37 5G",
+    "source": "https://www.motorola.com.br/smartphone-motorola-moto-g37-5g-64gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/182840/1.png?v=639264514707900000",
+    "local": "/regional-images/motorola-moto-g37-5g.png"
+  },
+  "motorola-moto-g47-5g": {
+    "model": "Motorola Moto G47 5G",
+    "source": "https://www.motorola.com.br/smartphone-motorola-moto-g47-5g-256gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/179811/MOTOG47_1000X1000PX_01.png?v=639131101360230000",
+    "local": "/regional-images/motorola-moto-g47-5g.png"
+  },
+  "motorola-moto-g56-5g": {
+    "model": "Motorola Moto G56 5G",
+    "source": "https://www.motorola.com.br/smartphone-moto-g56-5g-256gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/173927/frente-atras-smartphone-moto-g56-grafite.png?v=638834532977170000",
+    "local": "/regional-images/motorola-moto-g56-5g.png"
+  },
+  "motorola-moto-g67-5g": {
+    "model": "Motorola Moto G67 5G",
+    "source": "https://www.motorola.com.br/smartphone-moto-g67-5g-128gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/178454/MOTOG67_1000X1000PX_01.png?v=639084288867230000",
+    "local": "/regional-images/motorola-moto-g67-5g.png"
+  },
+  "motorola-moto-g77-5g": {
+    "model": "Motorola Moto G77 5G",
+    "source": "https://www.motorola.com.br/smartphone-moto-g77-5g-256gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/178472/MOTOG77_1000X1000PX_01.png?v=639084291135130000",
+    "local": "/regional-images/motorola-moto-g77-5g.png"
+  },
+  "motorola-moto-g86-5g": {
+    "model": "Motorola Moto G86 5G",
+    "source": "https://www.motorola.com.br/smartphone-moto-g86-5g-256gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/174409/frente-atras-smartphone-moto-g86-grafite.png?v=638870871964670000",
+    "local": "/regional-images/motorola-moto-g86-5g.png"
+  },
+  "motorola-signature": {
+    "model": "Motorola Signature",
+    "source": "https://www.motorola.com.br/smartphone-motorola-signature-5g-256gb/p",
+    "image": "https://brmotorolanew.vteximg.com.br/arquivos/ids/183145/1000X1000PX_01.png?v=639270560678630000",
+    "local": "/regional-images/motorola-signature.png"
+  },
+  "oppo-a5-5g": {
+    "model": "OPPO A5 5G",
+    "source": "https://www.oppo.com.br/smartphone-oppo-a5-5g-256gb-16gb-ram--8gb---8gb-ram-virtual--bateria-6000-mah-camera-ai-50mp-nfc-ver-11001036557/p",
+    "image": "https://oppostore.vteximg.com.br/arquivos/ids/157728/1_A5_5G_256GB_Produto_Verde.jpg?v=639264014844730000",
+    "local": "/regional-images/oppo-a5-5g.jpg"
+  },
+  "oppo-a6x-5g": {
+    "model": "OPPO A6x 5G",
+    "source": "https://www.oppo.com.br/smartphone-oppo-a6x-128gb-12gb-ram--4gb---8gb-ram-virtual--bateria-gigante-6500-mah-camera-ai-nfc-vi-11001037457/p",
+    "image": "https://oppostore.vteximg.com.br/arquivos/ids/158304/1_A6x_128GB_Produto_Azul.png?v=639304376016500000",
+    "local": "/regional-images/oppo-a6x-5g.png"
+  },
+  "oppo-reno16": {
+    "model": "OPPO Reno16",
+    "source": "https://www.oppo.com.br/smartphone-oppo-reno-16-5g-512gb-16gb-ram--8gb---8gb-ram-virtual--bateria-6000-mah-camera-ai-50mp-nf-11001029043g512/p",
+    "image": "https://oppostore.vteximg.com.br/arquivos/ids/158414/1_Reno16_Produto_Violeta_512GB.png?v=639304488790670000",
+    "local": "/regional-images/oppo-reno16.png"
+  },
+  "oppo-reno16-f": {
+    "model": "OPPO Reno16 F",
+    "source": "https://www.oppo.com.br/smartphone-oppo-reno-16f-5g-128gb-16gb-ram--8gb---8gb-ram-virtual--bateria-7000-mah-camera-ai-50mp-n-11001029035g128/p",
+    "image": "https://oppostore.vteximg.com.br/arquivos/ids/158167/1_Reno16F_Produto_Roxo_128GB.png?v=639304357034900000",
+    "local": "/regional-images/oppo-reno16-f.png"
+  },
+  "samsung-galaxy-a06-5g": {
+    "model": "Samsung Galaxy A06 5G",
+    "source": "https://images.samsung.com/is/image/samsung/p6pim/in/sm-a066bzkhins/gallery/in-galaxy-a06-5g-sm-a066-537970-sm-a066bzkhins-545081240?$650_519_PNG$",
+    "image": "https://images.samsung.com/is/image/samsung/p6pim/in/sm-a066bzkhins/gallery/in-galaxy-a06-5g-sm-a066-537970-sm-a066bzkhins-545081240?$650_519_PNG$",
+    "local": "/regional-images/samsung-galaxy-a06-5g.png"
+  },
+  "samsung-galaxy-a07-4g": {
+    "model": "Samsung Galaxy A07 4G",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-a07-256gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/303240/1-2.jpg?v=639294827348670000",
+    "local": "/regional-images/samsung-galaxy-a07-4g.jpg"
+  },
+  "samsung-galaxy-a07-5g": {
+    "model": "Samsung Galaxy A07 5G",
+    "source": "https://images.samsung.com/is/image/samsung/p6pim/ph/sm-a076bzkbphl/gallery/ph-galaxy-a07-5g-sm-a076-sm-a076bzkbphl-550632803?$650_519_PNG$",
+    "image": "https://images.samsung.com/is/image/samsung/p6pim/ph/sm-a076bzkbphl/gallery/ph-galaxy-a07-5g-sm-a076-sm-a076bzkbphl-550632803?$650_519_PNG$",
+    "local": "/regional-images/samsung-galaxy-a07-5g.png"
+  },
+  "samsung-galaxy-a16-5g": {
+    "model": "Samsung Galaxy A16 5G",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-a16-5g-256gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/240582/_0013_Vector-Smart-Object.jpg?v=638676191564400000",
+    "local": "/regional-images/samsung-galaxy-a16-5g.jpg"
+  },
+  "samsung-galaxy-a17-5g": {
+    "model": "Samsung Galaxy A17 5G",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-a17-5g/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/266302/A17-5G__0017_1.jpg?v=638926744702900000",
+    "local": "/regional-images/samsung-galaxy-a17-5g.jpg"
+  },
+  "samsung-galaxy-a26-5g": {
+    "model": "Samsung Galaxy A26 5G",
+    "source": "https://www.samsung.com/br/smartphones/galaxy-a/galaxy-a26-5g-black-256gb-sm-a266mzkhzto/",
+    "image": "https://images.samsung.com/is/image/samsung/p6pim/br/sm-a266mzkhzto/gallery/br-galaxy-a26-5g-sm-a266-sm-a266mzkhzto-545817282?$650_519_PNG$",
+    "local": "/regional-images/samsung-galaxy-a26-5g.png"
+  },
+  "samsung-galaxy-a27-5g": {
+    "model": "Samsung Galaxy A27 5G",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-a27-256gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/290373/01-SM-A276BLIRZTO.jpg?v=639190380100830000",
+    "local": "/regional-images/samsung-galaxy-a27-5g.jpg"
+  },
+  "samsung-galaxy-a36-5g": {
+    "model": "Samsung Galaxy A36 5G",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-a36/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/278106/A77B35DE94754807671D2955213ACCFEcd2ddb8e75914a2fb75864c388c26e220004A365Gproductcombovisualawesomeblack.webp?v=639058322862030000",
+    "local": "/regional-images/samsung-galaxy-a36-5g.webp"
+  },
+  "samsung-galaxy-a37-5g": {
+    "model": "Samsung Galaxy A37 5G",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-a37/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/283890/01.verde.jpg?v=639113428374970000",
+    "local": "/regional-images/samsung-galaxy-a37-5g.jpg"
+  },
+  "samsung-galaxy-a56-5g": {
+    "model": "Samsung Galaxy A56 5G",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-a56/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/247354/1.2.jpg.jpg?v=638779867314900000",
+    "local": "/regional-images/samsung-galaxy-a56-5g.jpg"
+  },
+  "samsung-galaxy-a57-5g": {
+    "model": "Samsung Galaxy A57 5G",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-a57-256gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/285168/SM-A576BZAEZTO.webp?v=639118889606400000",
+    "local": "/regional-images/samsung-galaxy-a57-5g.webp"
+  },
+  "samsung-galaxy-s25": {
+    "model": "Samsung Galaxy S25",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-s25-256gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/249903/S25_1000x1000__0013_S25-base_azul.jpg.jpg?v=638809338826300000",
+    "local": "/regional-images/samsung-galaxy-s25.jpg"
+  },
+  "samsung-galaxy-s25-edge": {
+    "model": "Samsung Galaxy S25 Edge",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-s25-edge-512gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/252645/sm-s937_galaxy-s25-edge_jetblack_front_250314.jpg.jpg?v=638828314729900000",
+    "local": "/regional-images/samsung-galaxy-s25-edge.jpg"
+  },
+  "samsung-galaxy-s25-fe": {
+    "model": "Samsung Galaxy S25 FE",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-s25-fe-256gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/272379/26379_Cadastro_02.jpg?v=638971929273470000",
+    "local": "/regional-images/samsung-galaxy-s25-fe.jpg"
+  },
+  "samsung-galaxy-s25-ultra": {
+    "model": "Samsung Galaxy S25 Ultra",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-s25-ultra-512gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/303205/1.png?v=639293924272170000",
+    "local": "/regional-images/samsung-galaxy-s25-ultra.webp"
+  },
+  "samsung-galaxy-s26": {
+    "model": "Samsung Galaxy S26",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-s26-512gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/278741/01M1VIOLETA1.jpg?v=639076219301630000",
+    "local": "/regional-images/samsung-galaxy-s26.jpg"
+  },
+  "samsung-galaxy-s26-fe": {
+    "model": "Samsung Galaxy S26 FE",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-s26-fe/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/298542/SM-S741BZKJZTO1000x1000STEP1.jpg?v=639247302475800000",
+    "local": "/regional-images/samsung-galaxy-s26-fe.jpg"
+  },
+  "samsung-galaxy-s26-plus": {
+    "model": "Samsung Galaxy S26+",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-s26-plus-512gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/278510/02M2VIOLETA1.jpg?v=639076206924200000",
+    "local": "/regional-images/samsung-galaxy-s26-plus.jpg"
+  },
+  "samsung-galaxy-s26-ultra": {
+    "model": "Samsung Galaxy S26 Ultra",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-s26-ultra-512gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/278553/03M3VIOLETA1.jpg?v=639076207602700000",
+    "local": "/regional-images/samsung-galaxy-s26-ultra.jpg"
+  },
+  "samsung-galaxy-z-flip8": {
+    "model": "Samsung Galaxy Z Flip8",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-z-flip8-512gb/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/294877/0015-SM-F776BZKXZTO.jpg?v=639211347568930000",
+    "local": "/regional-images/samsung-galaxy-z-flip8.jpg"
+  },
+  "samsung-galaxy-z-fold8": {
+    "model": "Samsung Galaxy Z Fold8",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-z-fold8/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/294682/_0015_SM-F971BZKXZTO.jpg?v=639211269001570000",
+    "local": "/regional-images/samsung-galaxy-z-fold8.jpg"
+  },
+  "samsung-galaxy-z-fold8-ultra": {
+    "model": "Samsung Galaxy Z Fold8 Ultra",
+    "source": "https://samsungbrshop.vtexcommercestable.com.br/galaxy-z-fold8-ultra/p",
+    "image": "https://samsungbrshop.vteximg.com.br/arquivos/ids/294698/_0018_SM-F976BZKYZTO.jpg?v=639211285173730000",
+    "local": "/regional-images/samsung-galaxy-z-fold8-ultra.jpg"
+  }
+}

@@ -1,3 +1,4 @@
+import { regionalDeviceInfo, regionalInventoryGroups } from './regional-catalog.js';
 import {
   clearSessionCookie,
   hashPassword,
@@ -4534,6 +4535,29 @@ async function regionalApi(request, env, url) {
   const path = url.pathname;
   const method = request.method;
   const match = path.match(/^\/api\/regional\/devices\/(\d+)(\/history)?$/);
+  if (method === 'GET' && (path === '/api/regional/groups' || (path === '/api/regional/devices' && url.searchParams.has('group')))) {
+    const store = url.searchParams.get('store') || '';
+    const status = url.searchParams.get('status') || 'available';
+    if (store && !REGIONAL_STORES.some(s => s.code === store)) throw new HttpError(400, 'Loja inválida.');
+    if (!['available','incoming','repair','sold','all'].includes(status)) throw new HttpError(400, 'Situação inválida.');
+    const conditions = [], values = [];
+    if (store) { conditions.push('store=?'); values.push(store); }
+    if (status === 'sold') conditions.push("status='sold'");
+    else if (status !== 'all') { conditions.push("status='available' AND stock_state=?"); values.push(status); }
+    const clause = conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
+    const detail = path === '/api/regional/devices';
+    const columns = detail ? '*' : 'id,store,model,material_code,imei,condition,status,stock_state';
+    const result = await env.DB.prepare(`SELECT ${columns} FROM regional_devices${clause} ORDER BY store,model,imei`).bind(...values).all();
+    if (detail) {
+      const key = url.searchParams.get('group');
+      const matched = result.results.filter(item => regionalDeviceInfo(item).key === key);
+      const page = Math.floor(Math.max(1, Math.min(100000, Number(url.searchParams.get('page')) || 1)));
+      return json({ items:matched.slice((page-1)*100,page*100).map(item => ({ ...item, ...regionalDeviceInfo(item), status:item.status === 'sold' ? 'sold' : item.stock_state })),total:matched.length,page });
+    }
+    const groups = regionalInventoryGroups(result.results,{ search:(url.searchParams.get('q') || '').slice(0,100),brand:url.searchParams.get('brand') || '' });
+    const summary = await env.DB.prepare("SELECT store, COUNT(*) AS total FROM regional_devices WHERE status='available' AND stock_state='available' GROUP BY store").all();
+    return json({ stores:REGIONAL_STORES,groups,total:groups.reduce((sum,g)=>sum+g.total,0),summary:summary.results });
+  }
   if (method === 'GET' && path === '/api/regional/devices') {
     const store = url.searchParams.get('store') || '';
     const status = url.searchParams.get('status') || 'available';

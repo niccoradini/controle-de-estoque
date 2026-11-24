@@ -4538,20 +4538,21 @@ async function regionalApi(request, env, url) {
     const store = url.searchParams.get('store') || '';
     const status = url.searchParams.get('status') || 'available';
     if (store && !REGIONAL_STORES.some(s => s.code === store)) throw new HttpError(400, 'Loja inválida.');
-    if (!['available', 'sold', 'all'].includes(status)) throw new HttpError(400, 'Situação inválida.');
+    if (!['available', 'incoming', 'repair', 'sold', 'all'].includes(status)) throw new HttpError(400, 'Situação inválida.');
     const search = (url.searchParams.get('q') || '').trim().slice(0, 100);
     const page = Math.max(1, Math.min(100000, Number(url.searchParams.get('page')) || 1));
     const where = []; const values = [];
     if (store) { where.push('store = ?'); values.push(store); }
-    if (status !== 'all') { where.push('status = ?'); values.push(status); }
+    if (status === 'sold') where.push("status = 'sold'");
+    else if (status !== 'all') { where.push("status = 'available' AND stock_state = ?"); values.push(status); }
     if (search) { where.push('(instr(lower(model), lower(?)) > 0 OR instr(lower(material_code), lower(?)) > 0 OR instr(imei, ?) > 0)'); values.push(search, search, search); }
     const clause = where.length ? 'WHERE ' + where.join(' AND ') : '';
     const [items, total, summary] = await env.DB.batch([
       env.DB.prepare(`SELECT * FROM regional_devices ${clause} ORDER BY id DESC LIMIT 100 OFFSET ?`).bind(...values, (Math.floor(page) - 1) * 100),
       env.DB.prepare(`SELECT COUNT(*) AS total FROM regional_devices ${clause}`).bind(...values),
-      env.DB.prepare("SELECT store, COUNT(*) AS total FROM regional_devices WHERE status = 'available' GROUP BY store"),
+      env.DB.prepare("SELECT store, COUNT(*) AS total FROM regional_devices WHERE status = 'available' AND stock_state = 'available' GROUP BY store"),
     ]);
-    return json({ stores: REGIONAL_STORES, items: items.results, total: total.results[0].total, summary: summary.results, page: Math.floor(page) });
+    return json({ stores: REGIONAL_STORES, items: items.results.map(item => ({ ...item, status: item.status === 'sold' ? 'sold' : item.stock_state })), total: total.results[0].total, summary: summary.results, page: Math.floor(page) });
   }
   if (method === 'GET' && match?.[2]) {
     const history = await env.DB.prepare('SELECT * FROM regional_movements WHERE device_id = ? ORDER BY id DESC LIMIT 100').bind(Number(match[1])).all();
@@ -4568,17 +4569,19 @@ async function regionalApi(request, env, url) {
     const store = text('store', 10), model = text('model', 120), code = text('material_code', 60);
     const imei = text('imei', 15), condition = text('condition', 20), actor = text('actor', 80), notes = text('notes', 1000, false);
     const status = input.status || 'available';
-    if (!REGIONAL_STORES.some(s => s.code === store) || !['Novo','Vitrine','Renova'].includes(condition) || !['available','sold'].includes(status)) throw new HttpError(400, 'Loja, estado ou situação inválidos.');
+    if (!REGIONAL_STORES.some(s => s.code === store) || !['Novo','Vitrine','Renova'].includes(condition) || !['available','incoming','repair','sold'].includes(status)) throw new HttpError(400, 'Loja, estado ou situação inválidos.');
     if (!/^\d{15}$/.test(imei)) throw new HttpError(400, 'O IMEI deve ter 15 números.');
+    const storedStatus = status === 'sold' ? 'sold' : 'available';
+    const stockState = status === 'sold' ? 'available' : status;
     try {
       if (method === 'POST') {
-        if (status !== 'available') throw new HttpError(400, 'Cadastre o aparelho disponível antes de registrar a saída.');
-        const result = await env.DB.prepare('INSERT INTO regional_devices(store,model,material_code,imei,condition,actor,notes) VALUES(?,?,?,?,?,?,?)').bind(store,model,code,imei,condition,actor,notes).run();
+        if (status === 'sold') throw new HttpError(400, 'Cadastre o aparelho disponível antes de registrar a saída.');
+        const result = await env.DB.prepare('INSERT INTO regional_devices(store,model,material_code,imei,condition,actor,notes,stock_state) VALUES(?,?,?,?,?,?,?,?)').bind(store,model,code,imei,condition,actor,notes,stockState).run();
         return json({ id: result.meta.last_row_id }, 201);
       }
       if (!Number.isInteger(input.version) || input.version < 1) throw new HttpError(400, 'Atualize a lista antes de editar.');
-      const result = await env.DB.prepare("UPDATE regional_devices SET store=?,model=?,material_code=?,imei=?,condition=?,actor=?,notes=?,status=?,version=version+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND version=?")
-        .bind(store,model,code,imei,condition,actor,notes,status,Number(match[1]),input.version).run();
+      const result = await env.DB.prepare("UPDATE regional_devices SET store=?,model=?,material_code=?,imei=?,condition=?,actor=?,notes=?,status=?,stock_state=?,version=version+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND version=?")
+        .bind(store,model,code,imei,condition,actor,notes,storedStatus,stockState,Number(match[1]),input.version).run();
       if (!result.meta.changes) throw new HttpError(409, 'Este aparelho foi alterado por outra pessoa. Atualize a lista e tente novamente.');
       return json({ ok: true });
     } catch (error) {

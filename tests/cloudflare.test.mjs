@@ -2225,7 +2225,7 @@ describe('Controle de estoque por código material', () => {
     assert.doesNotMatch(indexSource, /zxing|vendor\/zxing/i);
     assert.match(packageSource, /@zxing\/browser/);
     assert.doesNotMatch(stylesSource, /@import|url\(\s*['"]?https?:/i);
-    assert.equal(JSON.parse(packageSource).version, '6.63.7');
+    assert.equal(JSON.parse(packageSource).version, '6.64.0');
     assert.match(appSource, /Ver códigos serializados/);
     assert.match(appSource, /\/api\/inventory\/serials/);
     assert.match(stylesSource, /Consulta protegida de estoque serializado/);
@@ -2489,7 +2489,7 @@ describe('Controle de estoque por código material', () => {
     assert.match(symbolSource, /Caixa de estoque com marca de conferência/);
     assert.match(indexSource, /id="cart-root" data-cart-bar/);
     assert.match(indexSource, /styles\.css\?v=6\.63\.7/);
-    assert.match(indexSource, /app\.js\?v=6\.63\.7/);
+    assert.match(indexSource, /portal\.js\?v=6\.64\.0/);
     assert.match(stylesSource, /body\s*\{[\s\S]*?overflow-x:\s*clip/);
     assert.match(stylesSource, /\.store-simulator-layout\s*\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(320px,400px\);[\s\S]*?gap:24px/);
     assert.match(stylesSource, /\.store-offer-panel\s*\{[\s\S]*?position:sticky;[\s\S]*?width:100%;[\s\S]*?max-width:none/);

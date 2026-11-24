@@ -670,6 +670,7 @@ function renderLogin(message = '') {
           </div>
           <button class="btn auth-submit" type="submit"><span>Entrar no sistema</span>${uiIcon('chevron')}</button>
         </form>
+        <p class="auth-help"><a href="/">← Escolher outro sistema</a></p>
         <p class="auth-help">Esqueceu sua senha? <strong>Fale com o gerente.</strong></p>
       </div></section>
     </main>`;
@@ -707,6 +708,7 @@ function renderShell() {
       <button class="sidebar-overlay" data-action="close-menu" aria-label="Fechar menu"></button>
       <aside class="sidebar">
         <div class="sidebar__brand"><div class="brand-mark" aria-hidden="true"><img src="/estoque-symbol.svg" alt=""></div><div><strong>Estoque</strong><small>Loja interna</small></div></div>
+        <a class="nav-link" href="/">← Trocar sistema</a>
         <div class="nav-label">Menu principal</div><nav class="nav-list" aria-label="Menu principal">${links}</nav>
         <button class="sidebar-theme" data-action="toggle-theme" aria-label="Mudar para tema ${state.user.theme === 'light' ? 'escuro' : 'claro'}"><span>${state.user.theme === 'light' ? '☀' : '☾'}</span><div><small>Aparência</small><strong>Tema ${state.user.theme === 'light' ? 'claro' : 'escuro'}</strong></div><b>Alterar</b></button>
         <div class="sidebar__spacer"></div>
